@@ -1,0 +1,62 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Cover from '../components/golfreport/IssueCover.astro';
+
+import { md5 } from 'js-md5';
+
+const covers = [
+  { src: "../images/GolfPeppis-2021-Finnkampen-Special-Edition.png", alt: "Golf Peppis - 2021 Finnkampen Special Edition" },
+  { src: "../images/GolfReport-2021-09-16.png", alt: "Golf Report - Syyskuu 16, 2021" },
+  { src: "../images/GolfReport-2021-09-14.png", alt: "Golf Report - Syyskuu 14, 2021" },
+  { src: "../images/GolfReport-2021-09-07.png", alt: "Golf Report - Syyskuu 7, 2021" },
+  { src: "../images/GolfReport-2021-08-30J.png", alt: "Golf Report - Elokuu 30, 2021 Juhlanumero" },
+  { src: "../images/GolfReport-2021-08-30.png", alt: "Golf Report - Elokuu 30, 2021" },
+  { src: "../images/GolfReport-2021-08-27.png", alt: "Golf Report - Elokuu 27, 2021" },
+  { src: "../images/GolfReport-2021-08-15B.png", alt: "Golf Report - Elokuu 15, 2021 B" },
+  { src: "../images/GolfReport-2021-08-15A.png", alt: "Golf Report - Elokuu 15, 2021 A" },
+  { src: "../images/GolfReport-2021-08-09.png", alt: "Golf Report - Elokuu 9, 2021" },
+]
+---
+
+<Layout title="Golf Report - Past Issues">
+  <main>
+    <h1>
+      Golf Report <span class="accent">Past Issues</span>
+    </h1>
+    <ul role="list" class="link-card-grid">
+      {covers.map(cover => (<Cover image={cover.src} title={cover.alt} href={"/golfreport/" + md5(cover.alt)}/>))}
+    </ul>
+  </main>
+</Layout>
+
+<style>
+	main {
+		margin: auto;
+		padding: 1rem;
+		min-width: 360px;
+		max-width: calc(60% - 2rem);
+		color: #232129;
+		font-size: 20px;
+		line-height: 1.6;
+	}
+
+  h1 {
+    margin-top: 0px;
+    margin-bottom: 64px;
+    max-width: calc(80%);
+  }
+
+  h1 {
+    color: #ddffcc
+  }
+  h1 .accent {
+    color: #663399;
+  }
+
+  .link-card-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
+		gap: 2rem;
+		padding: 0;
+	}
+</style>
