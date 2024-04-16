@@ -1,19 +1,8 @@
-import * as React from "react"
+---
+import Layout from '../layouts/Layout.astro';
+import Cover from '../components/golfreport/IssueCover.astro';
 
-// styles
-const pageStyles = {
-  color: "#232129",
-  padding: 96,
-  fontFamily: "-apple-system, Roboto, sans-serif, serif",
-}
-const headingStyles = {
-  marginTop: 0,
-  marginBottom: 64,
-  maxWidth: 320,
-}
-const headingAccentStyles = {
-  color: "#663399",
-}
+import { md5 } from 'js-md5';
 
 const covers = [
   { src: "../images/GolfPeppis-2021-Finnkampen-Special-Edition.png", alt: "Golf Peppis - 2021 Finnkampen Special Edition" },
@@ -27,17 +16,47 @@ const covers = [
   { src: "../images/GolfReport-2021-08-15A.png", alt: "Golf Report - Elokuu 15, 2021 A" },
   { src: "../images/GolfReport-2021-08-09.png", alt: "Golf Report - Elokuu 9, 2021" },
 ]
+---
 
-const IndexPage = () => {
-  return (
-    <main style={pageStyles}>
-      <title>Golf Report - Past issues</title>
-      <h1 style={headingStyles}>
-        Golf Report<br /><span style={headingAccentStyles}>past issues</span>
-      </h1>
-      {covers.map(cover => (<img src={cover.src} alt={cover.alt}/>))}
-    </main>
-  )
-}
+<Layout title="Golf Report - Past Issues">
+  <main>
+    <h1>
+      Golf Report <span class="accent">Past Issues</span>
+    </h1>
+    <ul role="list" class="link-card-grid">
+      {covers.map(cover => (<Cover image={cover.src} title={cover.alt} href={"/golfreport/" + md5(cover.alt)}/>))}
+    </ul>
+  </main>
+</Layout>
 
-export default IndexPage
+<style>
+	main {
+		margin: auto;
+		padding: 1rem;
+		min-width: 360px;
+		max-width: calc(60% - 2rem);
+		color: #232129;
+		font-size: 20px;
+		line-height: 1.6;
+	}
+
+  h1 {
+    margin-top: 0px;
+    margin-bottom: 64px;
+    max-width: calc(80%);
+  }
+
+  h1 {
+    color: #ddffcc
+  }
+  h1 .accent {
+    color: #663399;
+  }
+
+  .link-card-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
+		gap: 2rem;
+		padding: 0;
+	}
+</style>
