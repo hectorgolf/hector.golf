@@ -1,13 +1,17 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
 ---
 
 <Layout title="Lost ball">
 	<main>
+		<div class="breadcrumbs">
+			<Breadcrumb title="Back" href="javascript: history.go(-1);" />
+		</div>
 		<h1>That was a mighty power draw...</h1>
 		<p>...and a lost ball because we can't the ball you're looking for.</p>
 		<div>
-			<img src="/images/barf.png"/>
+			<img src="/images/eagle-barf.png"/>
 		</div>
 	</main>
 </Layout>
@@ -45,5 +49,11 @@ import Layout from '../layouts/Layout.astro';
 		display: flex;
 		flex-direction: row;
 		justify-content: space-around;
+	}
+
+	main .breadcrumbs {
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-start;
 	}
 </style>
