@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Cover from '../components/golfreport/IssueCover.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
 
 import { md5 } from 'js-md5';
 
@@ -20,6 +21,9 @@ const covers = [
 
 <Layout title="Golf Report - Past Issues">
   <main>
+		<div class="breadcrumbs">
+			<Breadcrumb title="Home" href="/" />
+		</div>
     <h1>
       Golf Report <span class="accent">Past Issues</span>
     </h1>
