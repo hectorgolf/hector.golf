@@ -1,0 +1,139 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import { type Event } from '../../schemas/events';
+import { type Course } from '../../schemas/courses';
+import { getAllEventIds, getCoursesOfEvent, getEventById } from '../../code/events';
+
+
+export function getStaticPaths() {
+    return getAllEventIds().map((id) => {
+        return { params: { slug: id } };
+    });
+}
+
+const { slug } = Astro.params;
+let event: Event|undefined = getEventById(slug);
+if (!event) {
+    Astro.response.status = 404;
+}
+event = event!
+
+const eventCourses: Array<Course> = getCoursesOfEvent(event.id);
+
+---
+<Layout title="Events">
+    <main>
+		<div class="breadcrumbs">
+			<Breadcrumb title="Home" href="/" />
+			<Breadcrumb title="Events" href="/events" />
+		</div>
+        <h1>{event.name}</h1>
+        <div class="event-location">{event.location}</div>
+        <div class="event-date">{event.date}</div>
+        {event.hero_image ? <img src={event.hero_image} title={event.name}/><br/> : ""}
+        {event.description ? (<p>{event.description}</p>) : ""}
+        <div class="related-courses">
+            <h2>{eventCourses.length === 1 ? "Course" : "Courses"}</h2>
+            {eventCourses.map((course) => {
+                return (<div class="related-course"><a href={"/courses/" + course.id}>{course.name}</a></div>)
+            })}
+        </div>
+    </main>
+</Layout>
+
+<style>
+    pre {
+        max-width: calc(100% - 2rem);
+        overflow: scroll;
+    }
+
+    main {
+		margin: auto;
+		padding: 1rem;
+		width: 900px;
+		max-width: calc(100% - 2rem);
+		color: white;
+		font-size: 20px;
+		line-height: 1.6;
+	}
+
+    h1 {
+		text-transform: uppercase;
+		font-size: 4rem;
+		font-weight: 700;
+		line-height: 1;
+		text-align: left;
+		margin-bottom: 1em;
+	}
+
+    h2 {
+        margin-block-start: 1em;
+        margin-block-end: 0.5em;
+    }
+
+	.text-gradient {
+		background-image: var(--accent-gradient);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-size: 400%;
+		background-position: 0%;
+	}
+
+	.link-card-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
+		gap: 2rem;
+		padding: 0;
+	}
+
+    .hero {
+        display: flex;
+        width: calc(100%);
+        max-height: 300px;
+    }
+    .hero img {
+        width: calc(100%);
+    }
+
+    .description {
+        width: calc(100%);
+    }
+    .description img {
+        width: calc(100%);
+    }
+
+    .holes {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .holes .hole {
+        margin: 10px;
+        width: calc(33% - 20px);
+        text-align: center;
+    }
+
+    .holes a {
+        color: #fff;
+        text-decoration: none;
+    }
+
+    .holes .hole img {
+        min-width: 80px;
+        height: 150px;
+    }
+
+    @media (max-width: 440px) {
+        main {
+            font-size: 16px;
+            padding: 0.5rem;
+        }
+
+        h1 {
+		    font-size: 2.5rem;
+        }
+    }
+
+</style>

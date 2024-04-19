@@ -1,0 +1,154 @@
+---
+import { type Course } from '../../schemas/courses';
+
+interface Props {
+	course: Course;
+    firstHole: number;
+    lastHole: number;
+    hideFirstColumn?: boolean;
+}
+
+
+const { course, firstHole, lastHole, hideFirstColumn = false } = Astro.props;
+const sliceStart = firstHole - 1;
+const sliceEnd = lastHole;
+const inOrOut = firstHole <= 9 ? "Out" : "In";
+---
+
+<div class="scorecard-half-table">
+    <table>
+        <thead>
+            <tr class="hole-number">
+                {hideFirstColumn ? "" : (<th class="left-aligned heading-column">Hole</th>)}
+                {course.course.scorecard.men.slice(sliceStart, sliceEnd).map((hole, index) => {
+                    const oddOrEven = index % 2 === 0 ? "even" : "odd";
+                    const cssClass = `center-aligned hole-number ${oddOrEven}`
+                    return <th class={cssClass}>{hole.hole}</th>
+                })}
+                <th class="center-aligned heading-column">{inOrOut}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="par">
+                {hideFirstColumn ? "" : (<td class="left-aligned heading-column">Par</td>)}
+                {course.course.scorecard.men.slice(sliceStart, sliceEnd).map((hole, index) => {
+                    const oddOrEven = index % 2 === 0 ? "even" : "odd";
+                    const cssClass = `center-aligned hole-par ${oddOrEven}`
+                    return <td class={cssClass}>{hole.par}</td>
+                })}
+                <td class="center-aligned heading-column">{course.course.scorecard.men.slice(sliceStart, sliceEnd).reduce((total, hole) => total + hole.par, 0)}</td>
+            </tr>
+            <tr class="hcp">
+                {hideFirstColumn ? "" : (<td class="left-aligned heading-column">Hcp</td>)}
+                {course.course.scorecard.men.slice(sliceStart, sliceEnd).map((hole, index) => {
+                    const oddOrEven = index % 2 === 0 ? "even" : "odd";
+                    const cssClass = `center-aligned hole-hcp ${oddOrEven}`
+                    return <td class={cssClass}>{hole.hcp}</td>
+                })}
+                <td class="center-aligned heading-column"></td>
+            </tr>
+            {course.course.tees.map((tee) => {
+                const playingLengths = course.course.scorecard.men.slice(sliceStart, sliceEnd).map((hole) => hole.lengths?.[tee.name])
+                return (
+                    <tr class="tee">
+                        {hideFirstColumn ? "" : (<td class="tee-identifier left-aligned heading-column">
+                            <svg class="color" width="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="10" cy="10" r="7" style={`fill:${tee.color};stroke:#000000;`}/>
+                            </svg>
+                            <span class="name">{tee.name || tee.length}</span>
+                        </td>)}
+                        {playingLengths.map((length, index) => {
+                            const oddOrEven = index % 2 === 0 ? "even" : "odd";
+                            const cssClass = `center-aligned hole-length ${oddOrEven}`
+                            return (
+                                <td class={cssClass}>
+                                    <div class="hole-length-container">
+                                        <span class="hole-length-container-label">{length}</span>
+                                    </div>
+                                </td>
+                            )
+                        })}
+                        <td class="center-aligned hole-length heading-column">
+                            <div class="hole-length-container">
+                                <span class="hole-length-container-label">
+                                    {playingLengths.reduce((total, hole) => total + hole, 0)}
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                )
+            })}
+        </tbody>
+    </table>
+</div>
+
+<style>
+
+    table {
+        text-align: center;
+        border-collapse: collapse;
+    }
+
+    table tr.subheading {
+        border-bottom: 1px solid white;
+    }
+
+    table tr.subheading th {
+        padding-bottom: 10px;
+    }
+
+    table .heading-column {
+        background-image: linear-gradient(to bottom right, #555, #333);
+        font-weight: 700;
+    }
+
+    table tr td.center-aligned { text-align: center; padding-left: 2px; padding-right: 2px; }
+    table tr th.center-aligned { text-align: center; padding-left: 2px; padding-right: 2px; }
+    table tr td.left-aligned { text-align: left; }
+    table tr th.left-aligned { text-align: left; padding-right: 4px; }
+
+    table td.hole-length,
+    table td.tee-identifier,
+    table tr.par, table tr.hcp {
+        font-size: 0.8em;
+    }
+
+    table td, table th {
+        background-image: linear-gradient(to bottom right, #111, #000);
+    }
+    table td.even, table th.even {
+        background-image: linear-gradient(to bottom right, #111, #333);
+    }
+    table td.odd, table th.odd {
+        background-image: linear-gradient(to bottom right, #444, #222);
+    }
+
+    table tr {
+        height: 30px;
+    }
+
+    @media (max-width: 440px) {
+        .tee-identifier .name {
+            display: none;
+        }
+
+        .scorecard-half-table table, .scorecard-half-table .front-nine, .scorecard-half-table .back-nine {
+            width: 100%;
+        }
+
+        /*
+        .hole-length-container {
+            height: 50px;
+            position: relative;
+        }
+        .hole-length-container .hole-length-container-label {
+	        left: 50%;
+	        position: absolute;
+	        transform: rotate(90deg);
+	        transform-origin: center left;
+	        white-space: nowrap;
+        }
+        */
+    }
+
+</style>

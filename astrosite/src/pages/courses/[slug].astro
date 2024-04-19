@@ -1,0 +1,184 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import CourseRatingTable from '../../components/courses/CourseRatingTable.astro';
+import ScorecardTable from '../../components/courses/ScorecardTable.astro';
+import { type Course } from '../../schemas/courses';
+import { getEventsAtCourse } from '../../code/events';
+import { getAllCourseIds, getCourseById } from '../../code/courses';
+
+
+export function getStaticPaths() {
+    return getAllCourseIds().map((id) => {
+        return { params: { slug: id } };
+    });
+}
+
+const { slug } = Astro.params;
+let course: Course|undefined = getCourseById(slug);
+if (!course) {
+    Astro.response.status = 404;
+}
+course = course!
+
+const relatedEvents = getEventsAtCourse(course.id);
+
+---
+
+<Layout title={course.name}>
+    <main>
+        <div class="breadcrumbs">
+            <Breadcrumb title="Home" href="/" />
+            <Breadcrumb title="Courses" href="/courses" />
+        </div>
+        <h1>{course.name}</h1>
+
+        <div class="hero">
+            <img src={course.hero_image} alt={course.name} />
+        </div>
+
+        <div class="description">
+            {course.description_long.map((segment) => {
+                if (segment.type === 'image') {
+                    return <img src={segment.url} />
+                } if (segment.type === 'paragraph' && segment.content) {
+                    return <p>{segment.content}</p>
+                }
+            })}
+        </div>
+
+        <div class="slope-and-rating">
+            <h2>Course rating</h2>
+            <CourseRatingTable course={course} />
+        </div>
+
+        <div class="scorecard">
+            <h2>Scorecard</h2>
+            <ScorecardTable course={course} />
+        </div>
+
+        <div class="holes">
+            {course.course.descriptions.map((hole) => {
+                const holeHref = `/courses/${slug}/holes/${hole.hole}`
+                return (
+                    <div class="hole">
+                        <a href={holeHref}>
+                            <h2>Hole {hole.hole}</h2>
+                            <img src={hole.layout} />
+                        </a>
+                    </div>
+                );
+            })}
+        </div>
+
+        <div class="related-events">
+            <h2>Events at {course.name}</h2>
+            {relatedEvents.map((event) => {
+                return (
+                    <div class="related-event"><a href={`/events/${event.id}`}>{event.name}</a></div>
+                );
+            })}
+        </div>
+
+        <!--
+        <pre>{JSON.stringify(course.course.descriptions, null, 2)}</pre>
+         -->
+    </main>
+</Layout>
+
+<style>
+    pre {
+        max-width: calc(100% - 2rem);
+        overflow: scroll;
+    }
+
+    main {
+		margin: auto;
+		padding: 1rem;
+		width: 900px;
+		max-width: calc(100% - 2rem);
+		color: white;
+		font-size: 20px;
+		line-height: 1.6;
+	}
+
+    h1 {
+		text-transform: uppercase;
+		font-size: 4rem;
+		font-weight: 700;
+		line-height: 1;
+		text-align: left;
+		margin-bottom: 1em;
+	}
+
+    h2 {
+        margin-block-start: 1em;
+        margin-block-end: 0.5em;
+    }
+
+	.text-gradient {
+		background-image: var(--accent-gradient);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-size: 400%;
+		background-position: 0%;
+	}
+
+	.link-card-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
+		gap: 2rem;
+		padding: 0;
+	}
+
+    .hero {
+        display: flex;
+        width: calc(100%);
+        max-height: 300px;
+    }
+    .hero img {
+        width: calc(100%);
+    }
+
+    .description {
+        width: calc(100%);
+    }
+    .description img {
+        width: calc(100%);
+    }
+
+    .holes {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .holes .hole {
+        margin: 10px;
+        width: calc(33% - 20px);
+        text-align: center;
+        border-radius: 20px;
+    }
+
+    .holes a {
+        color: #fff;
+        text-decoration: none;
+    }
+
+    .holes .hole img {
+        min-width: 80px;
+        height: 150px;
+    }
+
+    @media (max-width: 440px) {
+        main {
+            font-size: 16px;
+            padding: 0.5rem;
+        }
+
+        h1 {
+		    font-size: 2.5rem;
+        }
+    }
+
+</style>

@@ -17,11 +17,6 @@ import Card from '../components/Card.astro';
 		-->
 		<ul role="list" class="link-card-grid">
 			<Card
-				href="/golfreport"
-				title="Golf Report - Past Issues"
-				body="Read past issues of golf's leading magazine."
-			/>
-			<Card
 				href="/events"
 				title="Events"
 				body="Follow as the world's best amateur golfers face off in Hector events worldwide."
@@ -29,7 +24,17 @@ import Card from '../components/Card.astro';
 			<Card
 				href="/players"
 				title="Players"
-				body="Get to know the world's best amateur golfers"
+				body="Get to know the world's best amateur golfers."
+			/>
+			<Card
+				href="/courses"
+				title="Courses"
+				body="See where the world's best amateur golfers play."
+			/>
+			<Card
+				href="/golfreport"
+				title="Golf Report - Past Issues"
+				body="Read past issues of golf's leading magazine."
 			/>
 		</ul>
 	</main>
@@ -39,28 +44,15 @@ import Card from '../components/Card.astro';
 	main {
 		margin: auto;
 		padding: 1rem;
-		width: 800px;
+		width: 900px;
 		max-width: calc(100% - 2rem);
 		color: white;
 		font-size: 20px;
 		line-height: 1.6;
 	}
 
-	main h1 {
-		text-transform: uppercase;
-	}
-
-	.astro-a {
-		position: absolute;
-		top: -32px;
-		left: 50%;
-		transform: translatex(-50%);
-		width: 220px;
-		height: auto;
-		z-index: -1;
-	}
-
 	h1 {
+		text-transform: uppercase;
 		font-size: 4rem;
 		font-weight: 700;
 		line-height: 1;

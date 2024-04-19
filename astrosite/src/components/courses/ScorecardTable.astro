@@ -1,0 +1,94 @@
+---
+import ScorecardHalfTable from './ScorecardHalfTable.astro';
+import { type Course } from '../../schemas/courses';
+
+interface Props {
+	course: Course;
+}
+
+
+const { course } = Astro.props;
+---
+
+<div class="scorecard-tables">
+    <div class="scorecard-table-split">
+        <span class="front-nine"><ScorecardHalfTable course={course} firstHole={1} lastHole={9} /></span>
+        <span class="back-nine"><ScorecardHalfTable course={course} firstHole={10} lastHole={18} /></span>
+    </div>
+    <div class="scorecard-table-full">
+        <ScorecardHalfTable course={course} firstHole={1} lastHole={9} />
+        <ScorecardHalfTable course={course} firstHole={10} lastHole={18} hideFirstColumn={true} />
+    </div>
+    <!-- <code>{"course: " + JSON.stringify(course, null, 2)}</code> -->
+</div>
+
+<style>
+    .scorecard-table-split {
+        display: none;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    .scorecard-table-full {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    table {
+        text-align: center;
+        border-collapse: collapse;
+    }
+
+    table tr.subheading {
+        border-bottom: 1px solid white;
+    }
+
+    table tr.subheading th {
+        padding-bottom: 10px;
+    }
+
+    table tr td.center-aligned { text-align: center; padding-left: 2px; padding-right: 2px; }
+    table tr th.center-aligned { text-align: center; padding-left: 2px; padding-right: 2px; }
+    table tr td.left-aligned { text-align: left; }
+    table tr th.left-aligned { text-align: left; padding-right: 4px; }
+
+    table td.hole-length {
+        font-size: 0.8em;
+    }
+
+    @media (max-width: 440px) {
+        .tee-identifier .name {
+            display: none;
+        }
+
+        .scorecard-table-split .back-nine {
+            margin-top: 20px;
+        }
+
+        .scorecard-table-split .back-nine, .scorecard-table-split .front-nine {
+            width: 100%;
+        }
+
+        .scorecard-table-split {
+            display: flex;
+            width: 100%;
+        }
+        .scorecard-table-full {
+            display: none;
+        }
+    }
+
+    @media (max-width: 820px) {
+        .scorecard-table-split {
+            display: flex;
+            width: 100%;
+        }
+        .scorecard-table-split .back-nine {
+            margin-top: 20px;
+        }
+        .scorecard-table-full {
+            display: none;
+        }
+    }
+
+</style>
