@@ -1,10 +1,9 @@
 ---
 import Layout from '../../../../layouts/Layout.astro';
 import Breadcrumb from '../../../../components/Breadcrumb.astro';
-import CourseRatingTable from '../../../../components/courses/CourseRatingTable.astro';
-import ScorecardTable from '../../../../components/courses/ScorecardTable.astro';
 import data from '../../../../data/courses.json';
-import { type Course, schema as CourseSchema } from '../../../../schemas/courses';
+import { type Course } from '../../../../schemas/courses';
+import { getCourseById } from '../../../../code/courses';
 
 export function getStaticPaths() {
     return data.flatMap((course) => {
@@ -15,15 +14,23 @@ export function getStaticPaths() {
 }
 
 const { slug, hole } = Astro.params;
-let _course = data.find((course) => course.id === slug)
-console.log(`_course is of type ${typeof(_course)}:  ${JSON.stringify(_course)}`);
-if (!_course) {
+const holeNumber = parseInt(hole);
+let course: Course|undefined = getCourseById(slug);
+if (!course) {
+    console.error(`No such course: ${slug}`);
     Astro.response.status = 404;
 }
-const course: Course = CourseSchema.parse(_course);
-const holeDescription = course.course.descriptions.find((description) => description.hole === parseInt(hole));
-const holeData = (course.course.scorecard.men || course.course.scorecard.ladies).find((holeOnCourse) => holeOnCourse.hole === parseInt(hole));
+course = course!
+const holeDescription = course.course.descriptions.find((description) => description.hole === holeNumber);
+if (!holeDescription) {
+    console.error(`No hole description found for hole ${hole} on course ${slug}`);
+    Astro.response.status = 404;
+}
+const holeData = (course.course.scorecard.men || course.course.scorecard.ladies).find((holeOnCourse) => holeOnCourse.hole === holeNumber);
 const courseHref = `/courses/${slug}`;
+const numberOfHoles = course.course.descriptions.length
+const prevHoleHref = `${courseHref}/holes/${holeNumber == 1 ? numberOfHoles : holeNumber - 1}`;
+const nextHoleHref = `${courseHref}/holes/${holeNumber == numberOfHoles ? 1 : holeNumber + 1}`;
 ---
 
 <Layout title={course.name}>
@@ -36,20 +43,28 @@ const courseHref = `/courses/${slug}`;
 
         <div class="box-container">
             <div class="hole-data-container">
-                <h1>{hole}</h1>
-                <div class="par">PAR {holeData?.par}</div>
-                <div class="hcp">HCP {holeData?.hcp}</div>
-                {course.course.tees.map((tee) => {
-                    const holeLength = holeData?.lengths?.[tee.name]
-                    return (
-                        <div class="tee-length">
-                            <svg class="color" width="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="10" cy="10" r="7" style={`fill:${tee.color};stroke:#000000;`}/>
-                            </svg>
-                            {holeLength} m
-                        </div>
-                    )
-                })}
+                <div class="h1-container">
+                    <a class="prev-hole-navigation" href={prevHoleHref}></a>
+                    <h1>{hole}</h1>
+                    <a class="next-hole-navigation" href={nextHoleHref}></a>
+                </div>
+                <div class="hole-specs-container">
+                    <div class="par"><span>PAR {holeData?.par}</span></div>
+                    <div class="hcp"><span>HCP {holeData?.hcp}</span></div>
+                    <div class="tee-lengths-container">
+                        {course.course.tees.map((tee) => {
+                            const holeLength = holeData?.lengths?.[tee.name]
+                            return (
+                                <div class="tee-length">
+                                    <svg class="color" width="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="10" cy="10" r="7" style={`fill:${tee.color};stroke:#000000;`}/>
+                                    </svg>
+                                    {holeLength} m
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
             </div>
             <div class="hole-layout-container">
                 <span class="hole-layout">
@@ -64,12 +79,51 @@ const courseHref = `/courses/${slug}`;
 
 <style>
 
+    .hole-specs-container {
+        margin-left: 0px;
+        text-align: center;
+    }
+
     .hole-data-container .par {
-        margin-top: 30px;
+        margin-top: 20px;
     }
 
     .hole-data-container .hcp {
-        margin-bottom: 30px;
+        margin-bottom: 20px;
+    }
+
+    .h1-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .h1-container .next-hole-navigation,
+    .h1-container .prev-hole-navigation {
+        width: 50px;
+        text-align: center;
+        vertical-align: middle;
+    }
+    .h1-container .prev-hole-navigation {
+        background-image: url("/images/chevron-left.svg");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 40px 40px;
+    }
+    .h1-container .next-hole-navigation {
+        background-image: url("/images/chevron-right.svg");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 40px 40px;
+    }
+
+    .h1-container h1 {
+        width: 80px;
+        text-align: center;
+        margin-top: 0px;
+        margin-bottom: 0px;
     }
 
     .box-container {
@@ -82,15 +136,16 @@ const courseHref = `/courses/${slug}`;
     }
 
     .box-container .hole-data-container {
-        flex: 0.3;
-        min-width: 10px;
+        flex: 0.5;
+        min-width: 175px;
         min-height: 10px;
     }
 
     .box-container .hole-layout-container {
-        flex: 0.7;
+        flex: 0.5;
         min-width: 10px;
         min-height: 10px;
+        text-align: center;
     }
 
     main {
@@ -120,7 +175,7 @@ const courseHref = `/courses/${slug}`;
     .hole-layout img {
         max-height: 600px;
         min-height: 300px;
-        max-width: calc(70%);
+        max-width: calc(80%);
     }
 
 </style>
