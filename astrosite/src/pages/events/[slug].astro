@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
+import CourseCard from '../../components/courses/CourseCard.astro';
 import { type Event } from '../../schemas/events';
 import { type Course } from '../../schemas/courses';
 import { getAllEventIds, getCoursesOfEvent, getEventById } from '../../code/events';
@@ -28,16 +29,19 @@ const eventCourses: Array<Course> = getCoursesOfEvent(event.id);
 			<Breadcrumb title="Home" href="/" />
 			<Breadcrumb title="Events" href="/events" />
 		</div>
-        <h1>{event.name}</h1>
+        <h1><span class="text-gradient">{event.name}</span></h1>
         <div class="event-location">{event.location}</div>
         <div class="event-date">{event.date}</div>
         {event.hero_image ? <img src={event.hero_image} title={event.name}/><br/> : ""}
         {event.description ? (<p>{event.description}</p>) : ""}
         <div class="related-courses">
             <h2>{eventCourses.length === 1 ? "Course" : "Courses"}</h2>
-            {eventCourses.map((course) => {
-                return (<div class="related-course"><a href={"/courses/" + course.id}>{course.name}</a></div>)
-            })}
+            <ul role="list" class="link-card-grid">
+                {eventCourses.map((course) => {
+                    return (<CourseCard name={course.name} href={`/courses/${course.id}`} location={course.contact.address} image={course.hero_image} />)
+                    //return (<div class="related-course"><a href={"/courses/" + course.id}>{course.name}</a></div>)
+                })}
+            </ul>
         </div>
     </main>
 </Layout>
@@ -71,14 +75,6 @@ const eventCourses: Array<Course> = getCoursesOfEvent(event.id);
         margin-block-start: 1em;
         margin-block-end: 0.5em;
     }
-
-	.text-gradient {
-		background-image: var(--accent-gradient);
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-size: 400%;
-		background-position: 0%;
-	}
 
 	.link-card-grid {
 		display: grid;

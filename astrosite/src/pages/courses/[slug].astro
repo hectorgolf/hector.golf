@@ -31,7 +31,7 @@ const relatedEvents = getEventsAtCourse(course.id);
             <Breadcrumb title="Home" href="/" />
             <Breadcrumb title="Courses" href="/courses" />
         </div>
-        <h1>{course.name}</h1>
+        <h1><span class="text-gradient">{course.name}</span></h1>
 
         <div class="hero">
             <img src={course.hero_image} alt={course.name} />
@@ -115,14 +115,6 @@ const relatedEvents = getEventsAtCourse(course.id);
         margin-block-start: 1em;
         margin-block-end: 0.5em;
     }
-
-	.text-gradient {
-		background-image: var(--accent-gradient);
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-size: 400%;
-		background-position: 0%;
-	}
 
 	.link-card-grid {
 		display: grid;
