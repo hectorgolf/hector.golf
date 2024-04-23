@@ -286,5 +286,181 @@
                 "url": "https://www.mscorecard.com/mscorecard/showcourse.php?cid=1202572522789"
             }
         ]
+    },
+    {
+        "id": "diamondcc-championship",
+        "name": "Diamond Country Club - Championship Course",
+        "homepage": "https://www.countryclub.at/golf?lang=en",
+        "contact": {
+            "address": "Am Golfplatz 1, 3452 Atzenbrugg, Austria",
+            "phone": "tel://+43227520075",
+            "email": "office@diamondcityhotel.at"
+        },
+        "hero_image": "https://static.wixstatic.com/media/2147df_ff43e44bc4e3482da524916e1b03e361~mv2_d_4608_2592_s_4_2.jpg/v1/fill/w_1960,h_902,al_b,q_85,usm_0.66_1.00_0.01,enc_auto/2147df_ff43e44bc4e3482da524916e1b03e361~mv2_d_4608_2592_s_4_2.jpg",
+        "description_short": "Nothing is as precise as the knivesof our greenkeepers, who work daily to ensure maintenance and improvement of the heart of the resort – the 18-hole European Tour Diamond Course. They meticulously remove bushes and branches on and off the Fairways to facilitate precise shots – even from tougher spots. The short mown Rough, as well as the neat Greens, enable the best Golf, always accompanied by striking water hazards surrounding the centrally located 10-hectare lake. Enjoy the impressive Diamond Course and walk in the footsteps of European Tour professionals.",
+        "description_long": [
+            { "type": "paragraph", "content": "Designed by Englishman Jeremy Pern, who fashioned the exciting Dartmouth Country Club in Devon, the Diamond has very quickly established itself as one of the best courses in Austria." },
+            { "type": "paragraph", "content": "With plenty of water to focus the mind, the Diamond opened for play in 2002 and it’s a mighty challenge which stretches out to 6,810 metres from the championship tips. Choose your tee carefully and avoid your macho instinct or you’ll be masochistic with your card." },
+            { "type": "image", "url": "https://cdn.sanity.io/images/arkm1m4f/production/2480791b8945ba256370a5e111835b3d5ea97130-7360x4912.jpg?rect=0,156,7360,4600&w=1280&h=800&fm=jpg&q=100&auto=format" },
+            { "type": "paragraph", "content": "After playing the first hole – with water running down the left side of the fairway – you could be forgiven for wondering over the next five holes what all the fuss is about in relation to water hazards here. Then you will discover that eight of the remaining twelve holes feature lakes and ponds which threaten tee shots, approach shots and, at some holes, both." },
+            { "type": "paragraph", "content": "The two par three holes on the back nine – the 175-metre 11th and 145-metre 15th – are played to island greens where anything wayward off the tee will sink in the drink. The 418-metre, par four, closing hole has water on the left and out of bounds on the right of the fairway, so accuracy is called for right to the very last shot on the Diamond course." },
+            { "type": "image", "url": "https://cdn.sanity.io/images/arkm1m4f/production/4c98bdf299cd9995f838dcd54963ade352b4ae2c-2835x1877.jpg?rect=0,53,2835,1772&w=1280&h=800&fm=webp&q=100&auto=format" },
+            { "type": "paragraph", "content": "Since 2010, the Austrian Open (badged the Lyoness Open from 2012 to 2017) has been staged on the Diamond course at Diamond Country Club. Spain’s José Manuel Lara won the 2010 event and saved his European Tour card in the process after beating David Lynn in a play-off." },
+            { "type": "paragraph", "content": "Fast-forward to 2018 and Diamond Country Club will be remembered for genuine innovation. The Shot Clock Masters made history as the first tournament in professional golf to use a shot clock on every stroke as part of the European Tour’s bid to combat slow play. All players were timed on every shot, and on each occasion a player failed to hit his shot within the time limits, a one-shot penalty was added to his score for that hole. Interestingly, not one single professional ranked in the world top one hundred played in the 2018 event (which Finland’s Mikko Korhonen won) and only four players were penalised over the four days where round times were recorded as being significantly quicker than the season average." }
+        ],
+        "images": {
+            "course_layout": "/images/courses/diamondcc-championship/layout.png"
+        },
+        "course": {
+            "tees": [
+                {
+                    "name": "black",
+                    "color": "#000000",
+                    "stroke": "#ffffff",
+                    "length": 6819,
+                    "par": 72,
+                    "rating": {
+                        "men": 76.8,
+                        "ladies": null
+                    },
+                    "slope": {
+                        "men": 141,
+                        "ladies": null
+                    }
+                },
+                {
+                    "name": "white",
+                    "color": "#ffffff",
+                    "stroke": "#000000",
+                    "length": 6465,
+                    "par": 72,
+                    "rating": {
+                        "men": 75.1,
+                        "ladies": null
+                    },
+                    "slope": {
+                        "men": 136,
+                        "ladies": null
+                    }
+                },
+                {
+                    "name": "yellow",
+                    "color": "#ffff00",
+                    "stroke": "#000000",
+                    "length": 6130,
+                    "par": 72,
+                    "rating": {
+                        "men": 73.3,
+                        "ladies": 79.9
+                    },
+                    "slope": {
+                        "men": 136,
+                        "ladies": 146
+                    }
+                },
+                {
+                    "name": "blue",
+                    "color": "#0000ff",
+                    "stroke": "#000000",
+                    "length": 5821,
+                    "par": 72,
+                    "rating": {
+                        "men": 71.5,
+                        "ladies": 78.2
+                    },
+                    "slope": {
+                        "men": 132,
+                        "ladies": 143
+                    }
+                },
+                {
+                    "name": "red",
+                    "color": "#ff0000",
+                    "stroke": "#000000",
+                    "length": 5457,
+                    "par": 72,
+                    "rating": {
+                        "men": 69.6,
+                        "ladies": 75.9
+                    },
+                    "slope": {
+                        "men": 129,
+                        "ladies": 137
+                    }
+                },
+                {
+                    "name": "orange",
+                    "color": "#ffa500",
+                    "stroke": "#000000",
+                    "length": 5011,
+                    "par": 72,
+                    "rating": {
+                        "men": 67.2,
+                        "ladies": 73
+                    },
+                    "slope": {
+                        "men": 121,
+                        "ladies": 130
+                    }
+                }
+            ],
+            "scorecard": {
+                "men": [
+                    { "hole":  1, "par": 5, "hcp": 17, "lengths": { "black": 463, "white": 463, "yellow": 444, "blue": 405, "red": 395, "orange": 361 }},
+                    { "hole":  2, "par": 3, "hcp":  9, "lengths": { "black": 185, "white": 175, "yellow": 169, "blue": 159, "red": 154, "orange": 150 }},
+                    { "hole":  3, "par": 4, "hcp": 11, "lengths": { "black": 344, "white": 322, "yellow": 316, "blue": 290, "red": 284, "orange": 257 }},
+                    { "hole":  4, "par": 5, "hcp": 15, "lengths": { "black": 508, "white": 498, "yellow": 469, "blue": 442, "red": 436, "orange": 395 }},
+                    { "hole":  5, "par": 4, "hcp": 13, "lengths": { "black": 370, "white": 370, "yellow": 351, "blue": 335, "red": 297, "orange": 278 }},
+                    { "hole":  6, "par": 3, "hcp":  7, "lengths": { "black": 145, "white": 145, "yellow": 140, "blue": 134, "red": 128, "orange": 109 }},
+                    { "hole":  7, "par": 4, "hcp":  3, "lengths": { "black": 376, "white": 354, "yellow": 331, "blue": 311, "red": 290, "orange": 257 }},
+                    { "hole":  8, "par": 4, "hcp":  1, "lengths": { "black": 428, "white": 428, "yellow": 403, "blue": 374, "red": 352, "orange": 333 }},
+                    { "hole":  9, "par": 4, "hcp":  5, "lengths": { "black": 457, "white": 403, "yellow": 378, "blue": 366, "red": 318, "orange": 295 }},
+                    { "hole": 10, "par": 4, "hcp":  4, "lengths": { "black": 461, "white": 383, "yellow": 369, "blue": 338, "red": 332, "orange": 308 }},
+                    { "hole": 11, "par": 4, "hcp":  2, "lengths": { "black": 400, "white": 400, "yellow": 374, "blue": 362, "red": 335, "orange": 314 }},
+                    { "hole": 12, "par": 4, "hcp": 10, "lengths": { "black": 433, "white": 400, "yellow": 377, "blue": 365, "red": 333, "orange": 291 }},
+                    { "hole": 13, "par": 4, "hcp": 18, "lengths": { "black": 338, "white": 314, "yellow": 310, "blue": 285, "red": 281, "orange": 255 }},
+                    { "hole": 14, "par": 3, "hcp":  8, "lengths": { "black": 206, "white": 206, "yellow": 199, "blue": 189, "red": 148, "orange": 135 }},
+                    { "hole": 15, "par": 5, "hcp": 16, "lengths": { "black": 549, "white": 518, "yellow": 487, "blue": 467, "red": 450, "orange": 418 }},
+                    { "hole": 16, "par": 5, "hcp": 12, "lengths": { "black": 540, "white": 500, "yellow": 468, "blue": 462, "red": 418, "orange": 381 }},
+                    { "hole": 17, "par": 4, "hcp":  6, "lengths": { "black": 448, "white": 418, "yellow": 393, "blue": 384, "red": 368, "orange": 340 }},
+                    { "hole": 18, "par": 3, "hcp": 14, "lengths": { "black": 168, "white": 168, "yellow": 152, "blue": 153, "red": 138, "orange": 134 }}
+                ],
+                "ladies": null
+            },
+            "descriptions": [
+                { "hole":  1, "layout": "/images/courses/diamondcc-championship/holes/1.png", "description": "" },
+                { "hole":  2, "layout": "/images/courses/diamondcc-championship/holes/2.png", "description": "" },
+                { "hole":  3, "layout": "/images/courses/diamondcc-championship/holes/3.png", "description": "" },
+                { "hole":  4, "layout": "/images/courses/diamondcc-championship/holes/4.png", "description": "" },
+                { "hole":  5, "layout": "/images/courses/diamondcc-championship/holes/5.png", "description": "" },
+                { "hole":  6, "layout": "/images/courses/diamondcc-championship/holes/6.png", "description": "" },
+                { "hole":  7, "layout": "/images/courses/diamondcc-championship/holes/7.png", "description": "" },
+                { "hole":  8, "layout": "/images/courses/diamondcc-championship/holes/8.png", "description": "" },
+                { "hole":  9, "layout": "/images/courses/diamondcc-championship/holes/9.png", "description": "" },
+                { "hole": 10, "layout": "/images/courses/diamondcc-championship/holes/10.png", "description": "" },
+                { "hole": 11, "layout": "/images/courses/diamondcc-championship/holes/11.png", "description": "" },
+                { "hole": 12, "layout": "/images/courses/diamondcc-championship/holes/12.png", "description": "" },
+                { "hole": 13, "layout": "/images/courses/diamondcc-championship/holes/13.png", "description": "" },
+                { "hole": 14, "layout": "/images/courses/diamondcc-championship/holes/14.png", "description": "" },
+                { "hole": 15, "layout": "/images/courses/diamondcc-championship/holes/15.png", "description": "" },
+                { "hole": 16, "layout": "/images/courses/diamondcc-championship/holes/16.png", "description": "" },
+                { "hole": 17, "layout": "/images/courses/diamondcc-championship/holes/17.png", "description": "" },
+                { "hole": 18, "layout": "/images/courses/diamondcc-championship/holes/18.png", "description": "" }
+            ]
+        },
+        "datasources": [
+            {
+                "name": "website",
+                "url": "https://www.lafincaresort.com/en/golf/la-finca-golf"
+            },
+            {
+                "name": "official scorecard",
+                "url": "https://www.countryclub.at/_files/ugd/1e4714_c6afb67e567c4513917cf3d472eb1ea8.pdf"
+            },
+            {
+                "name": "mscorecard",
+                "url": "https://www.mscorecard.com/mscorecard/showcourse.php?cid=1202572522789"
+            }
+        ]
     }
 ]

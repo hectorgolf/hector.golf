@@ -57,18 +57,25 @@ const relatedEvents = getEventsAtCourse(course.id);
             <ScorecardTable course={course} />
         </div>
 
-        <div class="holes">
-            {course.course.descriptions.map((hole) => {
-                const holeHref = `/courses/${slug}/holes/${hole.hole}`
-                return (
-                    <div class="hole">
-                        <a href={holeHref}>
-                            <h2>Hole {hole.hole}</h2>
-                            <img src={hole.layout} />
-                        </a>
-                    </div>
-                );
-            })}
+        <div class="course-layout">
+            <h2>Course layout</h2>
+            {course.images.course_layout && (
+                <img src={course.images.course_layout} />
+            )}
+
+            <div class="holes-grid">
+                {course.course.descriptions.map((hole) => {
+                    const holeHref = `/courses/${slug}/holes/${hole.hole}`
+                    return (
+                        <div class="hole">
+                            <a href={holeHref}>
+                                <h2>Hole {hole.hole}</h2>
+                                <img src={hole.layout} />
+                            </a>
+                        </div>
+                    );
+                })}
+            </div>
         </div>
 
         <div class="related-events">
@@ -139,27 +146,8 @@ const relatedEvents = getEventsAtCourse(course.id);
         width: calc(100%);
     }
 
-    .holes {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-
-    .holes .hole {
-        margin: 10px;
-        width: calc(33% - 20px);
-        text-align: center;
-        border-radius: 20px;
-    }
-
-    .holes a {
-        color: #fff;
-        text-decoration: none;
-    }
-
-    .holes .hole img {
-        min-width: 80px;
-        height: 150px;
+    .course-layout img {
+        width: 100%;
     }
 
     @media only screen and (max-width: 500px) {
@@ -171,6 +159,47 @@ const relatedEvents = getEventsAtCourse(course.id);
         h1 {
 		    font-size: 2.5rem;
         }
+
+        .holes .hole { width: calc(100% / 4  - 40px); }
+    }
+
+    .holes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+        /* grid-template-rows: repeat(auto-fill, minmax(180px, 1fr)); */
+    }
+
+    .holes-grid .hole {
+        margin: 10px;
+        min-width: 80px;
+        text-align: center;
+        border-radius: 20px;
+    }
+
+    .holes-grid a {
+        color: #fff;
+        text-decoration: none;
+        width: 100%;
+    }
+
+    .holes-grid .hole img {
+        min-width: 80px;
+        height: 300px;
+        object-fit: contain;
+    }
+
+    .holes-grid { grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr; }
+    @media only screen and (max-width: 900px) {
+        .holes-grid { grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr; }
+    }
+    @media only screen and (max-width: 800px) {
+        .holes-grid { grid-template-columns: 1fr 1fr 1fr 1fr 1fr; }
+    }
+    @media only screen and (max-width: 700px) {
+        .holes-grid { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    }
+    @media only screen and (max-width: 600px) {
+        .holes-grid { grid-template-columns: 1fr 1fr 1fr; }
     }
 
 </style>

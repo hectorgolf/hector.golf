@@ -22,7 +22,7 @@ export const schema = z.object({
         })
     ])),
     images: z.object({
-        course_layout: z.string().url().optional(),
+        course_layout: z.string().url().or(z.string().startsWith('/')).optional(),
     }),
     course: z.object({
         tees: z.array(z.object({

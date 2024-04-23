@@ -1,10 +1,292 @@
 [
     {
         "id": "HECTOR2024",
-        "name": "Hector Trophé 2024",
-        "location": "La Finca Golf",
+        "name": "Hector Trophée 2024",
+        "location": "La Finca Golf, Spain",
         "date": "September 25-28, 2024",
         "courses": [ "lafinca", "villamartin" ],
         "description": "The world's best amateur golfers will once again face off with each other in Hector Trophé 2024. The tournament will be played at La Finca Golf and Villamartin Golf. The tournament will be played in the classic 4-day stroke play format and the proud winners will be awarded with the prestigious Hector Trophé."
+    },
+    {
+        "id": "HECTOR2023",
+        "name": "Hector Trophée 2023",
+        "location": "Diamond Country Club, Austria",
+        "date": "September 25-28, 2024",
+        "courses": [ "adamstal", "diamondcc-championship", "diamondcc-country", "diamondcc-park" ],
+        "results": {
+            "teams": [
+                { "name": "Olli Varis & Jarkko Kailanto", "players":["jarkko-kailanto", "olli-varis"] },
+                { "name": "Sami Heikkinen & Lasse Koskela", "players":["lasse-koskela", "sami-heikkinen"] },
+                { "name": "Mikko Oesch & Lassi Koto", "players":["mikko-oesch", "lassi-koto"] },
+                { "name": "Eero Halmetoja & Olli Andersson", "players":["olli-andersson", "eero-halmetoja"] },
+                { "name": "Simo Liukkonen & Timo Lukumaa", "players":["simo-liukkonen", "timo-lukumaa"] },
+                { "name": "Martin Svedholm & Lauri Paatela", "players":["martin-svedholm", "lauri-paatela"] },
+                { "name": "Juuso Pihamaa & Harri Vainio", "players":["juuso-pihamaa", "harri-vainio"] },
+                { "name": "Marcus Mattila & Miso Lith", "players":["miso-lith", "marcus-mattila"] },
+                { "name": "Okko Pykäläinen & Toni Marttila", "players":["toni-marttila", "okko-pykalainen"] },
+                { "name": "Ofri Porat & Pekka Saijonmaa", "players":["ofri-porat", "pekka-saijonmaa"] }
+            ],
+            "winners": {
+                "hector": ["olli-varis", "jarkko-kailanto"],
+                "victor": ["jarkko-kailanto"]
+            }
+        },
+        "description": "The world's top amateur golfers gathered to compete in the prestigious Hector Trophée 2023. Hosted at the scenic Diamond Country Club in Austria from September 23-26, this annual event showcased a thrilling 4-day stroke play format. The elite competitors battled for the honor of claiming the esteemed Hector Trophée, adding another chapter to this celebrated tournament's history."
+    },
+    {
+        "ignore": true,
+        "id": "_FINNKAMPEN2022",
+        "name": "Finnkampen 2022",
+        "location": "Kurk Golf, Finland",
+        "date": "October 22, 2022",
+        "courses": ["kurk-golf"],
+        "description": "",
+        "results": {
+            "teams": [
+                {
+                    "name": "Ukkometsot",
+                    "players": ["jussi-allonen-hcp070", "eero-halmetoja-hcp115", "pasi-halmetoja-hcp065", "sami-heikkinen-hcp055", "lasse-koskela-hcp183", "jari-kuusela-hcp060", "simo-liukkonen-hcp063", "mikko-oesch-hcp108", "janne-valtakari-hcp196"]
+                },
+                {
+                    "name": "Peppikset",
+                    "players": ["jussi-siltanen-hcp060", "tommy-gulin-hcp+023", "jaakko-saarinen-hcp149", "timo-lukumaa-hcp140", "miso-lith-hcp121", "toni-marttila-hcp092", "marcus-mattila-hcp090", "martin-svedholm-hcp089", "harri-vainio-hcp110"]
+                }
+            ],
+            "winners": {
+                "finnkampen": "Ukkometsot"
+            }
+        }
+    },
+    {
+        "id": "HECTOR2022",
+        "name": "Hector Trophée 2022",
+        "location": "Quellness Golf Resort, Germany",
+        "date": "September 14-17, 2022",
+        "courses": ["quellness-porsche", "quellness-beckenbauer"],
+        "results": {
+            "teams": [
+                { "name": "Simo Liukkonen & Timo Lukumaa", "players": ["simo-liukkonen", "timo-lukumaa"] },
+                { "name": "Marcus Mattila & Jarkko Kailanto", "players": ["jarkko-kailanto", "marcus-mattila"] },
+                { "name": "Okko Pykäläinen & Lasse Koskela", "players": ["lasse-koskela", "okko-pykalainen"] },
+                { "name": "Mikko Oesch & Jaakko Saarinen", "players": ["mikko-oesch", "jaakko-saarinen"] },
+                { "name": "Pasi Halmetoja & Eero Halmetoja", "players": ["pasi-halmetoja", "eero-halmetoja"] },
+                { "name": "Olli Varis & Olli Andersson", "players": ["olli-varis", "olli-andersson"] },
+                { "name": "Toni Marttila & Lassi Koto", "players": ["toni-marttila", "lassi-koto"] },
+                { "name": "Ossi Laukkanen & Janne Valtakari", "players": ["ossi-laukkanen", "janne-valtakari"] },
+                { "name": "Sami Heikkinen & Harri Vainio", "players": ["sami-heikkinen", "harri-vainio"] },
+                { "name": "Martin Svedholm & Kristian Hiljander", "players": ["martin-svedholm", "kristian-hiljander"] },
+                { "name": "Juuso Pihamaa & Miso Lith", "players": ["juuso-pihamaa", "miso-lith"] },
+                { "name": "Jussi Allonen & Pekka Saijonmaa", "players": ["jussi-allonen", "pekka-saijonmaa"] }
+            ],
+            "winners": {
+                "hector": ["simo-liukkonen", "timo-lukumaa"],
+                "victor": ["lassi-koto"]
+            }
+        },
+        "description": "In 2022, the Quellness Golf Resort in Germany hosted the eclectic Hector Trophée, from September 14-17. This tournament featured a unique mix of stroke play, stableford, best ball, and scramble formats, showcasing the versatility and strategic depth of the world’s elite amateur golfers."
+    },
+    {
+        "ignore": true,
+        "id": "_FINNKAMPEN2021",
+        "name": "Finnkampen 2021",
+        "location": "?",
+        "date": "October 23, 2022",
+        "courses": [""],
+        "results": {
+            "teams": [],
+            "winners": {}
+        },
+        "description": ""
+    },
+    {
+        "id": "HECTOR2021",
+        "name": "Hector Trophée 2021",
+        "location": "Penati, Slovakia",
+        "date": "September 1-4, 2020",
+        "courses": ["penati"],
+        "results": {
+            "teams": [
+                { "name": "Pasi Halmetoja & Olli Andersson", "players": ["pasi-halmetoja", "olli-andersson"] },
+                { "name": "Simo Liukkonen & Timo Lukumaa", "players": ["simo-liukkonen", "timo-lukumaa"] },
+                { "name": "Toni Marttila & Lauri Paatela", "players": ["toni-marttila", "lauri-paatela"] },
+                { "name": "Eero Halmetoja & Marcus Mattila", "players": ["eero-halmetoja", "marcus-mattila"] },
+                { "name": "Martin Svedholm & Pekka Saijonmaa", "players": ["martin-svedholm", "pekka-saijonmaa"] },
+                { "name": "Sami Heikkinen & Jaakko Saarinen", "players": ["sami-heikkinen", "jaakko-saarinen"] },
+                { "name": "Jussi Allonen & Janne Valtakari", "players": ["jussi-allonen", "janne-valtakari"] },
+                { "name": "Juuso Pihamaa & Lassi Koto", "players": ["juuso-pihamaa", "lassi-koto"] },
+                { "name": "Harri Vainio & Miso Lith", "players": ["harri-vainio", "miso-lith"] },
+                { "name": "Mikko Oesch & Lasse Koskela", "players": ["mikko-oesch", "lasse-koskela"] }
+            ],
+            "winners": {
+                "hector": ["simo-liukkonen", "timo-lukumaa"],
+                "victor": ["toni-marttila"]
+            }
+        },
+        "description": "The Hector Trophée 2021, held at Penati in Slovakia from September 1-4, offered a diverse competition format including stroke play, stableford, best ball, and scramble. This format tested the golfers' adaptability and skill, making for an engaging and multifaceted event."
+    },
+    {
+        "id": "HECTOR2020",
+        "name": "Hector Trophée 2020",
+        "location": "Tahko Golf, Finland",
+        "date": "September 10-13, 2020",
+        "courses": ["tahko-new-course", "tahko-old-course"],
+        "results": {
+            "teams": [
+                { "name": "Olli Varis & Daniel Hylton", "players": ["olli-varis", "daniel-hylton"] },
+                { "name": "Miso Lith & Lassi Koto", "players": ["miso-lith", "lassi-koto"] },
+                { "name": "Martin Svedholm & Pekka Saijonmaa", "players": ["martin-svedholm", "pekka-saijonmaa"] },
+                { "name": "Olli Andersson & Sami Heikkinen", "players": ["olli-andersson", "sami-heikkinen"] },
+                { "name": "Eero Halmetoja & Lauri Paatela", "players": ["eero-halmetoja", "lauri-paatela"] },
+                { "name": "Simo Liukkonen Janne Valtakari", "players": ["simo-liukkonen", "janne-valtakari"] },
+                { "name": "Kristian Hiljander & Timo Lukumaa", "players": ["kristian-hiljander", "timo-lukumaa"] },
+                { "name": "Juuso Pihamaa & Mikko Oesch", "players": ["juuso-pihamaa", "mikko-oesch"] },
+                { "name": "Lasse Koskela & Okko Pykäläinen", "players": ["lasse-koskela", "okko-pykalainen"] },
+                { "name": "Jussi Allonen & Jarkko Kailanto", "players": ["jussi-allonen", "jarkko-kailanto"] },
+                { "name": "Marcus Mattila & Toni Marttila", "players": ["marcus-mattila", "toni-marttila"] }
+            ],
+            "winners": {
+                "hector": ["martin-svedholm", "pekka-saijonmaa"],
+                "victor": ["Lassi Koto"]
+            }
+        },
+        "description": "Tahko Golf in Finland was the venue for the Hector Trophée 2020, occurring from September 10-13 despite a global pandemic and torrential rain reminiscent of an apocalypse on first two days of competition. The tournament’s format blended stroke play, stableford, best ball, and scramble, providing a comprehensive challenge that culminated in a dynamic competition."
+    },
+    {
+        "id": "HECTOR2019",
+        "name": "Hector Trophée VI",
+        "location": "Konopiste, Chech Republic",
+        "date": "September 20-22, 2019",
+        "courses": ["konopiste"],
+        "results": {
+            "teams": [
+                { "name": "Tommy Gulin & Erik Fagerström", "players": ["tommy-gulin", "erik-fagerstrom"] },
+                { "name": "Juuso Pihamaa & Lassi Koto", "players": ["juuso-pihamaa", "lassi-koto"] },
+                { "name": "Simo Liukkonen & Jarkko Kailanto", "players": ["simo-liukkonen", "jarkko-kailanto"] },
+                { "name": "Okko Pykäläinen & Harri Vainio", "players": ["okko-pykalainen", "harri-vainio"] },
+                { "name": "Martin Svedholm & Olli Andersson", "players": ["martin-svedholm", "olli-andersson"] },
+                { "name": "Eero Halmetoja & Marcus Mattila", "players": ["eero-halmetoja", "marcus-mattila"] },
+                { "name": "Olli Varis & Jaakko Saarinen", "players": ["olli-varis", "jaakko-saarinen"] },
+                { "name": "Sami Heikkinen & Daniel Hylton", "players": ["sami-heikkinen", "daniel-hylton"] },
+                { "name": "Toni Marttila & Pekka Saijonmaa", "players": ["toni-marttila", "pekka-saijonmaa"] },
+                { "name": "Kristian Hiljander & Janne Valtakari", "players": ["kristian-hiljander", "janne-valtakari"] },
+                { "name": "Mikko Oesch & Mikko Lifflander", "players": ["mikko-oesch", "mikko-lifflander"] },
+                { "name": "Miso Lith & Timo Lukumaa", "players": ["timo-lukumaa", "miso-lith"] }
+            ],
+            "winners": {
+                "hector": ["okko-pykalainen", "harri-vainio"],
+                "victor": ["eero-halmetoja", "martin-svedholm"]
+            }
+        },
+        "description": ""
+    },
+    {
+        "id": "HECTOR2018",
+        "name": "Hector Trophée V",
+        "location": "Sand Valley, Poland",
+        "date": "August 3-5, 2018",
+        "courses": ["sandvalley"],
+        "results": {
+            "teams": [
+                { "name": "Simo Liukkonen & Toni Marttila", "players": ["simo-liukkonen", "toni-marttila"] },
+                { "name": "Olli Andersson & Juuso Pihamaa", "players": ["olli-andersson", "juuso-pihamaa"] },
+                { "name": "Martin Svedholm & Eero Halmetoja", "players": ["martin-svedholm", "eero-halmetoja"] },
+                { "name": "Daniel Hylton & Lassi Koto", "players": ["daniel-hylton", "lassi-koto"] },
+                { "name": "Olli Varis & Jarkko Kailanto", "players": ["olli-varis", "jarkko-kailanto"] },
+                { "name": "Marcus Mattila & Joakim Grader", "players": ["marcus-mattila", "joakim-grader"] },
+                { "name": "Janne Valtakari & Timo Lukumaa", "players": ["janne-valtakari", "timo-lukumaa"] },
+                { "name": "Miso Lith & Mikko Oesch", "players": ["miso-lith", "mikko-oesch"] }
+            ],
+            "winners": {
+                "hector": ["simo-liukkonen", "toni-marttila"]
+            }
+        },
+        "description": "At Sand Valley in Poland, the Hector Trophée VI in 2018 unfolded over August 3-5, featuring a combination of stroke play, stableford, best ball, and scramble. This variety in formats heightened the competitive spirit and showcased the participants’ strategic acumen and resilience towards high levels of alcohol in their blood."
+    },
+    {
+        "id": "HECTOR2017",
+        "name": "Hector Trophée IV",
+        "location": "Pickala Golf, Finland",
+        "date": "July 28, 2017",
+        "courses": ["pickala-forest"],
+        "results": {
+            "teams": [
+                { "name": "Toni Marttila & Panu Liira", "players": ["toni-marttila", "panu-liira"] },
+                { "name": "Mikko Oesch & Olli Varis", "players": ["mikko-oesch", "olli-varis"] },
+                { "name": "Daniel Hylton & Simo Liukkonen", "players": ["daniel-hylton", "simo-liukkonen"] },
+                { "name": "Tuomas Lesonen & Tommy Nordberg", "players": ["tuomas-lesonen", "tommy-nordberg"] },
+                { "name": "Marcus Mattila & Eero Somervuo", "players": ["marcus-mattila", "eero-somervuo"] },
+                { "name": "Martin Svedholm & Erik Fagerström", "players": ["martin-svedholm", "erik-fagerstrom"] },
+                { "name": "Juuso Pihamaa & Lauri Saarela", "players": ["juuso-pihamaa", "lauri-saarela"] },
+                { "name": "Janne Valtakari & Mikael Lindberg", "players": ["janne-valtakari", "mikael-lindberg"] }
+            ],
+            "winners": {
+                "hector": ["toni-marttila", "panu-liira"]
+            }
+        },
+        "description": "On July 28, 2017, Hector Trophée returned to Pickala Golf for Hector Trophée V. Incorporating multiple formats into a one-day competitive golf outing, Hector Trophée V is considered by many to have been the last great event before a three-year drop in quality as some of the top players took a hiatus from participating in Hector events through 2018-2019. This format diversity highlighted the players’ tactical skills and endurance."
+    },
+    {
+        "id": "HECTOR2016",
+        "name": "Hector Trophée III",
+        "location": "Kurk Golf, Finland",
+        "date": "July 21, 2016",
+        "courses": ["kurk-golf"],
+        "results": {
+            "teams": [
+                { "name": "Miso Korkiakoski & Timo Lukumaa", "players": ["miso-lith", "timo-lukumaa"] },
+                { "name": "Mikko Oesch & Olli Varis", "players": ["mikko-oesch", "olli-varis"] },
+                { "name": "Simo Liukkonen & Daniel Hylton", "players": ["simo-liukkonen", "daniel-hylton"] },
+                { "name": "Martin Svedholm & Marcus Mattila", "players": ["martin-svedholm", "marcus-mattila"] },
+                { "name": "Lasse Koskela & Panu Liira", "players": ["lasse-koskela", "panu-liira"] },
+                { "name": "Toni Marttila & Ricke Blomqvist", "players": ["toni-marttila", "ricke-blomqvist"] },
+                { "name": "Lassi Koto & Riku Liira", "players": ["lassi-koto", "riku-liira"] },
+                { "name": "Tomas Danska & Jonas Löfman", "players": ["tomas-danska", "jonas-lofman"] }
+            ],
+            "winners": {
+                "hector": ["timo-lukumaa", "miso-lith"]
+            }
+        },
+        "description": "The serene Kurk Golf in Finland set the stage for Hector Trophée IV on July 21, 2016. The demanding venue for the tournament tested the golfers' resilience, versatility and strategic thinking throughout the one-day event, facing challenging course conditions at the swamp-like mud pit repurposed as a golf course."
+    },
+    {
+        "id": "HECTOR2015",
+        "name": "Hector Trophée II",
+        "location": "Pickala Golf, Finland",
+        "date": "September 12, 2015",
+        "courses": ["pickala-seaside"],
+        "results": {
+            "teams": [
+                { "name": "Toni Marttila & Daniel Hylton", "players": ["toni-marttila", "daniel-hylton"] },
+                { "name": "Jarkko Kailanto & Lasse Koskela", "players": ["jarkko-kailanto", "lasse-koskela"] },
+                { "name": "Marcus Mattila & Miso Korkiakoski", "players": ["marcus-mattila", "miso-lith"] },
+                { "name": "Tomas Danska & Jonas Löfman", "players": ["tomas-danska", "jonas-lofman"] },
+                { "name": "Ricke Blomqvist & Matti Vahtola", "players": ["ricke-blomqvist", "matias-vahtola"] }
+            ],
+            "winners": {
+                "hector": ["daniel-hylton", "toni-marttila"]
+            }
+        },
+        "description": "For 2015, Hector Trophée returned to the beautiful Siuntio area and Pickala Golf for a much-awaited Hector Trophée II. Starting to gain momentum as a premier amateur golf event, Hector Trophée II featured many of Finland's most promising young atheletes and Mikko Oesch. The shortness of most holes combined with the ever-present water on the Seaside course tested these talented players' adaptability and strategic skills, providing an engaging and dynamic event."
+    },
+    {
+        "id": "HECTOR2014",
+        "name": "Hector Trophée I",
+        "location": "Pickala Golf, Finland",
+        "date": "August 22, 2014",
+        "courses": ["pickala-forest"],
+        "results": {
+            "teams": [
+                { "name": "Marcus Mattila & Mikko Oesch", "players": ["marcus-mattila", "mikko-oesch"] },
+                { "name": "Anders Forss & Matti Vahtola", "players": ["anders-forss", "matias-vahtola"] },
+                { "name": "Daniel Hylton & Joni Valkeapää", "players": ["daniel-hylton", "joni-valkeapaa"] },
+                { "name": "Rasmus Back & Jarkko Kailanto", "players": ["rasmus-back", "jarkko-kailanto"] },
+                { "name": "Lasse Koskela & Panu Liira", "players": ["lasse-koskela", "panu-liira"] },
+                { "name": "Toni Marttila & Tomas Danska", "players": ["toni-marttila", "tomas-danska"] }
+            ],
+            "winners": {
+                "hector": ["daniel-hylton", "joni-valkeapaa"]
+            }
+        },
+        "description": "The inaugural Hector Trophée competition was held in 2014 at Pickala Golf's Forest Course, marking the beginning of a prestigious amateur golf event that would grow in popularity and reputation over the years. While a markedly small event featuring a somewhat questionable field and a plethora of suspected rules violations, the first Hector Trophée set the stage for future tournaments, showcasing the talent and competitive spirit of amateur golfers from around the world."
     }
 ]

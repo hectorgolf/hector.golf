@@ -4,7 +4,7 @@ import Breadcrumb from '../../components/Breadcrumb.astro';
 import EventCard from '../../components/events/EventCard.astro';
 import Highlight from '../../components/Highlight.astro';
 
-import events from '../../data/events.json';
+import { getAllEvents } from '../../code/events';
 
 function linkToEvent(event: any) {
     return `/events/${event.id}`;
@@ -23,46 +23,9 @@ function linkToEvent(event: any) {
             <p></p><strong><a href="/events/HECTOR2024" style="color: white">Hector 2024</a></strong> at <strong></strong>La Finca Golf Resort</strong>, Spain.</p>
         </Highlight>
 		<ul role="list" class="link-card-grid">
-			{events.map((event) => {
+			{getAllEvents().map((event) => {
                 return <EventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
             })}
-
-			<EventCard
-				href="/events/HECTOR2023"
-				title="Hector 2023"
-                location="Diamond Country Club, Austria"
-				date="TBD"
-			/>
-			<EventCard
-				href="/events/HECTOR2022"
-				title="Hector 2022"
-                location="Quellness Golf Resort, Germany"
-				date="TBD"
-			/>
-			<EventCard
-				href="/events/FINNKAMPEN2022"
-				title="Finnkampen 2022"
-                location="Kurk Golf, Finland"
-				date="October 22, 2022"
-			/>
-			<EventCard
-				href="/events/FINNKAMPEN2021"
-				title="Finnkampen 2021"
-                location=""
-				date="October 23, 2021"
-			/>
-			<EventCard
-				href="/events/HECTOR2021"
-				title="Hector 2021"
-                location="Penati Golf Resort, Slovakia"
-				date="September 1-4, 2021"
-			/>
-			<EventCard
-				href="/events/HECTOR2020"
-				title="Hector 2020"
-                location="Tahko Golf Resort, Finland"
-				date="September 10-13, 2021"
-			/>
 		</ul>
 	</main>
 </Layout>

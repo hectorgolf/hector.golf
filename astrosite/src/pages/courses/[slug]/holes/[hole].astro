@@ -49,8 +49,8 @@ const nextHoleHref = `${courseHref}/holes/${holeNumber == numberOfHoles ? 1 : ho
                     <a class="next-hole-navigation" href={nextHoleHref}></a>
                 </div>
                 <div class="hole-specs-container">
-                    <div class="par"><span>PAR {holeData?.par}</span></div>
-                    <div class="hcp"><span>HCP {holeData?.hcp}</span></div>
+                    <div class="par"><span class="text-gradient">PAR {holeData?.par}</span></div>
+                    <div class="hcp"><span class="text-gradient">HCP {holeData?.hcp}</span></div>
                     <div class="tee-lengths-container">
                         {course.course.tees.map((tee) => {
                             const holeLength = holeData?.lengths?.[tee.name]
@@ -86,10 +86,14 @@ const nextHoleHref = `${courseHref}/holes/${holeNumber == numberOfHoles ? 1 : ho
 
     .hole-data-container .par {
         margin-top: 20px;
+        font-weight: bold;
+        font-size: 1.25em;
     }
 
     .hole-data-container .hcp {
         margin-bottom: 20px;
+        font-weight: bold;
+        font-size: 1.25em;
     }
 
     .h1-container {
