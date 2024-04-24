@@ -21,7 +21,7 @@
             { "type": "paragraph", "content": "Villamartín Golf is, without a doubt, one of the best courses in the Valencian Community, as well as one of the deans of golf in the community." }
         ],
         "images": {
-            "course_layout": "http://www.villamartingolfclub.com/media/k2/items/cache/22c02097e4438bd2f2f3fe4a6a3ab0e1_XL.jpg"
+            "course_layout": "/images/courses/villamartin/layout.png"
         },
         "course": {
             "tees": [
@@ -157,7 +157,7 @@
             { "type": "paragraph", "content": "La Finca golf course has been the venue of several prestigious tournaments since its opening, such as: the Junior European Championship, the Spanish Junior Championship and the finals of Audi Class and Audi Quattro circuits, for amateur golfers. At a professional level, La Finca golf course has hosted qualifying for the EPD Tour as well as the Valencian Community professional circuit." }
         ],
         "images": {
-            "course_layout": "https://www.spaingolf.holiday/slideshow/pictures/course/287/spain-golf-la-finca-cmap.webp"
+            "course_layout": "/images/courses/lafinca/layout.png"
         },
         "course": {
             "tees": [
