@@ -1,5 +1,7 @@
 import { z } from 'astro:content';
 
+const AbsoluteOrRelativeImageURL = z.string().url().or(z.string().startsWith('/images'));
+
 export const schema = z.object({
     id: z.string(),
     name: z.string(),
@@ -9,7 +11,7 @@ export const schema = z.object({
         phone: z.string().optional(),
         email: z.string().email().optional(),
     }),
-    hero_image: z.string().url(),
+    hero_image: AbsoluteOrRelativeImageURL.optional(),
     description_short: z.string(),
     description_long: z.array(z.union([
         z.object({
@@ -18,11 +20,11 @@ export const schema = z.object({
         }),
         z.object({
             type: z.literal('image'),
-            url: z.string().url().optional(),
+            url: AbsoluteOrRelativeImageURL.optional(),
         })
     ])),
     images: z.object({
-        course_layout: z.string().url().or(z.string().startsWith('/')).optional(),
+        course_layout: AbsoluteOrRelativeImageURL.optional(),
     }),
     course: z.object({
         tees: z.array(z.object({
@@ -55,6 +57,7 @@ export const schema = z.object({
         }),
         descriptions: z.array(z.object({
             hole: z.number().min(1).max(18),
+            shape: z.enum(["narrow", "wide"]).optional(),
             layout: z.string(),
             description: z.string()
         }))

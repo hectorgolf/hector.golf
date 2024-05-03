@@ -103,7 +103,7 @@
         "name": "Hector Trophée 2021",
         "location": "Penati, Slovakia",
         "date": "September 1-4, 2020",
-        "courses": ["penati"],
+        "courses": ["penati-legend", "penati-heritage"],
         "results": {
             "teams": [
                 { "name": "Pasi Halmetoja & Olli Andersson", "players": ["pasi-halmetoja", "olli-andersson"] },

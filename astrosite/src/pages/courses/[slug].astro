@@ -22,6 +22,7 @@ if (!course) {
 course = course!
 
 const relatedEvents = getEventsAtCourse(course.id);
+const holeLayoutShape = course.course.descriptions[0].shape === 'wide' ? 'wide' : 'narrow';
 
 ---
 
@@ -63,11 +64,11 @@ const relatedEvents = getEventsAtCourse(course.id);
                 <img src={course.images.course_layout} />
             )}
 
-            <div class="holes-grid">
+            <div class:list={['holes-grid', { narrow: holeLayoutShape === 'narrow', wide: holeLayoutShape === 'wide' }]}>
                 {course.course.descriptions.map((hole) => {
                     const holeHref = `/courses/${slug}/holes/${hole.hole}`
                     return (
-                        <div class="hole">
+                        <div class:list={['hole', { narrow: holeLayoutShape === 'narrow', wide: holeLayoutShape === 'wide' }]}>
                             <a href={holeHref}>
                                 <h2>Hole {hole.hole}</h2>
                                 <img src={hole.layout} />
@@ -93,7 +94,7 @@ const relatedEvents = getEventsAtCourse(course.id);
     </main>
 </Layout>
 
-<style>
+<style define:vars={{ holeLayoutShape }}>
     pre {
         max-width: calc(100% - 2rem);
         overflow: scroll;
@@ -176,6 +177,14 @@ const relatedEvents = getEventsAtCourse(course.id);
         border-radius: 20px;
     }
 
+    .holes-grid .hole.narrow {
+        min-width: 80px;
+    }
+
+    .holes-grid .hole.wide {
+        min-width: 120px;
+    }
+
     .holes-grid a {
         color: #fff;
         text-decoration: none;
@@ -188,18 +197,28 @@ const relatedEvents = getEventsAtCourse(course.id);
         object-fit: contain;
     }
 
-    .holes-grid { grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr; }
-    @media only screen and (max-width: 900px) {
+    .holes-grid .hole.narrow img {
+        min-width: 80px;
+        height: 300px;
+    }
+
+    .holes-grid .hole.wide img {
+        min-width: 120px;
+        height: 300px;
+    }
+
+    .holes-grid { grid-template-columns: 1fr 1fr 1fr; }
+    @media only screen and (min-width: 900px) {
         .holes-grid { grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr; }
     }
-    @media only screen and (max-width: 800px) {
-        .holes-grid { grid-template-columns: 1fr 1fr 1fr 1fr 1fr; }
-    }
-    @media only screen and (max-width: 700px) {
+    @media only screen and (min-width: 600px) and (max-width: 899px) {
         .holes-grid { grid-template-columns: 1fr 1fr 1fr 1fr; }
     }
-    @media only screen and (max-width: 600px) {
+    @media only screen and (min-width: 500px) and (max-width: 599px) {
         .holes-grid { grid-template-columns: 1fr 1fr 1fr; }
+    }
+    @media only screen and (min-width: 300px) and (max-width: 500px) {
+        .holes-grid.wide { grid-template-columns: 1fr 1fr; }
     }
 
 </style>
