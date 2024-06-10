@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Backend for hector.golf",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"TODO: implement some automated tests\"",
     "build": "tsc",
     "dev": "PORT=3000 ts-node ./src/server.ts",
     "start": "node ./dist/server.js",
