@@ -11,7 +11,7 @@
         "id": "HECTOR2023",
         "name": "Hector Trophée 2023",
         "location": "Diamond Country Club, Austria",
-        "date": "September 25-28, 2024",
+        "date": "September 23-26, 2023",
         "courses": [ "adamstal", "diamondcc-championship", "diamondcc-country", "diamondcc-park" ],
         "results": {
             "teams": [
@@ -102,7 +102,7 @@
         "id": "HECTOR2021",
         "name": "Hector Trophée 2021",
         "location": "Penati, Slovakia",
-        "date": "September 1-4, 2020",
+        "date": "September 1-4, 2021",
         "courses": ["penati-legend", "penati-heritage"],
         "results": {
             "teams": [
