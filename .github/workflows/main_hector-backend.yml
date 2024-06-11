@@ -79,5 +79,5 @@ jobs:
         id: fa
         with:
           app-name: 'hector-backend'
-          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_53D5A1518DA14E6C84C02899EBD81492 }}
