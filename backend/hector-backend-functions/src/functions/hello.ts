@@ -1,9 +1,7 @@
 import { Headers } from 'undici';
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import {sign, verify} from 'jsonwebtoken';
 import { getAccessToken } from '../utils/request-processing';
-
-const jwtSharedSecret = process.env.JWT_SHARED_SECRET;
+import { generateAccessToken } from '../utils/authentication';
 
 async function parseHeaders(headers: Headers, context: InvocationContext): Promise<{[key:string]:string[]}> {
     const headersObject: {[key:string]:string[]} = {};
@@ -20,9 +18,6 @@ async function parseHeaders(headers: Headers, context: InvocationContext): Promi
 export async function sayHello(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log(`Http function processed request for url "${request.url}" (${request.method})`);
 
-    const token = await getAccessToken(request, context)
-    // invalid token - synchronous
-
     const reqHeaders = await parseHeaders(request.headers, context);
     const bodyString = await request.text()
     const bodyJson = JSON.parse(bodyString)
@@ -36,17 +31,24 @@ export async function sayHello(request: HttpRequest, context: InvocationContext)
     let expiryDate = new Date();
     expiryDate.setDate(expiryDate.getDate() + 30);
 
-    var accessToken = sign({ user: name }, jwtSharedSecret);
+    var accessToken = generateAccessToken(name);
     let accessCookieConfig = `accesstoken=${accessToken}; Expires=${expiryDate.toUTCString()};`
     accessCookieConfig += ' HttpOnly;'
     accessCookieConfig += ' Secure;'
 
-    return {
-        body: `Hello, ${name}!`,
-        headers: {
-            'Set-Cookie': accessCookieConfig
-        }
-    };
+    const token = await getAccessToken(request, context)
+    if (!token) {
+        return {
+            body: `You're not logged in, ${name}! Here's a token inside a cookie for you: ${accessToken}`,
+            headers: {
+                'Set-Cookie': accessCookieConfig
+            }
+        };
+    } else {
+        return {
+            body: `Hello, ${name}! You're already logged in - no cookie for you!`
+        };
+    }
 };
 
 app.http('sayHello', {
