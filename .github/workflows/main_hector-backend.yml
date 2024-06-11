@@ -10,6 +10,7 @@ on:
   workflow_dispatch:
 
 env:
+  RELEASE_ZIP_PATH: 'backend/release.zip'
   AZURE_FUNCTIONAPP_PACKAGE_PATH: 'backend/hector-backend-functions' # set this to the path to your web app project, defaults to the repository root
   NODE_VERSION: '20.x' # set this to the node version to use (supports 8.x, 10.x, 12.x)
 
@@ -35,13 +36,16 @@ jobs:
           popd
 
       - name: Zip artifact for deployment
-        run: zip release.zip ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/* -r
+        run: |
+          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          zip -r ${{env.RELEASE_ZIP_PATH}} .
+          popd
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
         with:
           name: node-app
-          path: release.zip
+          path: ${{env.RELEASE_ZIP_PATH}}
 
   deploy:
     runs-on: ubuntu-latest
@@ -59,14 +63,18 @@ jobs:
           name: node-app
 
       - name: Unzip artifact for deployment
-        run: unzip release.zip
+        run: |
+          unzip release.zip
+          echo "client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_0C35CDB349734735862928573463EE40 }}"
+          echo "tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_726D2EBBC04A483DB3E594B3806EF0B5 }}"
+          echo "subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_A01C2EAF22944277A631CF258602AC79 }}"
 
-      #- name: Login to Azure
-      #  uses: azure/login@v1
-      #  with:
-      #    client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_0C35CDB349734735862928573463EE40 }}
-      #    tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_726D2EBBC04A483DB3E594B3806EF0B5 }}
-      #    subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_A01C2EAF22944277A631CF258602AC79 }}
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_0C35CDB349734735862928573463EE40 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_726D2EBBC04A483DB3E594B3806EF0B5 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_A01C2EAF22944277A631CF258602AC79 }}
 
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
