@@ -56,6 +56,7 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
       id-token: write #This is required for requesting the JWT
+      contents: read
 
     steps:
       - name: Download artifact from build job
@@ -64,11 +65,7 @@ jobs:
           name: node-app
 
       - name: Unzip artifact for deployment
-        run: |
-          unzip release.zip
-          echo "client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_0C35CDB349734735862928573463EE40 }}"
-          echo "tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_726D2EBBC04A483DB3E594B3806EF0B5 }}"
-          echo "subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_A01C2EAF22944277A631CF258602AC79 }}"
+        run: unzip release.zip
 
       - name: Login to Azure
         uses: azure/login@v1
