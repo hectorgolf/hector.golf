@@ -11,6 +11,7 @@ on:
 
 env:
   RELEASE_ZIP_PATH: 'backend/release.zip'
+  RELEASE_ZIP_PATH_RELATIVE_TO_PACKAGE: '../release.zip'
   AZURE_FUNCTIONAPP_PACKAGE_PATH: 'backend/hector-backend-functions' # set this to the path to your web app project, defaults to the repository root
   NODE_VERSION: '20.x' # set this to the node version to use (supports 8.x, 10.x, 12.x)
 
@@ -38,7 +39,7 @@ jobs:
       - name: Zip artifact for deployment
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-          zip -r ${{env.RELEASE_ZIP_PATH}} .
+          zip -r ${{env.RELEASE_ZIP_PATH_RELATIVE_TO_PACKAGE}} .
           popd
 
       - name: Upload artifact for deployment job
