@@ -2,7 +2,8 @@
 
 This is an Express.js based REST API for the hector.golf website.
 
-# Development:
+# Install pre-requisites
 
-- Start the backend on localhost with `npm run dev`
-- Access the running dev instance at `localhost:3000`
+    brew tap azure/functions
+    brew install azure-functions-core-tools@4
+    brew link --overwrite azure-functions-core-tools@4
