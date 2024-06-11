@@ -1,0 +1,87 @@
+---
+
+import { type Player } from '../../schemas/players';
+import { type Event } from '../../schemas/events';
+
+interface Props {
+	player: Player;
+	event: Event;
+}
+
+const { player, event } = Astro.props;
+
+const wonHector = !!event.results?.winners?.hector?.includes(player.id)
+const wonVictor = !!event.results?.winners?.victor?.includes(player.id)
+
+---
+
+<div class="appearance">
+	<a href={`/events/${event.id}`}>
+		<span class="event-name">{event.name}</span>
+		{wonHector ? (<img class="win hector" src="/images/hector-trophy-32.png" alt="Hector Trophy" />) : null}
+		{wonVictor ? (<img class="win victor" src="/images/victor-trophy-32.png" alt="Victor Trophy" />) : null}
+		<span class="date">{event.date}</span>
+		<span class="location">{event.location}</span>
+	</a>
+</div>
+
+<style>
+	.appearance {
+		list-style: none;
+		display: flex;
+		padding: 1px;
+		max-width: 600px;
+		background-color: #23262d;
+		background-image: none;
+		background-size: 400%;
+		border-radius: 7px;
+		background-position: 100%;
+		transition: background-position 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+	}
+	.appearance > a {
+		width: 100%;
+		text-decoration: none;
+		line-height: 1.4;
+		padding: calc(1.5rem - 1px);
+		border-radius: 8px;
+		color: white;
+		background-color: #23262d;
+		opacity: 0.8;
+	}
+	.appearance .event-name {
+		margin-right: 10px;
+	}
+	.appearance img.win.hector {
+		width: 16px;
+		height: 25px;
+	}
+	.appearance img.win.victor {
+		width: 12px;
+		height: 19px;
+	}
+	.appearance .date {
+		display: block;
+		font-size: 0.8rem;
+	}
+	.appearance .location {
+		display: block;
+		font-size: 0.8rem;
+	}
+	h2 {
+		margin: 0;
+		font-size: 1.25rem;
+		transition: color 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+	p {
+		margin-top: 0.5rem;
+		margin-bottom: 0;
+	}
+	.appearance:is(:hover, :focus-within) {
+		background-position: 0;
+		background-image: var(--accent-gradient);
+	}
+	.appearance:is(:hover, :focus-within) h2 {
+		color: rgb(var(--accent-light));
+	}
+</style>

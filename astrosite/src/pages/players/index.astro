@@ -1,0 +1,67 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PlayerCard from '../../components/players/PlayerCard.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import { getAllPlayers, getEventsOfPlayer } from '../../code/players';
+import { getTotalWinsByPlayer, getEventsWonByPlayer } from '../../code/stats';
+
+function linkToPlayer(player: any): string {
+    return `/players/${player.id}`;
+}
+
+function yearsOfWins(player: any): number[] {
+	return getEventsWonByPlayer(player)
+		.map((event) => event.date)
+		.map(date => date.match(/\d{4}$/)?.[0] || '')
+		.map(s => parseInt(s))
+}
+
+function starts(player: any): number {
+	return getEventsOfPlayer(player.id).filter(event => !!event.results?.winners?.hector).length
+}
+
+const players = getAllPlayers().sort((a, b) => getTotalWinsByPlayer(b) - getTotalWinsByPlayer(a))
+
+---
+
+<Layout title="Players">
+    <main>
+		<div class="breadcrumbs">
+			<Breadcrumb title="Home" href="/" />
+		</div>
+        <h1><span class="text-gradient">Players</span></h1>
+        <ul role="list" class="link-card-grid">
+            {players.map((player) => {
+                return <PlayerCard name={player.name} image={player.image} href={linkToPlayer(player)} starts={starts(player)} wins={yearsOfWins(player)} />
+            })}
+        </ul>
+    </main>
+</Layout>
+
+<style>
+	main {
+		margin: auto;
+		padding: 1rem;
+		width: 900px;
+		max-width: calc(100% - 2rem);
+		color: white;
+		font-size: 20px;
+		line-height: 1.6;
+	}
+
+	h1 {
+		text-transform: uppercase;
+		font-size: 4rem;
+		font-weight: 700;
+		line-height: 1;
+		text-align: center;
+		margin-bottom: 1em;
+	}
+
+	.link-card-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
+		gap: 2rem;
+		padding: 0;
+	}
+</style>

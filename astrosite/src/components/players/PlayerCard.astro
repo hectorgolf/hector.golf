@@ -1,0 +1,88 @@
+---
+interface Props {
+	name: { first: string; last: string };
+	image?: string;
+	href: string;
+	starts: number;
+	wins: number[];
+}
+
+const { name, image, href, starts, wins } = Astro.props;
+
+const fullname = `${name.first} ${name.last}`;
+
+let winsText = wins.length === 1 ? "1 win" : `${wins.length} wins`;
+if (wins.length > 0) {
+	winsText = `${winsText}: ${wins.sort().join(", ")}`;
+}
+
+const startsText = starts === 1 ? "1 start" : `${starts} starts`;
+
+---
+
+<li class="link-player">
+	<a href={href}>
+		{image ? <img src={image} title={fullname}/><br/> : ""}
+		<span class="title">{fullname}</span>
+		<span class="starts">{startsText}</span>, <span class="wins">{winsText}</span>
+	</a>
+</li>
+
+<style>
+	.link-player {
+		list-style: none;
+		display: flex;
+		padding: 1px;
+		max-width: 600px;
+		background-color: #23262d;
+		background-image: none;
+		background-size: 400%;
+		border-radius: 7px;
+		background-position: 100%;
+		transition: background-position 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+	}
+	.link-player > a {
+		width: 100%;
+		text-decoration: none;
+		line-height: 1.4;
+		padding: calc(1.5rem - 1px);
+		border-radius: 8px;
+		color: white;
+		background-color: #23262d;
+		opacity: 0.8;
+	}
+	.link-player img {
+		max-width: calc(100% - 0rem);
+		max-height: 200px;
+		border-radius: 2px;
+	}
+	.link-player .title {
+		display: block;
+		font-size: 1.25rem;
+	}
+	.link-player .starts {
+		display: inline;
+		font-size: 1.0rem;
+	}
+	.link-player .wins {
+		display: inline;
+		font-size: 1.0rem;
+	}
+	h2 {
+		margin: 0;
+		font-size: 1.25rem;
+		transition: color 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+	p {
+		margin-top: 0.5rem;
+		margin-bottom: 0;
+	}
+	.link-player:is(:hover, :focus-within) {
+		background-position: 0;
+		background-image: var(--accent-gradient);
+	}
+	.link-player:is(:hover, :focus-within) h2 {
+		color: rgb(var(--accent-light));
+	}
+</style>
