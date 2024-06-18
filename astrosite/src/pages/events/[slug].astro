@@ -2,7 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import CourseCard from '../../components/courses/CourseCard.astro';
-import { type Event } from '../../schemas/events';
+import { type Event, type HectorEvent } from '../../schemas/events';
 import { type Course } from '../../schemas/courses';
 import { type Player } from '../../schemas/players';
 import { getAllEventIds, getCoursesOfEvent, getEventById } from '../../code/events';
@@ -24,11 +24,11 @@ event = event!
 
 const eventCourses: Array<Course> = getCoursesOfEvent(event.id);
 
-const hectorWinners: Array<Player> = (event.results?.winners.hector || [])
+const hectorWinners: Array<Player> = ((event as HectorEvent).results?.winners.hector || [])
     .map(id => getPlayerById(id))
     .filter(p => !!p) as Array<Player>;
 
-const victorWinners: Array<Player> = (event.results?.winners.victor || [])
+const victorWinners: Array<Player> = ((event as HectorEvent).results?.winners.victor || [])
     .map(id => getPlayerById(id as string) as Player)
     .filter(p => !!p) as Array<Player>;
 
@@ -57,11 +57,11 @@ const victorWinners: Array<Player> = (event.results?.winners.victor || [])
             </div>
         )}
 
-        {event.results?.teams && (
+        {(event as HectorEvent).results?.teams && (
             <div class="field">
                 <h2>Field</h2>
                 <ul>
-                    {event.results.teams.map(team => {
+                    {(event as HectorEvent).results?.teams?.map(team => {
                         return (
                             <li>
                                 {team.players.map(id => getPlayerById(id)).filter(p => !!p).map((player, index) => {

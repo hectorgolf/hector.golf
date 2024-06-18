@@ -1,0 +1,185 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Breadcrumb from '../../../components/Breadcrumb.astro';
+import SingleEliminationBracketV2 from '../../../components/events/SingleEliminationBracketV2.astro';
+import { type MatchplayEvent } from '../../../schemas/events';
+import { type Player } from '../../../schemas/players';
+import { getAllEventIds, getEventById } from '../../../code/events';
+import { getPlayerName, getPlayerById } from '../../../code/players';
+
+
+export function getStaticPaths() {
+    return getAllEventIds().map(id => getEventById(id)).filter(e => e?.format === 'matchplay').map((event) => {
+        return { params: { slug: event?.id } };
+    });
+}
+
+const { slug } = Astro.params;
+let event: MatchplayEvent|undefined = slug ? (getEventById(slug) as MatchplayEvent) : undefined;
+if (!event) {
+    Astro.response.status = 404;
+}
+event = event!
+
+const field: Array<Player> = event.results?.participants
+    .map(id => getPlayerById(id))
+    .filter(p => !!p)
+    .sort((p1, p2) => p1!.name.last.localeCompare(p2!.name.last)) as Array<Player> || []
+
+---
+<Layout title={event.name}>
+    <main>
+		<div class="breadcrumbs">
+			<Breadcrumb title="Home" href="/" />
+			<Breadcrumb title="Events" href="/events" />
+			<!-- <Breadcrumb title="Matchplay" href="/events/matchplay" /> -->
+		</div>
+        <h1><span class="text-gradient">{event.name}</span></h1>
+        <div class="event-details">
+            <div class="event-location">{event.location}</div>
+            <div class="event-date">{event.date}</div>
+        </div>
+        {event.hero_image ? <img src={event.hero_image} title={event.name}/><br/> : ""}
+        {event.description ? (<p>{event.description}</p>) : ""}
+
+        {event.results?.participants && (
+            <div class="field">
+                <h2>Field</h2>
+                <ul>
+                    {field.map(player => {
+                        return (
+                            <li>
+                                <a href={`/players/${player!.id}`}>{getPlayerName(player!)}</a>
+                            </li>
+                        )
+                    })}
+                </ul>
+            </div>
+        )}
+
+        {(event.results?.winners?.matchplay && getPlayerById(event.results!.winners?.matchplay)) && (
+            <div class="results">
+                <h2>Champion</h2>
+                {[getPlayerById(event.results!.winners?.matchplay)].filter(p => !!p).map((player) => {
+                    return (
+                        <a href={`/players/${player!.id}`}>{getPlayerName(player!)}</a>
+                    )
+                })}
+            </div>
+        )}
+
+        {(event.results?.bracket && (
+            <div class="bracket">
+                <h2>Tournament Bracket</h2>
+                <SingleEliminationBracketV2 event={event}/>
+            </div>
+        ))}
+    </main>
+</Layout>
+
+<style>
+    pre {
+        max-width: calc(100% - 2rem);
+        overflow: scroll;
+    }
+
+    main {
+		margin: auto;
+		padding: 1rem;
+		width: 900px;
+		max-width: calc(100% - 2rem);
+		color: white;
+		font-size: 20px;
+		line-height: 1.6;
+	}
+
+    h1 {
+		text-transform: uppercase;
+		font-size: 4rem;
+		font-weight: 700;
+		line-height: 1;
+		text-align: left;
+		margin-bottom: 1em;
+	}
+
+    h2 {
+        margin-block-start: 1em;
+        margin-block-end: 0.5em;
+    }
+
+    .event-details {
+        font-weight: bold;
+    }
+
+	.link-card-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
+		gap: 2rem;
+		padding: 0;
+	}
+
+    .hero {
+        display: flex;
+        width: calc(100%);
+        max-height: 300px;
+    }
+    .hero img {
+        width: calc(100%);
+    }
+
+    .description {
+        width: calc(100%);
+    }
+    .description img {
+        width: calc(100%);
+    }
+
+    .holes {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .holes .hole {
+        margin: 10px;
+        width: calc(33% - 20px);
+        text-align: center;
+    }
+
+    .holes a, .field a, .results a {
+        color: #fff;
+        text-decoration: none;
+    }
+
+    .holes .hole img {
+        min-width: 80px;
+        height: 150px;
+    }
+
+    .field ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .results .victor .tied {
+        font-style: italic;
+    }
+
+    .results h3 {
+        margin-bottom: 0.25em;
+    }
+
+    @media only screen and (max-width: 500px) {
+        main {
+            font-size: 16px;
+            padding: 0.5rem;
+        }
+
+        h1 {
+		    font-size: 2.25rem;
+            margin-top: 40px;
+        }
+    }
+
+</style>

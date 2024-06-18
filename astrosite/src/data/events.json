@@ -2,14 +2,83 @@
     {
         "id": "HECTOR2024",
         "name": "Hector Trophée 2024",
+        "format": "hector",
         "location": "La Finca Golf, Spain",
         "date": "September 25-28, 2024",
         "courses": [ "lafinca", "villamartin" ],
         "description": "The world's best amateur golfers will once again face off with each other in Hector Trophée 2024. The tournament will be played at La Finca and Villamartin. The tournament will be played in the classic 4-day stroke play format and the proud winners will be awarded with the prestigious Hector Trophée."
     },
     {
+        "id": "HECTORMATCHPLAY2024",
+        "name": "Hector Matchplay 2024",
+        "format": "matchplay",
+        "location": "Finland",
+        "date": "2024",
+        "description": "16 of the world's best amateur golfers face each other in a sequence of grueling head-to-head battles to the lip-out bogey. This matchplay tournament format uses a single elimination bracket, making the stakes high from the very start.",
+        "results": {
+            "participants": [
+                "lasse-koskela",
+                "martin-svedholm",
+                "eero-halmetoja",
+                "harri-vainio",
+                "jaakko-saarinen",
+                "janne-valtakari",
+                "jussi-allonen",
+                "juuso-pihamaa",
+                "mikko-oesch",
+                "miso-lith",
+                "olli-andersson",
+                "sami-heikkinen",
+                "simo-liukkonen",
+                "timo-lukumaa",
+                "toni-marttila",
+                "ossi-laukkanen"
+            ],
+            "winners": {
+            },
+            "bracket": [
+                {
+                    "round": 1,
+                    "matches": [
+                        { "id": "M01", "leftSource": null, "rightSource": null, "left": "simo-liukkonen", "right": "janne-valtakari", "score": null, "winner": null },
+                        { "id": "M02", "leftSource": null, "rightSource": null, "left": "miso-lith", "right": "mikko-oesch", "score": null, "winner": null },
+                        { "id": "M03", "leftSource": null, "rightSource": null, "left": "harri-vainio", "right": "sami-heikkinen", "score": null, "winner": null },
+                        { "id": "M04", "leftSource": null, "rightSource": null, "left": "olli-andersson", "right": "juuso-pihamaa", "score": null, "winner": null },
+                        { "id": "M05", "leftSource": null, "rightSource": null, "left": "jussi-allonen", "right": "jaakko-saarinen", "score": null, "winner": null },
+                        { "id": "M06", "leftSource": null, "rightSource": null, "left": "eero-halmetoja", "right": "timo-lukumaa", "score": null, "winner": null },
+                        { "id": "M07", "leftSource": null, "rightSource": null, "left": "toni-marttila", "right": "martin-svedholm", "score": null, "winner": null },
+                        { "id": "M08", "leftSource": null, "rightSource": null, "left": "lasse-koskela", "right": "ossi-laukkanen", "score": null, "winner": null }
+                    ]
+                },
+                {
+                    "round": 2,
+                    "matches": [
+                        { "id": "M09", "leftSource": "M01", "rightSource": "M02", "left": null, "right": null, "score": null, "winner": null },
+                        { "id": "M10", "leftSource": "M03", "rightSource": "M04", "left": null, "right": null, "score": null, "winner": null },
+                        { "id": "M11", "leftSource": "M05", "rightSource": "M06", "left": null, "right": null, "score": null, "winner": null },
+                        { "id": "M12", "leftSource": "M07", "rightSource": "M08", "left": null, "right": null, "score": null, "winner": null }
+                    ]
+                },
+                {
+                    "round": 3,
+                    "matches": [
+                        { "id": "M13", "leftSource": "M09", "rightSource": "M10", "left": null, "right": null, "score": null, "winner": null },
+                        { "id": "M14", "leftSource": "M11", "rightSource": "M12", "left": null, "right": null, "score": null, "winner": null }
+                    ]
+                },
+                {
+                    "round": 4,
+                    "matches": [
+                        { "id": "M15", "leftSource": "M13", "rightSource": "M14", "left": null, "right": null, "score": null, "winner": null }
+                    ]
+                }
+            ]
+        }
+    },
+    {
         "id": "HECTOR2023",
         "name": "Hector Trophée 2023",
+        "format": "hector",
         "location": "Diamond Country Club, Austria",
         "date": "September 23-26, 2023",
         "courses": [ "adamstal", "diamondcc-championship", "diamondcc-country", "diamondcc-park" ],
@@ -37,6 +106,7 @@
         "ignore": true,
         "id": "_FINNKAMPEN2022",
         "name": "Finnkampen 2022",
+        "format": "finnkampen",
         "location": "Kurk Golf, Finland",
         "date": "October 22, 2022",
         "courses": ["kurk-golf"],
@@ -60,6 +130,7 @@
     {
         "id": "HECTOR2022",
         "name": "Hector Trophée 2022",
+        "format": "hector",
         "location": "Quellness Golf Resort, Germany",
         "date": "September 14-17, 2022",
         "courses": ["quellness-porsche", "quellness-beckenbauer"],
@@ -89,6 +160,7 @@
         "ignore": true,
         "id": "_FINNKAMPEN2021",
         "name": "Finnkampen 2021",
+        "format": "finnkampen",
         "location": "?",
         "date": "October 23, 2022",
         "courses": [""],
@@ -101,6 +173,7 @@
     {
         "id": "HECTOR2021",
         "name": "Hector Trophée 2021",
+        "format": "hector",
         "location": "Penati, Slovakia",
         "date": "September 1-4, 2021",
         "courses": ["penati-legend", "penati-heritage"],
@@ -127,6 +200,7 @@
     {
         "id": "HECTOR2020",
         "name": "Hector Trophée 2020",
+        "format": "hector",
         "location": "Tahko Golf, Finland",
         "date": "September 10-13, 2020",
         "courses": ["tahko-new-course", "tahko-old-course"],
@@ -154,6 +228,7 @@
     {
         "id": "HECTOR2019",
         "name": "Hector Trophée VI",
+        "format": "hector",
         "location": "Konopiste, Chech Republic",
         "date": "September 20-22, 2019",
         "courses": ["konopiste"],
@@ -182,6 +257,7 @@
     {
         "id": "HECTOR2018",
         "name": "Hector Trophée V",
+        "format": "hector",
         "location": "Sand Valley, Poland",
         "date": "August 3-5, 2018",
         "courses": ["sandvalley"],
@@ -205,6 +281,7 @@
     {
         "id": "HECTOR2017",
         "name": "Hector Trophée IV",
+        "format": "hector",
         "location": "Pickala Golf, Finland",
         "date": "July 28, 2017",
         "courses": ["pickala-forest"],
@@ -228,6 +305,7 @@
     {
         "id": "HECTOR2016",
         "name": "Hector Trophée III",
+        "format": "hector",
         "location": "Kurk Golf, Finland",
         "date": "July 21, 2016",
         "courses": ["kurk-golf"],
@@ -251,6 +329,7 @@
     {
         "id": "HECTOR2015",
         "name": "Hector Trophée II",
+        "format": "hector",
         "location": "Pickala Golf, Finland",
         "date": "September 12, 2015",
         "courses": ["pickala-seaside"],
@@ -271,6 +350,7 @@
     {
         "id": "HECTOR2014",
         "name": "Hector Trophée I",
+        "format": "hector",
         "location": "Pickala Golf, Finland",
         "date": "August 22, 2014",
         "courses": ["pickala-forest"],

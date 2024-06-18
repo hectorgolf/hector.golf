@@ -1,4 +1,4 @@
-import { type Event } from '../schemas/events';
+import { type Event, type HectorEvent, type MatchplayEvent, type FinnkampenEvent } from '../schemas/events';
 import { getAllEvents } from './events';
 
 import playersData from '../data/players.json';
@@ -35,10 +35,20 @@ export function getPlayerName(player: Player|string): string {
     return `${player.name.first} ${player.name.last}`;
 }
 
-export function getPlayersAtEvent(event: Event): Array<Player> {
-    const teams = event.results?.teams || []
-    const players = teams.flatMap(team => team.players.map(id => getPlayerById(id)))
-    return players.filter(p => !!p) as Array<Player>;
+export function getPlayersAtEvent(event: any): Array<Player> {
+    if (event.format === 'hector') {
+        const teams = (event as HectorEvent).results?.teams || []
+        const players = teams.flatMap(team => team.players.map(id => getPlayerById(id)))
+        return players.filter(p => !!p) as Array<Player>;
+    } else if (event.format === 'matchplay') {
+        const players = (event as MatchplayEvent).results?.participants?.map(id => getPlayerById(id)) || []
+        return players.filter(p => !!p) as Array<Player>;
+    } else if (event.format === 'finnkampen') {
+        const teams = (event as FinnkampenEvent).results?.teams || []
+        const players = teams.flatMap(team => team.players.map(id => getPlayerById(id)))
+        return players.filter(p => !!p) as Array<Player>;
+    }
+    return []
 }
 
 export function getEventsOfPlayer(playerId: string): Array<Event> {

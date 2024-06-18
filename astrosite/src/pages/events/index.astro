@@ -2,11 +2,15 @@
 import Layout from '../../layouts/Layout.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import EventCard from '../../components/events/EventCard.astro';
+import MatchplayEventCard from '../../components/events/MatchplayEventCard.astro';
 import Highlight from '../../components/Highlight.astro';
 
 import { getAllEvents } from '../../code/events';
 
 function linkToEvent(event: any) {
+	if (event.format === 'matchplay') {
+		return `/events/matchplay/${event.id}`;
+	}
     return `/events/${event.id}`;
 }
 
@@ -24,7 +28,11 @@ function linkToEvent(event: any) {
         </Highlight>
 		<ul role="list" class="link-card-grid">
 			{getAllEvents().map((event) => {
-                return <EventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
+				if (event.format === 'matchplay') {
+					return <MatchplayEventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
+				} else {
+					return <EventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
+				}
             })}
 		</ul>
 	</main>

@@ -1,0 +1,62 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Breadcrumb from '../../../components/Breadcrumb.astro';
+import MatchplayEventCard from '../../../components/events/MatchplayEventCard.astro';
+/* import Highlight from '../../../components/Highlight.astro'; */
+
+import { getAllEvents } from '../../../code/events';
+
+const linkToEvent = (event: any): string =>`/events/matchplay/${event.id}`;
+
+const matchplayEvents = getAllEvents().filter(e => e.format === 'matchplay')
+
+---
+
+<Layout title="Hector Matchplay">
+	<main>
+		<div class="breadcrumbs">
+			<Breadcrumb title="Home" href="/" />
+			<Breadcrumb title="Events" href="/events" />
+		</div>
+		<h1><span class="text-gradient">Matchplay Events</span></h1>
+		<!--
+			<Highlight>
+				<p><strong>CURRENT:</strong></p>
+				<p></p><strong><a href="/events/matchplay/2024" style="color: white">Hector Matchplay 2024</a></strong></p>
+			</Highlight>
+		-->
+		<ul role="list" class="link-card-grid">
+			{matchplayEvents.map((event) => {
+                return <MatchplayEventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
+            })}
+		</ul>
+	</main>
+</Layout>
+
+<style>
+	main {
+		margin: auto;
+		padding: 1rem;
+		width: 900px;
+		max-width: calc(100% - 2rem);
+		color: white;
+		font-size: 20px;
+		line-height: 1.6;
+	}
+
+	h1 {
+		text-transform: uppercase;
+		font-size: 4rem;
+		font-weight: 700;
+		line-height: 1;
+		text-align: center;
+		margin-bottom: 1em;
+	}
+
+	.link-card-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
+		gap: 2rem;
+		padding: 0;
+	}
+</style>

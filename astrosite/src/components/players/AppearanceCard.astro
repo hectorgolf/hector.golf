@@ -1,7 +1,7 @@
 ---
 
 import { type Player } from '../../schemas/players';
-import { type Event } from '../../schemas/events';
+import { type Event, type HectorEvent } from '../../schemas/events';
 
 interface Props {
 	player: Player;
@@ -10,8 +10,8 @@ interface Props {
 
 const { player, event } = Astro.props;
 
-const wonHector = !!event.results?.winners?.hector?.includes(player.id)
-const wonVictor = !!event.results?.winners?.victor?.includes(player.id)
+const wonHector = event.format === 'hector' && !!(event as HectorEvent).results?.winners?.hector?.includes(player.id)
+const wonVictor = event.format === 'hector' && !!(event as HectorEvent).results?.winners?.victor?.includes(player.id)
 
 ---
 

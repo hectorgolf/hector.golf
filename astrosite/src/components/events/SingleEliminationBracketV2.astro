@@ -1,0 +1,204 @@
+---
+import { getPlayerName } from '../../code/players';
+import { type MatchplayEvent } from '../../schemas/events';
+
+interface Props {
+	event: MatchplayEvent;
+}
+
+const { event } = Astro.props;
+const tournament = event as MatchplayEvent;
+
+const rounds = (tournament.results?.bracket || [])
+
+const isPlayerId = (value: string): boolean => {
+    return !!tournament.results?.participants?.includes(value)
+}
+
+const connectors: Array<Array<string>> = []; // array of tuples (e.g. ["match-M01", "match-M09"]) representing connectors to be drawn
+rounds.forEach(round => {
+    round.matches.forEach((match) => {
+        if (match.leftSource) connectors.push([`match-${match.leftSource}`, `match-${match.id}`]);
+        if (match.rightSource) connectors.push([`match-${match.rightSource}`, `match-${match.id}`]);
+    })
+})
+
+---
+<div class="tournament-bracket">
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/leader-line/1.0.7/leader-line.min.js" integrity="sha512-0dNdzMjpT6pJdFGF1DwybFCfm3K/lzHhxaMXC/92J9/DZujHlqYFqmhTOAoD0o+LkeEsVK2ar/ESs7/Q2B6wJg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    {(rounds.map(round => {
+        const roundClasses = `round round-${round.round}`;
+        const content = (
+            <div class={roundClasses}>
+                <div class="round-outer-spacer">&nbsp;</div>
+                {(round.matches.map((match, index) => {
+                    const createPlayerLinkElement = (playerId: string): any => {
+                        const playerUrl = `/players/${playerId}`;
+                        return (<a href={playerUrl}>{getPlayerName(playerId)}</a>)
+                    }
+                    const matchLabelClasses = `match-score ${match.score ? 'finished' : 'pending'}`
+                    const matchLeftLabel = (match.left && isPlayerId(match.left)) ? createPlayerLinkElement(match.left) : `Winner of ${match.leftSource}`;
+                    const stateClassLeft = (match.left && isPlayerId(match.left)) ? (match.left === match.winner ? 'winner' : (match.score ? 'loser' : 'pending')) : `undetermined`;
+                    const stateClassRight = (match.right && isPlayerId(match.right)) ? (match.right === match.winner ? 'winner' : (match.score ? 'loser' : 'pending')) : `undetermined`;
+                    const matchRightLabel = (match.right && isPlayerId(match.right)) ? createPlayerLinkElement(match.right) : `Winner of ${match.rightSource}`;
+                    const gameTopClasses = `game-top ${stateClassLeft}`
+                    const gameBottomClasses = `game-bottom ${stateClassRight}`
+                    const matchIsReadyToPlay = stateClassLeft === 'pending' && stateClassRight === 'pending';
+                    const gameClasses = `game ${matchIsReadyToPlay ? 'ready-to-play' : ''}`.trim();
+                    return (
+                        <>
+                            {index > 0 && (<div class="round-inner-spacer">&nbsp;</div>)}
+                            <div class={gameClasses} id={`match-${match.id}`}>
+                                <div class={gameTopClasses}>{matchLeftLabel}</div>
+                                <div class="match-inner-spacer">
+                                    <span class={matchLabelClasses}>{match.score ? match.score : ''}</span>
+                                    <span class="match-id">{match.id}</span>
+                                </div>
+                                <div class={gameBottomClasses}>{matchRightLabel}</div>
+                            </div>
+                            <script is:inline define:vars={{ connectorsFromFrontMatter: connectors }}>
+                                addEventListener("DOMContentLoaded", (_event) => {
+                                    connectorsFromFrontMatter.forEach(function(tuple) {
+                                        const start = document.getElementById(tuple[0]);
+                                        const end = document.getElementById(tuple[1]);
+                                        const options = {
+                                            path: 'grid', color: 'white', size: 1,
+                                            startSocket: 'right', endSocket: 'left',
+                                            startPlug: 'behind', endPlug: 'behind'
+                                        };
+                                        new LeaderLine(start, end, options);
+                                    })
+                                });
+                            </script>
+                        </>
+                    )
+                }))}
+                <div class="round-outer-spacer">&nbsp;</div>
+            </div>
+        )
+        return content
+    }))}
+</div>
+
+<style>
+    .tournament-bracket {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: stretch;  /* make "rounds" stretch to full height of this container */
+        row-gap: 0; /* we don't want any space between rows (although there's only one row so not strictly necessary) */
+        column-gap: 60px;
+        padding-right: 10px;
+        width: 990px;  /* 4 rounds (200px each) plus 3 gaps (60px each) plus 10px of right padding */
+    }
+
+    .tournament-bracket {
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .tournament-bracket .round {
+        display:flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: stretch; /* make the items stretch to the full width of the round column */
+        width: 200px;
+        list-style: none;
+        padding: 0;
+        white-space: nowrap;
+    }
+
+    .tournament-bracket .match-inner-spacer {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    .tournament-bracket .match-inner-spacer .match-id {
+        color: #888888;
+        font-size: 0.75em;
+        padding-right: 5px;
+    }
+
+    .tournament-bracket .round.round-1 .round-inner-spacer { height: 90px; }
+    .tournament-bracket .round.round-2 .round-inner-spacer { height: 270px; }
+    .tournament-bracket .round.round-3 .round-inner-spacer { height: 630px; }
+    .tournament-bracket .round.round-4 .round-inner-spacer { height: 0px; }
+
+    .tournament-bracket .round.round-1 .round-outer-spacer { height: 0px; }
+    .tournament-bracket .round.round-2 .round-outer-spacer { height: 90px; }
+    .tournament-bracket .round.round-3 .round-outer-spacer { height: 270px; }
+    .tournament-bracket .round.round-4 .round-outer-spacer { height: 630px; }
+
+    .tournament-bracket .round .game {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: flex-start;
+        min-width: 150px;
+        height: 88px;
+        border: 1px solid white;
+        background-color: black;
+    }
+    .tournament-bracket .round .game div {
+        margin-left: 4px;
+        margin-right: 4px;
+        margin-top: 1px;
+        margin-bottom: 1px;
+    }
+
+    .tournament-bracket .game a {
+        text-decoration: none;
+    }
+    .tournament-bracket .game .match-score.finished {
+        font-weight: bold;
+        color: gold;
+    }
+    .tournament-bracket .game .match-score.pending {
+        font-weight: normal;
+        color: white;
+    }
+    .tournament-bracket .game .winner,
+    .tournament-bracket .game .winner a {
+        font-weight:bold;
+        color: gold;
+    }
+    .tournament-bracket .game .loser,
+    .tournament-bracket .game .loser a {
+        font-weight:normal;
+        color: white;
+    }
+    .tournament-bracket .game.ready-to-play .game-top,
+    .tournament-bracket .game.ready-to-play .game-top a,
+    .tournament-bracket .game.ready-to-play .game-bottom,
+    .tournament-bracket .game.ready-to-play .game-bottom a {
+        color: #ff8888;
+    }
+
+
+    .tournament-bracket .game span {
+        float:right;
+        margin-right:5px;
+    }
+
+    .tournament-bracket .undetermined {
+        color: #888888;
+        font-size: 0.8em;
+    }
+
+    .tournament-bracket .game-spacer {
+        border-right:1px solid #aaa;
+        min-height:40px;
+        display: flex;
+        align-items: center;
+        color: #888888;
+        font-size: 0.75em;
+        text-align: right;
+    }
+  </style>

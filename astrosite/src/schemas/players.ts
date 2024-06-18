@@ -15,12 +15,3 @@ export const schema = z.object({
 export type Player = z.infer<typeof schema>;
 
 export default schema;
-
-
-let x: Player = {
-    id: "daniel-hylton",
-    name: { first: "Daniel", last: "Hylton" },
-    contact: {
-        phone: "+358403424395"
-    }
-}

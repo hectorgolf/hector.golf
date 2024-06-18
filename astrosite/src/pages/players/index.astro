@@ -4,6 +4,7 @@ import PlayerCard from '../../components/players/PlayerCard.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import { getAllPlayers, getEventsOfPlayer } from '../../code/players';
 import { getTotalWinsByPlayer, getEventsWonByPlayer } from '../../code/stats';
+import type { HectorEvent, MatchplayEvent, FinnkampenEvent } from '../../schemas/events';
 
 function linkToPlayer(player: any): string {
     return `/players/${player.id}`;
@@ -17,7 +18,17 @@ function yearsOfWins(player: any): number[] {
 }
 
 function starts(player: any): number {
-	return getEventsOfPlayer(player.id).filter(event => !!event.results?.winners?.hector).length
+	const hasWinner = (event: any): boolean => {
+		if (event.format === 'hector') {
+			return !!(event as HectorEvent).results?.winners?.hector
+		} else if (event.format === 'finnkampen') {
+			return !!(event as FinnkampenEvent).results?.winners?.finnkampen
+		} else if (event.format === 'matchplay') {
+			return !!(event as MatchplayEvent).results?.winners?.matchplay
+		}
+		return false
+	}
+	return getEventsOfPlayer(player.id).filter(hasWinner).length
 }
 
 const players = getAllPlayers().sort((a, b) => getTotalWinsByPlayer(b) - getTotalWinsByPlayer(a))
