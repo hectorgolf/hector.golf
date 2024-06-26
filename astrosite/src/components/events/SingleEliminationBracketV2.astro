@@ -36,7 +36,7 @@ rounds.forEach(round => {
                         const playerUrl = `/players/${playerId}`;
                         return (<a href={playerUrl}>{getPlayerName(playerId)}</a>)
                     }
-                    const matchLabelClasses = `match-score ${match.score ? 'finished' : 'pending'}`
+                    const matchLabelClasses = `match-score ${match.score ? (match.winner ? 'finished' : 'scheduled') : 'pending'}`
                     const matchLeftLabel = (match.left && isPlayerId(match.left)) ? createPlayerLinkElement(match.left) : `Winner of ${match.leftSource}`;
                     const stateClassLeft = (match.left && isPlayerId(match.left)) ? (match.left === match.winner ? 'winner' : (match.score ? 'loser' : 'pending')) : `undetermined`;
                     const stateClassRight = (match.right && isPlayerId(match.right)) ? (match.right === match.winner ? 'winner' : (match.score ? 'loser' : 'pending')) : `undetermined`;
@@ -159,6 +159,11 @@ rounds.forEach(round => {
     .tournament-bracket .game .match-score.finished {
         font-weight: bold;
         color: gold;
+    }
+    .tournament-bracket .game .match-score.scheduled {
+        font-weight: normal;
+        color: #888888;
+        font-size: 0.75em;
     }
     .tournament-bracket .game .match-score.pending {
         font-weight: normal;
