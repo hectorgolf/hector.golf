@@ -47,7 +47,7 @@
                         { "id": "M05", "leftSource": null, "rightSource": null, "left": "jussi-allonen", "right": "jaakko-saarinen", "score": null, "winner": null },
                         { "id": "M06", "leftSource": null, "rightSource": null, "left": "eero-halmetoja", "right": "timo-lukumaa", "score": "2024-07-10", "winner": null },
                         { "id": "M07", "leftSource": null, "rightSource": null, "left": "toni-marttila", "right": "martin-svedholm", "score": "AS", "winner": "martin-svedholm" },
-                        { "id": "M08", "leftSource": null, "rightSource": null, "left": "lasse-koskela", "right": "ossi-laukkanen", "score": "2024-07-02", "winner": null }
+                        { "id": "M08", "leftSource": null, "rightSource": null, "left": "lasse-koskela", "right": "ossi-laukkanen", "score": "8&7", "winner": "ossi-laukkanen" }
                     ]
                 },
                 {
@@ -56,7 +56,7 @@
                         { "id": "M09", "leftSource": "M01", "rightSource": "M02", "left": "simo-liukkonen", "right": "mikko-oesch", "score": null, "winner": null },
                         { "id": "M10", "leftSource": "M03", "rightSource": "M04", "left": null, "right": null, "score": null, "winner": null },
                         { "id": "M11", "leftSource": "M05", "rightSource": "M06", "left": null, "right": null, "score": null, "winner": null },
-                        { "id": "M12", "leftSource": "M07", "rightSource": "M08", "left": "martin-svedholm", "right": null, "score": null, "winner": null }
+                        { "id": "M12", "leftSource": "M07", "rightSource": "M08", "left": "martin-svedholm", "right": "ossi-laukkanen", "score": null, "winner": null }
                     ]
                 },
                 {
