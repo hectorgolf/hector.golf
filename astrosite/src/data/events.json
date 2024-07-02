@@ -42,7 +42,7 @@
                     "matches": [
                         { "id": "M01", "leftSource": null, "rightSource": null, "left": "simo-liukkonen", "right": "janne-valtakari", "score": "1UP", "winner": "simo-liukkonen" },
                         { "id": "M02", "leftSource": null, "rightSource": null, "left": "miso-lith", "right": "mikko-oesch", "score": "4&2", "winner": "mikko-oesch" },
-                        { "id": "M03", "leftSource": null, "rightSource": null, "left": "harri-vainio", "right": "sami-heikkinen", "score": "2024-07-02", "winner": null },
+                        { "id": "M03", "leftSource": null, "rightSource": null, "left": "harri-vainio", "right": "sami-heikkinen", "score": "7&6", "winner": "sami-heikkinen" },
                         { "id": "M04", "leftSource": null, "rightSource": null, "left": "olli-andersson", "right": "juuso-pihamaa", "score": "2024-07-02", "winner": null },
                         { "id": "M05", "leftSource": null, "rightSource": null, "left": "jussi-allonen", "right": "jaakko-saarinen", "score": null, "winner": null },
                         { "id": "M06", "leftSource": null, "rightSource": null, "left": "eero-halmetoja", "right": "timo-lukumaa", "score": "2024-07-10", "winner": null },
@@ -54,7 +54,7 @@
                     "round": 2,
                     "matches": [
                         { "id": "M09", "leftSource": "M01", "rightSource": "M02", "left": "simo-liukkonen", "right": "mikko-oesch", "score": null, "winner": null },
-                        { "id": "M10", "leftSource": "M03", "rightSource": "M04", "left": null, "right": null, "score": null, "winner": null },
+                        { "id": "M10", "leftSource": "M03", "rightSource": "M04", "left": "sami-heikkinen", "right": null, "score": null, "winner": null },
                         { "id": "M11", "leftSource": "M05", "rightSource": "M06", "left": null, "right": null, "score": null, "winner": null },
                         { "id": "M12", "leftSource": "M07", "rightSource": "M08", "left": "martin-svedholm", "right": "ossi-laukkanen", "score": null, "winner": null }
                     ]
