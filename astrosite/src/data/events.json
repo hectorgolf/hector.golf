@@ -45,7 +45,7 @@
                         { "id": "M03", "leftSource": null, "rightSource": null, "left": "harri-vainio", "right": "sami-heikkinen", "score": "7&6", "winner": "sami-heikkinen" },
                         { "id": "M04", "leftSource": null, "rightSource": null, "left": "olli-andersson", "right": "juuso-pihamaa", "score": "AS", "winner": "olli-andersson" },
                         { "id": "M05", "leftSource": null, "rightSource": null, "left": "jussi-allonen", "right": "jaakko-saarinen", "score": null, "winner": null },
-                        { "id": "M06", "leftSource": null, "rightSource": null, "left": "eero-halmetoja", "right": "timo-lukumaa", "score": "2024-07-10", "winner": null },
+                        { "id": "M06", "leftSource": null, "rightSource": null, "left": "eero-halmetoja", "right": "timo-lukumaa", "score": "2024-07-08", "winner": null },
                         { "id": "M07", "leftSource": null, "rightSource": null, "left": "toni-marttila", "right": "martin-svedholm", "score": "AS", "winner": "martin-svedholm" },
                         { "id": "M08", "leftSource": null, "rightSource": null, "left": "lasse-koskela", "right": "ossi-laukkanen", "score": "8&7", "winner": "ossi-laukkanen" }
                     ]
