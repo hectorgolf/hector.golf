@@ -44,7 +44,7 @@
                         { "id": "M02", "leftSource": null, "rightSource": null, "left": "miso-lith", "right": "mikko-oesch", "score": "4&2", "winner": "mikko-oesch" },
                         { "id": "M03", "leftSource": null, "rightSource": null, "left": "harri-vainio", "right": "sami-heikkinen", "score": "7&6", "winner": "sami-heikkinen" },
                         { "id": "M04", "leftSource": null, "rightSource": null, "left": "olli-andersson", "right": "juuso-pihamaa", "score": "AS", "winner": "olli-andersson" },
-                        { "id": "M05", "leftSource": null, "rightSource": null, "left": "jussi-allonen", "right": "jaakko-saarinen", "score": null, "winner": null },
+                        { "id": "M05", "leftSource": null, "rightSource": null, "left": "jussi-allonen", "right": "jaakko-saarinen", "score": "4&3", "winner": "jussi-allonen" },
                         { "id": "M06", "leftSource": null, "rightSource": null, "left": "eero-halmetoja", "right": "timo-lukumaa", "score": "4&2", "winner": "eero-halmetoja" },
                         { "id": "M07", "leftSource": null, "rightSource": null, "left": "toni-marttila", "right": "martin-svedholm", "score": "AS", "winner": "martin-svedholm" },
                         { "id": "M08", "leftSource": null, "rightSource": null, "left": "lasse-koskela", "right": "ossi-laukkanen", "score": "8&7", "winner": "ossi-laukkanen" }
@@ -55,7 +55,7 @@
                     "matches": [
                         { "id": "M09", "leftSource": "M01", "rightSource": "M02", "left": "simo-liukkonen", "right": "mikko-oesch", "score": "4&3", "winner": "simo-liukkonen" },
                         { "id": "M10", "leftSource": "M03", "rightSource": "M04", "left": "sami-heikkinen", "right": "olli-andersson", "score": "6&4", "winner": "sami-heikkinen" },
-                        { "id": "M11", "leftSource": "M05", "rightSource": "M06", "left": null, "right": "eero-halmetoja", "score": null, "winner": null },
+                        { "id": "M11", "leftSource": "M05", "rightSource": "M06", "left": "jussi-allonen", "right": "eero-halmetoja", "score": null, "winner": null },
                         { "id": "M12", "leftSource": "M07", "rightSource": "M08", "left": "martin-svedholm", "right": "ossi-laukkanen", "score": null, "winner": null }
                     ]
                 },
