@@ -56,14 +56,14 @@
                         { "id": "M09", "leftSource": "M01", "rightSource": "M02", "left": "simo-liukkonen", "right": "mikko-oesch", "score": "4&3", "winner": "simo-liukkonen" },
                         { "id": "M10", "leftSource": "M03", "rightSource": "M04", "left": "sami-heikkinen", "right": "olli-andersson", "score": "6&4", "winner": "sami-heikkinen" },
                         { "id": "M11", "leftSource": "M05", "rightSource": "M06", "left": "jussi-allonen", "right": "eero-halmetoja", "score": null, "winner": null },
-                        { "id": "M12", "leftSource": "M07", "rightSource": "M08", "left": "martin-svedholm", "right": "ossi-laukkanen", "score": null, "winner": null }
+                        { "id": "M12", "leftSource": "M07", "rightSource": "M08", "left": "martin-svedholm", "right": "ossi-laukkanen", "score": "1UP", "winner": "ossi-laukkanen" }
                     ]
                 },
                 {
                     "round": 3,
                     "matches": [
                         { "id": "M13", "leftSource": "M09", "rightSource": "M10", "left": "simo-liukkonen", "right": "sami-heikkinen", "score": null, "winner": null },
-                        { "id": "M14", "leftSource": "M11", "rightSource": "M12", "left": null, "right": null, "score": null, "winner": null }
+                        { "id": "M14", "leftSource": "M11", "rightSource": "M12", "left": null, "right": "ossi-laukkanen", "score": null, "winner": null }
                     ]
                 },
                 {
