@@ -62,14 +62,14 @@
                 {
                     "round": 3,
                     "matches": [
-                        { "id": "M13", "leftSource": "M09", "rightSource": "M10", "left": "simo-liukkonen", "right": "sami-heikkinen", "score": null, "winner": null },
+                        { "id": "M13", "leftSource": "M09", "rightSource": "M10", "left": "simo-liukkonen", "right": "sami-heikkinen", "score": "2UP", "winner": "sami-heikkinen" },
                         { "id": "M14", "leftSource": "M11", "rightSource": "M12", "left": "eero-halmetoja", "right": "ossi-laukkanen", "score": null, "winner": null }
                     ]
                 },
                 {
                     "round": 4,
                     "matches": [
-                        { "id": "M15", "leftSource": "M13", "rightSource": "M14", "left": null, "right": null, "score": null, "winner": null }
+                        { "id": "M15", "leftSource": "M13", "rightSource": "M14", "left": "sami-heikkinen", "right": null, "score": null, "winner": null }
                     ]
                 }
             ]
