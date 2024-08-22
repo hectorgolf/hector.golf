@@ -47,13 +47,15 @@ export const fetchClubs = async (): Promise<Array<TeetimeClub>> => {
         .sort((a: TeetimeClub, b: TeetimeClub) => a.name.localeCompare(b.name))
 }
 
-export const login = async (clubNumber: string, username: string, password: string): Promise<string> => {
+export const login = async (clubNumberOrAbbreviation: string, username: string, password: string): Promise<string> => {
+    const clubNumber = await resolveClubNumber(clubNumberOrAbbreviation);
     const payload = {
         clubNumber: clubNumber,
         username: username,
         password: MD5(password).toString(),
         authData: { trustCode: null }
     }
+    console.log(`Logging in with ${JSON.stringify(payload)}`)
     const response = await fetch('https://www.teetime.fi/backend/session', {
         method: 'POST',
         headers: standardRequestHeaders,
@@ -62,6 +64,8 @@ export const login = async (clubNumber: string, username: string, password: stri
     const data = await response.json();
     return data.token;
 }
+
+const roundToTenths = (num: number): number => Math.round(num * 10) / 10;
 
 export const fetchPlayer = async (token: string, clubNumber: string, firstName: string, lastName: string): Promise<TeetimePlayer|undefined> => {
     const url = ((): string => {
@@ -86,7 +90,7 @@ export const fetchPlayer = async (token: string, clubNumber: string, firstName: 
         }
         const player = data[0];
         const club = await fetchClub(player.club.number);
-        return { ...player, club: club, holes: undefined };
+        return { ...player, club: club, holes: undefined, handicap: roundToTenths(player.handicap) || 0 } as TeetimePlayer;
     } catch (err) {
         return undefined;
     }
@@ -111,12 +115,16 @@ console.log(`teetimeClubNumber: ${teetimeClubNumber}`);
 console.log(`teetimeUsername:   ${teetimeUsername}`);
 console.log(`teetimePassword:   ${teetimePassword?.replace(/./g, '*')}`);
 
-export const getPlayerHandicap = async (firstName: string, lastName: string, clubNameOrAbbreviation: string): Promise<number|undefined> => {
+export const withLogin = (callback: (token: string) => Promise<void>) => {
+    login(teetimeClubNumber, teetimeUsername, teetimePassword).then(token => callback(token))
+}
+
+export const getPlayerHandicap = async (firstName: string, lastName: string, clubNameOrAbbreviation: string, providedToken?: string): Promise<number|undefined> => {
     if (clubNameOrAbbreviation) {
         if (!!teetimeClubNumber && !!teetimeUsername && !!teetimePassword) {
             const clubNumber = await resolveClubNumber(clubNameOrAbbreviation);
             if (clubNumber) {
-                const token = await login(teetimeClubNumber, teetimeUsername, teetimePassword);
+                const token = providedToken || await login(teetimeClubNumber, teetimeUsername, teetimePassword);
                 return await fetchHandicap(token, clubNumber, firstName, lastName);
             }
         } else {

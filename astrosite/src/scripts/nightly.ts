@@ -1,7 +1,8 @@
 import { readFileSync } from 'fs'
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-import { getPlayerHandicap } from '../code/handicaps/teetime-api.ts';
+import { getPlayerHandicap, withLogin } from '../code/handicaps/teetime-api.ts';
 
 import playersData from '../data/players.json';
 
@@ -13,8 +14,10 @@ function getPlayerById(id: string): Player|undefined {
     return _record as Player
 }
 
-
-const pathToPlayersJson = join(__dirname, '../data/players.json');
+// Get the resolved path to this file and determine the directory from that
+// (__dirname is not available in ES6 modules)
+const __filename = fileURLToPath(import.meta.url);
+const pathToPlayersJson = join(dirname(__filename), '../data/players.json');
 
 type Player = {
     id: string,
@@ -32,22 +35,27 @@ type Player = {
 
 const playersJson = JSON.parse(readFileSync(pathToPlayersJson, 'utf-8').toString());
 console.log(`Attempting to update handicap data for ${playersJson.length} players...`)
-const playerListPromises = playersJson.map((player: any) => {
-    const playerObject = getPlayerById(player.id)
-    if (playerObject && playerObject.club) {
-        const oldHandicap = player.handicap; // Let's save the old handicap
-        return getPlayerHandicap(playerObject.name.first, playerObject.name.last, playerObject.club).then((newHandicap) => {
-            if (newHandicap && newHandicap !== oldHandicap) {
-                playerObject.handicap = newHandicap;
-            }
-            return playerObject
-        })
-    } else {
-        return Promise.resolve(playerObject)
-    }
+
+withLogin(async (token: string) => {
+    console.log(`Logged in with token: ${token}`)
+    const playerListPromises = playersJson.map((player: any) => {
+        const playerObject = getPlayerById(player.id)
+        if (playerObject && playerObject.club) {
+            const oldHandicap = player.handicap; // Let's save the old handicap
+            return getPlayerHandicap(playerObject.name.first, playerObject.name.last, playerObject.club, token).then((newHandicap) => {
+                if (newHandicap && newHandicap !== oldHandicap) {
+                    playerObject.handicap = newHandicap;
+                }
+                return playerObject
+            })
+        } else {
+            return Promise.resolve(playerObject)
+        }
+    })
+
+    Promise.all(playerListPromises).then((players) => {
+        console.log(`Updated ${players.length} players JSON:`)
+        console.log(JSON.stringify(players, null, 2))
+    })
 })
 
-Promise.all(playerListPromises).then((players) => {
-    console.log(`Updated ${players.length} players JSON:`)
-    console.log(JSON.stringify(players, null, 2))
-})
