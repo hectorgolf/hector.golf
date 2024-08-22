@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs'
+import { readFileSync, writeFileSync } from 'fs'
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -56,6 +56,7 @@ withLogin(async (token: string) => {
     Promise.all(playerListPromises).then((players) => {
         console.log(`Updated ${players.length} players JSON:`)
         console.log(JSON.stringify(players, null, 2))
+        writeFileSync(pathToPlayersJson, JSON.stringify(players, null, 2))
     })
 })
 
