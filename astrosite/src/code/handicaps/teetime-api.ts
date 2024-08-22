@@ -137,7 +137,6 @@ export const getPlayerHandicap = async (firstName: string, lastName: string, clu
 
 export const resolveClubNumber = async (clubNameOrNumber: string): Promise<string|undefined> => {
     const club = await fetchClub(clubNameOrNumber)
-    console.log(`resolved club number ${JSON.stringify(clubNameOrNumber)} into ${JSON.stringify(club)}`)
     return club?.number;
 }
 
