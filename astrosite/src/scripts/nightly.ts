@@ -1,9 +1,9 @@
 import { readFileSync } from 'fs'
 import { join } from 'path';
 
-import { getPlayerHandicap } from '../code/handicaps';
-import { getPlayerById } from '../code/players';
-import { type Player } from '../schemas/players';
+import { getPlayerHandicap } from '../code/handicaps.ts';
+import { getPlayerById } from '../code/players.ts';
+import { type Player } from '../schemas/players.ts';
 
 const pathToPlayersJson = join(__dirname, '../data/players.json');
 
