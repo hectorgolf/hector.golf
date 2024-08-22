@@ -100,12 +100,13 @@ export const fetchHandicap = async (token: string, clubNumber: string, firstName
     return undefined;
 }
 
-const isProd = import.meta.env.PROD;
-const teetimeClubNumber = import.meta.env.TEETIME_CLUB_NUMBER
-const teetimeUsername = import.meta.env.TEETIME_USERNAME
-const teetimePassword = import.meta.env.TEETIME_PASSWORD
+const ENV = import.meta.env || process.env || {};
+const isProd = ENV.PROD;
+const teetimeClubNumber = ENV.TEETIME_CLUB_NUMBER
+const teetimeUsername = ENV.TEETIME_USERNAME
+const teetimePassword = ENV.TEETIME_PASSWORD
 
-console.log(`isProd? ${isProd}  isDev? ${import.meta.env.DEV}`);
+console.log(`isProd? ${isProd}  isDev? ${ENV.DEV}`);
 console.log(`teetimeClubNumber: ${teetimeClubNumber}`);
 console.log(`teetimeUsername:   ${teetimeUsername}`);
 console.log(`teetimePassword:   ${teetimePassword?.replace(/./g, '*')}`);
