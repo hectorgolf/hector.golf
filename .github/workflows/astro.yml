@@ -77,6 +77,10 @@ jobs:
             --site "${{ steps.pages.outputs.origin }}" \
             --base "${{ steps.pages.outputs.base_path }}"
         working-directory: ${{ env.BUILD_PATH }}
+        env:
+          TEETIME_CLUB_NUMBER: 0134   # Tapiola Golf
+          TEETIME_USERNAME: 2762
+          TEETIME_PASSWORD: ${{ secrets.TEETIME_PASSWORD }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

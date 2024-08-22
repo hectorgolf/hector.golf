@@ -60,7 +60,7 @@ jobs:
         working-directory: ${{ env.BUILD_PATH }}
       - name: Run script
         run: |
-          ${{ steps.detect-package-manager.outputs.runner }} scripts/nightly.sh
+          scripts/nightly.sh
         working-directory: ${{ env.BUILD_PATH }}
         env:
           TEETIME_CLUB_NUMBER: 0134   # Tapiola Golf
@@ -68,7 +68,7 @@ jobs:
           TEETIME_PASSWORD: ${{ secrets.TEETIME_PASSWORD }}
       - name: Commit changes
         run: |
-          ${{ steps.detect-package-manager.outputs.runner }} scripts/commit-changes.sh
+          scripts/commit-changes.sh
         working-directory: ${{ env.BUILD_PATH }}
         env:
           GIT_AUTHOR_NAME: nightly.yml
