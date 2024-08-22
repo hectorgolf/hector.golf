@@ -1,45 +1,500 @@
 [
-    { "id": "daniel-hylton", "name": { "first": "Daniel", "last": "Hylton" }, "contact": { "phone": "+358403424395" }, "club": "OjlG" },
-    { "id": "eero-halmetoja", "name": { "first": "Eero", "last": "Halmetoja" }, "contact": { "phone": "+358408456410" }, "club": "VGH" },
-    { "id": "harri-vainio", "name": { "first": "Harri", "last": "Vainio" }, "contact": { "phone": "+358505980893" }, "club": "HaG" },
-    { "id": "jaakko-saarinen", "name": { "first": "Jaakko", "last": "Saarinen" }, "contact": { "phone": "+358442443347" }, "club": "HirG" },
-    { "id": "janne-valtakari", "name": { "first": "Janne", "last": "Valtakari" }, "contact": { "phone": "+358451673611" }, "club": "ReG" },
-    { "id": "jarkko-kailanto", "name": { "first": "Jarkko", "last": "Kailanto" }, "contact": { "phone": "+358504860406" }, "club": "HirG" },
-    { "id": "jussi-allonen", "name": { "first": "Jussi", "last": "Allonen" }, "contact": { "phone": "+358406803204" }, "club": "StLG" },
-    { "id": "juuso-pihamaa", "name": { "first": "Juuso", "last": "Pihamaa" }, "contact": { "phone": "+358407505539" }, "club": "HyG" },
-    { "id": "kristian-hiljander", "name": { "first": "Kristian", "last": "Hiljander" }, "contact": { "phone": "+358408390767" }, "club": "Master" },
-    { "id": "lasse-koskela", "name": { "first": "Lasse", "last": "Koskela" }, "contact": { "phone": "+358456709770" }, "club": "TaG" },
-    { "id": "lassi-koto", "name": { "first": "Lassi", "last": "Koto" }, "contact": { "phone": "+358505435610" }, "club": "LGV" },
-    { "id": "lauri-paatela", "name": { "first": "Lauri", "last": "Paatela" }, "contact": { "phone": "+358407700612" }, "club": "PGC" },
-    { "id": "marcus-mattila", "name": { "first": "Marcus", "last": "Mattila" }, "contact": { "phone": "+358400645949" }, "club": "Kurk" },
-    { "id": "martin-svedholm", "name": { "first": "Martin", "last": "Svedholm" }, "contact": { "phone": "+358505790324" }, "club": "StLG" },
-    { "id": "mikko-oesch", "name": { "first": "Mikko", "last": "Oesch" }, "contact": { "phone": "+358408459339" }, "club": "LGV" },
-    { "id": "miso-lith", "name": { "first": "Miso", "last": "Lith" }, "contact": { "phone": "+358505003049" }, "club": "HirG" },
-    { "id": "ofri-porat", "name": { "first": "Ofri", "last": "Porat" }, "contact": { "phone": "+358504873415" }, "club": "GPi" },
-    { "id": "okko-pykalainen", "name": { "first": "Okko", "last": "Pykäläinen" }, "contact": { "phone": "+358503760244" }, "club": "HirG" },
-    { "id": "olli-andersson", "name": { "first": "Olli", "last": "Andersson" }, "contact": { "phone": "+358503753183" }, "club": "HGK" },
-    { "id": "olli-varis", "name": { "first": "Olli", "last": "Varis" }, "contact": { "phone": "+358445455556" }, "club": "HirG" },
-    { "id": "panu-liira", "name": { "first": "Panu", "last": "Liira" }, "contact": { "phone": "+358505658474" }, "club": "KJKG" },
-    { "id": "pasi-halmetoja", "name": { "first": "Pasi", "last": "Halmetoja" }, "contact": { "phone": "+358408423660" }, "club": "VGH" },
-    { "id": "pekka-saijonmaa", "name": { "first": "Pekka", "last": "Saijonmaa" }, "contact": { "phone": "+358503788364" }, "club": "ERG" },
-    { "id": "sami-heikkinen", "name": { "first": "Sami", "last": "Heikkinen" }, "contact": { "phone": "+358405392115" }, "club": "HirG" },
-    { "id": "simo-liukkonen", "name": { "first": "Simo", "last": "Liukkonen" }, "contact": { "phone": "+358504653824" }, "club": "HirG" },
-    { "id": "timo-lukumaa", "name": { "first": "Timo", "last": "Lukumaa" }, "contact": { "phone": "+358456709767" }, "club": "KGV" },
-    { "id": "tommy-gulin", "name": { "first": "Tommy", "last": "Gulin" }, "contact": { "phone": "+358407226282" }, "club": "ERG" },
-    { "id": "toni-marttila", "name": { "first": "Toni", "last": "Marttila" }, "contact": { "phone": "+358504418241" }, "club": "HirG" },
-    { "id": "ossi-laukkanen", "name": { "first": "Ossi", "last": "Laukkanen" }, "contact": { "phone": "+358400492149" }, "club": "KGC" },
-    { "id": "mikko-lifflander", "name": { "first": "Mikko", "last": "Lifflander" }, "contact": { "phone": "" }, "club": "Kurk" },
-    { "id": "mikael-lindberg", "name": { "first": "Mikael", "last": "Lindberg" }, "contact": { "phone": "" }, "club": "Kurk" },
-    { "id": "riku-liira", "name": { "first": "Riku", "last": "Liira" }, "contact": { "phone": "" }, "club": "KJKG" },
-    { "id": "joni-valkeapaa", "name": { "first": "Joni", "last": "Valkeapää" }, "contact": { "phone": "" }, "club": "HSGC" },
-    { "id": "lauri-saarela", "name": { "first": "Lauri", "last": "Saarela" }, "contact": { "phone": "" }, "club": "JG" },
-    { "id": "erik-fagerstrom", "name": { "first": "Erik", "last": "Fagerström" }, "contact": { "phone": "" }, "club": "RuG" },
-    { "id": "jonas-lofman", "name": { "first": "Jonas", "last": "Löfman" }, "contact": { "phone": "" }, "club": "VaGo" },
-    { "id": "tomas-danska", "name": { "first": "Tomas", "last": "Danska" }, "contact": { "phone": "" }, "club": "ERG" },
-    { "id": "ricke-blomqvist", "name": { "first": "Ricke", "last": "Blomqvist" }, "contact": { "phone": "+358503050220" } },
-    { "id": "joakim-grader", "name": { "first": "Joakim", "last": "Grader" }, "contact": { "phone": "" } },
-    { "id": "eero-somervuo", "name": { "first": "Eero", "last": "Somervuo" }, "contact": { "phone": "" } },
-    { "id": "matias-vahtola", "name": { "first": "Matti", "last": "Vahtola" }, "contact": { "phone": "" } },
-    { "id": "anders-forss", "name": { "first": "Anders", "last": "Forss" }, "contact": { "phone": "" } },
-    { "id": "rasmus-back", "name": { "first": "Rasmus", "last": "Back" }, "contact": { "phone": "" } }
+  {
+    "id": "daniel-hylton",
+    "name": {
+      "first": "Daniel",
+      "last": "Hylton"
+    },
+    "contact": {
+      "phone": "+358403424395"
+    },
+    "club": "OjlG",
+    "handicap": 12.5
+  },
+  {
+    "id": "eero-halmetoja",
+    "name": {
+      "first": "Eero",
+      "last": "Halmetoja"
+    },
+    "contact": {
+      "phone": "+358408456410"
+    },
+    "club": "VGH",
+    "handicap": 9.7
+  },
+  {
+    "id": "harri-vainio",
+    "name": {
+      "first": "Harri",
+      "last": "Vainio"
+    },
+    "contact": {
+      "phone": "+358505980893"
+    },
+    "club": "HaG",
+    "handicap": 11.2
+  },
+  {
+    "id": "jaakko-saarinen",
+    "name": {
+      "first": "Jaakko",
+      "last": "Saarinen"
+    },
+    "contact": {
+      "phone": "+358442443347"
+    },
+    "club": "HirG",
+    "handicap": 19.4
+  },
+  {
+    "id": "janne-valtakari",
+    "name": {
+      "first": "Janne",
+      "last": "Valtakari"
+    },
+    "contact": {
+      "phone": "+358451673611"
+    },
+    "club": "ReG",
+    "handicap": 18.8
+  },
+  {
+    "id": "jarkko-kailanto",
+    "name": {
+      "first": "Jarkko",
+      "last": "Kailanto"
+    },
+    "contact": {
+      "phone": "+358504860406"
+    },
+    "club": "HirG",
+    "handicap": 14
+  },
+  {
+    "id": "jussi-allonen",
+    "name": {
+      "first": "Jussi",
+      "last": "Allonen"
+    },
+    "contact": {
+      "phone": "+358406803204"
+    },
+    "club": "StLG",
+    "handicap": 8.3
+  },
+  {
+    "id": "juuso-pihamaa",
+    "name": {
+      "first": "Juuso",
+      "last": "Pihamaa"
+    },
+    "contact": {
+      "phone": "+358407505539"
+    },
+    "club": "HyG",
+    "handicap": 5.6
+  },
+  {
+    "id": "kristian-hiljander",
+    "name": {
+      "first": "Kristian",
+      "last": "Hiljander"
+    },
+    "contact": {
+      "phone": "+358408390767"
+    },
+    "club": "Master"
+  },
+  {
+    "id": "lasse-koskela",
+    "name": {
+      "first": "Lasse",
+      "last": "Koskela"
+    },
+    "contact": {
+      "phone": "+358456709770"
+    },
+    "club": "TaG",
+    "handicap": 15.4
+  },
+  {
+    "id": "lassi-koto",
+    "name": {
+      "first": "Lassi",
+      "last": "Koto"
+    },
+    "contact": {
+      "phone": "+358505435610"
+    },
+    "club": "LGV",
+    "handicap": 12.7
+  },
+  {
+    "id": "lauri-paatela",
+    "name": {
+      "first": "Lauri",
+      "last": "Paatela"
+    },
+    "contact": {
+      "phone": "+358407700612"
+    },
+    "club": "PGC",
+    "handicap": 14
+  },
+  {
+    "id": "marcus-mattila",
+    "name": {
+      "first": "Marcus",
+      "last": "Mattila"
+    },
+    "contact": {
+      "phone": "+358400645949"
+    },
+    "club": "Kurk",
+    "handicap": 10.7
+  },
+  {
+    "id": "martin-svedholm",
+    "name": {
+      "first": "Martin",
+      "last": "Svedholm"
+    },
+    "contact": {
+      "phone": "+358505790324"
+    },
+    "club": "StLG",
+    "handicap": 8.4
+  },
+  {
+    "id": "mikko-oesch",
+    "name": {
+      "first": "Mikko",
+      "last": "Oesch"
+    },
+    "contact": {
+      "phone": "+358408459339"
+    },
+    "club": "LGV",
+    "handicap": 8.5
+  },
+  {
+    "id": "miso-lith",
+    "name": {
+      "first": "Miso",
+      "last": "Lith"
+    },
+    "contact": {
+      "phone": "+358505003049"
+    },
+    "club": "HirG",
+    "handicap": 8.5
+  },
+  {
+    "id": "ofri-porat",
+    "name": {
+      "first": "Ofri",
+      "last": "Porat"
+    },
+    "contact": {
+      "phone": "+358504873415"
+    },
+    "club": "GPi",
+    "handicap": 4.7
+  },
+  {
+    "id": "okko-pykalainen",
+    "name": {
+      "first": "Okko",
+      "last": "Pykäläinen"
+    },
+    "contact": {
+      "phone": "+358503760244"
+    },
+    "club": "HirG",
+    "handicap": 14.9
+  },
+  {
+    "id": "olli-andersson",
+    "name": {
+      "first": "Olli",
+      "last": "Andersson"
+    },
+    "contact": {
+      "phone": "+358503753183"
+    },
+    "club": "HGK",
+    "handicap": 12.4
+  },
+  {
+    "id": "olli-varis",
+    "name": {
+      "first": "Olli",
+      "last": "Varis"
+    },
+    "contact": {
+      "phone": "+358445455556"
+    },
+    "club": "HirG",
+    "handicap": 8.8
+  },
+  {
+    "id": "panu-liira",
+    "name": {
+      "first": "Panu",
+      "last": "Liira"
+    },
+    "contact": {
+      "phone": "+358505658474"
+    },
+    "club": "KJKG",
+    "handicap": 18.3
+  },
+  {
+    "id": "pasi-halmetoja",
+    "name": {
+      "first": "Pasi",
+      "last": "Halmetoja"
+    },
+    "contact": {
+      "phone": "+358408423660"
+    },
+    "club": "VGH",
+    "handicap": 9.2
+  },
+  {
+    "id": "pekka-saijonmaa",
+    "name": {
+      "first": "Pekka",
+      "last": "Saijonmaa"
+    },
+    "contact": {
+      "phone": "+358503788364"
+    },
+    "club": "ERG"
+  },
+  {
+    "id": "sami-heikkinen",
+    "name": {
+      "first": "Sami",
+      "last": "Heikkinen"
+    },
+    "contact": {
+      "phone": "+358405392115"
+    },
+    "club": "HirG",
+    "handicap": 4.7
+  },
+  {
+    "id": "simo-liukkonen",
+    "name": {
+      "first": "Simo",
+      "last": "Liukkonen"
+    },
+    "contact": {
+      "phone": "+358504653824"
+    },
+    "club": "HirG",
+    "handicap": 4.7
+  },
+  {
+    "id": "timo-lukumaa",
+    "name": {
+      "first": "Timo",
+      "last": "Lukumaa"
+    },
+    "contact": {
+      "phone": "+358456709767"
+    },
+    "club": "KGV",
+    "handicap": 10.7
+  },
+  {
+    "id": "tommy-gulin",
+    "name": {
+      "first": "Tommy",
+      "last": "Gulin"
+    },
+    "contact": {
+      "phone": "+358407226282"
+    },
+    "club": "ERG",
+    "handicap": -0.8
+  },
+  {
+    "id": "toni-marttila",
+    "name": {
+      "first": "Toni",
+      "last": "Marttila"
+    },
+    "contact": {
+      "phone": "+358504418241"
+    },
+    "club": "HirG",
+    "handicap": 10.2
+  },
+  {
+    "id": "ossi-laukkanen",
+    "name": {
+      "first": "Ossi",
+      "last": "Laukkanen"
+    },
+    "contact": {
+      "phone": "+358400492149"
+    },
+    "club": "KGC",
+    "handicap": 7.5
+  },
+  {
+    "id": "mikko-lifflander",
+    "name": {
+      "first": "Mikko",
+      "last": "Lifflander"
+    },
+    "contact": {
+      "phone": ""
+    },
+    "club": "Kurk",
+    "handicap": 19.9
+  },
+  {
+    "id": "mikael-lindberg",
+    "name": {
+      "first": "Mikael",
+      "last": "Lindberg"
+    },
+    "contact": {
+      "phone": ""
+    },
+    "club": "Kurk",
+    "handicap": 14.5
+  },
+  {
+    "id": "riku-liira",
+    "name": {
+      "first": "Riku",
+      "last": "Liira"
+    },
+    "contact": {
+      "phone": ""
+    },
+    "club": "KJKG",
+    "handicap": 22
+  },
+  {
+    "id": "joni-valkeapaa",
+    "name": {
+      "first": "Joni",
+      "last": "Valkeapää"
+    },
+    "contact": {
+      "phone": ""
+    },
+    "club": "HSGC"
+  },
+  {
+    "id": "lauri-saarela",
+    "name": {
+      "first": "Lauri",
+      "last": "Saarela"
+    },
+    "contact": {
+      "phone": ""
+    },
+    "club": "JG",
+    "handicap": 47.7
+  },
+  {
+    "id": "erik-fagerstrom",
+    "name": {
+      "first": "Erik",
+      "last": "Fagerström"
+    },
+    "contact": {
+      "phone": ""
+    },
+    "club": "RuG"
+  },
+  {
+    "id": "jonas-lofman",
+    "name": {
+      "first": "Jonas",
+      "last": "Löfman"
+    },
+    "contact": {
+      "phone": ""
+    },
+    "club": "VaGo"
+  },
+  {
+    "id": "tomas-danska",
+    "name": {
+      "first": "Tomas",
+      "last": "Danska"
+    },
+    "contact": {
+      "phone": ""
+    },
+    "club": "ERG"
+  },
+  {
+    "id": "ricke-blomqvist",
+    "name": {
+      "first": "Ricke",
+      "last": "Blomqvist"
+    },
+    "contact": {
+      "phone": "+358503050220"
+    }
+  },
+  {
+    "id": "joakim-grader",
+    "name": {
+      "first": "Joakim",
+      "last": "Grader"
+    },
+    "contact": {
+      "phone": ""
+    }
+  },
+  {
+    "id": "eero-somervuo",
+    "name": {
+      "first": "Eero",
+      "last": "Somervuo"
+    },
+    "contact": {
+      "phone": ""
+    }
+  },
+  {
+    "id": "matias-vahtola",
+    "name": {
+      "first": "Matti",
+      "last": "Vahtola"
+    },
+    "contact": {
+      "phone": ""
+    }
+  },
+  {
+    "id": "anders-forss",
+    "name": {
+      "first": "Anders",
+      "last": "Forss"
+    },
+    "contact": {
+      "phone": ""
+    }
+  },
+  {
+    "id": "rasmus-back",
+    "name": {
+      "first": "Rasmus",
+      "last": "Back"
+    },
+    "contact": {
+      "phone": ""
+    }
+  }
 ]
