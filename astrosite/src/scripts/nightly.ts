@@ -2,7 +2,17 @@ import { readFileSync } from 'fs'
 import { join } from 'path';
 
 import { getPlayerHandicap } from '../code/handicaps.ts';
-import { getPlayerById } from '../code/players.ts';
+
+import playersData from '../data/players.json';
+
+function getPlayerById(id: string): Player|undefined {
+    let _record = playersData.find((record) => record.id === id)
+    if (!_record) {
+        return undefined
+    }
+    return _record as Player
+}
+
 
 const pathToPlayersJson = join(__dirname, '../data/players.json');
 
