@@ -12,7 +12,6 @@ const playerListPromises = playersJson.map((player: any) => {
     const playerObject = getPlayerById(player.id)
     if (playerObject) {
         const oldHandicap = player.handicap; // Let's save the old handicap
-        const newHandicapPromise = ;
         return getPlayerHandicap(playerObject as Player).then((newHandicap) => {
             if (newHandicap && newHandicap !== oldHandicap) {
                 playerObject.handicap = newHandicap;
@@ -20,7 +19,7 @@ const playerListPromises = playersJson.map((player: any) => {
             return playerObject
         })
     } else {
-        return playerObject
+        return Promise.resolve(playerObject)
     }
 })
 
