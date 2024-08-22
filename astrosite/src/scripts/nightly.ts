@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs'
 import { join } from 'path';
 
-import { getPlayerHandicap } from '../code/handicaps.ts';
+import { getPlayerHandicap } from '../code/handicaps/teetime-api.ts';
 
 import playersData from '../data/players.json';
 
@@ -34,9 +34,9 @@ const playersJson = JSON.parse(readFileSync(pathToPlayersJson, 'utf-8').toString
 console.log(`Attempting to update handicap data for ${playersJson.length} players...`)
 const playerListPromises = playersJson.map((player: any) => {
     const playerObject = getPlayerById(player.id)
-    if (playerObject) {
+    if (playerObject && playerObject.club) {
         const oldHandicap = player.handicap; // Let's save the old handicap
-        return getPlayerHandicap(playerObject as Player).then((newHandicap) => {
+        return getPlayerHandicap(playerObject.name.first, playerObject.name.last, playerObject.club).then((newHandicap) => {
             if (newHandicap && newHandicap !== oldHandicap) {
                 playerObject.handicap = newHandicap;
             }
