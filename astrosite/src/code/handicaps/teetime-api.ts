@@ -136,13 +136,16 @@ export const getPlayerHandicap = async (firstName: string, lastName: string, clu
 }
 
 export const resolveClubNumber = async (clubNameOrNumber: string): Promise<string|undefined> => {
-    return (await fetchClub(clubNameOrNumber))?.number;
+    const club = await fetchClub(clubNameOrNumber)
+    console.log(`resolved club number ${JSON.stringify(clubNameOrNumber)} into ${JSON.stringify(club)}`)
+    return club?.number;
 }
 
 export const fetchClub = async (clubNameOrNumber: string): Promise<TeetimeClub|undefined> => {
     const clubs = await fetchClubs();
     const club = clubs.find(club => {
         if (club.number && club.number === clubNameOrNumber) return true;
+        if (club.number && club.number.replace(/^0+/, '') === clubNameOrNumber.replace(/^0+/, '')) return true;
         if (club.name && club.name.toLowerCase() === clubNameOrNumber.toLowerCase()) return true;
         if (club.abbrevitation && club.abbrevitation.toLowerCase() === clubNameOrNumber.toLowerCase()) return true;
         return false;
