@@ -9,8 +9,8 @@ import { getPlayerName, getPlayerById } from '../../../code/players';
 
 
 export function getStaticPaths() {
-    return getAllEventIds().map(id => getEventById(id)).filter(e => e?.format === 'matchplay').map((event) => {
-        return { params: { slug: event?.id } };
+    return getAllEventIds(e => e.format === 'matchplay').map(id => {
+        return { params: { slug: id } };
     });
 }
 
@@ -32,7 +32,7 @@ const field: Array<Player> = event.results?.participants
 		<div class="breadcrumbs">
 			<Breadcrumb title="Home" href="/" />
 			<Breadcrumb title="Events" href="/events" />
-			<!-- <Breadcrumb title="Matchplay" href="/events/matchplay" /> -->
+			<Breadcrumb title="Matchplay" href="/events/matchplay" />
 		</div>
         <h1><span class="text-gradient">{event.name}</span></h1>
         <div class="event-details">

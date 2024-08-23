@@ -1,36 +1,43 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import Breadcrumb from '../../components/Breadcrumb.astro';
-import CourseCard from '../../components/courses/CourseCard.astro';
-import { type Event, type HectorEvent } from '../../schemas/events';
-import { type Course } from '../../schemas/courses';
-import { type Player } from '../../schemas/players';
-import { getAllEventIds, getCoursesOfEvent, getEventById } from '../../code/events';
-import { getPlayerName, getPlayerById } from '../../code/players';
+import Layout from '../../../layouts/Layout.astro'
+import Breadcrumb from '../../../components/Breadcrumb.astro'
+import CourseCard from '../../../components/courses/CourseCard.astro'
+import { type HectorEvent } from '../../../schemas/events'
+import { type Course } from '../../../schemas/courses'
+import { type Player } from '../../../schemas/players'
+import { getAllEventIds, getCoursesOfEvent, getEventById } from '../../../code/events'
+import { getPlayerName, getPlayerById } from '../../../code/players'
 
 
 export function getStaticPaths() {
-    return getAllEventIds().map((id) => {
-        return { params: { slug: id } };
-    });
+    return getAllEventIds(e => e.format === 'hector').map((id) => {
+        return { params: { slug: id } }
+    })
 }
 
-const { slug } = Astro.params;
-let event: Event|undefined = getEventById(slug);
+const { slug } = Astro.params
+let event: HectorEvent|undefined = slug ? (getEventById(slug) as HectorEvent) : undefined
 if (!event) {
-    Astro.response.status = 404;
+    Astro.response.status = 404
 }
 event = event!
 
-const eventCourses: Array<Course> = getCoursesOfEvent(event.id);
+const eventCourses: Array<Course> = getCoursesOfEvent(event.id)
 
-const hectorWinners: Array<Player> = ((event as HectorEvent).results?.winners.hector || [])
+const hectorWinners: Array<Player> = (event.results?.winners.hector || [])
     .map(id => getPlayerById(id))
-    .filter(p => !!p) as Array<Player>;
+    .filter(p => !!p) as Array<Player>
 
-const victorWinners: Array<Player> = ((event as HectorEvent).results?.winners.victor || [])
+const victorWinners: Array<Player> = (event.results?.winners.victor || [])
     .map(id => getPlayerById(id as string) as Player)
-    .filter(p => !!p) as Array<Player>;
+    .filter(p => !!p) as Array<Player>
+
+const participants: Array<Player>|undefined = event.participants
+    ?.map(id => getPlayerById(id))
+    ?.filter(p => !!p)
+    ?.sort((p1, p2) => p1!.handicap! - p2!.handicap!)
+const bucket1 = participants?.slice(0, Math.ceil(participants.length / 2))
+const bucket2 = participants?.slice(bucket1!.length)
 
 ---
 <Layout title="Event">
@@ -38,6 +45,7 @@ const victorWinners: Array<Player> = ((event as HectorEvent).results?.winners.vi
 		<div class="breadcrumbs">
 			<Breadcrumb title="Home" href="/" />
 			<Breadcrumb title="Events" href="/events" />
+			<Breadcrumb title="Hectors" href="/events/hector" />
 		</div>
         <h1><span class="text-gradient">{event.name}</span></h1>
         <div class="event-details">
@@ -52,25 +60,6 @@ const victorWinners: Array<Player> = ((event as HectorEvent).results?.winners.vi
                 <ul role="list" class="link-card-grid">
                     {eventCourses.map((course) => {
                         return (<CourseCard name={course.name} href={`/courses/${course.id}`} location={course.contact.address} image={course.hero_image} />)
-                    })}
-                </ul>
-            </div>
-        )}
-
-        {(event as HectorEvent).results?.teams && (
-            <div class="field">
-                <h2>Field</h2>
-                <ul>
-                    {(event as HectorEvent).results?.teams?.map(team => {
-                        return (
-                            <li>
-                                {team.players.map(id => getPlayerById(id)).filter(p => !!p).map((player, index) => {
-                                    return (
-                                        <span>{index > 0 && " & "}<a href={`/players/${player!.id}`}>{getPlayerName(player!)}</a></span>
-                                    )
-                                })}
-                            </li>
-                        )
                     })}
                 </ul>
             </div>
@@ -100,6 +89,49 @@ const victorWinners: Array<Player> = ((event as HectorEvent).results?.winners.vi
                         {victorWinners.length > 1 && (<span class="tied">(tied)</span>)}
                     </div>
                 )}
+            </div>
+        )}
+
+        {event.results?.teams && (
+            <div class="teams">
+                <h2>Teams</h2>
+                <ul>
+                    {event.results?.teams?.map(team => {
+                        return (
+                            <li>
+                                {team.players.map(id => getPlayerById(id)).filter(p => !!p).map((player, index) => {
+                                    return (
+                                        <span>{index > 0 && " & "}<a href={`/players/${player!.id}`}>{getPlayerName(player!)}</a></span>
+                                    )
+                                })}
+                            </li>
+                        )
+                    })}
+                </ul>
+            </div>
+        )}
+
+        {(event.participants && bucket1 && bucket2 && !event.results?.teams) && (
+            <div class="field">
+                <h2>Field and Projected Buckets</h2>
+                <span class="buckets">
+                    <div class="bucket">
+                        <h3>Bucket 1</h3>
+                        <ul role="list">
+                            {bucket1.map(player => {
+                                return (<li><a href={`/players/${player.id}`}>{getPlayerName(player)}</a> <span class="handicap">({Number(player.handicap).toFixed(1)})</span></li>)
+                            })}
+                        </ul>
+                    </div>
+                    <div class="bucket">
+                        <h3>Bucket 2</h3>
+                        <ul role="list">
+                            {bucket2.map(player => {
+                                return (<li><a href={`/players/${player.id}`}>{getPlayerName(player)}</a> <span class="handicap">({Number(player.handicap).toFixed(1)})</span></li>)
+                            })}
+                        </ul>
+                    </div>
+                </span>
             </div>
         )}
     </main>
@@ -174,20 +206,36 @@ const victorWinners: Array<Player> = ((event as HectorEvent).results?.winners.vi
         text-align: center;
     }
 
-    .holes a, .field a, .results a {
+    .holes .hole img {
+        min-width: 80px;
+        height: 150px;
+    }
+
+    .holes a, .teams a, .results a {
         color: #fff;
         text-decoration: none;
     }
 
-    .holes .hole img {
-        min-width: 80px;
-        height: 150px;
+    .teams ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .holes a, .field a, .results a {
+        color: #fff;
+        text-decoration: none;
     }
 
     .field ul {
         list-style-type: none;
         margin: 0;
         padding: 0;
+    }
+
+    .field .handicap {
+        color: lightblue;
+        margin-left: 10px;
     }
 
     .results .victor .tied {
@@ -208,6 +256,14 @@ const victorWinners: Array<Player> = ((event as HectorEvent).results?.winners.vi
 		    font-size: 2.25rem;
             margin-top: 40px;
         }
+    }
+
+    .field .buckets {
+        display: grid;
+        /* grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); */
+        grid-template-columns: repeat(auto-fit, 250px);
+        gap: 2rem;
+        padding: 0;
     }
 
 </style>

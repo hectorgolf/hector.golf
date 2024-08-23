@@ -6,7 +6,7 @@ import EventCard from '../../../components/events/EventCard.astro';
 
 import { getAllEvents } from '../../../code/events';
 
-const linkToEvent = (event: any): string =>`/events/matchplay/${event.id}`;
+const linkToEvent = (event: any): string =>`/events/${event.id}`;
 
 const matchplayEvents = getAllEvents().filter(e => e.format === 'hector')
 

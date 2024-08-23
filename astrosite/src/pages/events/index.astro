@@ -8,10 +8,7 @@ import Highlight from '../../components/Highlight.astro';
 import { getAllEvents } from '../../code/events';
 
 function linkToEvent(event: any) {
-	if (event.format === 'matchplay') {
-		return `/events/matchplay/${event.id}`;
-	}
-    return `/events/${event.id}`;
+    return `/events/${event.format}/${event.id}`;
 }
 
 ---

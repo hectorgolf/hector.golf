@@ -54,6 +54,7 @@ export const hectorEventSchema = z.object({
     date: z.string(),
     hero_image: z.string().optional(),
     description: z.string().optional(),
+    participants: z.array(z.string()).optional(),
     results: hectorResults.optional()
 })
 
