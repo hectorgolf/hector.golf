@@ -2,9 +2,10 @@
 import Layout from '../../layouts/Layout.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import AppearanceCard from '../../components/players/AppearanceCard.astro';
+import HandicapHistoryChart from '../../components/players/HandicapHistoryChart.astro';
 import { type Player } from '../../schemas/players';
-import { getEventsOfPlayer, getAllPlayerIds, getPlayerById, getPlayerName } from '../../code/players';
-import { getPlayerHandicap } from '../../code/handicaps';
+import { type HandicapHistoryEntry } from '../../schemas/handicaps';
+import { getEventsOfPlayer, getAllPlayerIds, getPlayerById, getPlayerName, getPlayerHandicapHistoryById } from '../../code/players';
 
 
 export function getStaticPaths() {
@@ -21,6 +22,8 @@ if (!player) {
 player = player!
 
 const relatedEvents = getEventsOfPlayer(player.id);
+
+const handicapHistory: Array<HandicapHistoryEntry>|null = player.handicap ? getPlayerHandicapHistoryById(player.id) : null;
 
 ---
 
@@ -42,7 +45,7 @@ const relatedEvents = getEventsOfPlayer(player.id);
         {player.handicap ? (
             <div class="handicap">
                 <h2>Handicap</h2>
-                <p>{Number(player.handicap).toFixed(1)}</p>
+                {handicapHistory ? (<HandicapHistoryChart history={handicapHistory} current={player.handicap}/>) : null}
             </div>
             ): null
         }

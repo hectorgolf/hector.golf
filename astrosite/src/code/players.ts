@@ -4,8 +4,8 @@ import { getAllEvents } from './events';
 import playersData from '../data/players.json';
 import { type Player, schema as PlayerSchema } from '../schemas/players';
 
-import handicapData from '../data/handicaps.json';
-import { type HandicapHistoryEntry, schema as HandicapHistoryEventSchema } from '../schemas/handicaps';
+import { type HandicapHistoryEntry } from '../schemas/handicaps';
+import { getPlayerHandicapHistoryById as getPlayerHandicapHistoryByIdImplementation } from './handicaps';
 
 
 export function getAllPlayerIds(): Array<string> {
@@ -33,10 +33,7 @@ export function getPlayerById(id: string): Player|undefined {
 }
 
 export function getPlayerHandicapHistoryById(id: string): HandicapHistoryEntry[] {
-    let events: HandicapHistoryEntry[] = handicapData
-        .map(record => HandicapHistoryEventSchema.parse(record))
-        .filter(event => event.player === id)
-    return events.sort((a, b) => a.date.localeCompare(b.date))
+    return getPlayerHandicapHistoryByIdImplementation(id)
 }
 
 export function getPlayerHandicapById(id: string): number|undefined {
