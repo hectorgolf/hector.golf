@@ -66,12 +66,72 @@
   },
   {
     "player": "eero-halmetoja",
+    "date":"2024-07-01",
+    "handicap": 9.6
+  },
+  {
+    "player": "eero-halmetoja",
+    "date":"2024-07-08",
+    "handicap": 9.7
+  },
+  {
+    "player": "eero-halmetoja",
+    "date":"2024-07-17",
+    "handicap": 10.0
+  },
+  {
+    "player": "eero-halmetoja",
+    "date":"2024-07-22",
+    "handicap": 10.0
+  },
+  {
+    "player": "eero-halmetoja",
+    "date":"2024-07-29",
+    "handicap": 9.7
+  },
+  {
+    "player": "eero-halmetoja",
+    "date":"2024-08-05",
+    "handicap": 9.9
+  },
+  {
+    "player": "eero-halmetoja",
+    "date":"2024-08-12",
+    "handicap": 10.0
+  },
+  {
+    "player": "eero-halmetoja",
     "date":"2024-08-23",
     "handicap": 9.7
   },
   {
     "player": "harri-vainio",
-    "date":"2024-08-23",
+    "date":"2024-07-01",
+    "handicap": 10.7
+  },
+  {
+    "player": "harri-vainio",
+    "date":"2024-07-08",
+    "handicap": 10.8
+  },
+  {
+    "player": "harri-vainio",
+    "date":"2024-07-17",
+    "handicap": 11.0
+  },
+  {
+    "player": "harri-vainio",
+    "date":"2024-07-22",
+    "handicap": 11.3
+  },
+  {
+    "player": "harri-vainio",
+    "date":"2024-07-29",
+    "handicap": 11.3
+  },
+  {
+    "player": "harri-vainio",
+    "date":"2024-08-12",
     "handicap": 11.2
   },
   {
@@ -81,8 +141,73 @@
   },
   {
     "player": "janne-valtakari",
+    "date":"2024-07-01",
+    "handicap": 20.4
+  },
+  {
+    "player": "janne-valtakari",
+    "date":"2024-07-08",
+    "handicap": 20.4
+  },
+  {
+    "player": "janne-valtakari",
+    "date":"2024-07-17",
+    "handicap": 19.6
+  },
+  {
+    "player": "janne-valtakari",
+    "date":"2024-07-22",
+    "handicap": 19.6
+  },
+  {
+    "player": "janne-valtakari",
+    "date":"2024-07-29",
+    "handicap": 19.6
+  },
+  {
+    "player": "janne-valtakari",
+    "date":"2024-08-05",
+    "handicap": 19.5
+  },
+  {
+    "player": "janne-valtakari",
     "date":"2024-08-23",
     "handicap": 18.8
+  },
+  {
+    "player": "jarkko-kailanto",
+    "date":"2024-07-01",
+    "handicap": 15.7
+  },
+  {
+    "player": "jarkko-kailanto",
+    "date":"2024-07-08",
+    "handicap": 15.7
+  },
+  {
+    "player": "jarkko-kailanto",
+    "date":"2024-07-17",
+    "handicap": 15.5
+  },
+  {
+    "player": "jarkko-kailanto",
+    "date":"2024-07-22",
+    "handicap": 15.5
+  },
+  {
+    "player": "jarkko-kailanto",
+    "date":"2024-07-29",
+    "handicap": 15.5
+  },
+  {
+    "player": "jarkko-kailanto",
+    "date":"2024-08-05",
+    "handicap": 14.6
+  },
+  {
+    "player": "jarkko-kailanto",
+    "date":"2024-08-12",
+    "handicap": 13.6
   },
   {
     "player": "jarkko-kailanto",
@@ -91,8 +216,68 @@
   },
   {
     "player": "jussi-allonen",
+    "date":"2024-07-01",
+    "handicap": 6.9
+  },
+  {
+    "player": "jussi-allonen",
+    "date":"2024-07-08",
+    "handicap": 6.9
+  },
+  {
+    "player": "jussi-allonen",
+    "date":"2024-07-17",
+    "handicap": 6.9
+  },
+  {
+    "player": "jussi-allonen",
+    "date":"2024-07-22",
+    "handicap": 6.9
+  },
+  {
+    "player": "jussi-allonen",
+    "date":"2024-07-29",
+    "handicap": 7.3
+  },
+  {
+    "player": "jussi-allonen",
+    "date":"2024-08-05",
+    "handicap": 7.9
+  },
+  {
+    "player": "jussi-allonen",
     "date":"2024-08-23",
     "handicap": 8.3
+  },
+  {
+    "player": "juuso-pihamaa",
+    "date":"2024-07-01",
+    "handicap": 6.3
+  },
+  {
+    "player": "juuso-pihamaa",
+    "date":"2024-07-08",
+    "handicap": 6.4
+  },
+  {
+    "player": "juuso-pihamaa",
+    "date":"2024-07-17",
+    "handicap": 6.6
+  },
+  {
+    "player": "juuso-pihamaa",
+    "date":"2024-07-22",
+    "handicap": 6.6
+  },
+  {
+    "player": "juuso-pihamaa",
+    "date":"2024-07-29",
+    "handicap": 6.3
+  },
+  {
+    "player": "juuso-pihamaa",
+    "date":"2024-08-05",
+    "handicap": 6.2
   },
   {
     "player": "juuso-pihamaa",
@@ -106,8 +291,83 @@
   },
   {
     "player": "lassi-koto",
-    "date":"2024-08-23",
+    "date":"2024-07-01",
+    "handicap": 12.3
+  },
+  {
+    "player": "lassi-koto",
+    "date":"2024-07-08",
+    "handicap": 12.3
+  },
+  {
+    "player": "lassi-koto",
+    "date":"2024-07-17",
+    "handicap": 13.3
+  },
+  {
+    "player": "lassi-koto",
+    "date":"2024-07-22",
+    "handicap": 13.3
+  },
+  {
+    "player": "lassi-koto",
+    "date":"2024-07-29",
+    "handicap": 13.2
+  },
+  {
+    "player": "lassi-koto",
+    "date":"2024-08-05",
     "handicap": 12.7
+  },
+  {
+    "player": "lassi-koto",
+    "date":"2024-08-12",
+    "handicap": 12.7
+  },
+  {
+    "player": "lassi-koto",
+    "date":"2024-08-19",
+    "handicap": 12.7
+  },
+  {
+    "player": "lauri-paatela",
+    "date":"2024-07-01",
+    "handicap": 14
+  },
+  {
+    "player": "lauri-paatela",
+    "date":"2024-07-08",
+    "handicap": 14
+  },
+  {
+    "player": "lauri-paatela",
+    "date":"2024-07-17",
+    "handicap": 14
+  },
+  {
+    "player": "lauri-paatela",
+    "date":"2024-07-22",
+    "handicap": 14
+  },
+  {
+    "player": "lauri-paatela",
+    "date":"2024-07-29",
+    "handicap": 14
+  },
+  {
+    "player": "lauri-paatela",
+    "date":"2024-08-05",
+    "handicap": 14
+  },
+  {
+    "player": "lauri-paatela",
+    "date":"2024-08-12",
+    "handicap": 14
+  },
+  {
+    "player": "lauri-paatela",
+    "date":"2024-08-19",
+    "handicap": 14
   },
   {
     "player": "lauri-paatela",
@@ -116,8 +376,83 @@
   },
   {
     "player": "marcus-mattila",
+    "date":"2024-07-01",
+    "handicap": 10.9
+  },
+  {
+    "player": "marcus-mattila",
+    "date":"2024-07-08",
+    "handicap": 12.0
+  },
+  {
+    "player": "marcus-mattila",
+    "date":"2024-07-17",
+    "handicap": 12.6
+  },
+  {
+    "player": "marcus-mattila",
+    "date":"2024-07-22",
+    "handicap": 12.6
+  },
+  {
+    "player": "marcus-mattila",
+    "date":"2024-07-29",
+    "handicap": 12.5
+  },
+  {
+    "player": "marcus-mattila",
+    "date":"2024-08-05",
+    "handicap": 12.1
+  },
+  {
+    "player": "marcus-mattila",
+    "date":"2024-08-12",
+    "handicap": 11.6
+  },
+  {
+    "player": "marcus-mattila",
+    "date":"2024-08-19",
+    "handicap": 11.0
+  },
+  {
+    "player": "marcus-mattila",
     "date":"2024-08-23",
     "handicap": 10.7
+  },
+  {
+    "player": "martin-svedholm",
+    "date":"2024-07-01",
+    "handicap": 8.8
+  },
+  {
+    "player": "martin-svedholm",
+    "date":"2024-07-08",
+    "handicap": 8.8
+  },
+  {
+    "player": "martin-svedholm",
+    "date":"2024-07-17",
+    "handicap": 8.9
+  },
+  {
+    "player": "martin-svedholm",
+    "date":"2024-07-22",
+    "handicap": 8.3
+  },
+  {
+    "player": "martin-svedholm",
+    "date":"2024-07-29",
+    "handicap": 8.5
+  },
+  {
+    "player": "martin-svedholm",
+    "date":"2024-08-05",
+    "handicap": 8.9
+  },
+  {
+    "player": "martin-svedholm",
+    "date":"2024-08-12",
+    "handicap": 8.5
   },
   {
     "player": "martin-svedholm",
@@ -125,14 +460,69 @@
     "handicap": 8.4
   },
   {
-    "player": "mikko-oesch",
-    "date":"2024-08-23",
-    "handicap": 8.5
+    "player": "miso-lith",
+    "date":"2024-07-01",
+    "handicap": 9.5
   },
   {
     "player": "miso-lith",
-    "date":"2024-08-23",
+    "date":"2024-07-08",
+    "handicap": 9.5
+  },
+  {
+    "player": "miso-lith",
+    "date":"2024-07-17",
+    "handicap": 9.5
+  },
+  {
+    "player": "miso-lith",
+    "date":"2024-07-22",
+    "handicap": 9.3
+  },
+  {
+    "player": "miso-lith",
+    "date":"2024-07-29",
     "handicap": 8.5
+  },
+  {
+    "player": "ofri-porat",
+    "date":"2024-07-01",
+    "handicap": 4.5
+  },
+  {
+    "player": "ofri-porat",
+    "date":"2024-07-08",
+    "handicap": 4.5
+  },
+  {
+    "player": "ofri-porat",
+    "date":"2024-07-17",
+    "handicap": 4.5
+  },
+  {
+    "player": "ofri-porat",
+    "date":"2024-07-22",
+    "handicap": 4.5
+  },
+  {
+    "player": "ofri-porat",
+    "date":"2024-07-29",
+    "handicap": 4.4
+  },
+  {
+    "player": "ofri-porat",
+    "date":"2024-08-05",
+    "handicap": 4.4
+  },
+  {
+    "player": "ofri-porat",
+    "date":"2024-08-12",
+    "handicap": 4.4
+  },
+  {
+    "player": "ofri-porat",
+    "date":"2024-08-19",
+    "handicap": 4.4
   },
   {
     "player": "ofri-porat",
@@ -146,13 +536,43 @@
   },
   {
     "player": "olli-andersson",
-    "date":"2024-08-23",
-    "handicap": 12.4
+    "date":"2024-07-01",
+    "handicap": 13.1
   },
   {
-    "player": "olli-varis",
+    "player": "olli-andersson",
+    "date":"2024-07-08",
+    "handicap": 12.2
+  },
+  {
+    "player": "olli-andersson",
+    "date":"2024-07-17",
+    "handicap": 12.1
+  },
+  {
+    "player": "olli-andersson",
+    "date":"2024-07-22",
+    "handicap": 12.0
+  },
+  {
+    "player": "olli-andersson",
+    "date":"2024-07-29",
+    "handicap": 12.3
+  },
+  {
+    "player": "olli-andersson",
+    "date":"2024-08-05",
+    "handicap": 12.0
+  },
+  {
+    "player": "olli-andersson",
+    "date":"2024-08-12",
+    "handicap": 12.2
+  },
+  {
+    "player": "olli-andersson",
     "date":"2024-08-23",
-    "handicap": 8.8
+    "handicap": 12.4
   },
   {
     "player": "panu-liira",
@@ -161,8 +581,78 @@
   },
   {
     "player": "pasi-halmetoja",
+    "date":"2024-07-01",
+    "handicap": 6.4
+  },
+  {
+    "player": "pasi-halmetoja",
+    "date":"2024-07-08",
+    "handicap": 6.4
+  },
+  {
+    "player": "pasi-halmetoja",
+    "date":"2024-07-17",
+    "handicap": 6.4
+  },
+  {
+    "player": "pasi-halmetoja",
+    "date":"2024-07-22",
+    "handicap": 6.4
+  },
+  {
+    "player": "pasi-halmetoja",
+    "date":"2024-07-29",
+    "handicap": 6.4
+  },
+  {
+    "player": "pasi-halmetoja",
+    "date":"2024-08-05",
+    "handicap": 5.9
+  },
+  {
+    "player": "pasi-halmetoja",
+    "date":"2024-08-12",
+    "handicap": 6.3
+  },
+  {
+    "player": "pasi-halmetoja",
+    "date":"2024-08-19",
+    "handicap": 8
+  },
+  {
+    "player": "pasi-halmetoja",
     "date":"2024-08-23",
     "handicap": 9.2
+  },
+  {
+    "player": "pekka-saijonmaa",
+    "date":"2024-07-01",
+    "handicap": 18.6
+  },
+  {
+    "player": "pekka-saijonmaa",
+    "date":"2024-07-08",
+    "handicap": 18.6
+  },
+  {
+    "player": "pekka-saijonmaa",
+    "date":"2024-07-17",
+    "handicap": 17.6
+  },
+  {
+    "player": "pekka-saijonmaa",
+    "date":"2024-07-22",
+    "handicap": 17.6
+  },
+  {
+    "player": "pekka-saijonmaa",
+    "date":"2024-07-29",
+    "handicap": 17.6
+  },
+  {
+    "player": "pekka-saijonmaa",
+    "date":"2024-08-05",
+    "handicap": 18.4
   },
   {
     "player": "pekka-saijonmaa",
@@ -171,8 +661,78 @@
   },
   {
     "player": "sami-heikkinen",
+    "date":"2024-07-01",
+    "handicap": 6.0
+  },
+  {
+    "player": "sami-heikkinen",
+    "date":"2024-07-08",
+    "handicap": 5.3
+  },
+  {
+    "player": "sami-heikkinen",
+    "date":"2024-07-17",
+    "handicap": 4.8
+  },
+  {
+    "player": "sami-heikkinen",
+    "date":"2024-07-22",
+    "handicap": 4.8
+  },
+  {
+    "player": "sami-heikkinen",
+    "date":"2024-07-29",
+    "handicap": 4.7
+  },
+  {
+    "player": "sami-heikkinen",
+    "date":"2024-08-05",
+    "handicap": 4.5
+  },
+  {
+    "player": "sami-heikkinen",
     "date":"2024-08-23",
     "handicap": 4.7
+  },
+  {
+    "player": "simo-liukkonen",
+    "date":"2024-07-01",
+    "handicap": 6.2
+  },
+  {
+    "player": "simo-liukkonen",
+    "date":"2024-07-08",
+    "handicap": 5.4
+  },
+  {
+    "player": "simo-liukkonen",
+    "date":"2024-07-17",
+    "handicap": 4.5
+  },
+  {
+    "player": "simo-liukkonen",
+    "date":"2024-07-22",
+    "handicap": 4.2
+  },
+  {
+    "player": "simo-liukkonen",
+    "date":"2024-07-29",
+    "handicap": 4.0
+  },
+  {
+    "player": "simo-liukkonen",
+    "date":"2024-08-05",
+    "handicap": 5.0
+  },
+  {
+    "player": "simo-liukkonen",
+    "date":"2024-08-12",
+    "handicap": 4.4
+  },
+  {
+    "player": "simo-liukkonen",
+    "date":"2024-08-19",
+    "handicap": 4.2
   },
   {
     "player": "simo-liukkonen",
@@ -181,8 +741,63 @@
   },
   {
     "player": "timo-lukumaa",
+    "date":"2024-07-01",
+    "handicap": 10.8
+  },
+  {
+    "player": "timo-lukumaa",
+    "date":"2024-07-08",
+    "handicap": 10.8
+  },
+  {
+    "player": "timo-lukumaa",
+    "date":"2024-07-17",
+    "handicap": 10.8
+  },
+  {
+    "player": "timo-lukumaa",
+    "date":"2024-07-22",
+    "handicap": 10.8
+  },
+  {
+    "player": "timo-lukumaa",
+    "date":"2024-07-29",
+    "handicap": 10.8
+  },
+  {
+    "player": "timo-lukumaa",
+    "date":"2024-08-19",
+    "handicap": 10.9
+  },
+  {
+    "player": "timo-lukumaa",
     "date":"2024-08-23",
     "handicap": 10.7
+  },
+  {
+    "player": "tommy-gulin",
+    "date":"2024-07-01",
+    "handicap": -3.1
+  },
+  {
+    "player": "tommy-gulin",
+    "date":"2024-07-08",
+    "handicap": -2.7
+  },
+  {
+    "player": "tommy-gulin",
+    "date":"2024-07-17",
+    "handicap": -1.7
+  },
+  {
+    "player": "tommy-gulin",
+    "date":"2024-07-22",
+    "handicap": -1.7
+  },
+  {
+    "player": "tommy-gulin",
+    "date":"2024-07-29",
+    "handicap": -1.7
   },
   {
     "player": "tommy-gulin",
@@ -190,9 +805,34 @@
     "handicap": -0.8
   },
   {
-    "player": "toni-marttila",
-    "date":"2024-08-23",
-    "handicap": 10.2
+    "player": "ossi-laukkanen",
+    "date":"2024-07-01",
+    "handicap": 7.5
+  },
+  {
+    "player": "ossi-laukkanen",
+    "date":"2024-07-08",
+    "handicap": 7.3
+  },
+  {
+    "player": "ossi-laukkanen",
+    "date":"2024-07-17",
+    "handicap": 7.3
+  },
+  {
+    "player": "ossi-laukkanen",
+    "date":"2024-07-22",
+    "handicap": 7.3
+  },
+  {
+    "player": "ossi-laukkanen",
+    "date":"2024-07-29",
+    "handicap": 7.3
+  },
+  {
+    "player": "ossi-laukkanen",
+    "date":"2024-08-05",
+    "handicap": 7.4
   },
   {
     "player": "ossi-laukkanen",
@@ -221,13 +861,123 @@
   },
   {
     "player": "mikko-oesch",
+    "date":"2024-07-01",
+    "handicap": 9.2
+  },
+  {
+    "player": "mikko-oesch",
+    "date":"2024-07-08",
+    "handicap": 9.0
+  },
+  {
+    "player": "mikko-oesch",
+    "date":"2024-07-17",
+    "handicap": 9.3
+  },
+  {
+    "player": "mikko-oesch",
+    "date":"2024-07-22",
+    "handicap": 9.3
+  },
+  {
+    "player": "mikko-oesch",
+    "date":"2024-07-29",
+    "handicap": 8.8
+  },
+  {
+    "player": "mikko-oesch",
+    "date":"2024-08-05",
+    "handicap": 9.3
+  },
+  {
+    "player": "mikko-oesch",
+    "date":"2024-08-12",
+    "handicap": 8.5
+  },
+  {
+    "player": "mikko-oesch",
     "date":"2024-08-23",
     "handicap": 8.8
   },
   {
     "player": "olli-varis",
+    "date":"2024-07-01",
+    "handicap": 7.7
+  },
+  {
+    "player": "olli-varis",
+    "date":"2024-07-08",
+    "handicap": 7.7
+  },
+  {
+    "player": "olli-varis",
+    "date":"2024-07-17",
+    "handicap": 7.7
+  },
+  {
+    "player": "olli-varis",
+    "date":"2024-07-22",
+    "handicap": 7.8
+  },
+  {
+    "player": "olli-varis",
+    "date":"2024-08-05",
+    "handicap": 8.1
+  },
+  {
+    "player": "olli-varis",
+    "date":"2024-08-12",
+    "handicap": 8.5
+  },
+  {
+    "player": "olli-varis",
+    "date":"2024-08-19",
+    "handicap": 9.1
+  },
+  {
+    "player": "olli-varis",
     "date":"2024-08-23",
     "handicap": 8.7
+  },
+  {
+    "player": "toni-marttila",
+    "date":"2024-07-01",
+    "handicap": 11.4
+  },
+  {
+    "player": "toni-marttila",
+    "date":"2024-07-08",
+    "handicap": 10.7
+  },
+  {
+    "player": "toni-marttila",
+    "date":"2024-07-17",
+    "handicap": 10.4
+  },
+  {
+    "player": "toni-marttila",
+    "date":"2024-07-22",
+    "handicap": 10.4
+  },
+  {
+    "player": "toni-marttila",
+    "date":"2024-07-29",
+    "handicap": 9.7
+  },
+  {
+    "player": "toni-marttila",
+    "date":"2024-08-05",
+    "handicap": 10.4
+  },
+  {
+    "player": "toni-marttila",
+    "date":"2024-08-12",
+    "handicap": 9.5
+  },
+  {
+    "player": "toni-marttila",
+    "date":"2024-08-19",
+    "handicap": 10.2
   },
   {
     "player": "toni-marttila",
