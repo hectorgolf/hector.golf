@@ -21,7 +21,7 @@ if (!event) {
 }
 event = event!
 
-const field: Array<Player> = event.results?.participants
+const field: Array<Player> = event.participants
     .map(id => getPlayerById(id))
     .filter(p => !!p)
     .sort((p1, p2) => p1!.name.last.localeCompare(p2!.name.last)) as Array<Player> || []
@@ -42,7 +42,7 @@ const field: Array<Player> = event.results?.participants
         {event.hero_image ? <img src={event.hero_image} title={event.name}/><br/> : ""}
         {event.description ? (<p>{event.description}</p>) : ""}
 
-        {event.results?.participants && (
+        {event.participants && event.participants.length > 0 && (
             <div class="field">
                 <h2>Field</h2>
                 <ul>

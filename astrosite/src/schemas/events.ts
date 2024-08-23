@@ -1,28 +1,26 @@
 import { z } from 'astro:content';
 
+const matchplayMatchSchema = z.object({
+    id: z.string(),
+    leftSource: z.string().nullable(),
+    rightSource: z.string().nullable(),
+    left: z.string().nullable(),
+    right: z.string().nullable(),
+    score: z.string().nullable(),
+    winner: z.string().nullable()
+})
 
-const matchplayResults = z.object({
-    participants: z.array(z.string()),
+const matchplayResultsSchema = z.object({
     winners: z.object({
         matchplay: z.string().optional()
     }),
     bracket: z.array(z.object({
         round: z.number(),
-        matches: z.array(z.object(
-            {
-                id: z.string(),
-                leftSource: z.string().nullable(),
-                rightSource: z.string().nullable(),
-                left: z.string().nullable(),
-                right: z.string().nullable(),
-                score: z.string().nullable(),
-                winner: z.string().nullable()
-            }
-        ))
+        matches: z.array(matchplayMatchSchema)
     }))
 });
 
-const hectorResults = z.object({
+const hectorResultsSchema = z.object({
     teams: z.array(z.object({
         name: z.string(),
         players: z.array(z.string())
@@ -33,7 +31,7 @@ const hectorResults = z.object({
     })
 }).optional()
 
-const finnkampenResults = z.object({
+const finnkampenResultsSchema = z.object({
     teams: z.array(z.object({
         name: z.string(),
         players: z.array(z.string())
@@ -44,43 +42,32 @@ const finnkampenResults = z.object({
 }).optional()
 
 
-export const hectorEventSchema = z.object({
+const BaseEventSchema = z.object({
     id: z.string(),
+    ignore: z.boolean().optional().default(false),
+    name: z.string(),
+    location: z.string(),
+    date: z.string(),
+    hero_image: z.string().optional(),
+    description: z.string().optional(),
+    participants: z.array(z.string()),
+})
+
+export const hectorEventSchema = BaseEventSchema.extend({
     format: z.literal('hector'),
-    ignore: z.boolean().optional().default(false),
-    name: z.string(),
     courses: z.array(z.string()).optional(),
-    location: z.string(),
-    date: z.string(),
-    hero_image: z.string().optional(),
-    description: z.string().optional(),
-    participants: z.array(z.string()).optional(),
-    results: hectorResults.optional()
+    results: hectorResultsSchema.optional()
 })
 
-export const finnkampenEventSchema = z.object({
-    id: z.string(),
+export const finnkampenEventSchema = BaseEventSchema.extend({
     format: z.literal('finnkampen'),
-    ignore: z.boolean().optional().default(false),
-    name: z.string(),
     courses: z.array(z.string()).optional(),
-    location: z.string(),
-    date: z.string(),
-    hero_image: z.string().optional(),
-    description: z.string().optional(),
-    results: finnkampenResults.optional()
+    results: finnkampenResultsSchema.optional()
 })
 
-export const matchplayEventSchema = z.object({
-    id: z.string(),
+export const matchplayEventSchema = BaseEventSchema.extend({
     format: z.literal('matchplay'),
-    ignore: z.boolean().optional().default(false),
-    name: z.string(),
-    location: z.string(),
-    date: z.string(),
-    hero_image: z.string().optional(),
-    description: z.string().optional(),
-    results: matchplayResults.optional()
+    results: matchplayResultsSchema.optional()
 })
 
 export const genericEventSchema = z.discriminatedUnion("format", [ hectorEventSchema, matchplayEventSchema, finnkampenEventSchema ])
@@ -88,8 +75,10 @@ export const genericEventSchema = z.discriminatedUnion("format", [ hectorEventSc
 
 export type Event = z.infer<typeof genericEventSchema>;
 
+export type MatchplayMatch = z.infer<typeof matchplayMatchSchema>;
+export type MatchplayResults = z.infer<typeof matchplayResultsSchema>;
 export type MatchplayEvent = z.infer<typeof matchplayEventSchema>;
 export type HectorEvent = z.infer<typeof hectorEventSchema>;
+export type HectorResults = z.infer<typeof hectorResultsSchema>;
 export type FinnkampenEvent = z.infer<typeof finnkampenEventSchema>;
-
-export default genericEventSchema;
+export type FinnkampenResults = z.infer<typeof finnkampenResultsSchema>;

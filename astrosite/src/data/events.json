@@ -41,25 +41,25 @@
         "location": "Finland",
         "date": "2024",
         "description": "16 of the world's best amateur golfers face each other in a sequence of grueling head-to-head battles to the lip-out bogey. This matchplay tournament format uses a single elimination bracket, making the stakes high from the very start.",
+        "participants": [
+            "lasse-koskela",
+            "martin-svedholm",
+            "eero-halmetoja",
+            "harri-vainio",
+            "jaakko-saarinen",
+            "janne-valtakari",
+            "jussi-allonen",
+            "juuso-pihamaa",
+            "mikko-oesch",
+            "miso-lith",
+            "olli-andersson",
+            "sami-heikkinen",
+            "simo-liukkonen",
+            "timo-lukumaa",
+            "toni-marttila",
+            "ossi-laukkanen"
+        ],
         "results": {
-            "participants": [
-                "lasse-koskela",
-                "martin-svedholm",
-                "eero-halmetoja",
-                "harri-vainio",
-                "jaakko-saarinen",
-                "janne-valtakari",
-                "jussi-allonen",
-                "juuso-pihamaa",
-                "mikko-oesch",
-                "miso-lith",
-                "olli-andersson",
-                "sami-heikkinen",
-                "simo-liukkonen",
-                "timo-lukumaa",
-                "toni-marttila",
-                "ossi-laukkanen"
-            ],
             "winners": {
             },
             "bracket": [
@@ -108,6 +108,18 @@
         "location": "Diamond Country Club, Austria",
         "date": "September 23-26, 2023",
         "courses": [ "adamstal", "diamondcc-championship", "diamondcc-country", "diamondcc-park" ],
+        "participants": [
+            "jarkko-kailanto", "olli-varis",
+            "lasse-koskela", "sami-heikkinen",
+            "mikko-oesch", "lassi-koto",
+            "olli-andersson", "eero-halmetoja",
+            "simo-liukkonen", "timo-lukumaa",
+            "martin-svedholm", "lauri-paatela",
+            "juuso-pihamaa", "harri-vainio",
+            "miso-lith", "marcus-mattila",
+            "toni-marttila", "okko-pykalainen",
+            "ofri-porat", "pekka-saijonmaa"
+        ],
         "results": {
             "teams": [
                 { "name": "Olli Varis & Jarkko Kailanto", "players":["jarkko-kailanto", "olli-varis"] },
@@ -137,6 +149,26 @@
         "date": "October 22, 2022",
         "courses": ["kurk-golf"],
         "description": "",
+        "participants": [
+            "jussi-allonen-hcp070",
+            "eero-halmetoja-hcp115",
+            "pasi-halmetoja-hcp065",
+            "sami-heikkinen-hcp055",
+            "lasse-koskela-hcp183",
+            "jari-kuusela-hcp060",
+            "simo-liukkonen-hcp063",
+            "mikko-oesch-hcp108",
+            "janne-valtakari-hcp196",
+            "jussi-siltanen-hcp060",
+            "tommy-gulin-hcp+023",
+            "jaakko-saarinen-hcp149",
+            "timo-lukumaa-hcp140",
+            "miso-lith-hcp121",
+            "toni-marttila-hcp092",
+            "marcus-mattila-hcp090",
+            "martin-svedholm-hcp089",
+            "harri-vainio-hcp110"
+        ],
         "results": {
             "teams": [
                 {
@@ -160,6 +192,20 @@
         "location": "Quellness Golf Resort, Germany",
         "date": "September 14-17, 2022",
         "courses": ["quellness-porsche", "quellness-beckenbauer"],
+        "participants": [
+            "simo-liukkonen", "timo-lukumaa",
+            "jarkko-kailanto", "marcus-mattila",
+            "lasse-koskela", "okko-pykalainen",
+            "mikko-oesch", "jaakko-saarinen",
+            "pasi-halmetoja", "eero-halmetoja",
+            "olli-varis", "olli-andersson",
+            "toni-marttila", "lassi-koto",
+            "ossi-laukkanen", "janne-valtakari",
+            "sami-heikkinen", "harri-vainio",
+            "martin-svedholm", "kristian-hiljander",
+            "juuso-pihamaa", "miso-lith",
+            "jussi-allonen", "pekka-saijonmaa"
+        ],
         "results": {
             "teams": [
                 { "name": "Simo Liukkonen & Timo Lukumaa", "players": ["simo-liukkonen", "timo-lukumaa"] },
@@ -190,6 +236,7 @@
         "location": "?",
         "date": "October 23, 2022",
         "courses": [""],
+        "participants": [],
         "results": {
             "teams": [],
             "winners": {}
@@ -203,6 +250,7 @@
         "location": "Penati, Slovakia",
         "date": "September 1-4, 2021",
         "courses": ["penati-legend", "penati-heritage"],
+        "participants": [],
         "results": {
             "teams": [
                 { "name": "Pasi Halmetoja & Olli Andersson", "players": ["pasi-halmetoja", "olli-andersson"] },
@@ -230,6 +278,7 @@
         "location": "Tahko Golf, Finland",
         "date": "September 10-13, 2020",
         "courses": ["tahko-new-course", "tahko-old-course"],
+        "participants": [],
         "results": {
             "teams": [
                 { "name": "Olli Varis & Daniel Hylton", "players": ["olli-varis", "daniel-hylton"] },
@@ -258,6 +307,7 @@
         "location": "Konopiste, Chech Republic",
         "date": "September 20-22, 2019",
         "courses": ["konopiste"],
+        "participants": [],
         "results": {
             "teams": [
                 { "name": "Tommy Gulin & Erik Fagerström", "players": ["tommy-gulin", "erik-fagerstrom"] },
@@ -287,6 +337,7 @@
         "location": "Sand Valley, Poland",
         "date": "August 3-5, 2018",
         "courses": ["sandvalley"],
+        "participants": [],
         "results": {
             "teams": [
                 { "name": "Simo Liukkonen & Toni Marttila", "players": ["simo-liukkonen", "toni-marttila"] },
@@ -311,6 +362,7 @@
         "location": "Pickala Golf, Finland",
         "date": "July 28, 2017",
         "courses": ["pickala-forest"],
+        "participants": [],
         "results": {
             "teams": [
                 { "name": "Toni Marttila & Panu Liira", "players": ["toni-marttila", "panu-liira"] },
@@ -335,6 +387,7 @@
         "location": "Kurk Golf, Finland",
         "date": "July 21, 2016",
         "courses": ["kurk-golf"],
+        "participants": [],
         "results": {
             "teams": [
                 { "name": "Miso Korkiakoski & Timo Lukumaa", "players": ["miso-lith", "timo-lukumaa"] },
@@ -359,6 +412,7 @@
         "location": "Pickala Golf, Finland",
         "date": "September 12, 2015",
         "courses": ["pickala-seaside"],
+        "participants": [],
         "results": {
             "teams": [
                 { "name": "Toni Marttila & Daniel Hylton", "players": ["toni-marttila", "daniel-hylton"] },
@@ -380,6 +434,7 @@
         "location": "Pickala Golf, Finland",
         "date": "August 22, 2014",
         "courses": ["pickala-forest"],
+        "participants": [],
         "results": {
             "teams": [
                 { "name": "Marcus Mattila & Mikko Oesch", "players": ["marcus-mattila", "mikko-oesch"] },

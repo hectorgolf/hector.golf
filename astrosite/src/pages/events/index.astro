@@ -5,11 +5,15 @@ import EventCard from '../../components/events/EventCard.astro';
 import MatchplayEventCard from '../../components/events/MatchplayEventCard.astro';
 import Highlight from '../../components/Highlight.astro';
 
-import { getAllEvents } from '../../code/events';
+import { getAllEvents, getAllEventsGroupedByChronology } from '../../code/events';
+import type { MatchplayEvent } from '../../schemas/events';
+import type { Event } from '../../schemas/events';
 
 function linkToEvent(event: any) {
     return `/events/${event.format}/${event.id}`;
 }
+
+const { past, ongoing, upcoming } = getAllEventsGroupedByChronology()
 
 ---
 
@@ -19,19 +23,41 @@ function linkToEvent(event: any) {
 			<Breadcrumb title="Home" href="/" />
 		</div>
 		<h1><span class="text-gradient">Events</span></h1>
-        <Highlight>
-            <p><strong>NEXT EVENT:</strong></p>
-            <p></p><strong><a href="/events/HECTOR2024" style="color: white">Hector 2024</a></strong> at <strong></strong>La Finca Golf Resort</strong>, Spain.</p>
-        </Highlight>
-		<ul role="list" class="link-card-grid">
-			{getAllEvents().map((event) => {
-				if (event.format === 'matchplay') {
-					return <MatchplayEventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
-				} else {
-					return <EventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
-				}
-            })}
-		</ul>
+		{ongoing.length > 0 ? (
+				<Highlight>
+					<h2>ONGOING</h2>
+					{ongoing.map(event => {
+						return (<p><strong><a href={linkToEvent(event)} style="color: white">{event.name}</a></strong> at <strong>{event.location}</strong>.</p>)
+					})}
+				</Highlight>
+			) : null
+		}
+		{upcoming.length > 0 ? (
+				<h2>Coming up</h2>
+				<ul role="list" class="link-card-grid">
+					{upcoming.map((event) => {
+						if (event.format === 'matchplay') {
+							return <MatchplayEventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
+						} else {
+							return <EventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
+						}
+					})}
+				</ul>
+			) : null
+		}
+		{past.length > 0 ? (
+				<h2>Past events</h2>
+				<ul role="list" class="link-card-grid">
+					{past.map((event) => {
+						if (event.format === 'matchplay') {
+							return <MatchplayEventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
+						} else {
+							return <EventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
+						}
+					})}
+				</ul>
+			) : null
+		}
 	</main>
 </Layout>
 
