@@ -25,10 +25,16 @@ const { past, ongoing, upcoming } = getAllEventsGroupedByChronology()
 		<h1><span class="text-gradient">Events</span></h1>
 		{ongoing.length > 0 ? (
 				<Highlight>
-					<h2>ONGOING</h2>
-					{ongoing.map(event => {
-						return (<p><strong><a href={linkToEvent(event)} style="color: white">{event.name}</a></strong> at <strong>{event.location}</strong>.</p>)
-					})}
+					<h2>NOW</h2>
+					<ul role="list" class="link-card-grid">
+						{ongoing.map((event) => {
+							if (event.format === 'matchplay') {
+								return <MatchplayEventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
+							} else {
+								return <EventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
+							}
+						})}
+					</ul>
 				</Highlight>
 			) : null
 		}
