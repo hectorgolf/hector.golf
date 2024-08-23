@@ -9,7 +9,9 @@ export const schema = z.object({
     contact: z.object({
         phone: z.string()
     }),
-    image: z.string().optional()
+    image: z.string().optional(),
+    club: z.string().optional(),
+    handicap: z.number().optional(),
 })
 
 export type Player = z.infer<typeof schema>;

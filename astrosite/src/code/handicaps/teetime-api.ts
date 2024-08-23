@@ -105,15 +105,22 @@ export const fetchHandicap = async (token: string, clubNumber: string, firstName
 }
 
 const ENV = import.meta.env || process.env || {};
-const isProd = ENV.PROD;
 const teetimeClubNumber = ENV.TEETIME_CLUB_NUMBER
 const teetimeUsername = ENV.TEETIME_USERNAME
 const teetimePassword = ENV.TEETIME_PASSWORD
 
-console.log(`isProd? ${isProd}  isDev? ${ENV.DEV}`);
+if (!teetimeClubNumber || !teetimeUsername || !teetimePassword) {
+    console.error(`Missing teetime.fi credentials:`);
+    console.error(`TEETIME_CLUB_NUMBER: ${teetimeClubNumber ? teetimeClubNumber : '<MISSING>'}`);
+    console.error(`TEETIME_USERNAME:   ${teetimeUsername ? teetimeUsername : '<MISSING>'}`);
+    console.error(`TEETIME_PASSWORD:   ${teetimePassword ? teetimePassword.replace(/./g, '*') : '<MISSING>'}`);
+    console.error(`Please try again and provide the missing environment variables.`)
+    process.exit(1)
+}
 console.log(`teetimeClubNumber: ${teetimeClubNumber}`);
 console.log(`teetimeUsername:   ${teetimeUsername}`);
 console.log(`teetimePassword:   ${teetimePassword?.replace(/./g, '*')}`);
+
 
 export const withLogin = (callback: (token: string) => Promise<void>) => {
     login(teetimeClubNumber, teetimeUsername, teetimePassword).then(token => callback(token))
@@ -141,6 +148,10 @@ export const resolveClubNumber = async (clubNameOrNumber: string): Promise<strin
 }
 
 export const fetchClub = async (clubNameOrNumber: string): Promise<TeetimeClub|undefined> => {
+    if (!clubNameOrNumber) {
+        console.warn(`No club name or number provided - cannot fetch club`)
+        return undefined
+    }
     const clubs = await fetchClubs();
     const club = clubs.find(club => {
         if (club.number && club.number === clubNameOrNumber) return true;

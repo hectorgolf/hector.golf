@@ -4,6 +4,9 @@ import { getAllEvents } from './events';
 import playersData from '../data/players.json';
 import { type Player, schema as PlayerSchema } from '../schemas/players';
 
+import handicapData from '../data/handicaps.json';
+import { type HandicapHistoryEntry, schema as HandicapHistoryEventSchema } from '../schemas/handicaps';
+
 
 export function getAllPlayerIds(): Array<string> {
     return playersData.map((record) => record.id);
@@ -20,7 +23,28 @@ export function getPlayerById(id: string): Player|undefined {
     if (!_record) {
         return undefined
     }
-    return PlayerSchema.parse(_record);
+    const player = PlayerSchema.parse(_record);
+    // TODO: update handicap from handicap history, allowing the player data (players.json)
+    // to manually override the history data:
+    const handicapFromAPI = getPlayerHandicapById(player.id)
+    const handicapOverride = player.handicap
+    player.handicap = handicapOverride || handicapFromAPI
+    return player
+}
+
+export function getPlayerHandicapHistoryById(id: string): HandicapHistoryEntry[] {
+    let events: HandicapHistoryEntry[] = handicapData
+        .map(record => HandicapHistoryEventSchema.parse(record))
+        .filter(event => event.player === id)
+    return events.sort((a, b) => a.date.localeCompare(b.date))
+}
+
+export function getPlayerHandicapById(id: string): number|undefined {
+    let events: HandicapHistoryEntry[] = getPlayerHandicapHistoryById(id)
+    if (events.length === 0) {
+        return undefined
+    }
+    return events[events.length - 1].handicap;
 }
 
 export function getPlayerName(player: Player|string): string {

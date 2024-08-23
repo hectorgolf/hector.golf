@@ -4,6 +4,7 @@ import Breadcrumb from '../../components/Breadcrumb.astro';
 import AppearanceCard from '../../components/players/AppearanceCard.astro';
 import { type Player } from '../../schemas/players';
 import { getEventsOfPlayer, getAllPlayerIds, getPlayerById, getPlayerName } from '../../code/players';
+import { getPlayerHandicap } from '../../code/handicaps';
 
 
 export function getStaticPaths() {
@@ -36,6 +37,14 @@ const relatedEvents = getEventsOfPlayer(player.id);
                 <img src={player.image} alt={getPlayerName(player)} />
             </div>
             ) : null
+        }
+
+        {player.handicap ? (
+            <div class="handicap">
+                <h2>Handicap</h2>
+                <p>{Number(player.handicap).toFixed(1)}</p>
+            </div>
+            ): null
         }
 
         <div class="related-events">

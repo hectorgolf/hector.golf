@@ -4,7 +4,9 @@ import PlayerCard from '../../components/players/PlayerCard.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import { getAllPlayers, getEventsOfPlayer } from '../../code/players';
 import { getTotalWinsByPlayer, getEventsWonByPlayer } from '../../code/stats';
+import { getPlayerHandicap } from '../../code/handicaps';
 import type { HectorEvent, MatchplayEvent, FinnkampenEvent } from '../../schemas/events';
+
 
 function linkToPlayer(player: any): string {
     return `/players/${player.id}`;
@@ -33,6 +35,7 @@ function starts(player: any): number {
 
 const players = getAllPlayers().sort((a, b) => getTotalWinsByPlayer(b) - getTotalWinsByPlayer(a))
 
+
 ---
 
 <Layout title="Players">
@@ -43,7 +46,7 @@ const players = getAllPlayers().sort((a, b) => getTotalWinsByPlayer(b) - getTota
         <h1><span class="text-gradient">Players</span></h1>
         <ul role="list" class="link-card-grid">
             {players.map((player) => {
-                return <PlayerCard name={player.name} image={player.image} href={linkToPlayer(player)} starts={starts(player)} wins={yearsOfWins(player)} />
+                return <PlayerCard name={player.name} image={player.image} href={linkToPlayer(player)} starts={starts(player)} wins={yearsOfWins(player)} handicap={player.handicap} />
             })}
         </ul>
     </main>

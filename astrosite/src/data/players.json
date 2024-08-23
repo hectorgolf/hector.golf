@@ -8,8 +8,7 @@
     "contact": {
       "phone": "+358403424395"
     },
-    "club": "OjlG",
-    "handicap": 12.5
+    "club": "OjlG"
   },
   {
     "id": "eero-halmetoja",
@@ -20,8 +19,7 @@
     "contact": {
       "phone": "+358408456410"
     },
-    "club": "VGH",
-    "handicap": 9.7
+    "club": "VGH"
   },
   {
     "id": "harri-vainio",
@@ -32,8 +30,7 @@
     "contact": {
       "phone": "+358505980893"
     },
-    "club": "HaG",
-    "handicap": 11.2
+    "club": "HaG"
   },
   {
     "id": "jaakko-saarinen",
@@ -44,8 +41,7 @@
     "contact": {
       "phone": "+358442443347"
     },
-    "club": "HirG",
-    "handicap": 19.4
+    "club": "HirG"
   },
   {
     "id": "janne-valtakari",
@@ -56,8 +52,7 @@
     "contact": {
       "phone": "+358451673611"
     },
-    "club": "ReG",
-    "handicap": 18.8
+    "club": "ReG"
   },
   {
     "id": "jarkko-kailanto",
@@ -68,8 +63,7 @@
     "contact": {
       "phone": "+358504860406"
     },
-    "club": "HirG",
-    "handicap": 14
+    "club": "HirG"
   },
   {
     "id": "jussi-allonen",
@@ -80,8 +74,7 @@
     "contact": {
       "phone": "+358406803204"
     },
-    "club": "StLG",
-    "handicap": 8.3
+    "club": "StLG"
   },
   {
     "id": "juuso-pihamaa",
@@ -92,8 +85,7 @@
     "contact": {
       "phone": "+358407505539"
     },
-    "club": "HyG",
-    "handicap": 5.6
+    "club": "HyG"
   },
   {
     "id": "kristian-hiljander",
@@ -104,7 +96,8 @@
     "contact": {
       "phone": "+358408390767"
     },
-    "club": "Master"
+    "club": "Master",
+    "handicap": 10.7
   },
   {
     "id": "lasse-koskela",
@@ -115,8 +108,7 @@
     "contact": {
       "phone": "+358456709770"
     },
-    "club": "TaG",
-    "handicap": 15.4
+    "club": "TaG"
   },
   {
     "id": "lassi-koto",
@@ -127,8 +119,7 @@
     "contact": {
       "phone": "+358505435610"
     },
-    "club": "LGV",
-    "handicap": 12.7
+    "club": "LGV"
   },
   {
     "id": "lauri-paatela",
@@ -139,8 +130,7 @@
     "contact": {
       "phone": "+358407700612"
     },
-    "club": "PGC",
-    "handicap": 14
+    "club": "PGC"
   },
   {
     "id": "marcus-mattila",
@@ -151,8 +141,7 @@
     "contact": {
       "phone": "+358400645949"
     },
-    "club": "Kurk",
-    "handicap": 10.7
+    "club": "Kurk"
   },
   {
     "id": "martin-svedholm",
@@ -163,8 +152,7 @@
     "contact": {
       "phone": "+358505790324"
     },
-    "club": "StLG",
-    "handicap": 8.4
+    "club": "StLG"
   },
   {
     "id": "mikko-oesch",
@@ -175,8 +163,7 @@
     "contact": {
       "phone": "+358408459339"
     },
-    "club": "LGV",
-    "handicap": 8.8
+    "club": "LGV"
   },
   {
     "id": "miso-lith",
@@ -187,8 +174,7 @@
     "contact": {
       "phone": "+358505003049"
     },
-    "club": "HirG",
-    "handicap": 8.5
+    "club": "HirG"
   },
   {
     "id": "ofri-porat",
@@ -199,8 +185,7 @@
     "contact": {
       "phone": "+358504873415"
     },
-    "club": "GPi",
-    "handicap": 4.7
+    "club": "GPi"
   },
   {
     "id": "okko-pykalainen",
@@ -211,8 +196,7 @@
     "contact": {
       "phone": "+358503760244"
     },
-    "club": "HirG",
-    "handicap": 14.9
+    "club": "HirG"
   },
   {
     "id": "olli-andersson",
@@ -223,8 +207,7 @@
     "contact": {
       "phone": "+358503753183"
     },
-    "club": "HGK",
-    "handicap": 12.4
+    "club": "HGK"
   },
   {
     "id": "olli-varis",
@@ -235,8 +218,7 @@
     "contact": {
       "phone": "+358445455556"
     },
-    "club": "HirG",
-    "handicap": 8.7
+    "club": "HirG"
   },
   {
     "id": "panu-liira",
@@ -247,8 +229,7 @@
     "contact": {
       "phone": "+358505658474"
     },
-    "club": "KJKG",
-    "handicap": 18.3
+    "club": "KJKG"
   },
   {
     "id": "pasi-halmetoja",
@@ -259,8 +240,7 @@
     "contact": {
       "phone": "+358408423660"
     },
-    "club": "VGH",
-    "handicap": 9.2
+    "club": "VGH"
   },
   {
     "id": "pekka-saijonmaa",
@@ -282,8 +262,7 @@
     "contact": {
       "phone": "+358405392115"
     },
-    "club": "HirG",
-    "handicap": 4.7
+    "club": "HirG"
   },
   {
     "id": "simo-liukkonen",
@@ -294,8 +273,7 @@
     "contact": {
       "phone": "+358504653824"
     },
-    "club": "HirG",
-    "handicap": 4.7
+    "club": "HirG"
   },
   {
     "id": "timo-lukumaa",
@@ -306,8 +284,7 @@
     "contact": {
       "phone": "+358456709767"
     },
-    "club": "KGV",
-    "handicap": 10.7
+    "club": "KGV"
   },
   {
     "id": "tommy-gulin",
@@ -318,8 +295,7 @@
     "contact": {
       "phone": "+358407226282"
     },
-    "club": "ERG",
-    "handicap": -0.8
+    "club": "ERG"
   },
   {
     "id": "toni-marttila",
@@ -330,8 +306,7 @@
     "contact": {
       "phone": "+358504418241"
     },
-    "club": "HirG",
-    "handicap": 10.9
+    "club": "HirG"
   },
   {
     "id": "ossi-laukkanen",
@@ -342,8 +317,7 @@
     "contact": {
       "phone": "+358400492149"
     },
-    "club": "KGC",
-    "handicap": 7.5
+    "club": "KGC"
   },
   {
     "id": "mikko-lifflander",
@@ -354,8 +328,7 @@
     "contact": {
       "phone": ""
     },
-    "club": "Kurk",
-    "handicap": 19.9
+    "club": "Kurk"
   },
   {
     "id": "mikael-lindberg",
@@ -366,8 +339,7 @@
     "contact": {
       "phone": ""
     },
-    "club": "Kurk",
-    "handicap": 14.5
+    "club": "Kurk"
   },
   {
     "id": "riku-liira",
@@ -378,8 +350,7 @@
     "contact": {
       "phone": ""
     },
-    "club": "KJKG",
-    "handicap": 22
+    "club": "KJKG"
   },
   {
     "id": "joni-valkeapaa",
@@ -401,8 +372,7 @@
     "contact": {
       "phone": ""
     },
-    "club": "JG",
-    "handicap": 47.7
+    "club": "JG"
   },
   {
     "id": "erik-fagerstrom",

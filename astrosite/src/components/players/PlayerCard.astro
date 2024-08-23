@@ -5,9 +5,10 @@ interface Props {
 	href: string;
 	starts: number;
 	wins: number[];
+	handicap: number|undefined;
 }
 
-const { name, image, href, starts, wins } = Astro.props;
+const { name, image, href, starts, wins, handicap } = Astro.props;
 
 const fullname = `${name.first} ${name.last}`;
 
@@ -23,7 +24,10 @@ const startsText = starts === 1 ? "1 start" : `${starts} starts`;
 <li class="link-player">
 	<a href={href}>
 		{image ? <img src={image} title={fullname}/><br/> : ""}
-		<span class="title">{fullname}</span>
+		<span class="title">
+			{fullname}
+			{handicap ? (<span class="handicap">(HCP {Number(handicap).toFixed(1)})</span>) : ""}
+		</span>
 		<span class="starts">{startsText}</span>, <span class="wins">{winsText}</span>
 	</a>
 </li>
@@ -60,6 +64,10 @@ const startsText = starts === 1 ? "1 start" : `${starts} starts`;
 	.link-player .title {
 		display: block;
 		font-size: 1.25rem;
+	}
+	.link-player .handicap {
+		font-size: 0.7em;
+		color: lightblue;
 	}
 	.link-player .starts {
 		display: inline;
