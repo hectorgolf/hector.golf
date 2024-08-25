@@ -134,9 +134,6 @@ export const getPlayerHandicap = async (firstName: string, lastName: string, clu
                 const token = providedToken || await login(teetimeClubNumber, teetimeUsername, teetimePassword);
                 return await fetchHandicap(token, clubNumber, firstName, lastName);
             }
-        } else {
-            console.log(`Missing teetime.fi credentials – computing a "random" handicap for ${firstName} ${lastName}...`);
-            return firstName.length + lastName.length + (clubNameOrAbbreviation.length / 10);
         }
     }
     return undefined

@@ -6,12 +6,16 @@ import { getPlayerHandicap, withLogin } from '../code/handicaps/teetime-api.ts'
 
 import playersData from '../data/players.json'
 
-const getPlayerById = (id: string): Player|undefined => {
-    let _record = playersData.find((record) => record.id === id)
-    if (!_record) {
+const getPlayerById = (id: string, handicapHistory: Array<HandicapHistoryEntry>): Player|undefined => {
+    let record = playersData.find((record) => record.id === id) as Player
+    if (!record) {
         return undefined
     }
-    return _record as Player
+    const handicap = handicapHistory
+        .filter(entry => entry.player === id)
+        .sort((a,b) => a.date.localeCompare(b.date))
+        .map(entry => entry.handicap).pop()
+    return { ...record, handicap: record.handicap || handicap }
 }
 
 const readJsonFile = (pathToJsonFile: string, defaultValue: any = []): any => {
@@ -51,9 +55,8 @@ type HandicapHistoryEntry = {
     handicap: number,
 }
 
-const persistHandicapHistoryToDisk = (players: Player[]) => {
-    const handicapHistory: Array<HandicapHistoryEntry> = readJsonFile(pathToHandicapHistoryJson, [])
-    const handicapChanges: Array<HandicapHistoryEntry> = []
+const persistHandicapHistoryToDisk = (players: Player[], handicapHistory: Array<HandicapHistoryEntry>) => {
+    const newHandicapChanges: Array<HandicapHistoryEntry> = []
     const date = new Date().toISOString().split('T')[0]
 
     const playersWithNewHandicap = players
@@ -61,21 +64,29 @@ const persistHandicapHistoryToDisk = (players: Player[]) => {
         .filter(p => p.handicapChanged)
 
     playersWithNewHandicap.forEach((player) => {
-        const isDuplicate = !!handicapHistory.find((entry) => entry.player === player.id && entry.date === date)
-        if (!isDuplicate) {
-            handicapChanges.push({
-                date,
-                player: player.id,
-                handicap: player.handicap as number
-            })
+        const duplicate = handicapHistory.find((entry) => entry.player === player.id && entry.date === date)
+        if (duplicate) {
+            // If our data already contains a handicap entry for this player on this date, let's update
+            // the existing entry rather than creating a new one. This might happen when there's been a delay
+            // in the Golf Association processing handicaps changes and our early-morning data update has
+            // mistakenly grabbed "today's" handicap from the API, and later in the afternoon data update
+            // we get the "correct" handicap because the Golf Association has re-run their failed batch job.
+            handicapHistory = handicapHistory.filter(entry => !(entry.player === player.id && entry.date === date))
+            console.warn(`Updating older entry for ${player.name.first} ${player.name.last} on ${duplicate.date}. Replacing ${JSON.stringify(duplicate.handicap)} with ${JSON.stringify(player.handicap)}`)
         }
+        // If there's no entry for this player on this date, we'll just push a new entry to the list
+        newHandicapChanges.push({
+            date,
+            player: player.id,
+            handicap: player.handicap as number
+        })
     })
 
-    if (handicapChanges.length > 0) {
+    if (newHandicapChanges.length > 0) {
         console.log(`Old handicaps: ${JSON.stringify(handicapHistory, null, 2)}`)
-        console.log(`Updated ${handicapChanges.length} players' handicap:`)
-        console.log(JSON.stringify(handicapChanges, null, 2))
-        writeFileSync(pathToHandicapHistoryJson, JSON.stringify(handicapHistory.concat(handicapChanges), null, 2))
+        console.log(`Updated ${newHandicapChanges.length} players' handicap:`)
+        console.log(JSON.stringify(newHandicapChanges, null, 2))
+        writeFileSync(pathToHandicapHistoryJson, JSON.stringify(handicapHistory.concat(newHandicapChanges), null, 2))
     }
 }
 
@@ -85,18 +96,21 @@ const persistHandicapHistoryToDisk = (players: Player[]) => {
 //     writeFileSync(pathToPlayersJson, JSON.stringify(players, null, 2))
 // }
 
-const fetchUpdatedPlayerRecords = async (players: Player[], token: string): Promise<Player[]> => {
+const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Array<HandicapHistoryEntry>, token: string): Promise<Player[]> => {
     const playerListPromises = players.map((player: any) => {
-        const playerObject = getPlayerById(player.id)
+        const playerObject = getPlayerById(player.id, handicapHistory)
         if (playerObject && playerObject.club) {
-            const oldHandicap = player.handicap  // Let's save the old handicap
+            const oldHandicap = playerObject.handicap  // Let's save the old handicap
             const promiseForNewHandicap = getPlayerHandicap(playerObject.name.first, playerObject.name.last, playerObject.club, token)
             return promiseForNewHandicap.then((newHandicap) => {
-                if (newHandicap && newHandicap !== oldHandicap) {
+                if (newHandicap !== undefined && newHandicap !== oldHandicap) {
                     playerObject.handicap = newHandicap
                     playerObject.handicapChanged = true
                     console.log(`Handicap for ${playerObject.name.first} ${playerObject.name.last} changed from ${oldHandicap} to ${newHandicap}`)
                 }
+                return Promise.resolve(playerObject)
+            }).catch((failure: Error) => {
+                console.error(`Failed to fetch handicap for ${playerObject.name.first} ${playerObject.name.last}: ${failure.message}`)
                 return Promise.resolve(playerObject)
             })
         } else {
@@ -111,8 +125,9 @@ const updateHandicapsForAllPlayers = () => {
     console.log(`Attempting to update handicap data for ${oldPlayers.length} players...`)
     withLogin(async (token: string) => {
         console.log(`Logged in with token: ${token}`)
-        const updatedPlayers = await fetchUpdatedPlayerRecords(oldPlayers, token)
-        persistHandicapHistoryToDisk(updatedPlayers)
+        const handicapHistory: Array<HandicapHistoryEntry> = readJsonFile(pathToHandicapHistoryJson, [])
+        const updatedPlayers = await fetchUpdatedPlayerRecords(oldPlayers, handicapHistory, token)
+        persistHandicapHistoryToDisk(updatedPlayers, handicapHistory)
 
         // TODO: maybe we should persist the players.json to disk as well, removing any
         // redundant handicap overrides from the file in cases where we're getting a recent
