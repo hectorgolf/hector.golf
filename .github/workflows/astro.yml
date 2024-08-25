@@ -11,11 +11,10 @@ on:
     paths:
       - 'astrosite/**/*'    # Only run when the push includes changes to the Astro website
   
-  # Runs at 3:00am UTC every day at approximately 5:00am (or 6:00am) in Helsinki timezone
-  # and again at 12:00am UTC to retry in case the early morning data update had failed but
-  # its afternoon retry has gone through:
+  # Runs at 3:30am and 12:30 (UTC) every day, hopefully after
+  # the 3:00/12:00 data update has been triggered and finished:
   schedule:
-    - cron: "0 3,12 * * *"
+    - cron: "30 3,12 * * *"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
