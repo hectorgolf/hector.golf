@@ -1,0 +1,88 @@
+---
+import EventCard from '../../components/events/EventCard.astro';
+import MatchplayEventCard from '../../components/events/MatchplayEventCard.astro';
+import Highlight from '../../components/Highlight.astro';
+import { getAllEventsGroupedByChronology, linkToEvent } from '../../code/events';
+import { EventFormat } from '../../schemas/events';
+
+interface Props {
+	title: string
+	formats: EventFormat[]|undefined
+}
+
+const { title, formats } = Astro.props
+const allFormats = Object.values(EventFormat) as EventFormat[]
+const includedFormats = formats || allFormats
+
+const { past, ongoing, upcoming } = getAllEventsGroupedByChronology(e => includedFormats.includes(e.format))
+
+---
+
+<>
+    <h1><span class="text-gradient">{title}</span></h1>
+    {ongoing.length > 0 ? (
+            <Highlight>
+                <h2>NOW</h2>
+                <ul role="list" class="link-card-grid">
+                    {ongoing.map((event) => {
+                        if (event.format === EventFormat.Matchplay) {
+                            return <MatchplayEventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
+                        } else if (event.format === EventFormat.Hector) {
+                            return <EventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
+                        } else {
+                            console.warn(`<EventList/> not rendering a card for event ${event.name} because it has an unsupported format: ${event.format}`)
+                        }
+                    })}
+                </ul>
+            </Highlight>
+        ) : null
+    }
+    {upcoming.length > 0 ? (
+            <h2>Coming up</h2>
+            <ul role="list" class="link-card-grid">
+                {upcoming.map((event) => {
+                    if (event.format === EventFormat.Matchplay) {
+                        return <MatchplayEventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
+                    } else if (event.format === EventFormat.Hector) {
+                        return <EventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
+                    } else {
+                            console.warn(`<EventList/> not rendering a card for event ${event.name} because it has an unsupported format: ${event.format}`)
+                    }
+                })}
+            </ul>
+        ) : null
+    }
+    {past.length > 0 ? (
+            <h2>Past events</h2>
+            <ul role="list" class="link-card-grid">
+                {past.map((event) => {
+                    if (event.format === EventFormat.Matchplay) {
+                        return <MatchplayEventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
+                    } else if (event.format === EventFormat.Hector) {
+                        return <EventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
+                    } else {
+                            console.warn(`<EventList/> not rendering a card for event ${event.name} because it has an unsupported format: ${event.format}`)
+                    }
+                })}
+            </ul>
+        ) : null
+    }
+</>
+
+<style>
+	h1 {
+		text-transform: uppercase;
+		font-size: 4rem;
+		font-weight: 700;
+		line-height: 1;
+		text-align: center;
+		margin-bottom: 1em;
+	}
+
+	.link-card-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
+		gap: 2rem;
+		padding: 0;
+	}
+</style>

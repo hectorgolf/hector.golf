@@ -53,20 +53,26 @@ const BaseEventSchema = z.object({
     participants: z.array(z.string()),
 })
 
+export enum EventFormat {
+    Hector = 'hector',
+    Matchplay = 'matchplay',
+    Finnkampen = 'finnkampen',
+}
+
 export const hectorEventSchema = BaseEventSchema.extend({
-    format: z.literal('hector'),
+    format: z.literal(EventFormat.Hector),
     courses: z.array(z.string()).optional(),
     results: hectorResultsSchema.optional()
 })
 
 export const finnkampenEventSchema = BaseEventSchema.extend({
-    format: z.literal('finnkampen'),
+    format: z.literal(EventFormat.Finnkampen),
     courses: z.array(z.string()).optional(),
     results: finnkampenResultsSchema.optional()
 })
 
 export const matchplayEventSchema = BaseEventSchema.extend({
-    format: z.literal('matchplay'),
+    format: z.literal(EventFormat.Matchplay),
     results: matchplayResultsSchema.optional()
 })
 

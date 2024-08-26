@@ -1,5 +1,5 @@
 import eventsData from '../data/events.json';
-import { type Event, genericEventSchema as EventSchema, type MatchplayEvent, type MatchplayResults, type MatchplayMatch, type HectorEvent, type FinnkampenEvent } from '../schemas/events';
+import { type Event, genericEventSchema as EventSchema, type MatchplayEvent, type MatchplayResults, type HectorEvent, type FinnkampenEvent, EventFormat } from '../schemas/events';
 
 import coursesData from '../data/courses.json';
 import { type Course, schema as CourseSchema } from '../schemas/courses';
@@ -29,14 +29,16 @@ export function getAllEvents(providedFilter?: (e: Event) => boolean): Array<Even
         .filter(record => !!record) as Array<Event>;
 }
 
-export function getAllEventsGroupedByChronology(): { ongoing: Array<Event>, upcoming: Array<Event>, past: Array<Event> } {
+export function getAllEventsGroupedByChronology(providedFilter?: (e: Event) => boolean): { ongoing: Array<Event>, upcoming: Array<Event>, past: Array<Event> } {
     const isoDate = (date: Date|undefined): string => date?.toISOString()?.slice(0, 10) || '';
-    const isFinishedMatchplayEvent = (event: Event): boolean => !!(event.format === 'matchplay' && (event as MatchplayEvent).results?.winners?.matchplay)
+    const isFinishedMatchplayEvent = (event: Event): boolean => {
+        return !!(event.format === EventFormat.Matchplay && (event as MatchplayEvent).results?.winners?.matchplay)
+    }
 
     const pastEvents: Array<Event> = []
     const ongoingEvents: Array<Event> = []
     const upcomingEvents: Array<Event> = []
-    getAllEvents().forEach(event => {
+    getAllEvents(providedFilter).forEach(event => {
         const range = parseEventDateRange(event.date) || { startDate: undefined, endDate: undefined };
         const {startDate, endDate} = range
         const today = isoDate(new Date())
@@ -61,19 +63,19 @@ const populateMissingParticipants = (event: Event): Event => {
     // the event's results object (teams of a team event or the matches of
     // a matchplay event)
     if (event.participants.length === 0 && event.results) {
-        if (event.format === 'matchplay') {
+        if (event.format === EventFormat.Matchplay) {
             const results: MatchplayResults = (event as MatchplayEvent).results as MatchplayResults
             results.bracket.flatMap(round => round.matches).forEach(match => {
                 if (match.left && !event.participants.includes(match.left)) event.participants.push(match.left)
                 if (match.right && !event.participants.includes(match.right)) event.participants.push(match.right)
             })
-        } else if (event.format === 'hector') {
+        } else if (event.format === EventFormat.Hector) {
             const results = (event as HectorEvent).results
             const teams = results?.teams || []
             teams.flatMap(team => team.players).forEach(player => {
                 if (!event.participants.includes(player)) event.participants.push(player)
             })
-        } else if (event.format === 'finnkampen') {
+        } else if (event.format === EventFormat.Finnkampen) {
             const results = (event as FinnkampenEvent).results
             const teams = (results?.teams || [])
             teams.flatMap(team => team.players).forEach(player => {
@@ -106,7 +108,7 @@ export function getEventsAtCourse(courseId: string): Array<Event> {
 
 export function getCoursesOfEvent(eventId: string): Array<Course> {
     const event = getEventById(eventId);
-    const courses: string[] = event?.format === 'matchplay' ? [] : event?.courses as string[]
+    const courses: string[] = event?.format === EventFormat.Matchplay ? [] : event?.courses as string[]
     return (courses).flatMap((course_id) => {
         let _course = coursesData.find((course) => course.id === course_id);
         if (_course) return [CourseSchema.parse(_course)];
