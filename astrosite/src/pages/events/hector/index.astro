@@ -4,9 +4,7 @@ import Breadcrumb from '../../../components/Breadcrumb.astro';
 import EventCard from '../../../components/events/EventCard.astro';
 /* import Highlight from '../../../components/Highlight.astro'; */
 
-import { getAllEvents } from '../../../code/events';
-
-const linkToEvent = (event: any): string =>`/events/${event.id}`;
+import { getAllEvents, linkToEvent } from '../../../code/events';
 
 const matchplayEvents = getAllEvents().filter(e => e.format === 'hector')
 

@@ -4,9 +4,7 @@ import Breadcrumb from '../../../components/Breadcrumb.astro';
 import MatchplayEventCard from '../../../components/events/MatchplayEventCard.astro';
 /* import Highlight from '../../../components/Highlight.astro'; */
 
-import { getAllEvents } from '../../../code/events';
-
-const linkToEvent = (event: any): string =>`/events/matchplay/${event.id}`;
+import { getAllEvents, linkToEvent } from '../../../code/events';
 
 const matchplayEvents = getAllEvents().filter(e => e.format === 'matchplay')
 

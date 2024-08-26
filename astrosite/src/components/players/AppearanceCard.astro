@@ -1,5 +1,6 @@
 ---
 
+import { linkToEvent } from '../../code/events';
 import { type Player } from '../../schemas/players';
 import { type Event, type HectorEvent } from '../../schemas/events';
 
@@ -16,7 +17,7 @@ const wonVictor = event.format === 'hector' && !!(event as HectorEvent).results?
 ---
 
 <div class="appearance">
-	<a href={`/events/${event.id}`}>
+	<a href={linkToEvent(event)}>
 		<span class="event-name">{event.name}</span>
 		{wonHector ? (<img class="win hector" src="/images/hector-trophy-32.png" alt="Hector Trophy" />) : null}
 		{wonVictor ? (<img class="win victor" src="/images/victor-trophy-32.png" alt="Victor Trophy" />) : null}

@@ -4,14 +4,8 @@ import Breadcrumb from '../../components/Breadcrumb.astro';
 import EventCard from '../../components/events/EventCard.astro';
 import MatchplayEventCard from '../../components/events/MatchplayEventCard.astro';
 import Highlight from '../../components/Highlight.astro';
+import { getAllEventsGroupedByChronology, linkToEvent } from '../../code/events';
 
-import { getAllEvents, getAllEventsGroupedByChronology } from '../../code/events';
-import type { MatchplayEvent } from '../../schemas/events';
-import type { Event } from '../../schemas/events';
-
-function linkToEvent(event: any) {
-    return `/events/${event.format}/${event.id}`;
-}
 
 const { past, ongoing, upcoming } = getAllEventsGroupedByChronology()
 

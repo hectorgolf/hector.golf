@@ -4,6 +4,16 @@ import { type Event, genericEventSchema as EventSchema, type MatchplayEvent, typ
 import coursesData from '../data/courses.json';
 import { type Course, schema as CourseSchema } from '../schemas/courses';
 
+export const linkToEvent = (event: Event|string): string => {
+    if (typeof(event) === 'string') {
+        const eventObject = getEventById(event)
+        if (eventObject) {
+            return linkToEvent(eventObject)
+        }
+        throw new Error(`Event with id ${event} not found`)
+    }
+    return `/events/${event.format}/${event.id}`
+};
 
 export function getAllEventIds(providedFilter?: (e: Event) => boolean): Array<string> {
     return getAllEvents(providedFilter).map((record => record.id))
