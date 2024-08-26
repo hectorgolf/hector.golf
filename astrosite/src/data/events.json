@@ -142,7 +142,7 @@
     },
     {
         "ignore": true,
-        "id": "_FINNKAMPEN2022",
+        "id": "FINNKAMPEN2022",
         "name": "Finnkampen 2022",
         "format": "finnkampen",
         "location": "Kurk Golf, Finland",
@@ -230,7 +230,7 @@
     },
     {
         "ignore": true,
-        "id": "_FINNKAMPEN2021",
+        "id": "FINNKAMPEN2021",
         "name": "Finnkampen 2021",
         "format": "finnkampen",
         "location": "?",
