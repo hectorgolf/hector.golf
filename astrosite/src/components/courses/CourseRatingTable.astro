@@ -9,50 +9,54 @@ interface Props {
 const { course } = Astro.props;
 ---
 
-<div class="course-rating-table">
-    <table>
-        <thead>
-            <tr class="header">
-                <th class="tee-identifier odd">Tee</th>
-                <th class="tee-length even">Length</th>
-                <th class="tee-par odd">Par</th>
-                <th class="tee-slope even" colspan="3">Slope</th>
-                <th class="tee-rating odd" colspan="3">Rating</th>
-            </tr>
-            <tr class="subheading" style="font-size: 0.7em;">
-                <th class="tee-identifier odd"></th>
-                <th class="tee-length even"></th>
-                <th class="tee-par odd"></th>
-                <th class="tee-slope even" colspan="3">M / W</th>
-                <th class="tee-rating odd" colspan="3">M / W</th>
-            </tr>
-        </thead>
-        <tbody>
-            {course.course.tees.map((tee) => {
-                const circleStyle = "fill:" + tee.color + ";stroke:#000000;"
-                return (
-                    <tr>
-                        <td class="tee-identifier odd">
-                            <svg class="color" width="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="10" cy="10" r="7" style={circleStyle}/>
-                            </svg>
-                            <span class="name">{tee.name || tee.length}</span>
-                        </td>
-                        <td class="tee-length even">{tee.length} m</td>
-                        <td class="tee-par odd">{tee.par}</td>
-                        <td class="tee-slope men even"><span class="men">{tee.slope.men || " – "}</span></td>
-                        <td class="tee-slope divider even"><span class="divider">/</span></td>
-                        <td class="tee-slope ladies even"><span class="ladies">{tee.slope.ladies || " – "}</span></td>
-                        <td class="tee-rating men odd"><span class="men">{tee.rating.men || " – "}</span></td>
-                        <td class="tee-rating divider odd"><span class="divider">/</span></td>
-                        <td class="tee-rating ladies odd"><span class="ladies">{tee.rating.ladies || " – "}</span></td>
+{course.course && (
+    <div class="slope-and-rating">
+        <h2>Course rating</h2>
+        <div class="course-rating-table">
+            <table>
+                <thead>
+                    <tr class="header">
+                        <th class="tee-identifier odd">Tee</th>
+                        <th class="tee-length even">Length</th>
+                        <th class="tee-par odd">Par</th>
+                        <th class="tee-slope even" colspan="3">Slope</th>
+                        <th class="tee-rating odd" colspan="3">Rating</th>
                     </tr>
-                )
-            })}
-        </tbody>
-    </table>
-    <!-- <code>{JSON.stringify(course.course.tees, null, 2)}</code> -->
-</div>
+                    <tr class="subheading" style="font-size: 0.7em;">
+                        <th class="tee-identifier odd"></th>
+                        <th class="tee-length even"></th>
+                        <th class="tee-par odd"></th>
+                        <th class="tee-slope even" colspan="3">M / W</th>
+                        <th class="tee-rating odd" colspan="3">M / W</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {course.course.tees.map((tee) => {
+                        return (
+                            <tr>
+                                <td class="tee-identifier odd">
+                                    <svg class="color" width="22" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="12" cy="12" r="6" style={`fill:${tee.color};stroke:${tee.stroke || tee.color};`}/>
+                                    </svg>
+                                    <span class="name">{tee.name || tee.length}</span>
+                                </td>
+                                <td class="tee-length even">{tee.length} m</td>
+                                <td class="tee-par odd">{tee.par}</td>
+                                <td class="tee-slope men even"><span class="men">{tee.slope.men || " – "}</span></td>
+                                <td class="tee-slope divider even"><span class="divider">/</span></td>
+                                <td class="tee-slope ladies even"><span class="ladies">{tee.slope.ladies || " – "}</span></td>
+                                <td class="tee-rating men odd"><span class="men">{tee.rating.men || " – "}</span></td>
+                                <td class="tee-rating divider odd"><span class="divider">/</span></td>
+                                <td class="tee-rating ladies odd"><span class="ladies">{tee.rating.ladies || " – "}</span></td>
+                            </tr>
+                        )
+                    })}
+                </tbody>
+            </table>
+            <!-- <code>{JSON.stringify(course.course.tees, null, 2)}</code> -->
+        </div>
+    </div>
+)}
 
 <style>
     table {
@@ -78,6 +82,11 @@ const { course } = Astro.props;
 
     table tr.subheading th {
         padding-bottom: 10px;
+    }
+
+    .course-rating-table .tee-identifier .name {
+        vertical-align: text-bottom;
+        margin-left: 3px;
     }
 
     .tee-identifier, .tee-par, .tee-length {

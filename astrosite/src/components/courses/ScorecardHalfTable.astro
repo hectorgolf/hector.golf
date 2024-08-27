@@ -15,72 +15,74 @@ const sliceEnd = lastHole;
 const inOrOut = firstHole <= 9 ? "Out" : "In";
 ---
 
-<div class="scorecard-half-table">
-    <table>
-        <thead>
-            <tr class="hole-number">
-                {hideFirstColumn ? "" : (<th class="left-aligned heading-column">Hole</th>)}
-                {course.course.scorecard.men.slice(sliceStart, sliceEnd).map((hole, index) => {
-                    const oddOrEven = index % 2 === 0 ? "even" : "odd";
-                    const cssClass = `center-aligned hole-number ${oddOrEven}`
-                    return <th class={cssClass}>{hole.hole}</th>
+{course.course && (
+    <div class="scorecard-half-table">
+        <table>
+            <thead>
+                <tr class="hole-number">
+                    {hideFirstColumn ? "" : (<th class="left-aligned heading-column">Hole</th>)}
+                    {course.course.scorecard.men.slice(sliceStart, sliceEnd).map((hole, index) => {
+                        const oddOrEven = index % 2 === 0 ? "even" : "odd";
+                        const cssClass = `center-aligned hole-number ${oddOrEven}`
+                        return <th class={cssClass}>{hole.hole}</th>
+                    })}
+                    <th class="center-aligned heading-column">{inOrOut}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="par">
+                    {hideFirstColumn ? "" : (<td class="left-aligned heading-column">Par</td>)}
+                    {course.course.scorecard.men.slice(sliceStart, sliceEnd).map((hole, index) => {
+                        const oddOrEven = index % 2 === 0 ? "even" : "odd";
+                        const cssClass = `center-aligned hole-par ${oddOrEven}`
+                        return <td class={cssClass}>{hole.par}</td>
+                    })}
+                    <td class="center-aligned heading-column">{course.course.scorecard.men.slice(sliceStart, sliceEnd).reduce((total, hole) => total + hole.par, 0)}</td>
+                </tr>
+                <tr class="hcp">
+                    {hideFirstColumn ? "" : (<td class="left-aligned heading-column">Hcp</td>)}
+                    {course.course.scorecard.men.slice(sliceStart, sliceEnd).map((hole, index) => {
+                        const oddOrEven = index % 2 === 0 ? "even" : "odd";
+                        const cssClass = `center-aligned hole-hcp ${oddOrEven}`
+                        return <td class={cssClass}>{hole.hcp}</td>
+                    })}
+                    <td class="center-aligned heading-column"></td>
+                </tr>
+                {course.course.tees.map((tee) => {
+                    const playingLengths = course.course!.scorecard.men.slice(sliceStart, sliceEnd).map((hole) => hole.lengths?.[tee.name])
+                    return (
+                        <tr class="tee">
+                            {hideFirstColumn ? "" : (<td class="tee-identifier left-aligned heading-column">
+                                <svg class="color" width="20" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="6" style={`fill:${tee.color};stroke:${tee.stroke || tee.color};`}/>
+                                </svg>
+                                <span class="name">{tee.name || tee.length}</span>
+                            </td>)}
+                            {playingLengths.map((length, index) => {
+                                const oddOrEven = index % 2 === 0 ? "even" : "odd";
+                                const cssClass = `center-aligned hole-length ${oddOrEven}`
+                                return (
+                                    <td class={cssClass}>
+                                        <div class="hole-length-container">
+                                            <span class="hole-length-container-label">{length}</span>
+                                        </div>
+                                    </td>
+                                )
+                            })}
+                            <td class="center-aligned hole-length heading-column">
+                                <div class="hole-length-container">
+                                    <span class="hole-length-container-label">
+                                        {playingLengths.reduce((total, hole) => total + hole, 0)}
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    )
                 })}
-                <th class="center-aligned heading-column">{inOrOut}</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr class="par">
-                {hideFirstColumn ? "" : (<td class="left-aligned heading-column">Par</td>)}
-                {course.course.scorecard.men.slice(sliceStart, sliceEnd).map((hole, index) => {
-                    const oddOrEven = index % 2 === 0 ? "even" : "odd";
-                    const cssClass = `center-aligned hole-par ${oddOrEven}`
-                    return <td class={cssClass}>{hole.par}</td>
-                })}
-                <td class="center-aligned heading-column">{course.course.scorecard.men.slice(sliceStart, sliceEnd).reduce((total, hole) => total + hole.par, 0)}</td>
-            </tr>
-            <tr class="hcp">
-                {hideFirstColumn ? "" : (<td class="left-aligned heading-column">Hcp</td>)}
-                {course.course.scorecard.men.slice(sliceStart, sliceEnd).map((hole, index) => {
-                    const oddOrEven = index % 2 === 0 ? "even" : "odd";
-                    const cssClass = `center-aligned hole-hcp ${oddOrEven}`
-                    return <td class={cssClass}>{hole.hcp}</td>
-                })}
-                <td class="center-aligned heading-column"></td>
-            </tr>
-            {course.course.tees.map((tee) => {
-                const playingLengths = course.course.scorecard.men.slice(sliceStart, sliceEnd).map((hole) => hole.lengths?.[tee.name])
-                return (
-                    <tr class="tee">
-                        {hideFirstColumn ? "" : (<td class="tee-identifier left-aligned heading-column">
-                            <svg class="color" width="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="10" cy="10" r="7" style={`fill:${tee.color};stroke:#000000;`}/>
-                            </svg>
-                            <span class="name">{tee.name || tee.length}</span>
-                        </td>)}
-                        {playingLengths.map((length, index) => {
-                            const oddOrEven = index % 2 === 0 ? "even" : "odd";
-                            const cssClass = `center-aligned hole-length ${oddOrEven}`
-                            return (
-                                <td class={cssClass}>
-                                    <div class="hole-length-container">
-                                        <span class="hole-length-container-label">{length}</span>
-                                    </div>
-                                </td>
-                            )
-                        })}
-                        <td class="center-aligned hole-length heading-column">
-                            <div class="hole-length-container">
-                                <span class="hole-length-container-label">
-                                    {playingLengths.reduce((total, hole) => total + hole, 0)}
-                                </span>
-                            </div>
-                        </td>
-                    </tr>
-                )
-            })}
-        </tbody>
-    </table>
-</div>
+            </tbody>
+        </table>
+    </div>
+)}
 
 <style>
 
@@ -125,6 +127,11 @@ const inOrOut = firstHole <= 9 ? "Out" : "In";
 
     table tr {
         height: 30px;
+    }
+
+    .tee-identifier .name {
+        vertical-align: text-bottom;
+        margin-left: 3px;
     }
 
     @media only screen and (max-width: 500px) {

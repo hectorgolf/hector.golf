@@ -30,6 +30,7 @@ export const schema = z.object({
         tees: z.array(z.object({
             name: z.string(),
             color: z.string(),
+            stroke: z.string().optional(),
             length: z.number().min(1).max(9999),
             par: z.number().min(1).max(99),
             rating: z.object({
@@ -60,8 +61,8 @@ export const schema = z.object({
             shape: z.enum(["narrow", "wide"]).optional(),
             layout: z.string(),
             description: z.string()
-        }))
-    }),
+        })).optional()
+    }).optional(),
     datasources: z.array(z.object({
         name: z.string(),
         url: z.string().url()

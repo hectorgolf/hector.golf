@@ -306,7 +306,7 @@
         "format": "hector",
         "location": "Konopiste, Chech Republic",
         "date": "September 20-22, 2019",
-        "courses": ["konopiste"],
+        "courses": ["konopiste-radecky", "konopiste-deste"],
         "participants": [],
         "results": {
             "teams": [

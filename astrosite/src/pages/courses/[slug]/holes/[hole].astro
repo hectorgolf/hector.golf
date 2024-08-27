@@ -7,7 +7,7 @@ import { getCourseById } from '../../../../code/courses';
 
 export function getStaticPaths() {
     return data.flatMap((course) => {
-        return course.course.descriptions.map((description) => {
+        return (course.course?.descriptions || []).map((description) => {
             return { params: { slug: course.id, hole: description.hole.toString() } };
         });
     });
@@ -21,14 +21,15 @@ if (!course) {
     Astro.response.status = 404;
 }
 course = course!
-const holeDescription = course.course.descriptions.find((description) => description.hole === holeNumber);
-if (!holeDescription) {
+const holeDescription = course.course?.descriptions?.find((description) => description.hole === holeNumber);
+const hasScorecard = (course.course?.scorecard?.men !== undefined || course.course?.scorecard?.ladies !== undefined)
+if (!holeDescription || !hasScorecard) {
     console.error(`No hole description found for hole ${hole} on course ${slug}`);
     Astro.response.status = 404;
 }
-const holeData = (course.course.scorecard.men || course.course.scorecard.ladies).find((holeOnCourse) => holeOnCourse.hole === holeNumber);
+const holeData = (course.course!.scorecard?.men || course.course!.scorecard?.ladies).find((holeOnCourse) => holeOnCourse.hole === holeNumber);
 const courseHref = `/courses/${slug}`;
-const numberOfHoles = course.course.descriptions.length
+const numberOfHoles = course.course!.descriptions!.length
 const prevHoleHref = `${courseHref}/holes/${holeNumber == 1 ? numberOfHoles : holeNumber - 1}`;
 const nextHoleHref = `${courseHref}/holes/${holeNumber == numberOfHoles ? 1 : holeNumber + 1}`;
 ---
@@ -52,14 +53,14 @@ const nextHoleHref = `${courseHref}/holes/${holeNumber == numberOfHoles ? 1 : ho
                     <div class="par"><span class="text-gradient">PAR {holeData?.par}</span></div>
                     <div class="hcp"><span class="text-gradient">HCP {holeData?.hcp}</span></div>
                     <div class="tee-lengths-container">
-                        {course.course.tees.map((tee) => {
+                        {course.course!.tees.map((tee) => {
                             const holeLength = holeData?.lengths?.[tee.name]
                             return (
                                 <div class="tee-length">
-                                    <svg class="color" width="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                        <circle cx="10" cy="10" r="7" style={`fill:${tee.color};stroke:#000000;`}/>
+                                    <svg class="color" width="22" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="12" cy="12" r="6" style={`fill:${tee.color};stroke:${tee.stroke || tee.color};`}/>
                                     </svg>
-                                    {holeLength} m
+                                    <span class="length">{holeLength} m</span>
                                 </div>
                             )
                         })}
@@ -159,6 +160,11 @@ const nextHoleHref = `${courseHref}/holes/${holeNumber == numberOfHoles ? 1 : ho
         max-width: calc(100% - 2rem);
         color: white;
         line-height: 1.6;
+    }
+
+    .tee-length .length {
+        margin-left: 3px;
+        vertical-align: text-bottom;
     }
 
     h1 {

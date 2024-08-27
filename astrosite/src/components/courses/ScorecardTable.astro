@@ -10,17 +10,22 @@ interface Props {
 const { course } = Astro.props;
 ---
 
-<div class="scorecard-tables">
-    <div class="scorecard-table-split">
-        <span class="front-nine"><ScorecardHalfTable course={course} firstHole={1} lastHole={9} /></span>
-        <span class="back-nine"><ScorecardHalfTable course={course} firstHole={10} lastHole={18} /></span>
+{course.course && (
+    <div class="scorecard">
+        <h2>Scorecard</h2>
+        <div class="scorecard-tables">
+            <div class="scorecard-table-split">
+                <span class="front-nine"><ScorecardHalfTable course={course} firstHole={1} lastHole={9} /></span>
+                <span class="back-nine"><ScorecardHalfTable course={course} firstHole={10} lastHole={18} /></span>
+            </div>
+            <div class="scorecard-table-full">
+                <ScorecardHalfTable course={course} firstHole={1} lastHole={9} />
+                <ScorecardHalfTable course={course} firstHole={10} lastHole={18} hideFirstColumn={true} />
+            </div>
+            <!-- <code>{"course: " + JSON.stringify(course, null, 2)}</code> -->
+        </div>
     </div>
-    <div class="scorecard-table-full">
-        <ScorecardHalfTable course={course} firstHole={1} lastHole={9} />
-        <ScorecardHalfTable course={course} firstHole={10} lastHole={18} hideFirstColumn={true} />
-    </div>
-    <!-- <code>{"course: " + JSON.stringify(course, null, 2)}</code> -->
-</div>
+)}
 
 <style>
     .scorecard-table-split {

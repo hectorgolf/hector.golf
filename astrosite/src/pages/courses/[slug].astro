@@ -22,7 +22,7 @@ if (!course) {
 course = course!
 
 const relatedEvents = getEventsAtCourse(course.id);
-const holeLayoutShape = course.course.descriptions[0].shape === 'wide' ? 'wide' : 'narrow';
+const holeLayoutShape = course.course?.descriptions?.[0]?.shape === 'wide' ? 'wide' : 'narrow';
 
 ---
 
@@ -48,36 +48,36 @@ const holeLayoutShape = course.course.descriptions[0].shape === 'wide' ? 'wide' 
             })}
         </div>
 
-        <div class="slope-and-rating">
-            <h2>Course rating</h2>
-            <CourseRatingTable course={course} />
-        </div>
+        <CourseRatingTable course={course} />
 
-        <div class="scorecard">
-            <h2>Scorecard</h2>
-            <ScorecardTable course={course} />
-        </div>
+        <ScorecardTable course={course} />
 
-        <div class="course-layout">
-            <h2>Course layout</h2>
-            {course.images.course_layout && (
-                <img src={course.images.course_layout} />
-            )}
+        {(course.images.course_layout || course.course) && (
+            <div class="course-layout">
+                {course.images.course_layout && (
+                    <>
+                        <h2>Course layout</h2>
+                        <img src={course.images.course_layout} />
+                    </>
+                )}
 
-            <div class:list={['holes-grid', { narrow: holeLayoutShape === 'narrow', wide: holeLayoutShape === 'wide' }]}>
-                {course.course.descriptions.map((hole) => {
-                    const holeHref = `/courses/${slug}/holes/${hole.hole}`
-                    return (
-                        <div class:list={['hole', { narrow: holeLayoutShape === 'narrow', wide: holeLayoutShape === 'wide' }]}>
-                            <a href={holeHref}>
-                                <h2>Hole {hole.hole}</h2>
-                                <img src={hole.layout} />
-                            </a>
-                        </div>
-                    );
-                })}
+                {course.course?.descriptions && (
+                    <div class:list={['holes-grid', { narrow: holeLayoutShape === 'narrow', wide: holeLayoutShape === 'wide' }]}>
+                        {course.course.descriptions.map((hole) => {
+                            const holeHref = `/courses/${slug}/holes/${hole.hole}`
+                            return (
+                                <div class:list={['hole', { narrow: holeLayoutShape === 'narrow', wide: holeLayoutShape === 'wide' }]}>
+                                    <a href={holeHref}>
+                                        <h2>Hole {hole.hole}</h2>
+                                        <img src={hole.layout} />
+                                    </a>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
-        </div>
+        )}
 
         <div class="related-events">
             <h2>Events at {course.name}</h2>
@@ -87,10 +87,6 @@ const holeLayoutShape = course.course.descriptions[0].shape === 'wide' ? 'wide' 
                 );
             })}
         </div>
-
-        <!--
-        <pre>{JSON.stringify(course.course.descriptions, null, 2)}</pre>
-         -->
     </main>
 </Layout>
 
