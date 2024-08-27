@@ -1,5 +1,105 @@
 [
     {
+        "id": "tahko-old-course",
+        "name": "Tahko Old Course",
+        "homepage": "https://tahkogolf.fi",
+        "contact": {
+            "address": "Klubitie 12, 73310 Tahkovuori, Finland",
+            "phone": "tel://+358600550740",
+            "email": "toimisto@tahkogolf.fi"
+        },
+        "hero_image": "/images/courses/tahko-old-course/hero.jpg",
+        "description_short": "",
+        "description_long": [
+            {
+                "type": "paragraph",
+                "content": "Tahko Golf Club is located in the heart of the Tahko tourist area, in the middle of the beautiful Finnish Lakeland. The club has two 18-hole courses, Old Course and New Course, and a 9-hole par-3 course."
+            },
+            {
+                "type": "paragraph",
+                "content": "The Old Course, completed in 2000, is the work of Swedish golf course architect Jan Sederholm, who has designed numerous courses around the world over the decades. Known for his respect for the natural landscape, Sederholm designs courses that blend seamlessly with the terrain rather than altering it. The Old Course is a prime example of his philosophy, where the layout is carefully crafted to follow the natural contours of the land, offering a challenging yet harmonious golfing experience."
+            },
+            {
+                "type":"image",
+                "url": "/images/courses/tahko-old-course/hero2.jpg"
+            },
+            {
+                "type": "paragraph",
+                "content": "The 18-hole Old Course at Tahko, along with its practice areas, is undoubtedly one of the most beautiful and player-friendly golf courses in Finland. The Tahko Old Course is famous for its stunning lakeside holes, offering breathtaking views of Lake Syväri and the nearby ski slopes. The golf center is highly versatile and well-suited for visiting players, as all the services a golfing vacationer might need are within walking distance of the course."
+            },
+            {
+                "type": "paragraph",
+                "content": "The golf course, completed in 2000, features several holes situated right along the shores of Lake Syväri, adding an exciting element to the game. The first nine holes are played in varied terrain with a mix of trees, park-like areas, and water features. After a refreshing break at the golf club, the back nine offers a fair amount of elevation changes, plenty of shoreline, and more stunning views of the lake and ski slopes. The round concludes at the golf club, where you’ll find a restaurant, sauna, and club services."
+            }
+        ],
+        "images": {
+            "hero": "/images/courses/tahko-old-course/hero.jpg",
+            "course_layout": "/images/courses/tahko-old-course/layout.png"
+        },
+        "datasources": [
+            {
+                "name": "website",
+                "url": "https://tahkogolf.fi"
+            },
+            {
+                "name": "mscorecard",
+                "url": "https://www.mscorecard.com/mscorecard/showcourse.php?cid=1148317132421"
+            }
+        ]
+    },
+    {
+        "id": "tahko-new-course",
+        "name": "Tahko New Course",
+        "homepage": "https://tahkogolf.fi",
+        "contact": {
+            "address": "Klubitie 12, 73310 Tahkovuori, Finland",
+            "phone": "tel://+358600550740",
+            "email": "toimisto@tahkogolf.fi"
+        },
+        "hero_image": "/images/courses/tahko-new-course/hero.jpg",
+        "description_short": "",
+        "description_long": [
+            {
+                "type": "paragraph",
+                "content": "Tahko Golf Club is located in the heart of the Tahko tourist area, in the middle of the beautiful Finnish Lakeland. The club has two 18-hole courses, Old Course and New Course, and a 9-hole par-3 course."
+            },
+            {
+                "type": "paragraph",
+                "content": "The New Course, now known as the Lake & Forest Course, was opened in 2008 and reflects the distinctive style of Swedish golf course architect Jan Sederholm. With a career spanning decades and a portfolio of courses around the world, Sederholm is renowned for his approach of designing courses that respect the original shapes of the natural landscape."
+            },
+            {
+                "type": "paragraph",
+                "content": "The New Course continues this tradition, integrating seamlessly with the terrain and maintaining the high standard of design and quality seen in Sederholm’s earlier works, such as the Old Course."
+            },
+            {
+                "type":"image",
+                "url": "/images/courses/tahko-new-course/hero2.jpg"
+            },
+            {
+                "type": "paragraph",
+                "content": "This beautiful 18-hole track is located in the Golden Resort villa area near Lake Syväri, offering all the services a golfer could need, from extensive practice areas to a wide range of club services."
+            },
+            {
+                "type":"image",
+                "url": "/images/courses/tahko-new-course/hero3.png"
+            }
+        ],
+        "images": {
+            "hero": "/images/courses/tahko-new-course/hero.jpg",
+            "course_layout": "/images/courses/tahko-new-course/layout.png"
+        },
+        "datasources": [
+            {
+                "name": "website",
+                "url": "https://tahkogolf.fi"
+            },
+            {
+                "name": "mscorecard",
+                "url": "https://www.mscorecard.com/mscorecard/showcourse.php?cid=1214544345128"
+            }
+        ]
+    },
+    {
         "id": "penati-legend",
         "name": "Penati Golf Legend",
         "homepage": "https://www.penatigolfresort.sk/en/",
