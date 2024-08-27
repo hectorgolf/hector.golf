@@ -54,16 +54,6 @@ const bucket2 = participants?.slice(bucket1!.length)
         </div>
         {event.hero_image ? <img src={event.hero_image} title={event.name}/><br/> : ""}
         {event.description ? (<p>{event.description}</p>) : ""}
-        {eventCourses.length > 0 && (
-            <div class="related-courses">
-                <h2>{eventCourses.length === 1 ? "Course" : "Courses"}</h2>
-                <ul role="list" class="link-card-grid">
-                    {eventCourses.map((course) => {
-                        return (<CourseCard name={course.name} href={`/courses/${course.id}`} location={course.contact.address} image={course.hero_image} />)
-                    })}
-                </ul>
-            </div>
-        )}
 
         {(hectorWinners.length > 0 || victorWinners.length > 0) && (
             <div class="results">
@@ -134,6 +124,18 @@ const bucket2 = participants?.slice(bucket1!.length)
                 </span>
             </div>
         )}
+
+        {eventCourses.length > 0 && (
+            <div class="related-courses">
+                <h2>{eventCourses.length === 1 ? "Course" : "Courses"}</h2>
+                <ul role="list" class="link-card-grid">
+                    {eventCourses.map((course) => {
+                        return (<CourseCard name={course.name} href={`/courses/${course.id}`} location={course.contact.address} image={course.hero_image} />)
+                    })}
+                </ul>
+            </div>
+        )}
+
     </main>
 </Layout>
 
