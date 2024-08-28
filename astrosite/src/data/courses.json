@@ -45,7 +45,130 @@
                 "name": "mscorecard",
                 "url": "https://www.mscorecard.com/mscorecard/showcourse.php?cid=1148317132421"
             }
-        ]
+        ],
+        "course": {
+            "tees": [
+                {
+                    "name": "white",
+                    "color": "#ffffff",
+                    "length": 6085,
+                    "par": 72,
+                    "rating": {
+                        "men": 73.2,
+                        "ladies": null
+                    },
+                    "slope": {
+                        "men": 143,
+                        "ladies": null
+                    }
+                },
+                {
+                    "name": "yellow",
+                    "color": "#ffff00",
+                    "length": 5625,
+                    "par": 72,
+                    "rating": {
+                        "men": 70.5,
+                        "ladies": 75.8
+                    },
+                    "slope": {
+                        "men": 138,
+                        "ladies": 143
+                    }
+                },
+                {
+                    "name": "blue",
+                    "color": "#0000ff",
+                    "length": 5310,
+                    "par": 72,
+                    "rating": {
+                        "men": 69.3,
+                        "ladies": 74.4
+                    },
+                    "slope": {
+                        "men": 135,
+                        "ladies": 140
+                    }
+                },
+                {
+                    "name": "red",
+                    "color": "#ff0000",
+                    "length": 4770,
+                    "par": 72,
+                    "rating": {
+                        "men": 66.4,
+                        "ladies": 70.8
+                    },
+                    "slope": {
+                        "men": 130,
+                        "ladies": 133
+                    }
+                }
+            ],
+            "scorecard": {
+                "men": [
+                    { "hole":  1, "par": 5, "hcp":  2, "lengths": { "white": 525, "yellow": 490, "blue": 420, "red": 420 }},
+                    { "hole":  2, "par": 4, "hcp": 17, "lengths": { "white": 285, "yellow": 260, "blue": 260, "red": 230 }},
+                    { "hole":  3, "par": 4, "hcp": 14, "lengths": { "white": 345, "yellow": 300, "blue": 300, "red": 260 }},
+                    { "hole":  4, "par": 3, "hcp": 18, "lengths": { "white": 140, "yellow": 125, "blue": 125, "red": 110 }},
+                    { "hole":  5, "par": 4, "hcp":  5, "lengths": { "white": 340, "yellow": 330, "blue": 330, "red": 290 }},
+                    { "hole":  6, "par": 5, "hcp":  7, "lengths": { "white": 485, "yellow": 445, "blue": 435, "red": 375 }},
+                    { "hole":  7, "par": 3, "hcp":  3, "lengths": { "white": 220, "yellow": 195, "blue": 175, "red": 140 }},
+                    { "hole":  8, "par": 4, "hcp": 13, "lengths": { "white": 345, "yellow": 325, "blue": 260, "red": 260 }},
+                    { "hole":  9, "par": 4, "hcp":  9, "lengths": { "white": 385, "yellow": 355, "blue": 350, "red": 310 }},
+                    { "hole": 10, "par": 4, "hcp": 15, "lengths": { "white": 320, "yellow": 290, "blue": 290, "red": 245 }},
+                    { "hole": 11, "par": 4, "hcp":  6, "lengths": { "white": 350, "yellow": 340, "blue": 340, "red": 280 }},
+                    { "hole": 12, "par": 3, "hcp": 16, "lengths": { "white": 135, "yellow": 130, "blue": 130, "red": 115 }},
+                    { "hole": 13, "par": 4, "hcp": 10, "lengths": { "white": 355, "yellow": 320, "blue": 315, "red": 275 }},
+                    { "hole": 14, "par": 4, "hcp":  8, "lengths": { "white": 355, "yellow": 325, "blue": 325, "red": 295 }},
+                    { "hole": 15, "par": 5, "hcp": 11, "lengths": { "white": 485, "yellow": 445, "blue": 380, "red": 370 }},
+                    { "hole": 16, "par": 3, "hcp":  1, "lengths": { "white": 190, "yellow": 165, "blue": 155, "red": 140 }},
+                    { "hole": 17, "par": 4, "hcp": 12, "lengths": { "white": 345, "yellow": 310, "blue": 300, "red": 245 }},
+                    { "hole": 18, "par": 5, "hcp":  4, "lengths": { "white": 480, "yellow": 475, "blue": 420, "red": 410 }}
+                ],
+                "ladies": null
+            },
+            "descriptions_fi": [
+                { "hole":  1, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/1.png", "description": "Suora ja pitkä avaus tai rohkeasti vasemman puuston yli / läpi. Suoralla lyönnillä veteen on matkaa 245 m. tavoitella greeniä kahdella pitkällä lyönnillä. Reilun 220 m avauksen jälkeen, pitkä rauta tai pieni puu ja reilusti vedestä vasemmalle kohti bunkkereita. Lähestymislyönti pitkähkölle greenille, jossa bunkkerit etuvasemmalla, kumpuja ja istutuksia oikealla. Greeni keskeltä reunoille kalteva, kumpareiden ympäröimä." },
+                { "hole":  2, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/2.png", "description": "Varma avaus keskipitkällä raudalla keskelle väylää 150-170 m. Huomioikaa, että n. 100:sta metristä näkee hyvin greenin. Pitkä- ja tarkkalyöntiset voivat tavoitella avauslyönnillä greeniä. Oikealla puita ja out, vasemmalla tiheää metsää. Reilun 160 m avauksen jälkeen, kapeahkolle greenille korkea lähestymislyönti lyhyellä raudalla. Greenin takana syvä bunkkeri ja edessä pieniä kumpuja. Greeni voimakkaasti kalteva." },
+                { "hole":  3, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/3.png", "description": "Avaus keskelle tai lievästi väylän vasempaan reunaan, metsä vaanii oikealla. Puusto pysäyttää lyhyet ja liikaa oikealle avautuvat lyönnit. Lähestymislyönti 80-120 metristä lievään ylämäkeen, matala bunkkeri välittömästi greenin vasemmalla puolella. Greeni on lievästi kalteva, mutta suuri, näyttävien kumpujen ympäröimänä." },
+                { "hole":  4, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/4.png", "description": "Suora keskipitkä rautalyönti löytää greenin. Oikealla bunkkerit ja vesi. Vasemmalla ojat ja puusto. Suuri kaksitasoinen greeni tekee pitkät putit erittäin vaikeiksi. Greeni viettää voimakkaasti. Alamäkiputti saa kokeneemmankin pelaajan varovaiseksi." },
+                { "hole":  5, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/5.png", "description": "Avaus suoraan keskelle väylää mahdollisimman pitkälle. Vasemmalla on tiheää metsää ja metsän keskellä lampi. (sivuvesieste) Oikealla harvaa puustoa, oja sekä huoltotie. N. 110-150 metrin lyönti pitää suunnata greenin etuoikealla olevan puun ohi ja greenin edessä olevan bunkkerin yli. Kaksitasoinen, pieni ja joka paikasta hieman kallellaan oleva erittäin vaikea greeni." },
+                { "hole":  6, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/6.png", "description": "Ihanne lyönti on pieni draw kohti edessä näkyviä puita. Lyhyt lyönti jää pieneen ylämäkeen, jolloin jatkolyöntiä saattaa häiritä vasemmalla raffissa olevat puut. Pitkä lyönti antaa mahdollisuuden tavoitella greeniä kahdella lyönnillä. Matkaa onnistuneen avauksen jälkeen 230-250m. Oikealla lampi, bunkkereita etuoikealla. Vasemmalla puustoa. Avaus ja keskipitkä välilyönti. Lähestymislyönti isolle greenille. Oikealla bunkkereita. Vasemmalle rinne, josta pallot valuvat alamäkeen greenille. Greenin takana pensaita ja vaikea raffi. Greeni iso ja melko tasainen. Lähestyttäessä greenin vasen reuna kummun takana." },
+                { "hole":  7, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/8.png", "description": "Pitkä alaspäin suuntautuva lyönti, matkaa noin 200 metriä. Syväri vasemmalla ja bunkkeri järven ja greenin välissä. Greenin takana kumpu. Oikealla harvaa puustoa ja oja. Sydämen muotoinen greeni viettää aika jyrkästi alaspäin kohti etureunaa. Avaus mielummin green eteen kuin greenin taakse kummulle." },
+                { "hole":  8, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/8.png", "description": "Pitkä avauslyönti oikealla edessä olevan niemekkeen yli väylälle. Vasemmalla on out ja oikealla rinteessä puustoa, väylän oikeasta reunasta lähestymislyöntiä häiritsee puut ja greenin edessä olevat bunkkerit. Toinen lyönti jyrkkää ylämäkeen, matkaa noin 120-140 m. Greenin edessä oikealla ja vasemmalla bunkkerit. Leveä, mutta lyhyt kaksitasoinen greeni. Greeni viettää voimakkaasti kohti bunkkereita, keskeltä greeni jakautuu vasempaan yläosaan ja oikeaan alaosaan." },
+                { "hole":  9, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/9.png", "description": "Avauslyönti vasemmalla olevien puiden oikealta puolelta väylälle. Vasemmalla tilaa, mutta väyläbunkkerit. 120-150 m. Kaksi bunkkeria greenin vasemmalla puolella edessä. Greeni on edestä alhaalla, mutta oikealla ja vasemmalla takana se nousee jyrkästi muodostaen kolme osaa. Lipunpaikasta riippuen lähestymislyönti kannattaa jättämään lipun alapuolelle." },
+                { "hole": 10, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/10.png", "description": "Varma avaus männyn oikealta puolelta, veteen on matkaa 245 m. Pitkä avaus männyn vasemmalta puolelta puiden yli antaa mahdollisuuden tavoitella greeniä kahdella pitkällä lyönnillä. Reilun 220 m avauksen jälkeen, pitkä rauta tai pieni puu ja reilusti vedestä vasemmalle kohti bunkkereita. Lähestymislyönti pitkähkölle greenille, jossa bunkkerit etuvasemmalla, kumpuja ja istutuksia oikealla. Greeni keskeltä reunoille kalteva, kumpareiden ympäröimä." },
+                { "hole": 11, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/11.png", "description": "Avaus pitkälle ja suoraan. Oikealla puustoa ja rinne, joka viettää kohti ojaa ja outtia. Vasemmalla tiheää metsää ja lampi. Ylämäkeen 110-150 metrin lyönti, jota vaikeuttaa vasemmalla greeni-bunkkeit sekä oikealla tiheä metsä ja vaikea raffi. Greenin takana ja takaoikealla jyrkkä rinne. Greeni voimakkaasti kallellaan rinteen mukaisesti." },
+                { "hole": 12, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/12.png", "description": "120 metrin lyönti alamäkeen yli kauniin lahden, leveälle greenille. Vasemmalla on bunkkeri, jossa vanhahko mänty. Järveltä puhaltava tuuli vaikuttaa sijoittamista greenille. Greenin reunat viettävät poispäin ja koko greeni viettää kohti sen edessä olevaa järveä, greenin voimakas kallistus vaikeuttaa puttipeliä." },
+                { "hole": 13, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/13.png", "description": "Avauslyönti kannattaa suunnata väylän vasempaan reunaan. Etuoikealle suuntautuvat pitkät lyönnit lipsuvat helposti veteen. Lähestymislyönti mielummin greenin eteen. Greenin takana vasemmalla on pitkä bunkkeri. Oikealla takana vaanii vaikea raffi ja vesi. Pitkä, kapea greeni, jossa lieviä kallistuksia, greenille pääsy vaatii tarkkuutta lähestymislyönniltä." },
+                { "hole": 14, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/14.png", "description": "Väylä kaartuu hieman oikealle. Pitkä lyönti puiden väliin reilu 200 metriä valuu hyvin pitkin väylää. Vettä oikealla ja hoitamatonta metsää ja vaikea raffi vasemmalla. Ylösnousevalle greenille on matkaa 120-160 m. Vasemmalla puolella bunkkeri. Greeni avautuu nk. \"saarelle\", jota ympäröi Syväri-järvi. Greenin etureuna on alhaalla. Koko takaosa nousee ylemmäs ja takaosan keskellä on pieni kumpu, josta lähtevät mäet viettävät vasemmalle kohti bunkkeria ja oikealle pois greeniltä." },
+                { "hole": 15, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/15.png", "description": "Avauslyönti suoraan eteenpäin tai hieman oikealle, mahdollisimman pitkälle. Vasemmalla on tiheä metsä. Hyväkään lyönti ei välttämättä riitä kukkulan päälle asti. Toinen lyönti keskiraudalla kohti huoltorakennusta. Oikealla greenin edessä on bunkkeri ja lampi. Lähestymislyönti 80-120 metristä greenin keskelle. Kaksiosainen, voimakkaasti kallistuva pienehkö greeni on kukkuloiden ympäröimä. Lähestymislyönti mielummin lipun ala- kuin yläpuolelle." },
+                { "hole": 16, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/16.png", "description": "Greenin oikealla puolella on syvä bunkkeri ja koko oikea reunus viettää jyrkästi alas tielle. Vasemmassa reunassa taas on noin 5 metrin päässä greenin reunasta metsää. Väylä menee rotkomaisesti alas ja nousee jyrkästi ylös greenille. Greeni on kaksiosainen ja poikkeuksellinen, sillä etuosa on ylempänä kuin takaosa. Takaosaa ei näy tiiauspaikalta ja joskus on vaikea havaita onko lippu edessä vai takana." },
+                { "hole": 17, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/17.png", "description": "Suoraviivainen par 4, jossa väylälle sijoitetulla avauksella pelaa itselleen loistavan birdie-paikan. Griini on verrattain suojaamaton, mutta lipunpaikasta riippuen griinin eteen sijoitettua bunkkeri kannattaa varoa ja sijoittaa lähestyminen griinin takaosaan." },
+                { "hole": 18, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/18.png", "description": "Avaus edessä oikealla olevia puita kohti ja väylälle, oikealla oleva metsä vaatii lisälyöntejä. Pitkälyöntinen voi yrittää etuoikealla olevien puiden yli keskelle väylää, josta mahdollisuus hyvällä kakkoslyönnillä greenille. Puulla tai keskipitkällä/pitkällä raudalla suoraan eteenpäin, mieluummin hieman vasenta reunaa pitkin. Väylä laskee alas ja aukeaa hieman vasemmalle. Oikeassa reunassa on hankala raffi ja metsä. Lähestymislyönti 80-120 metriä, ylös nostetulle greenille. Takana hyvin vastaanottava kumpare ja Klubirakennus ja edessä bunkkereita. Leveä, mutta kapea greeni viettää aika jyrkästi joka paikasta vasemmalle. Etureunaan jäänyt pallo saattaa valua pois greeniltä." }
+            ],
+            "descriptions": [
+                { "hole":  1, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/1.png", "description": "Straight and long drive or boldly over/through the trees on the left. With a straight shot, it's 245 m to the water. Aim for the green with two long shots. After a drive of about 220 m, use a long iron or a small wood and aim well left of the water towards the bunkers. Approach shot to a rather long green with bunkers on the front left, mounds, and plantings on the right. The green slopes from the center to the edges, surrounded by mounds." },
+                { "hole":  2, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/2.png", "description": "A safe drive with a mid-iron to the middle of the fairway, 150-170 m. Note that from about 100 meters, the green is well visible. Long and accurate hitters can aim for the green with their tee shot. Trees and out of bounds on the right, dense forest on the left. After a drive of about 160 m, a high approach shot with a short iron to a narrow green. Deep bunker behind the green, small mounds in front. The green slopes sharply." },
+                { "hole":  3, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/3.png", "description": "Drive to the middle or slightly to the left side of the fairway, with the forest lurking on the right. Trees will stop short and overly rightward drives. Approach shot from 80-120 meters slightly uphill, with a shallow bunker immediately to the left of the green. The green is slightly sloped but large, surrounded by impressive mounds." },
+                { "hole":  4, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/4.png", "description": "A straight mid-iron shot finds the green. Bunkers and water on the right. Ditches and trees on the left. A large two-tiered green makes long putts very difficult. The green slopes sharply. A downhill putt will make even experienced players cautious." },
+                { "hole":  5, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/5.png", "description": "Drive straight down the middle of the fairway as far as possible. Dense forest on the left, with a pond (lateral water hazard) in the middle of the forest. Sparse trees, a ditch, and a service road on the right. A 110-150 meter shot should be aimed past the tree on the front right of the green and over the bunker in front of the green. A two-tiered, small, and slightly sloped green that is very challenging from every direction." },
+                { "hole":  6, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/6.png", "description": "An ideal shot is a small draw towards the visible trees ahead. A short shot will land on a slight uphill, where trees in the rough on the left may interfere with the next shot. A long shot offers a chance to reach the green in two. After a successful drive, there is 230-250m to go. Pond on the right, bunkers on the front right. Trees on the left. Drive and mid-iron approach. Approach shot to a large green. Bunkers on the right. On the left, a slope, where balls roll downhill to the green. Shrubs and difficult rough behind the green. The green is large and fairly flat. Approaching the left edge of the green is behind a mound." },
+                { "hole":  7, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/8.png", "description": "Long downhill shot, about 200 meters. A deep pit on the left and a bunker between the lake and the green. A mound behind the green. Sparse trees and a ditch on the right. The heart-shaped green slopes steeply downward towards the front edge. Preferably aim the tee shot in front of the green rather than behind the mound." },
+                { "hole":  8, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/8.png", "description": "Long tee shot over the headland on the right to the fairway. Out of bounds on the left and trees on the slope on the right, trees and bunkers in front of the green interfere with the approach shot from the right side of the fairway. The second shot is steeply uphill, about 120-140 m. Bunkers on the front right and left of the green. A wide but short two-tiered green. The green slopes sharply towards the bunkers, splitting from the center into a left upper and right lower part." },
+                { "hole":  9, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/9.png", "description": "Tee shot from the right side of the trees on the left to the fairway. Space on the left, but fairway bunkers. 120-150 m. Two bunkers in front on the left side of the green. The green is low in front, but rises steeply on the right and left sides, forming three sections. Depending on the pin placement, the approach shot should aim to leave the ball below the pin." },
+                { "hole": 10, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/10.png", "description": "Safe drive from the right side of the pine tree, 245 m to the water. A long drive from the left side of the pine tree over the trees allows a chance to reach the green with two long shots. After a drive of about 220 m, use a long iron or small wood and aim well left of the water towards the bunkers. Approach shot to a rather long green with bunkers on the front left, mounds, and plantings on the right. The green slopes from the center to the edges, surrounded by mounds." },
+                { "hole": 11, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/11.png", "description": "Long and straight drive. Trees and a slope on the right that leads down to a ditch and out of bounds. Dense forest and a pond on the left. Uphill shot of 110-150 meters, complicated by green-side bunkers on the left and dense forest with difficult rough on the right. Steep slope behind and to the right of the green. The green slopes sharply according to the slope." },
+                { "hole": 12, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/12.png", "description": "A 120-meter shot downhill over a beautiful bay to a wide green. A bunker on the left with an old pine tree. The wind from the lake affects positioning on the green. The edges of the green slope away, and the entire green slopes towards the lake in front, making putting difficult due to the strong slope." },
+                { "hole": 13, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/13.png", "description": "The tee shot should be aimed at the left side of the fairway. Long shots heading towards the front right can easily slip into the water. Prefer to place the approach shot in front of the green. There is a long bunker behind the green on the left. Difficult rough and water lurking on the right behind. A long, narrow green with slight slopes, reaching the green requires precision with the approach shot." },
+                { "hole": 14, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/14.png", "description": "The fairway curves slightly to the right. A long shot between the trees, about 200 meters, rolls well along the fairway. Water on the right and untended forest with difficult rough on the left. The uphill green is 120-160 m away. A bunker on the left side. The green opens up on a so-called 'island', surrounded by Lake Syväri. The front edge of the green is low. The entire back part rises higher, and in the middle of the back part is a small mound, with slopes leading left towards the bunker and right off the green." },
+                { "hole": 15, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/15.png", "description": "Tee shot straight ahead or slightly right, as far as possible. Dense forest on the left. Even a good shot might not reach the top of the hill. The second shot with a mid-iron towards the maintenance building. Bunker and pond in front of the green on the right. Approach shot from 80-120 meters to the middle of the green. A two-part, strongly sloping small green is surrounded by hills. Prefer to leave the approach shot below rather than above the pin." },
+                { "hole": 16, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/16.png", "description": "There is a deep bunker on the right side of the green, and the entire right edge slopes sharply down to the road. On the left edge, there is forest about 5 meters from the edge of the green. The fairway goes down into a ravine and then rises steeply to the green. The green is two-part and unusual, with the front part higher than the back part. The back part is not visible from the tee, and sometimes it is difficult to tell if the flag is in the front or back." },
+                { "hole": 17, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/17.png", "description": "Straightforward par 4, where a well-placed drive on the fairway sets up an excellent birdie opportunity. The green is relatively unprotected, but depending on the pin position, it is advisable to avoid the bunker placed in front of the green and aim the approach shot to the back of the green." },
+                { "hole": 18, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/18.png", "description": "Tee shot towards the trees on the right ahead and onto the fairway, the forest on the right requires additional shots. A long hitter can try to go over the trees on the front right to the middle of the fairway, from where a good second shot can reach the green. With a wood or mid/long iron straight ahead, preferably along the left edge. The fairway slopes down and opens slightly to the left. Difficult rough and forest on the right edge. Approach shot from 80-120 meters to a raised green. A well-receiving mound and clubhouse behind, bunkers in front. A wide but narrow green slopes steeply from all directions towards the left. A ball left on the front edge might roll off the green." }
+            ]
+        }
     },
     {
         "id": "tahko-new-course",
@@ -97,7 +220,130 @@
                 "name": "mscorecard",
                 "url": "https://www.mscorecard.com/mscorecard/showcourse.php?cid=1214544345128"
             }
-        ]
+        ],
+        "course": {
+            "tees": [
+                {
+                    "name": "white",
+                    "color": "#ffffff",
+                    "length": 6383,
+                    "par": 72,
+                    "rating": {
+                        "men": 74.8,
+                        "ladies": null
+                    },
+                    "slope": {
+                        "men": 141,
+                        "ladies": null
+                    }
+                },
+                {
+                    "name": "yellow",
+                    "color": "#ffff00",
+                    "length": 5755,
+                    "par": 72,
+                    "rating": {
+                        "men": 71.5,
+                        "ladies": 77.7
+                    },
+                    "slope": {
+                        "men": 134,
+                        "ladies": 142
+                    }
+                },
+                {
+                    "name": "blue",
+                    "color": "#0000ff",
+                    "length": 5480,
+                    "par": 72,
+                    "rating": {
+                        "men": 70.3,
+                        "ladies": 76.0
+                    },
+                    "slope": {
+                        "men": 132,
+                        "ladies": 140
+                    }
+                },
+                {
+                    "name": "red",
+                    "color": "#ff0000",
+                    "length": 4785,
+                    "par": 72,
+                    "rating": {
+                        "men": 66.6,
+                        "ladies": 71.4
+                    },
+                    "slope": {
+                        "men": 124,
+                        "ladies": 130
+                    }
+                }
+            ],
+            "scorecard": {
+                "men": [
+                    { "hole":  1, "par": 5, "hcp": 11, "lengths": { "white": 475, "yellow": 440, "blue": 425, "red": 370 }},
+                    { "hole":  2, "par": 4, "hcp":  1, "lengths": { "white": 395, "yellow": 320, "blue": 305, "red": 275 }},
+                    { "hole":  3, "par": 3, "hcp": 17, "lengths": { "white": 180, "yellow": 135, "blue": 130, "red": 110 }},
+                    { "hole":  4, "par": 4, "hcp": 15, "lengths": { "white": 350, "yellow": 300, "blue": 300, "red": 240 }},
+                    { "hole":  5, "par": 5, "hcp":  3, "lengths": { "white": 490, "yellow": 455, "blue": 440, "red": 390 }},
+                    { "hole":  6, "par": 4, "hcp":  7, "lengths": { "white": 375, "yellow": 350, "blue": 340, "red": 280 }},
+                    { "hole":  7, "par": 4, "hcp":  9, "lengths": { "white": 355, "yellow": 335, "blue": 325, "red": 290 }},
+                    { "hole":  8, "par": 3, "hcp": 13, "lengths": { "white": 170, "yellow": 140, "blue": 140, "red": 120 }},
+                    { "hole":  9, "par": 4, "hcp":  5, "lengths": { "white": 410, "yellow": 360, "blue": 320, "red": 320 }},
+                    { "hole": 10, "par": 4, "hcp": 14, "lengths": { "white": 335, "yellow": 295, "blue": 290, "red": 245 }},
+                    { "hole": 11, "par": 4, "hcp": 10, "lengths": { "white": 400, "yellow": 350, "blue": 335, "red": 290 }},
+                    { "hole": 12, "par": 5, "hcp":  2, "lengths": { "white": 510, "yellow": 485, "blue": 470, "red": 405 }},
+                    { "hole": 13, "par": 4, "hcp":  8, "lengths": { "white": 395, "yellow": 355, "blue": 300, "red": 285 }},
+                    { "hole": 14, "par": 3, "hcp": 16, "lengths": { "white": 155, "yellow": 145, "blue": 125, "red": 120 }},
+                    { "hole": 15, "par": 4, "hcp":  6, "lengths": { "white": 390, "yellow": 370, "blue": 355, "red": 300 }},
+                    { "hole": 16, "par": 4, "hcp": 12, "lengths": { "white": 360, "yellow": 320, "blue": 320, "red": 250 }},
+                    { "hole": 17, "par": 3, "hcp": 18, "lengths": { "white": 143, "yellow": 135, "blue": 110, "red": 100 }},
+                    { "hole": 18, "par": 5, "hcp":  4, "lengths": { "white": 495, "yellow": 465, "blue": 450, "red": 395 }}
+                ],
+                "ladies": null
+            },
+            "descriptions_fi": [
+                { "hole":  1, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/1.png", "description": "Kentän lyhin par 5. Vasemmalla vesi koko matkan ja oikealla tilaa. Aloituksessa lisää puristusta mailaan antaa tiiauspaikan välittömässä läheisyydessä oleva uuden ison klubin terassi. Griinin edessä kolmen bunkkerin vartio ja näin griinille on tultava ilmassa." },
+                { "hole":  2, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/2.png", "description": "Ei pisin, mutta yksi kentän vaikeimmista väylistä HCP:llä 1. Huomaa valkean tiin avauspaikka :). Avauksessa on oltava tarkkana linjan kanssa, sillä vettä on vasemmalla koko matkan. Lähestyminen griinille, joka on kuin ylösalaisin oleva syvä lautanen. Griinin ympärykset viettävät voimakkaasti puroon. Griinin takaa löytyy kuitenkin tilaa." },
+                { "hole":  3, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/3.png", "description": "Helpohko par 3, joka näkyy klubille kokonaisuudessaan. Ole tarkkana mailavalinnan kanssa, sillä griini on leveä mutta lyhyt, ja bunkkerit vartioivat edessä. Griini on tasainen ja siksi helppo putata." },
+                { "hole":  4, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/4.png", "description": "Helpoimpia Par 4 väyliä. Tilaa on ja bunkkereita ei. Väylä on kallellaan vasemmalle veden suuntaan. Älä kuitenkaan eksy liikaa oikealle, sillä griini on lähestyttäessä kapea ja kalteva." },
+                { "hole":  5, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/5.png", "description": "Dogleg oikealle. Malta pelata avaus mutkaan. Avauksessa vasemmalla vaanii vesi, mutta älä ahnehdi liikaa oikealle oikaisussa. Jatkolyönti väyläpuulla/hybridillä ylämäkeen, josta rautaa griinille. Selkeä lähipeliympäristö." },
+                { "hole":  6, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/6.png", "description": "Loivasti kääntyvä par 4 oikealle. Avaus isoa mäntyä kohti. Griini aukeaa paremmin vasemmasta reunasta ja keskeltä. Lähestymisessä huomioitava bunkkerit edessä ja takana vasemmalla." },
+                { "hole":  7, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/7.png", "description": "Mielenkiintoinen väylä, sillä avaus on selkeästi ylempää, sekä oikealla väylän lopussa on vesieste. Noin 200m avaus on turvallinen. Mitä pidemmälle lyöt sen kapeammaksi kurkku käy. Lähestyttäessä vesi vasemmalla, mutta muutoin selkeä lähipeliympäristö." },
+                { "hole":  8, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/8.png", "description": "Hieno väylä kunhan saadaan kukkaistutukset ympärille loistoon, sillä bunkkereita ei tältä väylältä löydy. Tiiauspaikkoja on paljon ja avaus lyödään ylhäältä. Tiiauspaikalle avautuu hienosti edellinen väylä. Griini on vastaanottava ja leveä, mutta vaarallisen lyhyt. Vasemmalla edessä on puro, johon reunavallit viettävät voimakkaasti. Pelaa siis keskelle griiniä, ja vaikka löisit lyhyeksi, olet vielä kuivilla." },
+                { "hole":  9, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/9.png", "description": "Tiukka mutta mahtava lopetus etuysille. Pohjoistuulen puhaltaessa kentän vaikein väylä. Tiiauspaikan vieressä puro lorisee kivasti mutta enteilevästi, sillä vesi saartaa lähes koko viimeisen väylän. Vettä löytyy oikealla puolella koko matkalta. ja lopussa myös vasemmalta. Muutamat bunkkerita vartioivat avausta ja lähestymistä. Lähestymistä kuitenkin helpottaa iso viheriö." },
+                { "hole": 10, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/10.png", "description": "\"Forest\" käynnistyy helpohkolla loivasti vasemmalle kääntyvällä kentän lyhimmällä par-4 väylällä. Avauksella on paljon tilaa kunhan et ahnehdi liian pitkälle tai yritä oikaista liikaa vasemmalta puitten yli. Väylä kapenee kohti griiniä, jossa vasemmalla sijaitsevat bunkkerit ja oikealla kosteikko. Väylän vaikeus onkin lähestyminen, jossa on huomioitava korotettu griini, bunkkeri edessä ja vesi vasemmalla. Griini on helppo putata." },
+                { "hole": 11, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/11.png", "description": "Avaus keskelle tai vasenta reunaa kohden. Bunkkeri ja veden nielu vaanivat oikealla 220m tiiltä. Pitkälyöntiset voivat koettaa nielun ylitystä 250m avauksillaan. Lähestyminen kumpujen ympäröimälle kapealle ja pitkulaiselle 2-taso griinille, jota vartioi tuplabunkkerit oikealla ja vasemmalla edessä." },
+                { "hole": 12, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/12.png", "description": "Kentän pisin par 5. Tiukka väylä kiemurtelee loivaan vastamäkeen metsän keskellä kohti viheriötä. Avaus keskelle. Pyri pelaamaan jatkolyönti väylän vasempaan reunaan koska oikealla on puusaareke ja siellä piileksii vesi. Griini on kalteva ja kentän isoin joten pitkiä chippejä ja putteja on luvassa (3-puttia?). Luvassa kaunis mieltä rauhoittava siirtymä seuraavalle tiille." },
+                { "hole": 13, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/13.png", "description": "Loivasti vasemmalle kääntyvä väylä pelataan sitten lievään alamäkeen. Lähestyminen pienehkölle 2-taso griinille jota vartioivat tuplabunkkerit oikealla. Lipulle lyötäessä melkoisen pienet pudotusalueet. Tällä griinillä pitää olla tarkkana puttien kanssa." },
+                { "hole": 14, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/14.png", "description": "Ensimmäinen par 3 väylä takalenkillä. Virvoituspisteen jälkeen jopa kentän helpoin väylä. Metsän ympäröimä selkeä griini ja sen ympäristö. 3 bunkkeria oikealla pitävät pelaajan keskittyneenä." },
+                { "hole": 15, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/15.png", "description": "Näyttävä ja samalla kentän pisin par 4 väylä. Avaus lyödään ylhäältä oikealle kallellaan olevalle väylälle. Pyri pelaamaan väylän vasenta reunaa sillä puut keskellä väylää saattavat olla herkkua silmille mutta myrkkyä väärille lähestymislinjoille. Oikealla on myös kaksi bunkkeria napsimassa vinoja avauksia. Griinin kupeessa koittaa jouluinen tunnelma. Kuusi on hauska ja erikoinen yksityiskohta griinin kupeessa." },
+                { "hole": 16, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/16.png", "description": "Selkeän oloinen väylä, mutta avauksessa vasemmalla notkossa vaanii ryteikkö ja vesi. Pyri pelaamaan väylän oikeaa reunaa josta kapea ja korotettu griini aukeaa parhaiten." },
+                { "hole": 17, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/17.png", "description": "Ja maisemia riittää. Tiiauspaikalta näet ison osan kentästä. Ehkä myös jonkun birdien sillä väylä on hcp 18. Helpohkon oloinen ylhäältä pelattava saarigriini voi olla myös petollinen. Joki tulee keräämään pallonsa sillä korkeuseroa riittää ja väylä on erityisen arka tuulikeleillä. Viheriö on myös kentän pienin. Vasemmalle jätetty levikettä vinoille lyönneille." },
+                { "hole": 18, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/18.png", "description": "Tiukka väylä ja slaissarin painajainen sillä vesi oikealla saattaa pelaaja koko matkan. Lähde pelaamaan maltilla hyvälle lähestymispaikalle sillä väylän todelliset vaikeudet piilevät griinin läheisyydessä. Selkeä griini putata." }
+            ],
+            "descriptions": [
+                { "hole":  1, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/1.png", "description": "The shortest par 5 on the course. Water on the left all the way, and space on the right. The pressure is on for the tee shot, as the new large clubhouse terrace is right next to the teeing area. The green is guarded by three bunkers in front, so the approach must be in the air." },
+                { "hole":  2, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/2.png", "description": "Not the longest, but one of the most difficult holes on the course with HCP 1. Note the white tee's opening position :). The tee shot requires careful attention to the line, as there is water on the left all the way. The approach is to a green shaped like an upside-down deep plate. The surroundings of the green slope sharply towards a stream. However, there is some space behind the green." },
+                { "hole":  3, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/3.png", "description": "A relatively easy par 3 that is fully visible from the clubhouse. Be careful with club selection, as the green is wide but short, and bunkers guard the front. The green is flat and therefore easy to putt on." },
+                { "hole":  4, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/4.png", "description": "One of the easiest par 4 holes. There is plenty of space and no bunkers. The fairway slopes to the left towards the water. However, don't stray too far right, as the green is narrow and sloped when approached." },
+                { "hole":  5, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/5.png", "description": "Dogleg to the right. Be patient and play the tee shot to the corner. Water lurks on the left on the tee shot, but don't be too greedy with cutting to the right. The next shot with a fairway wood/hybrid is uphill, followed by an iron to the green. A clear short game environment." },
+                { "hole":  6, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/6.png", "description": "A gently turning par 4 to the right. Tee shot towards the big pine. The green opens up better from the left side and center. Take note of the bunkers in front and on the back left when approaching." },
+                { "hole":  7, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/7.png", "description": "An interesting hole, as the tee shot is clearly from a higher elevation, and there is a water hazard at the end on the right. A 200m tee shot is safe. The further you hit, the narrower the neck becomes. When approaching, water on the left, but otherwise a clear short game environment." },
+                { "hole":  8, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/8.png", "description": "A beautiful hole, especially when the flower plantings around it are in full bloom, as there are no bunkers on this hole. There are many teeing grounds, and the tee shot is hit from above. The previous hole opens up nicely from the tee. The green is receptive and wide but dangerously short. In front on the left is a stream, towards which the edges slope steeply. So aim for the middle of the green, and even if you come up short, you'll stay dry." },
+                { "hole":  9, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/9.png", "description": "A tough but fantastic finish to the front nine. When the north wind blows, it is the most difficult hole on the course. A stream babbles nicely but ominously next to the tee, as water surrounds almost the entire final hole. Water is on the right side all the way, and also on the left towards the end. A few bunkers guard the tee shot and approach. However, the large green makes the approach easier." },
+                { "hole": 10, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/10.png", "description": "\"Forest\" starts with a relatively easy, slightly left-turning, and the shortest par-4 hole on the course. There is plenty of space for the tee shot as long as you don't get too greedy or try to cut too much over the trees on the left. The fairway narrows towards the green, with bunkers on the left and a wetland on the right. The challenge of the hole lies in the approach, where you need to consider the elevated green, bunker in front, and water on the left. The green is easy to putt on." },
+                { "hole": 11, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/11.png", "description": "Tee shot towards the middle or left side. A bunker and a water hazard lurk on the right 220m from the tee. Long hitters can try to clear the hazard with a 250m drive. Approach to a narrow and elongated two-tier green surrounded by mounds, guarded by double bunkers on the right and left front." },
+                { "hole": 12, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/12.png", "description": "The longest par 5 on the course. A tight fairway winds gently uphill through the forest towards the green. Tee shot to the center. Try to play the next shot to the left side of the fairway, as there is a cluster of trees on the right, with water lurking there. The green is sloped and the largest on the course, so expect long chips and putts (3-putts?). A beautiful, calming transition to the next tee awaits." },
+                { "hole": 13, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/13.png", "description": "A slightly left-turning fairway played on a slight downhill. Approach to a small two-tier green guarded by double bunkers on the right. Small landing areas when aiming for the pin. This green requires careful putting." },
+                { "hole": 14, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/14.png", "description": "The first par 3 on the back nine. After the refreshment point, perhaps the easiest hole on the course. A clear green and its surroundings, surrounded by forest. Three bunkers on the right keep the player focused." },
+                { "hole": 15, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/15.png", "description": "A spectacular and the longest par 4 on the course. The tee shot is hit from above onto a fairway sloping to the right. Try to play the left side of the fairway as the trees in the middle may be pleasing to the eyes but disastrous for incorrect approach lines. There are also two bunkers on the right to catch stray tee shots. A festive atmosphere awaits by the green, with a fun and unique spruce tree detail next to the green." },
+                { "hole": 16, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/16.png", "description": "A seemingly straightforward hole, but a thicket and water lurk in the dip on the left from the tee. Try to play the right side of the fairway from where the narrow and elevated green opens up best." },
+                { "hole": 17, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/17.png", "description": "And the scenery is abundant. From the tee, you can see a large part of the course. Perhaps even catch a birdie, as the hole is HCP 18. A seemingly easy island green hole played from above can also be treacherous. The river is ready to collect balls as there is a significant elevation change, and the hole is particularly sensitive to windy conditions. The green is also the smallest on the course. A leftward extension has been left for stray shots." },
+                { "hole": 18, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/18.png", "description": "A tight hole and a slicer's nightmare as water on the right may accompany the player all the way. Play cautiously to a good approach position, as the real difficulties lie near the green. A clear green to putt on." }
+            ]
+        }
     },
     {
         "id": "penati-legend",
@@ -109,7 +355,7 @@
             "email": "reception@penatigolfresort.sk"
         },
         "hero_image": "/images/courses/penati-legend/hero1.jpg",
-        "description_short": "What sets apart the first of the two 18-hole courses, the Nicklaus Design LEGEND COURSE, are the wide, undulating fairways that offer players ample playing freedom, no out-of-bounds areas, sufficient privacy, and excellent visibility to the greens, all combined with the high, shaped “Nicklaus Design” sand bunkers and the challenging divergent terrain. The longest hole on this course measures 712 meters and has 11 tees. It plays as either a par 5 or par 6 and it also holds the title of the longest hole in Central Europe. It used to be the longest hole in all of Europe in the 2012 – 2019 period!",
+        "description_short": "What sets apart the first of the two 18-hole courses, the Nicklaus Design LEGEND COURSE, are the wide, undulating fairways that offer players ample playing freedom, no out-of-bounds areas, sufficient privacy, and excellent visibility to the greens, all combined with the high, shaped \"Nicklaus Design\" sand bunkers and the challenging divergent terrain. The longest hole on this course measures 712 meters and has 11 tees. It plays as either a par 5 or par 6 and it also holds the title of the longest hole in Central Europe. It used to be the longest hole in all of Europe in the 2012 – 2019 period!",
         "description_long": [
             {
                 "type": "paragraph",
@@ -487,7 +733,7 @@
             "email": "gppenning@quellness-golf.com"
         },
         "hero_image": "https://www.quellness-golf.com/media/image/porsche-golf-course-2.jpg",
-        "description_short": "The Porsche Golf Course, which is directly opposite the Beckenbauer Golf Course, is the “little brother” of the European Tour championship course in sporting terms, and thus an ideal complement. The par 71 course was also designed by Germany’s world-class golfer Bernhard Langer and has comparable features, but was geared more towards the requirements of leisure-time golfers.",
+        "description_short": "The Porsche Golf Course, which is directly opposite the Beckenbauer Golf Course, is the \"little brother\" of the European Tour championship course in sporting terms, and thus an ideal complement. The par 71 course was also designed by Germany’s world-class golfer Bernhard Langer and has comparable features, but was geared more towards the requirements of leisure-time golfers.",
         "description_long": [
             {
                 "type": "paragraph",
