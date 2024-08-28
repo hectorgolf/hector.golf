@@ -1,5 +1,7 @@
-import cryptojs from 'crypto-js';
-const { MD5 } = cryptojs;
+import cryptojs from 'crypto-js'
+const { MD5 } = cryptojs
+import moize from 'moize'
+import { ms } from 'itty-time'
 
 
 const standardRequestHeaders = {
@@ -34,7 +36,7 @@ export type TeetimePlayer = {
     birthDate: string
 }
 
-export const fetchClubs = async (): Promise<Array<TeetimeClub>> => {
+export const fetchClubs = moize.maxAge(ms('1 hour'))(async (): Promise<Array<TeetimeClub>> => {
     const response = await fetch('https://www.teetime.fi/backend/club?includeExternal=true', {
         headers: {
             'Content-Type': 'application/json',
@@ -67,7 +69,7 @@ export const login = async (clubNumberOrAbbreviation: string, username: string, 
 
 const roundToTenths = (num: number): number => Math.round(num * 10) / 10;
 
-export const fetchPlayer = async (token: string, clubNumber: string, firstName: string, lastName: string): Promise<TeetimePlayer|undefined> => {
+export const fetchPlayer = moize.maxAge(ms('10 minutes'))(async (token: string, clubNumber: string, firstName: string, lastName: string): Promise<TeetimePlayer|undefined> => {
     const url = ((): string => {
         const obj = new URL(`https://www.teetime.fi/backend/club/${encodeURIComponent(clubNumber)}/player/`)
         obj.searchParams.append('firstName', firstName)
@@ -94,7 +96,7 @@ export const fetchPlayer = async (token: string, clubNumber: string, firstName: 
     } catch (err) {
         return undefined;
     }
-}
+})
 
 export const fetchHandicap = async (token: string, clubNumber: string, firstName: string, lastName: string): Promise<number|undefined> => {
     const player = await fetchPlayer(token, clubNumber, firstName, lastName);
