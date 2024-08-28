@@ -83,7 +83,6 @@ const persistHandicapHistoryToDisk = (players: Player[], handicapHistory: Array<
     })
 
     if (newHandicapChanges.length > 0) {
-        console.log(`Old handicaps: ${JSON.stringify(handicapHistory, null, 2)}`)
         console.log(`Updated ${newHandicapChanges.length} players' handicap:`)
         console.log(JSON.stringify(newHandicapChanges, null, 2))
         writeFileSync(pathToHandicapHistoryJson, JSON.stringify(handicapHistory.concat(newHandicapChanges), null, 2))
