@@ -36,21 +36,28 @@ export type TeetimePlayer = {
     birthDate: string
 }
 
-export const fetchClubs = moize.maxAge(ms('1 hour'))(async (): Promise<Array<TeetimeClub>> => {
+const fetchClubs = moize.maxAge(ms('1 hour'))(async (): Promise<Array<TeetimeClub>> => {
+    console.log(`Fetching clubs from https://www.teetime.fi/backend/club?includeExternal=true`)
     const response = await fetch('https://www.teetime.fi/backend/club?includeExternal=true', {
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json, text/plain, */*'
         }
     })
-    const data = await response.json()
-    return data
-        .map((club:any) => ({ ...club, name: club.marketingName || club.name, marketingName: undefined }) as TeetimeClub)
-        .sort((a: TeetimeClub, b: TeetimeClub) => a.name.localeCompare(b.name))
-}
+    if (response.ok) {
+        const data = await response.json()
+        const clubs =  data
+            .map((club:any) => ({ ...club, name: club.marketingName || club.name, marketingName: undefined }) as TeetimeClub)
+            .sort((a: TeetimeClub, b: TeetimeClub) => a.name.localeCompare(b.name))
+        console.log(`Got ${clubs.length} clubs from teetime.fi`)
+        return clubs
+    } else {
+        return Promise.reject(`Failed to fetch clubs from https://www.teetime.fi/backend/club?includeExternal=true (HTTP ${response.status})`)
+    }
+})
 
-export const login = async (clubNumberOrAbbreviation: string, username: string, password: string): Promise<string> => {
-    const clubNumber = await resolveClubNumber(clubNumberOrAbbreviation);
+const login = async (clubNumberOrAbbreviation: string, username: string, password: string): Promise<string> => {
+    const clubNumber = await resolveClubNumber(clubNumberOrAbbreviation)
     const payload = {
         clubNumber: clubNumber,
         username: username,
@@ -62,66 +69,71 @@ export const login = async (clubNumberOrAbbreviation: string, username: string, 
         method: 'POST',
         headers: standardRequestHeaders,
         body: JSON.stringify(payload)
-    });
-    const data = await response.json();
-    return data.token;
+    })
+    const data = await response.json()
+    return data.token
 }
 
-const roundToTenths = (num: number): number => Math.round(num * 10) / 10;
+const roundToTenths = (num: number): number => Math.round(num * 10) / 10
 
-export const fetchPlayer = moize.maxAge(ms('10 minutes'))(async (token: string, clubNumber: string, firstName: string, lastName: string): Promise<TeetimePlayer|undefined> => {
+const fetchPlayer = moize.maxAge(ms('10 minutes'))(async (token: string, clubNumber: string, firstName: string, lastName: string): Promise<TeetimePlayer|undefined> => {
     const url = ((): string => {
         const obj = new URL(`https://www.teetime.fi/backend/club/${encodeURIComponent(clubNumber)}/player/`)
         obj.searchParams.append('firstName', firstName)
         obj.searchParams.append('lastName', lastName)
         obj.searchParams.append('token', token)
         return obj.href
-    })();
-    // const url = `https://www.teetime.fi/backend/club/${encodeURIComponent(clubNumber)}/player/?firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&token=${encodeURIComponent(token)}`
-    console.log(url)
+    })()
     const response = await fetch(url, {
         headers: standardRequestHeaders
-    });
-    try {
-        const data = await response.json();
-        if (data.length === 0) {
-            return undefined;
+    })
+    if (response.ok) {
+        try {
+            const data = await response.json()
+            if (data.length === 0) {
+                return undefined
+            }
+            if (data.length > 1) {
+                console.warn(`Expected exactly one player, but found ${data.length} players in ${clubNumber} by name of ${firstName} ${lastName}: ${JSON.stringify(data, null, 2)}`)
+            }
+            const player = data[0]
+            const club = await fetchClub(player.club.number)
+            return { ...player, club: club, holes: undefined, handicap: roundToTenths(player.handicap) || 0 } as TeetimePlayer
+        } catch (err: any) {
+            console.error(`Failed to fetch player ${firstName} ${lastName} from ${clubNumber} at ${url}: ${err.message || err}`, err)
+            return undefined
         }
-        if (data.length > 1) {
-            console.warn(`Expected exactly one player, but found ${data.length} players in ${clubNumber} by name of ${firstName} ${lastName}: ${JSON.stringify(data, null, 2)}`);
-        }
-        const player = data[0];
-        const club = await fetchClub(player.club.number);
-        return { ...player, club: club, holes: undefined, handicap: roundToTenths(player.handicap) || 0 } as TeetimePlayer;
-    } catch (err) {
-        return undefined;
+    } else {
+        const statusText = (response.statusText && response.statusText !== `${response.status}`) ? ` ${response.statusText}` : ''
+        console.warn(`Failed to fetch player at ${url} (HTTP ${response.status + statusText})`)
+        return undefined
     }
 })
 
-export const fetchHandicap = async (token: string, clubNumber: string, firstName: string, lastName: string): Promise<number|undefined> => {
-    const player = await fetchPlayer(token, clubNumber, firstName, lastName);
+const fetchHandicap = async (token: string, clubNumber: string, firstName: string, lastName: string): Promise<number|undefined> => {
+    const player = await fetchPlayer(token, clubNumber, firstName, lastName)
     if (player) {
-        return player.handicap;
+        return player.handicap
     }
-    return undefined;
+    return undefined
 }
 
-const ENV = import.meta.env || process.env || {};
+const ENV = import.meta.env || process.env || {}
 const teetimeClubNumber = ENV.TEETIME_CLUB_NUMBER
 const teetimeUsername = ENV.TEETIME_USERNAME
 const teetimePassword = ENV.TEETIME_PASSWORD
 
 if (!teetimeClubNumber || !teetimeUsername || !teetimePassword) {
-    console.error(`Missing teetime.fi credentials:`);
-    console.error(`TEETIME_CLUB_NUMBER: ${teetimeClubNumber ? teetimeClubNumber : '<MISSING>'}`);
-    console.error(`TEETIME_USERNAME:   ${teetimeUsername ? teetimeUsername : '<MISSING>'}`);
-    console.error(`TEETIME_PASSWORD:   ${teetimePassword ? teetimePassword.replace(/./g, '*') : '<MISSING>'}`);
+    console.error(`Missing teetime.fi credentials:`)
+    console.error(`TEETIME_CLUB_NUMBER: ${teetimeClubNumber ? teetimeClubNumber : '<MISSING>'}`)
+    console.error(`TEETIME_USERNAME:   ${teetimeUsername ? teetimeUsername : '<MISSING>'}`)
+    console.error(`TEETIME_PASSWORD:   ${teetimePassword ? teetimePassword.replace(/./g, '*') : '<MISSING>'}`)
     console.error(`Please try again and provide the missing environment variables.`)
     process.exit(1)
 }
-console.log(`teetimeClubNumber: ${teetimeClubNumber}`);
-console.log(`teetimeUsername:   ${teetimeUsername}`);
-console.log(`teetimePassword:   ${teetimePassword?.replace(/./g, '*')}`);
+console.log(`teetimeClubNumber: ${teetimeClubNumber}`)
+console.log(`teetimeUsername:   ${teetimeUsername}`)
+console.log(`teetimePassword:   ${teetimePassword?.replace(/./g, '*')}`)
 
 
 export const withLogin = (callback: (token: string) => Promise<void>) => {
@@ -131,36 +143,36 @@ export const withLogin = (callback: (token: string) => Promise<void>) => {
 export const getPlayerHandicap = async (firstName: string, lastName: string, clubNameOrAbbreviation: string, providedToken?: string): Promise<number|undefined> => {
     if (clubNameOrAbbreviation) {
         if (!!teetimeClubNumber && !!teetimeUsername && !!teetimePassword) {
-            const clubNumber = await resolveClubNumber(clubNameOrAbbreviation);
+            const clubNumber = await resolveClubNumber(clubNameOrAbbreviation)
             if (clubNumber) {
-                const token = providedToken || await login(teetimeClubNumber, teetimeUsername, teetimePassword);
-                return await fetchHandicap(token, clubNumber, firstName, lastName);
+                const token = providedToken || await login(teetimeClubNumber, teetimeUsername, teetimePassword)
+                return await fetchHandicap(token, clubNumber, firstName, lastName)
             }
         }
     }
     return undefined
 }
 
-export const resolveClubNumber = async (clubNameOrNumber: string): Promise<string|undefined> => {
+const resolveClubNumber = async (clubNameOrNumber: string): Promise<string|undefined> => {
     const club = await fetchClub(clubNameOrNumber)
-    return club?.number;
+    return club?.number
 }
 
-export const fetchClub = async (clubNameOrNumber: string): Promise<TeetimeClub|undefined> => {
+const fetchClub = async (clubNameOrNumber: string): Promise<TeetimeClub|undefined> => {
     if (!clubNameOrNumber) {
         console.warn(`No club name or number provided - cannot fetch club`)
         return undefined
     }
-    const clubs = await fetchClubs();
+    const clubs = await fetchClubs()
     const club = clubs.find(club => {
-        if (club.number && club.number === clubNameOrNumber) return true;
-        if (club.number && club.number.replace(/^0+/, '') === clubNameOrNumber.replace(/^0+/, '')) return true;
-        if (club.name && club.name.toLowerCase() === clubNameOrNumber.toLowerCase()) return true;
-        if (club.abbrevitation && club.abbrevitation.toLowerCase() === clubNameOrNumber.toLowerCase()) return true;
-        return false;
-    });
+        if (club.number && club.number === clubNameOrNumber) return true
+        if (club.number && club.number.replace(/^0+/, '') === clubNameOrNumber.replace(/^0+/, '')) return true
+        if (club.name && club.name.toLowerCase() === clubNameOrNumber.toLowerCase()) return true
+        if (club.abbrevitation && club.abbrevitation.toLowerCase() === clubNameOrNumber.toLowerCase()) return true
+        return false
+    })
     if (club) {
-        return club;
+        return club
     }
-    return undefined;
+    return undefined
 }
