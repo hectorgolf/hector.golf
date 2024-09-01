@@ -96,7 +96,7 @@
                 {
                     "round": 4,
                     "matches": [
-                        { "id": "M15", "leftSource": "M13", "rightSource": "M14", "left": "simo-liukkonen", "right": "eero-halmetoja", "score": "8&7", "winner": "simo-liukkonen" }
+                        { "id": "M15", "leftSource": "M13", "rightSource": "M14", "left": "simo-liukkonen", "right": "eero-halmetoja", "score": "9&7", "winner": "simo-liukkonen" }
                     ]
                 }
             ]
