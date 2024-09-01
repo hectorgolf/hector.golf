@@ -39,7 +39,7 @@
         "name": "Hector Matchplay 2024",
         "format": "matchplay",
         "location": "Finland",
-        "date": "2024",
+        "date": "June 19 - September 1, 2024",
         "description": "16 of the world's best amateur golfers face each other in a sequence of grueling head-to-head battles to the lip-out bogey. This matchplay tournament format uses a single elimination bracket, making the stakes high from the very start.",
         "participants": [
             "lasse-koskela",
@@ -61,6 +61,7 @@
         ],
         "results": {
             "winners": {
+                "matchplay": "simo-liukkonen"
             },
             "bracket": [
                 {
@@ -95,7 +96,7 @@
                 {
                     "round": 4,
                     "matches": [
-                        { "id": "M15", "leftSource": "M13", "rightSource": "M14", "left": "simo-liukkonen", "right": "eero-halmetoja", "score": null, "winner": null }
+                        { "id": "M15", "leftSource": "M13", "rightSource": "M14", "left": "simo-liukkonen", "right": "eero-halmetoja", "score": "8&7", "winner": "simo-liukkonen" }
                     ]
                 }
             ]
