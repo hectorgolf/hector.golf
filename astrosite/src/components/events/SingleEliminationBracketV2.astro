@@ -12,7 +12,7 @@ const tournament = event as MatchplayEvent;
 const rounds = (tournament.results?.bracket || [])
 
 const isPlayerId = (value: string): boolean => {
-    return !!tournament.results?.participants?.includes(value)
+    return !!(tournament.participants || []).includes(value)
 }
 
 const connectors: Array<Array<string>> = []; // array of tuples (e.g. ["match-M01", "match-M09"]) representing connectors to be drawn
