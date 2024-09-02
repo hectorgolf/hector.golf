@@ -1495,8 +1495,8 @@
         ]
     },
     {
-        "id": "diamondcc-championship",
-        "name": "Diamond Country Club - Championship Course",
+        "id": "diamondcc-diamond",
+        "name": "Diamond Country Club - Diamond",
         "homepage": "https://www.countryclub.at/golf?lang=en",
         "contact": {
             "address": "Am Golfplatz 1, 3452 Atzenbrugg, Austria",
@@ -1516,7 +1516,7 @@
             { "type": "paragraph", "content": "Fast-forward to 2018 and Diamond Country Club will be remembered for genuine innovation. The Shot Clock Masters made history as the first tournament in professional golf to use a shot clock on every stroke as part of the European Tour’s bid to combat slow play. All players were timed on every shot, and on each occasion a player failed to hit his shot within the time limits, a one-shot penalty was added to his score for that hole. Interestingly, not one single professional ranked in the world top one hundred played in the 2018 event (which Finland’s Mikko Korhonen won) and only four players were penalised over the four days where round times were recorded as being significantly quicker than the season average." }
         ],
         "images": {
-            "course_layout": "/images/courses/diamondcc-championship/layout.png"
+            "course_layout": "/images/courses/diamondcc-diamond/layout.png"
         },
         "course": {
             "tees": [
@@ -1635,30 +1635,30 @@
                 "ladies": null
             },
             "descriptions": [
-                { "hole":  1, "layout": "/images/courses/diamondcc-championship/holes/1.png", "description": "" },
-                { "hole":  2, "layout": "/images/courses/diamondcc-championship/holes/2.png", "description": "" },
-                { "hole":  3, "layout": "/images/courses/diamondcc-championship/holes/3.png", "description": "" },
-                { "hole":  4, "layout": "/images/courses/diamondcc-championship/holes/4.png", "description": "" },
-                { "hole":  5, "layout": "/images/courses/diamondcc-championship/holes/5.png", "description": "" },
-                { "hole":  6, "layout": "/images/courses/diamondcc-championship/holes/6.png", "description": "" },
-                { "hole":  7, "layout": "/images/courses/diamondcc-championship/holes/7.png", "description": "" },
-                { "hole":  8, "layout": "/images/courses/diamondcc-championship/holes/8.png", "description": "" },
-                { "hole":  9, "layout": "/images/courses/diamondcc-championship/holes/9.png", "description": "" },
-                { "hole": 10, "layout": "/images/courses/diamondcc-championship/holes/10.png", "description": "" },
-                { "hole": 11, "layout": "/images/courses/diamondcc-championship/holes/11.png", "description": "" },
-                { "hole": 12, "layout": "/images/courses/diamondcc-championship/holes/12.png", "description": "" },
-                { "hole": 13, "layout": "/images/courses/diamondcc-championship/holes/13.png", "description": "" },
-                { "hole": 14, "layout": "/images/courses/diamondcc-championship/holes/14.png", "description": "" },
-                { "hole": 15, "layout": "/images/courses/diamondcc-championship/holes/15.png", "description": "" },
-                { "hole": 16, "layout": "/images/courses/diamondcc-championship/holes/16.png", "description": "" },
-                { "hole": 17, "layout": "/images/courses/diamondcc-championship/holes/17.png", "description": "" },
-                { "hole": 18, "layout": "/images/courses/diamondcc-championship/holes/18.png", "description": "" }
+                { "hole":  1, "layout": "/images/courses/diamondcc-diamond/holes/1.png", "description": "" },
+                { "hole":  2, "layout": "/images/courses/diamondcc-diamond/holes/2.png", "description": "" },
+                { "hole":  3, "layout": "/images/courses/diamondcc-diamond/holes/3.png", "description": "" },
+                { "hole":  4, "layout": "/images/courses/diamondcc-diamond/holes/4.png", "description": "" },
+                { "hole":  5, "layout": "/images/courses/diamondcc-diamond/holes/5.png", "description": "" },
+                { "hole":  6, "layout": "/images/courses/diamondcc-diamond/holes/6.png", "description": "" },
+                { "hole":  7, "layout": "/images/courses/diamondcc-diamond/holes/7.png", "description": "" },
+                { "hole":  8, "layout": "/images/courses/diamondcc-diamond/holes/8.png", "description": "" },
+                { "hole":  9, "layout": "/images/courses/diamondcc-diamond/holes/9.png", "description": "" },
+                { "hole": 10, "layout": "/images/courses/diamondcc-diamond/holes/10.png", "description": "" },
+                { "hole": 11, "layout": "/images/courses/diamondcc-diamond/holes/11.png", "description": "" },
+                { "hole": 12, "layout": "/images/courses/diamondcc-diamond/holes/12.png", "description": "" },
+                { "hole": 13, "layout": "/images/courses/diamondcc-diamond/holes/13.png", "description": "" },
+                { "hole": 14, "layout": "/images/courses/diamondcc-diamond/holes/14.png", "description": "" },
+                { "hole": 15, "layout": "/images/courses/diamondcc-diamond/holes/15.png", "description": "" },
+                { "hole": 16, "layout": "/images/courses/diamondcc-diamond/holes/16.png", "description": "" },
+                { "hole": 17, "layout": "/images/courses/diamondcc-diamond/holes/17.png", "description": "" },
+                { "hole": 18, "layout": "/images/courses/diamondcc-diamond/holes/18.png", "description": "" }
             ]
         },
         "datasources": [
             {
                 "name": "website",
-                "url": "https://www.lafincaresort.com/en/golf/la-finca-golf"
+                "url": "https://www.countryclub.at/plaetze?lang=en"
             },
             {
                 "name": "official scorecard",
