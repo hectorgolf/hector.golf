@@ -108,7 +108,7 @@
         "format": "hector",
         "location": "Diamond Country Club, Austria",
         "date": "September 23-26, 2023",
-        "courses": [ "adamstal", "diamondcc-championship", "diamondcc-country", "diamondcc-park" ],
+        "courses": [ "adamstal-championship", "diamondcc-championship", "diamondcc-country", "diamondcc-park" ],
         "participants": [
             "jarkko-kailanto", "olli-varis",
             "lasse-koskela", "sami-heikkinen",
