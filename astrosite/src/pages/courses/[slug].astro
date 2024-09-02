@@ -4,7 +4,7 @@ import Breadcrumb from '../../components/Breadcrumb.astro';
 import CourseRatingTable from '../../components/courses/CourseRatingTable.astro';
 import ScorecardTable from '../../components/courses/ScorecardTable.astro';
 import { type Course } from '../../schemas/courses';
-import { getEventsAtCourse } from '../../code/events';
+import { getEventsAtCourse, linkToEvent } from '../../code/events';
 import { getAllCourseIds, getCourseById } from '../../code/courses';
 
 
@@ -83,7 +83,7 @@ const holeLayoutShape = course.course?.descriptions?.[0]?.shape === 'wide' ? 'wi
             <h2>Events at {course.name}</h2>
             {relatedEvents.map((event) => {
                 return (
-                    <div class="related-event"><a href={`/events/${event.id}`}>{event.name}</a></div>
+                    <div class="related-event"><a href={linkToEvent(event)}>{event.name}</a></div>
                 );
             })}
         </div>
