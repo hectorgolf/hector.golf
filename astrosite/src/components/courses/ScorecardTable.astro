@@ -6,8 +6,10 @@ interface Props {
 	course: Course;
 }
 
-
 const { course } = Astro.props;
+
+const hasBackNine = (course.course?.scorecard.men || []).length > 9
+
 ---
 
 {course.course && (
@@ -20,7 +22,9 @@ const { course } = Astro.props;
             </div>
             <div class="scorecard-table-full">
                 <ScorecardHalfTable course={course} firstHole={1} lastHole={9} />
-                <ScorecardHalfTable course={course} firstHole={10} lastHole={18} hideFirstColumn={true} />
+                {hasBackNine && (
+                    <ScorecardHalfTable course={course} firstHole={10} lastHole={18} hideFirstColumn={true} />
+                )}
             </div>
             <!-- <code>{"course: " + JSON.stringify(course, null, 2)}</code> -->
         </div>
