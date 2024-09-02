@@ -130,8 +130,9 @@ const holeLayoutShape = course.course?.descriptions?.[0]?.shape === 'wide' ? 'wi
     .hero {
         display: flex;
         width: calc(100%);
-        max-height: 300px;
+        aspect-ratio: 16/9 auto;
     }
+
     .hero img {
         width: calc(100%);
     }
@@ -139,8 +140,10 @@ const holeLayoutShape = course.course?.descriptions?.[0]?.shape === 'wide' ? 'wi
     .description {
         width: calc(100%);
     }
+
     .description img {
         width: calc(100%);
+        aspect-ratio: 16/9 auto;
     }
 
     .course-layout img {
