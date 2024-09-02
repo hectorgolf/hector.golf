@@ -20,7 +20,7 @@ const inOrOut = firstHole <= 9 ? "Out" : "In";
         <table>
             <thead>
                 <tr class="hole-number">
-                    {hideFirstColumn ? "" : (<th class="left-aligned heading-column">Hole</th>)}
+                    {hideFirstColumn ? "" : (<th class="center-aligned heading-column">Hole</th>)}
                     {course.course.scorecard.men.slice(sliceStart, sliceEnd).map((hole, index) => {
                         const oddOrEven = index % 2 === 0 ? "even" : "odd";
                         const cssClass = `center-aligned hole-number ${oddOrEven}`
@@ -31,7 +31,7 @@ const inOrOut = firstHole <= 9 ? "Out" : "In";
             </thead>
             <tbody>
                 <tr class="par">
-                    {hideFirstColumn ? "" : (<td class="left-aligned heading-column">Par</td>)}
+                    {hideFirstColumn ? "" : (<td class="center-aligned heading-column">Par</td>)}
                     {course.course.scorecard.men.slice(sliceStart, sliceEnd).map((hole, index) => {
                         const oddOrEven = index % 2 === 0 ? "even" : "odd";
                         const cssClass = `center-aligned hole-par ${oddOrEven}`
@@ -40,7 +40,7 @@ const inOrOut = firstHole <= 9 ? "Out" : "In";
                     <td class="center-aligned heading-column">{course.course.scorecard.men.slice(sliceStart, sliceEnd).reduce((total, hole) => total + hole.par, 0)}</td>
                 </tr>
                 <tr class="hcp">
-                    {hideFirstColumn ? "" : (<td class="left-aligned heading-column">Hcp</td>)}
+                    {hideFirstColumn ? "" : (<td class="center-aligned heading-column">Hcp</td>)}
                     {course.course.scorecard.men.slice(sliceStart, sliceEnd).map((hole, index) => {
                         const oddOrEven = index % 2 === 0 ? "even" : "odd";
                         const cssClass = `center-aligned hole-hcp ${oddOrEven}`
@@ -52,7 +52,7 @@ const inOrOut = firstHole <= 9 ? "Out" : "In";
                     const playingLengths = course.course!.scorecard.men.slice(sliceStart, sliceEnd).map((hole) => hole.lengths?.[tee.name])
                     return (
                         <tr class="tee">
-                            {hideFirstColumn ? "" : (<td class="tee-identifier left-aligned heading-column">
+                            {hideFirstColumn ? "" : (<td class="tee-identifier heading-column">
                                 <svg class="color" width="20" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
                                     <circle cx="12" cy="12" r="6" style={`fill:${tee.color};stroke:${tee.stroke || tee.color};`}/>
                                 </svg>
@@ -106,7 +106,7 @@ const inOrOut = firstHole <= 9 ? "Out" : "In";
 
     table tr td.center-aligned { text-align: center; padding-left: 2px; padding-right: 2px; }
     table tr th.center-aligned { text-align: center; padding-left: 2px; padding-right: 2px; }
-    table tr td.left-aligned { text-align: left; }
+    table tr td.left-aligned { text-align: left; padding-right: 4px;  }
     table tr th.left-aligned { text-align: left; padding-right: 4px; }
 
     table td.hole-length,
@@ -143,6 +143,10 @@ const inOrOut = firstHole <= 9 ? "Out" : "In";
             width: 100%;
         }
 
+        tr.tee td.tee-identifier.heading-column {
+            text-align: center;
+        }
+
         /*
         .hole-length-container {
             height: 50px;
@@ -156,6 +160,12 @@ const inOrOut = firstHole <= 9 ? "Out" : "In";
 	        white-space: nowrap;
         }
         */
+    }
+
+    @media only screen and (min-width: 501px) {
+        tr.tee td.tee-identifier.heading-column {
+            text-align: left;
+        }
     }
 
 </style>

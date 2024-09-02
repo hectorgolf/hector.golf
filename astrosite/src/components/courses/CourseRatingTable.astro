@@ -90,7 +90,7 @@ const { course } = Astro.props;
     }
 
     .tee-identifier, .tee-par, .tee-length {
-        text-align: left;
+        text-align: center;
     }
 
     td {
@@ -124,6 +124,17 @@ const { course } = Astro.props;
         }
         .course-rating-table, .course-rating-table table {
             width: 100%;
+        }
+    }
+
+    @media only screen and (min-width: 501px) {
+        .tee-identifier {
+            text-align: left;
+        }
+
+        th, td.tee-par, td.tee-length, td.tee-slope.ladies, td.tee-rating.ladies {
+            padding-left: 10px;
+            padding-right: 10px;
         }
     }
 
