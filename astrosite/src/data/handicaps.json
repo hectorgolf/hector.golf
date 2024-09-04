@@ -1383,5 +1383,25 @@
     "date": "2024-09-03",
     "player": "martin-svedholm",
     "handicap": 9.4
+  },
+  {
+    "date": "2024-09-04",
+    "player": "lassi-koto",
+    "handicap": 12.2
+  },
+  {
+    "date": "2024-09-04",
+    "player": "marcus-mattila",
+    "handicap": 11.1
+  },
+  {
+    "date": "2024-09-04",
+    "player": "ofri-porat",
+    "handicap": 4.8
+  },
+  {
+    "date": "2024-09-04",
+    "player": "pasi-halmetoja",
+    "handicap": 9.2
   }
 ]
