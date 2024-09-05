@@ -13,7 +13,17 @@ const authenticate = async (githubToken: string): Promise<Octokit> => {
   return Promise.resolve(new Octokit({ auth: githubToken }))
 }
 
-export const updateHectorEventLeaderboard = async (githubToken: string, eventId: string, hector: TeamLeaderboard, victor: IndividualLeaderboard) => {
+const fetchExistingHectorLeaderboardDataFileSHA = async (githubToken: string, eventId: string): Promise<string|undefined> => {
+    const octokit = await authenticate(githubToken)
+    const metadata = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
+        ...standardOptions,
+        path: `astrosite/src/data/leaderboards/${eventId}.json`
+    })
+    console.log(`Response for astrosite/src/data/leaderboards/${eventId}.json:  ${JSON.stringify(metadata, null, 2)}`)
+    return (metadata as any).sha as string|undefined
+}
+
+const createOrReplaceHectorLeaderboardDataFile = async (githubToken: string, eventId: string, existingSHA: string|undefined, hector: TeamLeaderboard, victor: IndividualLeaderboard) => {
     const payload = {
         event: eventId,
         hector: hector,
@@ -22,7 +32,6 @@ export const updateHectorEventLeaderboard = async (githubToken: string, eventId:
     }
     const fileContents = JSON.stringify(payload, null, 2)
     const fileContentsBase64 = Buffer.from(fileContents).toString('base64')
-
     const octokit = await authenticate(githubToken)
     await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', {
         ...standardOptions,
@@ -32,6 +41,12 @@ export const updateHectorEventLeaderboard = async (githubToken: string, eventId:
             name: 'UpdateHectorLeaderboard',
             email: 'lasse.koskela@gmail.com'
         },
+        sha: existingSHA,
         content: fileContentsBase64
     })
+}
+
+export const updateHectorEventLeaderboard = async (githubToken: string, eventId: string, hector: TeamLeaderboard, victor: IndividualLeaderboard) => {
+    const existingSHA = await fetchExistingHectorLeaderboardDataFileSHA(githubToken, eventId)
+    createOrReplaceHectorLeaderboardDataFile(githubToken, eventId, existingSHA, hector, victor)
 }
