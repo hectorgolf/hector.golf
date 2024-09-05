@@ -109,6 +109,12 @@ if (victorWinners.length === 0 && leaderboards.victor && leaderboards.victor.len
             </div>
         )}
 
+        {(leaderboards.hector || leaderboards.victor) && (
+            <div class="leaderboard">
+                <a href={`${event.id}/leaderboard`}><h2>Leaderboard</h2></a>
+            </div>
+        )}
+
         {event.results?.teams && (
             <div class="teams">
                 <h2>Teams</h2>
@@ -273,6 +279,20 @@ if (victorWinners.length === 0 && leaderboards.victor && leaderboards.victor.len
 
     .results h3 {
         margin-bottom: 0.25em;
+    }
+
+    .leaderboard .competitor .points {
+        color: lightblue;
+    }
+
+    .leaderboard td, .leaderboard th {
+        text-align: left;
+        padding-right: 10px;
+    }
+
+    .leaderboard td.name, .leaderboard th.name {
+        text-align: left;
+        padding-right: 20px;
     }
 
     @media only screen and (max-width: 500px) {
