@@ -1,5 +1,5 @@
 import { google, sheets_v4 } from 'googleapis'
-import { JWT } from 'google-auth-library'
+import { JWT, auth } from 'google-auth-library'
 import type { BodyResponseCallback } from '@googleapis/sheets'
 import type { IndividualLeaderboard, TeamLeaderboard } from './types'
 
@@ -16,13 +16,27 @@ const columnNames = (() => {
 
 const columnName = (index: number): string => columnNames[index] || `${index}?`
 
-const authenticate = (): sheets_v4.Sheets => {
-    const authentication = new JWT({
-        email: process.env.GCP_SERVICE_ACCOUNT_EMAIL,
-        key: process.env.GCP_SERVICE_ACCOUNT_PRIVATE_KEY,
-        scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-    })
-    return google.sheets({ version: 'v4', auth: authentication })
+const authenticate = async (): Promise<sheets_v4.Sheets> => {
+
+    // const auth = new GoogleAuth({
+    //     credentials: {
+    //       client_email: process.env.GCP_SERVICE_ACCOUNT_EMAIL,
+    //       private_key: process.env.GCP_SERVICE_ACCOUNT_PRIVATE_KEY,
+    //     },
+    //     scopes: 'https://www.googleapis.com/auth/cloud-platform',
+    //   });
+    // const authentication = await auth.getClient()
+
+    const client = <JWT> auth.fromJSON(JSON.parse(process.env.GCP_SERVICE_ACCOUNT_CREDENTIALS || '{}'));
+    client.scopes = ["https://www.googleapis.com/auth/spreadsheets"];
+    return google.sheets({ version: 'v4', auth: client })
+
+    // const authentication = new JWT({
+    //     email: process.env.GCP_SERVICE_ACCOUNT_EMAIL,
+    //     key: process.env.GCP_SERVICE_ACCOUNT_PRIVATE_KEY,
+    //     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+    // })
+    // return google.sheets({ version: 'v4', auth: authentication })
 };
 
 
