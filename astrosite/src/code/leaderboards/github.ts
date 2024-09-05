@@ -19,7 +19,6 @@ const fetchExistingHectorLeaderboardDataFileSHA = async (githubToken: string, ev
         ...standardOptions,
         path: `astrosite/src/data/leaderboards/${eventId}.json`
     })
-    console.log(`Response for astrosite/src/data/leaderboards/${eventId}.json:  HTTP ${response.status} => ${JSON.stringify(response.data, null, 2)}`)
     if (response.status === 200) {
         return (response.data as any).sha as string|undefined
     }
