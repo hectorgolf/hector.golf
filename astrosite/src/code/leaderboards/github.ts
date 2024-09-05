@@ -10,10 +10,7 @@ const standardOptions = {
 }
 
 const authenticate = async (githubToken: string): Promise<Octokit> => {
-  const octokit = new Octokit({ auth: githubToken })
-  const response = await octokit.rest.users.getAuthenticated();
-  console.log(`Logged in to Github API: ${JSON.stringify(response, null, 2)}`)
-  return octokit
+  return Promise.resolve(new Octokit({ auth: githubToken }))
 }
 
 export const updateHectorEventLeaderboard = async (githubToken: string, eventId: string, hector: TeamLeaderboard, victor: IndividualLeaderboard) => {
