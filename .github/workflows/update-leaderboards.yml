@@ -67,6 +67,7 @@ jobs:
           TEETIME_USERNAME: 2762
           TEETIME_PASSWORD: ${{ secrets.TEETIME_PASSWORD }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_CREDENTIALS }}
       - name: Commit changes
         run: |
           scripts/commit-changes.sh

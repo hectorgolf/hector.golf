@@ -17,7 +17,7 @@ const columnNames = (() => {
 const columnName = (index: number): string => columnNames[index] || `${index}?`
 
 const authenticate = async (): Promise<sheets_v4.Sheets> => {
-    const client = <JWT> auth.fromJSON(JSON.parse(process.env.GCP_SERVICE_ACCOUNT_CREDENTIALS || '{}'))
+    const client = <JWT> auth.fromJSON(JSON.parse(process.env.GOOGLE_CREDENTIALS || '{}'))
     client.scopes = ["https://www.googleapis.com/auth/spreadsheets"]
     return google.sheets({ version: 'v4', auth: client })
 }
