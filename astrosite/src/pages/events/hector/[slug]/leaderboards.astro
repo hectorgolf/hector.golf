@@ -1,0 +1,204 @@
+---
+import Layout from '../../../../layouts/Layout.astro'
+import Breadcrumb from '../../../../components/Breadcrumb.astro'
+import { type HectorEvent } from '../../../../schemas/events'
+import { getAllEventIds, getEventById } from '../../../../code/events'
+import { getLeaderboardsByEventId, getEventsWithLeaderboards } from '../../../../code/leaderboards/leaderboards'
+import type { IndividualLeaderboard, TeamLeaderboard } from '../../../../code/leaderboards/types'
+
+
+export function getStaticPaths() {
+    const eventsWithLeaderboards = getEventsWithLeaderboards()
+    return getAllEventIds(e => e.format === 'hector' && eventsWithLeaderboards.includes(e.id)).map((id) => {
+        return { params: { slug: id } }
+    })
+}
+
+const { slug } = Astro.params
+let event: HectorEvent|undefined = slug ? (getEventById(slug) as HectorEvent) : undefined
+if (!event) {
+    Astro.response.status = 404
+}
+event = event!
+
+const leaderboards = getLeaderboardsByEventId(event.id)
+const hectorLeaderboard: TeamLeaderboard|undefined = leaderboards.hector
+const victorLeaderboard: IndividualLeaderboard|undefined = leaderboards.victor
+const updatedAt = leaderboards.updatedAt ? new Date(leaderboards.updatedAt) : undefined
+
+const normalizeDiff = (diff: string): string => {
+    if (diff !== '' && !diff.includes('.')) {
+        return `${diff}.0`
+    }
+    return diff
+}
+
+---
+<Layout title="Leaderboard">
+    <main>
+		<div class="breadcrumbs">
+			<Breadcrumb title="Home" href="/" />
+			<Breadcrumb title="Events" href="/events" />
+			<Breadcrumb title="Hectors" href="/events/hector" />
+			<Breadcrumb title={event.name} href={`/events/hector/${event.id}`} />
+		</div>
+        <h1><span class="text-gradient">{event.name}</span></h1>
+        <div class="event-details">
+            <div class="event-location">{event.location}</div>
+            <div class="event-date">{event.date}</div>
+        </div>
+
+        {hectorLeaderboard && (
+            <div class="leaderboard hector">
+                <h2>Hector</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="place">#</th>
+                            <th class="name">Team</th>
+                            <th class="points">Points</th>
+                            <th class="diff">Diff</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {hectorLeaderboard.map(({ team, points, diff}, index) => {
+                        return (
+                            <tr class="competitor">
+                                <td class="place">{index + 1}</td>
+                                <td class="name">{team}</td>
+                                <td class="points">{points}</td>
+                                <td class="diff">{normalizeDiff(diff)}</td>
+                            </tr>
+                        )
+                    })}
+                    </tbody>
+                </table>
+            </div>
+        )}
+
+        {victorLeaderboard && (
+            <div class="leaderboard victor">
+                <h2>Victor</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="place">#</th>
+                            <th class="name">Player</th>
+                            <th class="points">Points</th>
+                            <th class="diff">Diff</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {victorLeaderboard.map(({ player, points, diff}, index) => {
+                        return (
+                            <tr class="competitor">
+                                <td class="place">{index + 1}</td>
+                                <td class="name">{player}</td>
+                                <td class="points">{points}</td>
+                                <td class="diff">{normalizeDiff(diff)}</td>
+                            </tr>
+                        )
+                    })}
+                    </tbody>
+                </table>
+            </div>
+        )}
+
+        {updatedAt && (<div class="updated-at">Updated:&nbsp;&nbsp;{updatedAt?.toISOString()}</div>)}
+
+    </main>
+</Layout>
+
+<style>
+    pre {
+        max-width: calc(100% - 2rem);
+        overflow: scroll;
+    }
+
+    main {
+		margin: auto;
+		padding: 1rem;
+		width: 900px;
+		max-width: calc(100% - 2rem);
+		color: white;
+		font-size: 20px;
+		line-height: 1.6;
+	}
+
+    h1 {
+		text-transform: uppercase;
+		font-size: 4rem;
+		font-weight: 700;
+		line-height: 1;
+		text-align: left;
+		margin-bottom: 1em;
+	}
+
+    h2 {
+        margin-block-start: 1em;
+        margin-block-end: 0.5em;
+    }
+
+    .event-details {
+        font-weight: bold;
+    }
+
+    .updated-at {
+        font-size: 0.7em;
+        color: lightgray;
+        margin-top: 100px;
+        margin-bottom: 30px;
+    }
+
+    .leaderboard table {
+        border-collapse: collapse;
+    }
+
+    .leaderboard .competitor .points {
+        color: lightblue;
+    }
+
+    .leaderboard .competitor .diff {
+        color: lightcoral;
+    }
+
+    .leaderboard .points,
+    .leaderboard .diff {
+        text-align: right;
+    }
+
+    .leaderboard .competitor {
+        font-family: "Inconsolata", monospace;
+        font-optical-sizing: auto;
+        font-weight: 500;
+        font-style: normal;
+        font-variation-settings: "wdth" 87.5;
+    }
+
+    .leaderboard td, .leaderboard th {
+        text-align: left;
+        padding-right: 10px;
+    }
+
+    .leaderboard th {
+        background-color: #333333;
+    }
+
+    .leaderboard td.name, .leaderboard th.name {
+        text-align: left;
+        padding-right: 20px;
+    }
+
+    @media only screen and (max-width: 500px) {
+        main {
+            font-size: 16px;
+            padding: 0.5rem;
+        }
+
+        h1 {
+		    font-size: 2.25rem;
+            margin-top: 40px;
+        }
+    }
+
+</style>
