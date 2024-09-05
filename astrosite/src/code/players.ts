@@ -62,7 +62,7 @@ export function getPlayersAtEvent(event: any): Array<Player> {
         const players = teams.flatMap(team => team.players.map(id => getPlayerById(id)))
         return players.filter(p => !!p) as Array<Player>;
     } else if (event.format === 'matchplay') {
-        const players = (event as MatchplayEvent).results?.participants?.map(id => getPlayerById(id)) || []
+        const players = (event as MatchplayEvent).participants?.map(id => getPlayerById(id)) || []
         return players.filter(p => !!p) as Array<Player>;
     } else if (event.format === 'finnkampen') {
         const teams = (event as FinnkampenEvent).results?.teams || []
