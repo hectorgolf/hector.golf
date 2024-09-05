@@ -1,0 +1,188 @@
+{
+  "event": "HECTOR2024",
+  "hector": [
+    {
+      "points": "177.7",
+      "diff": "",
+      "team": "Olli Varis + Jarkko Kailanto"
+    },
+    {
+      "points": "177.3",
+      "diff": "+0.3",
+      "team": "Miso Korkiakoski + Janne Valtakari"
+    },
+    {
+      "points": "176.0",
+      "diff": "+1.7",
+      "team": "Juuso Pihamaa + Toni Marttila"
+    },
+    {
+      "points": "175.3",
+      "diff": "+2.3",
+      "team": "Ossi Laukkanen + Lassi Koto"
+    },
+    {
+      "points": "171.7",
+      "diff": "+6",
+      "team": "Pekka Saijonmaa + Pasi Halmetoja"
+    },
+    {
+      "points": "171.2",
+      "diff": "+6.5",
+      "team": "Sami Heikkinen + Harri Vainio"
+    },
+    {
+      "points": "171.2",
+      "diff": "+6.5",
+      "team": "Eero Halmetoja + Lauri Paatela"
+    },
+    {
+      "points": "170.0",
+      "diff": "+7.7",
+      "team": "Ofri Porat + Lasse Koskela"
+    },
+    {
+      "points": "168.8",
+      "diff": "+8.8",
+      "team": "Martin Svedholm + Marcus Mattila"
+    },
+    {
+      "points": "168.5",
+      "diff": "+9.2",
+      "team": "Tommy Gulin + Timo Lukumaa"
+    },
+    {
+      "points": "165.0",
+      "diff": "+12.7",
+      "team": "Simo Liukkonen + Mikko Oesch"
+    },
+    {
+      "points": "163.7",
+      "diff": "+14",
+      "team": "Jussi Allonen + Olli Andersson"
+    }
+  ],
+  "victor": [
+    {
+      "player": "Ofri Porat",
+      "points": "121.0",
+      "diff": ""
+    },
+    {
+      "player": "Jussi Allonen",
+      "points": "118.0",
+      "diff": "-3.0"
+    },
+    {
+      "player": "Martin Svedholm",
+      "points": "114.0",
+      "diff": "-7.0"
+    },
+    {
+      "player": "Lassi Koto",
+      "points": "112.0",
+      "diff": "-9.0"
+    },
+    {
+      "player": "Lauri Paatela",
+      "points": "112.0",
+      "diff": "-9.0"
+    },
+    {
+      "player": "Lasse Koskela",
+      "points": "109.0",
+      "diff": "-12.0"
+    },
+    {
+      "player": "Tommy Gulin",
+      "points": "106.0",
+      "diff": "-15.0"
+    },
+    {
+      "player": "Marcus Mattila",
+      "points": "106.0",
+      "diff": "-15.0"
+    },
+    {
+      "player": "Sami Heikkinen",
+      "points": "103.0",
+      "diff": "-18.0"
+    },
+    {
+      "player": "Pekka Saijonmaa",
+      "points": "102.0",
+      "diff": "-19.0"
+    },
+    {
+      "player": "Simo Liukkonen",
+      "points": "99.0",
+      "diff": "-22.0"
+    },
+    {
+      "player": "Olli Varis",
+      "points": "93.0",
+      "diff": "-28.0"
+    },
+    {
+      "player": "Ossi Laukkanen",
+      "points": "93.0",
+      "diff": "-28.0"
+    },
+    {
+      "player": "Pasi Halmetoja",
+      "points": "91.0",
+      "diff": "-30.0"
+    },
+    {
+      "player": "Jarkko Kailanto",
+      "points": "91.0",
+      "diff": "-30.0"
+    },
+    {
+      "player": "Juuso Pihamaa",
+      "points": "90.0",
+      "diff": "-31.0"
+    },
+    {
+      "player": "Miso Korkiakoski",
+      "points": "87.0",
+      "diff": "-34.0"
+    },
+    {
+      "player": "Eero Halmetoja",
+      "points": "85.0",
+      "diff": "-36.0"
+    },
+    {
+      "player": "Mikko Oesch",
+      "points": "85.0",
+      "diff": "-36.0"
+    },
+    {
+      "player": "Harri Vainio",
+      "points": "84.0",
+      "diff": "-37.0"
+    },
+    {
+      "player": "Toni Marttila",
+      "points": "80.0",
+      "diff": "-41.0"
+    },
+    {
+      "player": "Janne Valtakari",
+      "points": "79.0",
+      "diff": "-42.0"
+    },
+    {
+      "player": "Olli Andersson",
+      "points": "78.0",
+      "diff": "-43.0"
+    },
+    {
+      "player": "Timo Lukumaa",
+      "points": "75.0",
+      "diff": "-46.0"
+    }
+  ],
+  "updatedAt": "2024-09-05T21:50:23.059Z"
+}
