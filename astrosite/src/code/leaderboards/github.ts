@@ -1,4 +1,4 @@
-import { Octokit } from 'octokit'
+import { Octokit, RequestError } from 'octokit'
 import type { IndividualLeaderboard, TeamLeaderboard } from './types'
 
 const standardOptions = {
@@ -14,15 +14,20 @@ const authenticate = async (githubToken: string): Promise<Octokit> => {
 }
 
 const fetchExistingHectorLeaderboardDataFileSHA = async (githubToken: string, eventId: string): Promise<string|undefined> => {
-    const octokit = await authenticate(githubToken)
-    const response = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
-        ...standardOptions,
-        path: `astrosite/src/data/leaderboards/${eventId}.json`
-    })
-    if (response.status === 200) {
+    try {
+        const octokit = await authenticate(githubToken)
+        const response = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
+            ...standardOptions,
+            path: `astrosite/src/data/leaderboards/${eventId}.json`
+        })
         return (response.data as any).sha as string|undefined
+    } catch (err: any) {
+        // HTTP 404 is expected if the file doesn't exist yet but let's log all other errors!
+        if ((err as RequestError).status !== 404) {
+            console.error(`Failed to fetch existing leaderboard data file for event ${eventId}`, err)
+        }
+        return undefined
     }
-    return undefined
 }
 
 const createOrReplaceHectorLeaderboardDataFile = async (githubToken: string, eventId: string, existingSHA: string|undefined, hector: TeamLeaderboard, victor: IndividualLeaderboard) => {
