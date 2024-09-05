@@ -13,21 +13,26 @@ const authenticate = async (githubToken: string): Promise<Octokit> => {
   return Promise.resolve(new Octokit({ auth: githubToken }))
 }
 
-const fetchExistingHectorLeaderboardDataFileSHA = async (githubToken: string, eventId: string): Promise<string|undefined> => {
+const fetchExistingHectorLeaderboardDataFile = async (githubToken: string, eventId: string): Promise<{sha:string, json: any}|undefined> => {
     try {
         const octokit = await authenticate(githubToken)
         const response = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
             ...standardOptions,
             path: `astrosite/src/data/leaderboards/${eventId}.json`
         })
-        return (response.data as any).sha as string|undefined
+        const sha = (response.data as any).sha as string|undefined
+        const content = (response.data as any).content as string|undefined
+        const json = content ? JSON.parse(Buffer.from(content, 'base64').toString('utf-8')) : {}
+        if (sha && json) {
+            return { sha, json }
+        }
     } catch (err: any) {
         // HTTP 404 is expected if the file doesn't exist yet but let's log all other errors!
         if ((err as RequestError).status !== 404) {
             console.error(`Failed to fetch existing leaderboard data file for event ${eventId}`, err)
         }
-        return undefined
     }
+    return undefined
 }
 
 const createOrReplaceHectorLeaderboardDataFile = async (githubToken: string, eventId: string, existingSHA: string|undefined, hector: TeamLeaderboard, victor: IndividualLeaderboard) => {
@@ -54,6 +59,40 @@ const createOrReplaceHectorLeaderboardDataFile = async (githubToken: string, eve
 }
 
 export const updateHectorEventLeaderboard = async (githubToken: string, eventId: string, hector: TeamLeaderboard, victor: IndividualLeaderboard) => {
-    const existingSHA = await fetchExistingHectorLeaderboardDataFileSHA(githubToken, eventId)
-    createOrReplaceHectorLeaderboardDataFile(githubToken, eventId, existingSHA, hector, victor)
+    const existingFile = await fetchExistingHectorLeaderboardDataFile(githubToken, eventId)
+    const sha = existingFile?.sha
+    if (areDeeplyEqual(existingFile?.json.hector, hector) && areDeeplyEqual(existingFile?.json.victor, victor)) {
+        console.log(`Leaderboard data for event ${eventId} hasn't changed; skipping the update for event ${eventId}`)
+    } else if (sha === undefined) {
+        console.log(`Creating a new leaderboard data file for event ${eventId}`)
+        createOrReplaceHectorLeaderboardDataFile(githubToken, eventId, undefined, hector, victor)
+    } else {
+        console.log(`Leaderboard data for event ${eventId} has changed; updating leaderboard data for event ${eventId}`)
+        createOrReplaceHectorLeaderboardDataFile(githubToken, eventId, sha, hector, victor)
+    }
+}
+
+function areDeeplyEqual(obj1: any, obj2: any): boolean {
+    if (obj1 === obj2) return true;
+
+    if (Array.isArray(obj1) && Array.isArray(obj2)) {
+        if (obj1.length !== obj2.length) return false;
+        return obj1.every((elem, index) => {
+            return areDeeplyEqual(elem, obj2[index]);
+        })
+    }
+
+    if (typeof obj1 === "object" && typeof obj2 === "object" && obj1 !== null && obj2 !== null) {
+        if (Array.isArray(obj1) || Array.isArray(obj2)) return false;
+        const keys1 = Object.keys(obj1)
+        const keys2 = Object.keys(obj2)
+        if (keys1.length !== keys2.length || !keys1.every(key => keys2.includes(key))) return false;
+        for(let key in obj1) {
+            let isEqual = areDeeplyEqual(obj1[key], obj2[key])
+            if (!isEqual) { return false; }
+        }
+        return true;
+    }
+
+    return false;
 }
