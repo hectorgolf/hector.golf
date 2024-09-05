@@ -4,9 +4,9 @@
 name: Run nightly data updates
 
 on:
-  # Runs at 3:00am and 12:00am UTC every day
+  # Runs at 03:00 and 13:00 UTC every day
   schedule:
-    - cron: "0 3,12 * * *"
+    - cron: "0 3,13 * * *"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -60,7 +60,7 @@ jobs:
         working-directory: ${{ env.BUILD_PATH }}
       - name: Run script
         run: |
-          scripts/nightly.sh
+          npx tsx src/scripts/update-handicaps.ts
         working-directory: ${{ env.BUILD_PATH }}
         env:
           TEETIME_CLUB_NUMBER: 0134   # Tapiola Golf
