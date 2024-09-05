@@ -15,12 +15,15 @@ const authenticate = async (githubToken: string): Promise<Octokit> => {
 
 const fetchExistingHectorLeaderboardDataFileSHA = async (githubToken: string, eventId: string): Promise<string|undefined> => {
     const octokit = await authenticate(githubToken)
-    const metadata = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
+    const response = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
         ...standardOptions,
         path: `astrosite/src/data/leaderboards/${eventId}.json`
     })
-    console.log(`Response for astrosite/src/data/leaderboards/${eventId}.json:  ${JSON.stringify(metadata, null, 2)}`)
-    return (metadata as any).sha as string|undefined
+    console.log(`Response for astrosite/src/data/leaderboards/${eventId}.json:  HTTP ${response.status} => ${JSON.stringify(response.data, null, 2)}`)
+    if (response.status === 200) {
+        return (response.data as any).sha as string|undefined
+    }
+    return undefined
 }
 
 const createOrReplaceHectorLeaderboardDataFile = async (githubToken: string, eventId: string, existingSHA: string|undefined, hector: TeamLeaderboard, victor: IndividualLeaderboard) => {
