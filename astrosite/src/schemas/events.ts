@@ -62,7 +62,8 @@ export enum EventFormat {
 export const hectorEventSchema = BaseEventSchema.extend({
     format: z.literal(EventFormat.Hector),
     courses: z.array(z.string()).optional(),
-    results: hectorResultsSchema.optional()
+    results: hectorResultsSchema.optional(),
+    leaderboardSheetId: z.string().optional()
 })
 
 export const finnkampenEventSchema = BaseEventSchema.extend({

@@ -4,7 +4,7 @@
         "name": "Hector Trophée 2024",
         "format": "hector",
         "location": "La Finca Golf, Spain",
-        "date": "September 25-28, 2024",
+        "date": "September 5-28, 2024",
         "courses": [ "lafinca", "villamartin" ],
         "description": "The world's best amateur golfers will once again face off with each other in Hector Trophée 2024. The tournament will be played at La Finca and Villamartin. The tournament will be played in the classic 4-day stroke play format and the proud winners will be awarded with the prestigious Hector Trophée.",
         "participants": [
@@ -32,7 +32,8 @@
             "lasse-koskela",
             "pekka-saijonmaa",
             "janne-valtakari"
-        ]
+        ],
+        "leaderboardSheetId": "13avabBgD-EQ7EBTlohttWkIAQsLEMlR4OrsF_iRhodk"
     },
     {
         "id": "HECTORMATCHPLAY2024",
