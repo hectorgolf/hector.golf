@@ -1,7 +1,7 @@
 # Workflow for running nightly updates on the data and thus potentially triggering
 # a new build of the Astro site.
 #
-name: Run nightly data updates
+name: Update players' official handicaps
 
 on:
   # Runs at 03:00 and 13:00 UTC every day
