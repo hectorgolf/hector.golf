@@ -63,9 +63,6 @@ jobs:
           npx tsx src/scripts/update-leaderboards.ts
         working-directory: ${{ env.BUILD_PATH }}
         env:
-          TEETIME_CLUB_NUMBER: 0134   # Tapiola Golf
-          TEETIME_USERNAME: 2762
-          TEETIME_PASSWORD: ${{ secrets.TEETIME_PASSWORD }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GOOGLE_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_CREDENTIALS }}
       - name: Commit changes
@@ -73,7 +70,7 @@ jobs:
           scripts/commit-changes.sh
         working-directory: ${{ env.BUILD_PATH }}
         env:
-          GIT_AUTHOR_NAME: nightly.yml
+          GIT_AUTHOR_NAME: update-leaderboards.yml
           GIT_AUTHOR_EMAIL: lasse.koskela@gmail.com
-          GIT_COMMITTER_NAME: nightly.yml
+          GIT_COMMITTER_NAME: update-leaderboards.yml
           GIT_COMMITTER_EMAIL: lasse.koskela@gmail.com

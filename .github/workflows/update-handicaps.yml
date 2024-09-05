@@ -1,4 +1,4 @@
-# Workflow for running nightly updates on the data and thus potentially triggering
+# Workflow for running nightly handicap updates and thus potentially triggering
 # a new build of the Astro site.
 #
 name: Update players' official handicaps
@@ -71,7 +71,7 @@ jobs:
           scripts/commit-changes.sh
         working-directory: ${{ env.BUILD_PATH }}
         env:
-          GIT_AUTHOR_NAME: nightly.yml
+          GIT_AUTHOR_NAME: update-handicaps.yml
           GIT_AUTHOR_EMAIL: lasse.koskela@gmail.com
-          GIT_COMMITTER_NAME: nightly.yml
+          GIT_COMMITTER_NAME: update-handicaps.yml
           GIT_COMMITTER_EMAIL: lasse.koskela@gmail.com
