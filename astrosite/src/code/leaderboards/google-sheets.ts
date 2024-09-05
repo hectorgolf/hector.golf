@@ -17,28 +17,10 @@ const columnNames = (() => {
 const columnName = (index: number): string => columnNames[index] || `${index}?`
 
 const authenticate = async (): Promise<sheets_v4.Sheets> => {
-
-    // const auth = new GoogleAuth({
-    //     credentials: {
-    //       client_email: process.env.GCP_SERVICE_ACCOUNT_EMAIL,
-    //       private_key: process.env.GCP_SERVICE_ACCOUNT_PRIVATE_KEY,
-    //     },
-    //     scopes: 'https://www.googleapis.com/auth/cloud-platform',
-    //   });
-    // const authentication = await auth.getClient()
-
-    const client = <JWT> auth.fromJSON(JSON.parse(process.env.GCP_SERVICE_ACCOUNT_CREDENTIALS || '{}'));
-    client.scopes = ["https://www.googleapis.com/auth/spreadsheets"];
+    const client = <JWT> auth.fromJSON(JSON.parse(process.env.GCP_SERVICE_ACCOUNT_CREDENTIALS || '{}'))
+    client.scopes = ["https://www.googleapis.com/auth/spreadsheets"]
     return google.sheets({ version: 'v4', auth: client })
-
-    // const authentication = new JWT({
-    //     email: process.env.GCP_SERVICE_ACCOUNT_EMAIL,
-    //     key: process.env.GCP_SERVICE_ACCOUNT_PRIVATE_KEY,
-    //     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-    // })
-    // return google.sheets({ version: 'v4', auth: authentication })
-};
-
+}
 
 const findCellContaining = (rows: Rows, matcher: (value: CellValue) => boolean) => {
     for (let r = 0; r < rows.length; r++) {
@@ -212,9 +194,9 @@ const findHectorLeaderboard = (rows: Rows) => {
 type RowsProcessingFunction = (rows: Rows) => any
 
 const processRangeInSheet = async (spreadsheetId: string, range: string, operation: RowsProcessingFunction): Promise<any> => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         try {
-            const sheets = authenticate()
+            const sheets = await authenticate()
             const callback: BodyResponseCallback<sheets_v4.Schema$ValueRange> = (err: any, res: any) => {
                 if (err) {
                     console.error('The API returned an error.', err)
