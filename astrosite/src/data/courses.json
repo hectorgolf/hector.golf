@@ -554,7 +554,7 @@
             "phone": "tel://+421917907777",
             "email": "reception@penatigolfresort.sk"
         },
-        "hero_image": "https://www.penatigolfresort.sk/wp-content/uploads/2013/11/PM1_1969.jpg",
+        "hero_image": "/images/courses/penati-heritage/hero.jpg",
         "description_short": "",
         "description_long": [
             {
@@ -567,7 +567,7 @@
             },
             {
                 "type": "image",
-                "url": "https://www.penatigolfresort.sk/wp-content/uploads/2013/11/PM1_1808.jpg"
+                "url": "/images/courses/penati-heritage/hero2.jpg"
             },
             {
                 "type": "paragraph",
@@ -579,7 +579,7 @@
             },
             {
                 "type": "image",
-                "url": "https://www.penatigolfresort.sk/wp-content/uploads/2013/11/PM1_1839.jpg"
+                "url": "/images/courses/penati-heritage/hero3.jpg"
             },
             {
                 "type": "paragraph",
@@ -591,8 +591,8 @@
             }
         ],
         "images": {
-            "hero": "https://www.penatigolfresort.sk/wp-content/uploads/2013/11/PM1_1969.jpg",
-            "aerial": "https://www.penatigolfresort.sk/wp-content/uploads/2019/02/0-2.jpg",
+            "hero": "/images/courses/penati-heritage/hero.jpg",
+            "aerial": "/images/courses/penati-heritage/aerial.jpg",
             "course_layout": "/images/courses/penati-heritage/layout.png"
         },
         "course": {
