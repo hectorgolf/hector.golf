@@ -1192,17 +1192,18 @@
             "phone": "tel://+34966729055",
             "email": "info@lafincaresort.com"
         },
-        "hero_image": "https://www.lafincaresort.com/sites/default/files/styles/full_slide_75/public/2021-12/villamartin-slider.jpg?itok=nFERTffk",
+        "hero_image": "/images/courses/lafinca/hero.jpg",
         "description_short": "Located on the Costa Blanca, in the south of the province of Alicante, and blessed with an exceptional climate, La Finca Resort is one of south-eastern Spain’s most iconic resorts, and a favourite haunt of golfing enthusiasts.",
         "description_long": [
             { "type": "paragraph", "content": "La Finca golf course opened its doors in August 2002. This magnificent golf course was designed by the renowned Spanish designer Pepe Gancedo, who was one of the standout amateur players in Spain." },
-            { "type": "image", "url": "https://www.lafincaresort.com/sites/default/files/styles/image_group_2_cols/public/2021-12/lafincagolf_4.jpeg.webp?itok=-ni8T51L" },
+            { "type": "image", "url": "/images/courses/lafinca/hero2.jpg" },
             { "type": "paragraph", "content": "This course has wide and generous fairways with spectacular and unique greens, enabling the golfer to use his driver, whatever the handicap of the player. The spectacular views all around this course makes it one of the best golf courses in Spain. We are particularly proud of our greens that add to the experience every golfer desires. All this make this course one of the best golf courses in Spain." },
             { "type": "paragraph", "content": "The greens at La Finca are totally different from each other, of varied shapes and singular beauty, some of them being famous: the 7th hole, is a square shape with large dimensions, resembles an English bowls green; and at hole 14, this is round and deep, reminiscent of the shape of a Chinese wok." },
-            { "type": "image", "url": "https://www.lafincaresort.com/sites/default/files/styles/image_group_2_cols/public/2021-12/La-Finca-Golf-Hotel-19-LOW_0.jpeg.webp?itok=nDiAV6uy" },
+            { "type": "image", "url": "/images/courses/lafinca/hero3.jpg" },
             { "type": "paragraph", "content": "La Finca golf course has been the venue of several prestigious tournaments since its opening, such as: the Junior European Championship, the Spanish Junior Championship and the finals of Audi Class and Audi Quattro circuits, for amateur golfers. At a professional level, La Finca golf course has hosted qualifying for the EPD Tour as well as the Valencian Community professional circuit." }
         ],
         "images": {
+            "hero": "/images/courses/lafinca/hero.jpg",
             "course_layout": "/images/courses/lafinca/layout.png"
         },
         "course": {
