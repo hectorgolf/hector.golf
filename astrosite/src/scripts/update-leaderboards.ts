@@ -10,14 +10,14 @@ type HectorEvent = {
     name: string,
     format: string,
     date: string,
-    leaderboardSheetId: string|undefined
+    leaderboardSheet: string|undefined
 }
 
 const updateLeaderboardsForAllOngoingTournaments = async () => {
     const events = (eventsData as Array<HectorEvent>)
         .filter(e => e.format === 'hector')
         .map(e => e as HectorEvent)
-        .filter(e => !!(e.leaderboardSheetId))
+        .filter(e => !!(e.leaderboardSheet))
         .filter(e => {
             const { startDate, endDate } = parseEventDateRange(e.date) || {}
             if (!startDate) return false
@@ -31,8 +31,9 @@ const updateLeaderboardsForAllOngoingTournaments = async () => {
     for (let event of events) {
         console.log(`Updating leaderboard for ${event.name}...`)
         const hectorEvent = event as HectorEvent
-        const leaderboardSheetId = hectorEvent.leaderboardSheetId
-        console.log(`Leaderboard sheet ID: ${leaderboardSheetId}`)
+        const leaderboardSheetId = hectorEvent.leaderboardSheet?.replace(/https?:\/\/docs.google.com\/spreadsheets\/d\//, '').replace(/\/.*$/, '')
+        console.log(`Leaderboard sheet URL: ${hectorEvent.leaderboardSheet}`)
+        console.log(`Leaderboard sheet ID:  ${leaderboardSheetId}`)
         if (leaderboardSheetId) {
             console.log(`Fetching Hector leaderboard data for ${hectorEvent.name} from the Google Sheet`)
             const hectorLeaderboard = await fetchHectorLeaderboardData(leaderboardSheetId)
