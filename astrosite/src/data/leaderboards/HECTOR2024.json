@@ -3,75 +3,75 @@
   "hector": [
     {
       "points": "174.5",
-      "diff": "",
       "team": "Juuso Pihamaa + Toni Marttila",
-      "through": ""
+      "diff": "",
+      "through": "7/7"
     },
     {
       "points": "172.3",
-      "diff": "+2.2",
       "team": "Miso Korkiakoski + Janne Valtakari",
-      "through": "+2.2"
+      "diff": "+2.2",
+      "through": "7/7"
     },
     {
       "points": "172.2",
-      "diff": "+2.3",
       "team": "Olli Varis + Jarkko Kailanto",
-      "through": "+2.3"
+      "diff": "+2.3",
+      "through": "7/7"
     },
     {
       "points": "172.0",
-      "diff": "+2.5",
       "team": "Ofri Porat + Lasse Koskela",
-      "through": "+2.5"
+      "diff": "+2.5",
+      "through": "7/7"
     },
     {
       "points": "171.3",
-      "diff": "+3.2",
       "team": "Ossi Laukkanen + Lassi Koto",
-      "through": "+3.2"
+      "diff": "+3.2",
+      "through": "7/7"
     },
     {
       "points": "170.0",
-      "diff": "+4.5",
       "team": "Tommy Gulin + Timo Lukumaa",
-      "through": "+4.5"
+      "diff": "+4.5",
+      "through": "7/7"
     },
     {
       "points": "169.7",
-      "diff": "+4.8",
       "team": "Pekka Saijonmaa + Pasi Halmetoja",
-      "through": "+4.8"
+      "diff": "+4.8",
+      "through": "7/7"
     },
     {
       "points": "167.7",
-      "diff": "+6.8",
       "team": "Jussi Allonen + Olli Andersson",
-      "through": "+6.8"
+      "diff": "+6.8",
+      "through": "7/7"
     },
     {
       "points": "167.5",
-      "diff": "+7",
       "team": "Simo Liukkonen + Mikko Oesch",
-      "through": "+7"
+      "diff": "+7",
+      "through": "7/7"
     },
     {
       "points": "163.7",
-      "diff": "+10.8",
       "team": "Sami Heikkinen + Harri Vainio",
-      "through": "+10.8"
+      "diff": "+10.8",
+      "through": "7/7"
     },
     {
       "points": "161.8",
-      "diff": "+12.7",
       "team": "Martin Svedholm + Marcus Mattila",
-      "through": "+12.7"
+      "diff": "+12.7",
+      "through": "7/7"
     },
     {
       "points": "161.7",
-      "diff": "+12.8",
       "team": "Eero Halmetoja + Lauri Paatela",
-      "through": "+12.8"
+      "diff": "+12.8",
+      "through": "7/7"
     }
   ],
   "victor": [
@@ -220,5 +220,5 @@
       "through": "2/4"
     }
   ],
-  "updatedAt": "2024-09-06T06:53:17.749Z"
+  "updatedAt": "2024-09-06T07:08:49.617Z"
 }
