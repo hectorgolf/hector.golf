@@ -1,8 +1,13 @@
 ---
 import Layout from '../../../../layouts/Layout.astro'
 import Breadcrumb from '../../../../components/Breadcrumb.astro'
+
+import { type Player } from '../../../../schemas/players'
+import { getAllPlayers, getPlayerName, getPlayerAliases } from '../../../../code/players'
+
 import { type HectorEvent } from '../../../../schemas/events'
 import { getAllEventIds, getEventById } from '../../../../code/events'
+
 import { getLeaderboardsByEventId, getEventsWithLeaderboards } from '../../../../code/leaderboards/leaderboards'
 import type { IndividualLeaderboard, TeamLeaderboard } from '../../../../code/leaderboards/types'
 
@@ -33,6 +38,19 @@ const normalizeDiff = (diff: string): string => {
     return diff
 }
 
+const playersByName: Map<string, Player> = new Map<string, Player>()
+getAllPlayers().forEach((player) => {
+    getPlayerAliases(player).forEach(alias => playersByName.set(alias, player))
+})
+
+const playerNameToPlayer = (name: string): Player => {
+    return playersByName.get(name.trim())!
+}
+
+const teamToPlayerList = (team: string): Array<Player> => {
+    return team.split('+').map(playerNameToPlayer).filter(p => !!p)
+}
+
 ---
 <Layout title="Leaderboard">
     <main>
@@ -56,18 +74,29 @@ const normalizeDiff = (diff: string): string => {
                         <tr>
                             <th class="place">#</th>
                             <th class="name">Team</th>
-                            <th class="points">Points</th>
+                            <th class="points">Score</th>
                             <th class="diff">Diff</th>
+                            <th class="thru">Thru</th>
                         </tr>
                     </thead>
                     <tbody>
-                    {hectorLeaderboard.map(({ team, points, diff}, index) => {
+                    {hectorLeaderboard.map(({ team, points, diff, through}, index) => {
                         return (
                             <tr class="competitor">
                                 <td class="place">{index + 1}</td>
-                                <td class="name">{team}</td>
+                                <td class="name">
+                                    {teamToPlayerList(team).map((player, index) => {
+                                        return (
+                                            <>
+                                                {index ? (<span class="plus"> + </span>) : null}
+                                                <a class="player" href={`/players/${player.id}`}>{getPlayerName(player)}</a>
+                                            </>
+                                        )}
+                                    )}
+                                </td>
                                 <td class="points">{points}</td>
                                 <td class="diff">{normalizeDiff(diff)}</td>
+                                <td class="thru">{through}</td>
                             </tr>
                         )
                     })}
@@ -84,18 +113,24 @@ const normalizeDiff = (diff: string): string => {
                         <tr>
                             <th class="place">#</th>
                             <th class="name">Player</th>
-                            <th class="points">Points</th>
+                            <th class="points">Score</th>
                             <th class="diff">Diff</th>
+                            <th class="thru">Thru</th>
                         </tr>
                     </thead>
                     <tbody>
-                    {victorLeaderboard.map(({ player, points, diff}, index) => {
+                    {victorLeaderboard.map(({ player, points, diff, through}, index) => {
                         return (
                             <tr class="competitor">
                                 <td class="place">{index + 1}</td>
-                                <td class="name">{player}</td>
+                                <td class="name">
+                                    {playerNameToPlayer(player)?.id ? (
+                                        <a class="player" href={`/players/${playerNameToPlayer(player).id}`}>{player}</a>
+                                    ) : player}
+                                </td>
                                 <td class="points">{points}</td>
                                 <td class="diff">{normalizeDiff(diff)}</td>
+                                <td class="thru">{through}</td>
                             </tr>
                         )
                     })}
@@ -154,6 +189,10 @@ const normalizeDiff = (diff: string): string => {
         border-collapse: collapse;
     }
 
+    .leaderboard .competitor .name .plus {
+        color: lightgray;
+    }
+
     .leaderboard .competitor .points {
         color: lightblue;
     }
@@ -167,12 +206,28 @@ const normalizeDiff = (diff: string): string => {
         text-align: right;
     }
 
+    .leaderboard .thru {
+        text-align: center;
+    }
+
     .leaderboard .competitor {
         font-family: "Inconsolata", monospace;
         font-optical-sizing: auto;
         font-weight: 500;
         font-style: normal;
         font-variation-settings: "wdth" 87.5;
+    }
+
+    .leaderboard thead {
+        font-family: "Inconsolata", monospace;
+        font-optical-sizing: auto;
+        font-weight: 700;
+        font-style: normal;
+        font-variation-settings: "wdth" 87.5;
+    }
+
+    .leaderboard tbody {
+        vertical-align: top;
     }
 
     .leaderboard td, .leaderboard th {
@@ -185,7 +240,6 @@ const normalizeDiff = (diff: string): string => {
     }
 
     .leaderboard td.name, .leaderboard th.name {
-        text-align: left;
         padding-right: 20px;
     }
 
