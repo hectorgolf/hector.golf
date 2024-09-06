@@ -127,7 +127,7 @@ const teamToPlayerList = (team: string): Array<Player> => {
                                 <td class="place">{index + 1}</td>
                                 <td class="name">
                                     {playerNameToPlayer(player)?.id ? (
-                                        <a class="player" href={`/players/${playerNameToPlayer(player).id}`}>{player}</a>
+                                        <a class="player" href={`/players/${playerNameToPlayer(player).id}`}>{getPlayerName(playerNameToPlayer(player))}</a>
                                     ) : player}
                                 </td>
                                 <td class="points">{points}</td>
