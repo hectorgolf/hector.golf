@@ -23,7 +23,7 @@ const updateLeaderboardsForAllOngoingTournaments = async () => {
             if (!startDate) return false
             if (!endDate) return false
             if (isoDate(startDate) > isoDate(new Date())) return false  // event hasn't even started yet
-            if (isoDate(endDate) < isoDate(new Date(new Date().getTime() - 1000 * 60 * 60 * 24))) return false  // event finished yesterday or earlier
+            //if (isoDate(endDate) < isoDate(new Date(new Date().getTime() - 1000 * 60 * 60 * 24))) return false  // event finished yesterday or earlier
             return true
         })
 
