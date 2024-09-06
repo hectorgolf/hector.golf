@@ -6,6 +6,7 @@ export const schema = z.object({
         first: z.string(),
         last: z.string()
     }),
+    privacy: z.enum(['shorten-last-name']).optional(),
     aliases: z.array(z.object({
         first: z.string(),
         last: z.string()

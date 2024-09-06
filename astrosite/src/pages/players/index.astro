@@ -45,7 +45,7 @@ const players = getAllPlayers().sort((a, b) => getTotalWinsByPlayer(b) - getTota
         <h1><span class="text-gradient">Players</span></h1>
         <ul role="list" class="link-card-grid">
             {players.map((player) => {
-                return <PlayerCard name={player.name} image={player.image} href={linkToPlayer(player)} starts={starts(player)} wins={yearsOfWins(player)} handicap={player.handicap} />
+                return <PlayerCard id={player.id} name={player.name} image={player.image} href={linkToPlayer(player)} starts={starts(player)} wins={yearsOfWins(player)} handicap={player.handicap} />
             })}
         </ul>
     </main>

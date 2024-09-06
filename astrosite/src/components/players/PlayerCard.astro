@@ -1,5 +1,9 @@
 ---
+
+import { getPlayerName } from '../../code/players';
+
 interface Props {
+	id: string;
 	name: { first: string; last: string };
 	image?: string;
 	href: string;
@@ -8,9 +12,9 @@ interface Props {
 	handicap: number|undefined;
 }
 
-const { name, image, href, starts, wins, handicap } = Astro.props;
+const { id, name, image, href, starts, wins, handicap } = Astro.props;
 
-const fullname = `${name.first} ${name.last}`;
+const fullname = getPlayerName(id)
 
 let winsText = wins.length === 1 ? "1 win" : `${wins.length} wins`;
 if (wins.length > 0) {

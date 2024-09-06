@@ -284,6 +284,7 @@
       "first": "Timo",
       "last": "Lukumaa"
     },
+    "privacy": "shorten-last-name",
     "contact": {
       "phone": "+358456709767"
     },

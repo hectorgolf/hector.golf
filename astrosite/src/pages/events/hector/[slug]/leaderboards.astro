@@ -40,6 +40,8 @@ const normalizeDiff = (diff: string): string => {
 
 const playersByName: Map<string, Player> = new Map<string, Player>()
 getAllPlayers().forEach((player) => {
+    playersByName.set(getPlayerName(player), player)
+    playersByName.set(getPlayerName({ ...player, privacy: undefined }), player)
     getPlayerAliases(player).forEach(alias => playersByName.set(alias, player))
 })
 
