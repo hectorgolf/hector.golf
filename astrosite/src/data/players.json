@@ -171,6 +171,9 @@
       "first": "Miso",
       "last": "Lith"
     },
+    "aliases": [
+      { "first": "Miso", "last": "Korkiakoski" }
+    ],
     "contact": {
       "phone": "+358505003049"
     },

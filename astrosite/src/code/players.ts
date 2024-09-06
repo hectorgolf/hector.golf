@@ -44,6 +44,8 @@ export function getPlayerHandicapById(id: string): number|undefined {
     return events[events.length - 1].handicap;
 }
 
+const renderPlayerName = (name: { first: string, last: string }): string => `${name.first} ${name.last}`;
+
 export function getPlayerName(player: Player|string): string {
     if (typeof(player) === 'string') {
         const playerById = getPlayerById(player);
@@ -53,7 +55,19 @@ export function getPlayerName(player: Player|string): string {
             return 'Unknown player';
         }
     }
-    return `${player.name.first} ${player.name.last}`;
+    return renderPlayerName(player.name);
+}
+
+export function getPlayerAliases(player: Player|string): Array<string> {
+    if (typeof(player) === 'string') {
+        const playerById = getPlayerById(player);
+        if (playerById) {
+            return getPlayerAliases(playerById);
+        } else {
+            return [];
+        }
+    }
+    return [player.name, ...(player.aliases || [])].map(renderPlayerName);
 }
 
 export function getPlayersAtEvent(event: any): Array<Player> {

@@ -6,6 +6,10 @@ export const schema = z.object({
         first: z.string(),
         last: z.string()
     }),
+    aliases: z.array(z.object({
+        first: z.string(),
+        last: z.string()
+    })).optional(),
     contact: z.object({
         phone: z.string()
     }),
