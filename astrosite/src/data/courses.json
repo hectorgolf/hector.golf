@@ -399,8 +399,8 @@
             }
         ],
         "images": {
-            "hero": "https://www.penatigolfresort.sk/wp-content/uploads/2013/11/rezort.jpg",
-            "aerial": "https://www.penatigolfresort.sk/wp-content/uploads/2019/02/0-2.jpg",
+            "hero": "/images/courses/penati-legend/hero2.jpg",
+            "aerial": "/images/courses/penati-legend/aerial.jpg",
             "course_layout": "/images/courses/penati-legend/layout.png"
         },
         "course": {
