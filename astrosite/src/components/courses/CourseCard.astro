@@ -42,9 +42,10 @@ const { name, image, href, location } = Astro.props;
 		opacity: 0.8;
 	}
 	.link-course img {
-		max-width: calc(100% - 0rem);
-		max-height: 200px;
+		width: calc(100% - 0rem);
 		border-radius: 2px;
+        aspect-ratio: 16/9;
+        object-fit: cover;
 	}
 	.link-course .title {
 		display: block;

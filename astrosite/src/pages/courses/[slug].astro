@@ -130,11 +130,12 @@ const holeLayoutShape = course.course?.descriptions?.[0]?.shape === 'wide' ? 'wi
     .hero {
         display: flex;
         width: calc(100%);
-        aspect-ratio: 16/9 auto;
     }
 
     .hero img {
         width: calc(100%);
+        aspect-ratio: 16/9 auto;
+        object-fit: cover;
     }
 
     .description {
