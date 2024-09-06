@@ -48,7 +48,7 @@ const createOrReplaceHectorLeaderboardDataFile = async (githubToken: string, eve
     await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', {
         ...standardOptions,
         path: `astrosite/src/data/leaderboards/${eventId}.json`,
-        message: 'Automated leaderboard update',
+        message: `Automated leaderboard update for ${eventId} at ${payload.updatedAt}`,
         committer: {
             name: 'UpdateHectorLeaderboard',
             email: 'lasse.koskela@gmail.com'
