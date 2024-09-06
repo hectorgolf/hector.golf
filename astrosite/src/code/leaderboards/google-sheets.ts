@@ -240,11 +240,21 @@ const locateVictorLeaderboard = async (sheetId: string) => {
     return `${sheetName}!${range}`
 }
 
+const valueOrEmpty = (value: string|number|undefined): string => {
+    return value === undefined ? '' : value.toString()
+}
+
 export const fetchHectorLeaderboardData = async (sheetId: string): Promise<TeamLeaderboard> => {
     const hectorLeaderboardRange = await locateHectorLeaderboard(sheetId)
     if (hectorLeaderboardRange) {
         return await processRangeInSheet(sheetId, hectorLeaderboardRange, (rows) => {
-            return rows.map(row => ({ points: row[0], diff: row[3] === undefined ? '' : row[3], team: row[2], through: row[4] }))
+            return rows.map(row => ({
+                points: row[0],
+                // row[1] is the team number - we don't want to include that
+                team: valueOrEmpty(row[2]),
+                diff: valueOrEmpty(row[3]),
+                through: valueOrEmpty(row[4])
+            }))
         })
     } else {
         console.warn(`Could not find Hector leaderboard`)
@@ -256,7 +266,12 @@ export const fetchVictorLeaderboardData = async (sheetId: string): Promise<Indiv
     const victorLeaderboardRange = await locateVictorLeaderboard(sheetId)
     if (victorLeaderboardRange) {
         return await processRangeInSheet(sheetId, victorLeaderboardRange, (rows) => {
-            return rows.map(row => ({ player: row[0], points: row[1], diff: row[2] === undefined ? '' : row[2], through: row[3] }))
+            return rows.map(row => ({
+                player: valueOrEmpty(row[0]),
+                points: row[1],
+                diff: valueOrEmpty(row[2]),
+                through: valueOrEmpty(row[3])
+            }))
         })
     } else {
         console.warn(`Could not find Victor leaderboard`)
