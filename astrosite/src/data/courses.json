@@ -732,7 +732,7 @@
             "phone": "tel://+49853292440",
             "email": "gppenning@quellness-golf.com"
         },
-        "hero_image": "https://www.quellness-golf.com/media/image/porsche-golf-course-2.jpg",
+        "hero_image": "/images/courses/quellness-porsche/hero1.jpg",
         "description_short": "The Porsche Golf Course, which is directly opposite the Beckenbauer Golf Course, is the \"little brother\" of the European Tour championship course in sporting terms, and thus an ideal complement. The par 71 course was also designed by Germany’s world-class golfer Bernhard Langer and has comparable features, but was geared more towards the requirements of leisure-time golfers.",
         "description_long": [
             {
@@ -745,7 +745,7 @@
             },
             {
                 "type": "image",
-                "url": "https://www.golfholidays.com/images/1200-16481/the-porsche-golf-courses-scenic-golf-course-in-vibrant-germany.jpg"
+                "url": "/images/courses/quellness-porsche/hero2.jpg"
             },
             {
                 "type": "paragraph",
@@ -753,7 +753,7 @@
             },
             {
                 "type": "image",
-                "url": "https://www.golfholidays.com/images/1200-16482/the-porsche-golf-courses-scenic-golf-course-within-incredible-germany.jpg"
+                "url": "/images/courses/quellness-porsche/hero3.jpg"
             },
             {
                 "type": "paragraph",
@@ -761,11 +761,11 @@
             },
             {
                 "type": "image",
-                "url": "https://www.golfholidays.com/images/1200-16484/the-porsche-golf-courses-lovely-golf-course-in-dramatic-germany.jpg"
+                "url": "/images/courses/quellness-porsche/hero4.jpg"
             }
         ],
         "images": {
-            "hero": "https://www.quellness-golf.com/media/image/porsche-golf-course-2.jpg",
+            "hero": "/images/courses/quellness-porsche/hero1.jpg",
             "course_layout": "/images/courses/quellness-porsche/layout.png"
         },
         "course": {
