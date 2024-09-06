@@ -96,6 +96,9 @@ const shortenLastName: NameShorteningFunction = (() => {
         playersWithShortenedLastName.forEach(player => {
             shortenedLastNamesById.set(player.id, player.name.last.slice(0, prefixLength))
             shortenedLastNamesByFullName.set(`${player.name.first} ${player.name.last}`, player.name.last.slice(0, prefixLength))
+            player.aliases?.forEach(alias => {
+                shortenedLastNamesByFullName.set(`${alias.first} ${alias.last}`, alias.last.slice(0, prefixLength))
+            })
         })
     }
     return (playerOrName: Player|PlayerName|string): string => {
