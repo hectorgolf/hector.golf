@@ -244,7 +244,7 @@ export const fetchHectorLeaderboardData = async (sheetId: string): Promise<TeamL
     const hectorLeaderboardRange = await locateHectorLeaderboard(sheetId)
     if (hectorLeaderboardRange) {
         return await processRangeInSheet(sheetId, hectorLeaderboardRange, (rows) => {
-            return rows.map(row => ({ points: row[0], diff: row[3] === undefined ? '' : row[3], team: row[2], through: row[3] }))
+            return rows.map(row => ({ points: row[0], diff: row[3] === undefined ? '' : row[3], team: row[2], through: row[4] }))
         })
     } else {
         console.warn(`Could not find Hector leaderboard`)
