@@ -38,15 +38,15 @@ const normalizeDiff = (diff: string): string => {
     return diff
 }
 
-const playersByName: Map<string, Player> = new Map<string, Player>()
+const playersByName: {[name:string]: Player} = {}
 getAllPlayers().forEach((player) => {
-    playersByName.set(getPlayerName(player), player)
-    playersByName.set(getPlayerName({ ...player, privacy: undefined }), player)
-    getPlayerAliases(player).forEach(alias => playersByName.set(alias, player))
+    playersByName[getPlayerName(player)] = player
+    playersByName[getPlayerName({ ...player, privacy: undefined })] = player
+    getPlayerAliases(player, true).forEach(alias => { playersByName[alias] = player })
 })
 
 const playerNameToPlayer = (name: string): Player => {
-    return playersByName.get(name.trim())!
+    return playersByName[name.trim()]!
 }
 
 const teamToPlayerList = (team: string): Array<Player> => {

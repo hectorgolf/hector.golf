@@ -143,7 +143,7 @@ export function getPlayerName(player: Player|string): string {
     return renderPlayerName(player.name, player.privacy);
 }
 
-export function getPlayerAliases(player: Player|string): Array<string> {
+export function getPlayerAliases(player: Player|string, ignorePrivacy?: boolean): Array<string> {
     if (typeof(player) === 'string') {
         const playerById = getPlayerById(player);
         if (playerById) {
@@ -152,7 +152,7 @@ export function getPlayerAliases(player: Player|string): Array<string> {
             return [];
         }
     }
-    return [player.name, ...(player.aliases || [])].map(name => renderPlayerName(name, player.privacy));
+    return [player.name, ...(player.aliases || [])].map(name => renderPlayerName(name, ignorePrivacy ? undefined : player.privacy));
 }
 
 export function getPlayersAtEvent(event: any): Array<Player> {
