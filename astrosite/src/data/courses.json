@@ -891,7 +891,7 @@
             "phone": "tel://+49853292440",
             "email": "gppenning@quellness-golf.com"
         },
-        "hero_image": "https://www.quellness-golf.com/media/image/beckenbauer-golf-course-3.jpg",
+        "hero_image": "/images/courses/quellness-beckenbauer/hero1.jpg",
         "description_short": "Venue of the PGA European Tour 2013-2017, the course was already awarded the \"world class\" rating in its opening year. The 18 holes don’t hold back when it comes to challenges, but also offer plenty of opportunities for that sweet feeling of success.",
         "description_long": [
             {
@@ -904,7 +904,7 @@
             },
             {
                 "type": "image",
-                "url": "https://www.quellness-golf.com/media/image/golf_greenfee_1vgPMszZcxAkLP.jpg"
+                "url": "/images/courses/quellness-beckenbauer/hero2.jpg"
             },
             {
                 "type": "paragraph",
@@ -912,7 +912,7 @@
             },
             {
                 "type": "image",
-                "url": "https://www.1golf.eu/images/golfclubs/quellness-golf-resort-bad-griesbach-beckenbauer-golf-course_077008_1200-1200-60-0-0-0.jpg?v=b7f7f362"
+                "url": "/images/courses/quellness-beckenbauer/hero3.jpg"
             },
             {
                 "type": "paragraph",
@@ -920,7 +920,7 @@
             },
             {
                 "type": "image",
-                "url": "https://www.1golf.eu/images/dynamic/052465/1200-1200-60-0-0-0.jpg?v=87e17198"
+                "url": "/images/courses/quellness-beckenbauer/hero4.jpg"
             },
             {
                 "type": "paragraph",
@@ -928,7 +928,7 @@
             }
         ],
         "images": {
-            "hero": "https://www.quellness-golf.com/media/image/beckenbauer-golf-course-3.jpg",
+            "hero": "/images/courses/quellness-beckenbauer/hero1.jpg",
             "course_layout": "/images/courses/quellness-beckenbauer/layout.png"
         },
         "course": {
