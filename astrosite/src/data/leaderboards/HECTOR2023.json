@@ -3,75 +3,75 @@
   "hector": [
     {
       "points": "181.3",
-      "diff": "",
       "team": "Marcus Mattila + Jarkko Kailanto",
-      "through": ""
+      "diff": "",
+      "through": "7/7"
     },
     {
       "points": "178.5",
-      "diff": "+2.8",
       "team": "Simo Liukkonen + Timo Lukumaa",
-      "through": "+2.8"
+      "diff": "+2.8",
+      "through": "7/7"
     },
     {
       "points": "178.2",
-      "diff": "+3.2",
       "team": "Olli Varis + Olli Andersson",
-      "through": "+3.2"
+      "diff": "+3.2",
+      "through": "7/7"
     },
     {
       "points": "176.8",
-      "diff": "+4.5",
       "team": "Ossi Laukkanen + Janne Valtakari",
-      "through": "+4.5"
+      "diff": "+4.5",
+      "through": "7/7"
     },
     {
       "points": "173.8",
-      "diff": "+7.5",
       "team": "Juuso Pihamaa + Miso Lith",
-      "through": "+7.5"
+      "diff": "+7.5",
+      "through": "7/7"
     },
     {
       "points": "173.7",
-      "diff": "+7.7",
       "team": "Pasi Halmetoja + Eero Halmetoja",
-      "through": "+7.7"
+      "diff": "+7.7",
+      "through": "7/7"
     },
     {
       "points": "171.7",
-      "diff": "+9.7",
       "team": "Toni Marttila + Lassi Koto",
-      "through": "+9.7"
+      "diff": "+9.7",
+      "through": "7/7"
     },
     {
       "points": "171.7",
-      "diff": "+9.7",
       "team": "Jussi Allonen + Pekka Saijonmaa",
-      "through": "+9.7"
+      "diff": "+9.7",
+      "through": "7/7"
     },
     {
       "points": "169.2",
-      "diff": "+12.2",
       "team": "Sami Heikkinen + Harri Vainio",
-      "through": "+12.2"
+      "diff": "+12.2",
+      "through": "7/7"
     },
     {
       "points": "167.3",
-      "diff": "+14",
       "team": "Mikko Oesch + Jaakko Saarinen",
-      "through": "+14"
+      "diff": "+14",
+      "through": "7/7"
     },
     {
       "points": "165.8",
-      "diff": "+15.5",
       "team": "Martin Svedholm + Kristian Hiljander",
-      "through": "+15.5"
+      "diff": "+15.5",
+      "through": "7/7"
     },
     {
       "points": "164.3",
-      "diff": "+17",
       "team": "Okko Pykäläinen + Lasse Koskela",
-      "through": "+17"
+      "diff": "+17",
+      "through": "7/7"
     }
   ],
   "victor": [
@@ -220,5 +220,5 @@
       "through": "4/4"
     }
   ],
-  "updatedAt": "2024-09-06T06:53:18.788Z"
+  "updatedAt": "2024-09-06T07:08:51.000Z"
 }
