@@ -244,7 +244,7 @@ export const fetchHectorLeaderboardData = async (sheetId: string): Promise<TeamL
     const hectorLeaderboardRange = await locateHectorLeaderboard(sheetId)
     if (hectorLeaderboardRange) {
         return await processRangeInSheet(sheetId, hectorLeaderboardRange, (rows) => {
-            return rows.map(row => ({ points: row[0], diff: row[3] === undefined ? '' : row[3], team: row[2] }))
+            return rows.map(row => ({ points: row[0], diff: row[3] === undefined ? '' : row[3], team: row[2], through: row[3] }))
         })
     } else {
         console.warn(`Could not find Hector leaderboard`)
@@ -256,7 +256,7 @@ export const fetchVictorLeaderboardData = async (sheetId: string): Promise<Indiv
     const victorLeaderboardRange = await locateVictorLeaderboard(sheetId)
     if (victorLeaderboardRange) {
         return await processRangeInSheet(sheetId, victorLeaderboardRange, (rows) => {
-            return rows.map(row => ({ player: row[0], points: row[1], diff: row[2] === undefined ? '' : row[2] }))
+            return rows.map(row => ({ player: row[0], points: row[1], diff: row[2] === undefined ? '' : row[2], through: row[3] }))
         })
     } else {
         console.warn(`Could not find Victor leaderboard`)
