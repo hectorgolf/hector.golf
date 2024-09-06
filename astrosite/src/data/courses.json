@@ -1054,19 +1054,20 @@
             "phone": "tel://+34966765170",
             "email": "golfvillamartin@grupoquara.com"
         },
-        "hero_image": "https://www.lafincaresort.com/sites/default/files/styles/full_slide_75/public/2021-12/villamartin-slider.jpg?itok=nFERTffk",
+        "hero_image": "/images/courses/villamartin/hero.jpg",
         "description_short": "Villamartin hosted the 1994 Mediterranean Open which was won by Jose Maria Olazabal after an exciting play-off with Paul McGinley.\n\nVillamartin Golf Course, designed by Paul Putman, is situated within a mile of the sea between Torrevieja and Murcia airport at San Javier on the south eastern tip of the Costa Blanca. The par for the course is 72 and it measures 6005 metres.\n\nIt is built on hilly ground with the front nine holes being at the highest point of the course offering some spectacular sea views. The second nine are situated more in valleys with brancas ( ravines ) coming into play on several holes.",
         "description_long": [
             { "type": "paragraph", "content": "Since 1972, the Villamartín golf course has been a benchmark in the courses of the Valencian Community. The design of Golf Villamartín is due to the work of John Puttman, who already carried out work on La Manga Club in the late 60s." },
-            { "type": "image", "url": "https://www.lafincaresort.com/sites/default/files/styles/image_group_2_cols/public/2021-12/villmartin-2col.jpg.webp?itok=2ckAgtvK" },
+            { "type": "image", "url": "/images/courses/villamartin/hero1.jpg" },
             { "type": "paragraph", "content": "Vegetation with more than 50 years of history, beautiful views of the Mediterranean and generous greens that hosted a European circuit test in 1997. Severiano Ballesteros, José María Olazabal, Ian Woosnan, Sam Torrance and many other international golf figures have played and honored this great golf course with their presence." },
             { "type": "paragraph", "content": "The greens of Villamartín are internationally famous, with well-known holes, such as hole 17, a par 3 that requires you to cross a leafy, tree-lined boulevard to reach a huge and generous green with two platforms." },
-            { "type": "image", "url": "https://www.lafincaresort.com/sites/default/files/styles/image_group_2_cols/public/2021-12/villamartincasaclub-2col.jpg.webp?itok=71ijAzW4" },
+            { "type": "image", "url": "/images/courses/villamartin/hero2.jpg" },
             { "type": "paragraph", "content": "Villamartín Golf has an extensive community of players from all over Europe who chose this beautiful golf course as a place to live, with golf and this course being part of their lifestyle." },
             { "type": "paragraph", "content": "The Villamartín Club House , recently restored, has a wonderful restaurant with a high terrace that gives us great views of the 18th hole." },
             { "type": "paragraph", "content": "Villamartín Golf is, without a doubt, one of the best courses in the Valencian Community, as well as one of the deans of golf in the community." }
         ],
         "images": {
+            "hero": "/images/courses/villamartin/hero.jpg",
             "course_layout": "/images/courses/villamartin/layout.png"
         },
         "course": {
