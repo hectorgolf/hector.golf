@@ -14,10 +14,12 @@ const columnNames = (() => {
     return alphabet.concat(alphabet.flatMap(firstChar => alphabet.map(secondChar => `${firstChar}${secondChar}`)))
 })()
 
+const googleCredentials = JSON.parse(process.env.GOOGLE_CREDENTIALS || '{}')
+
 const columnName = (index: number): string => columnNames[index] || `${index}?`
 
 const authenticate = async (): Promise<sheets_v4.Sheets> => {
-    const client = <JWT> auth.fromJSON(JSON.parse(process.env.GOOGLE_CREDENTIALS || '{}'))
+    const client = <JWT> auth.fromJSON(googleCredentials)
     client.scopes = ["https://www.googleapis.com/auth/spreadsheets"]
     return google.sheets({ version: 'v4', auth: client })
 }
@@ -199,7 +201,13 @@ const processRangeInSheet = async (spreadsheetId: string, range: string, operati
             const sheets = await authenticate()
             const callback: BodyResponseCallback<sheets_v4.Schema$ValueRange> = (err: any, res: any) => {
                 if (err) {
-                    console.error('The API returned an error.', err)
+                    if (err.response?.status === 403) {
+                        let msg = `Access to ${spreadsheetId} denied - check that you've shared the Google Sheet with the service account email address`
+                        if (googleCredentials.client_email) msg += `: ${googleCredentials.client_email}`
+                        console.error(msg)
+                    } else {
+                        console.error('The API returned an error.', err)
+                    }
                     reject(err)
                 } else {
                     const rows = res.data.values as Rows
