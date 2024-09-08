@@ -1423,5 +1423,20 @@
     "date": "2024-09-07",
     "player": "mikko-lifflander",
     "handicap": 20.3
+  },
+  {
+    "date": "2024-09-08",
+    "player": "lasse-koskela",
+    "handicap": 15.8
+  },
+  {
+    "date": "2024-09-08",
+    "player": "simo-liukkonen",
+    "handicap": 5.6
+  },
+  {
+    "date": "2024-09-08",
+    "player": "tommy-gulin",
+    "handicap": -0.7
   }
 ]
