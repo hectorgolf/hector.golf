@@ -10,7 +10,7 @@ const standardOptions = {
 }
 
 const authenticate = async (githubToken: string): Promise<Octokit> => {
-  return Promise.resolve(new Octokit({ auth: githubToken }))
+    return Promise.resolve(new Octokit({ auth: githubToken }))
 }
 
 const fetchExistingHectorLeaderboardDataFile = async (githubToken: string, eventId: string): Promise<{sha:string, json: any}|undefined> => {

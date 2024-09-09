@@ -7,6 +7,7 @@ import { type Course } from '../../../schemas/courses'
 import { type Player } from '../../../schemas/players'
 import { getAllEventIds, getCoursesOfEvent, getEventById } from '../../../code/events'
 import { getPlayerName, getPlayerById } from '../../../code/players'
+import { getLeaderboardsByEventId } from '../../../code/leaderboards/leaderboards'
 
 
 export function getStaticPaths() {
@@ -24,11 +25,11 @@ event = event!
 
 const eventCourses: Array<Course> = getCoursesOfEvent(event.id)
 
-const hectorWinners: Array<Player> = (event.results?.winners.hector || [])
+const hectorWinners: Array<Player> = (event.results?.winners?.hector || [])
     .map(id => getPlayerById(id))
     .filter(p => !!p) as Array<Player>
 
-const victorWinners: Array<Player> = (event.results?.winners.victor || [])
+const victorWinners: Array<Player> = (event.results?.winners?.victor || [])
     .map(id => getPlayerById(id as string) as Player)
     .filter(p => !!p) as Array<Player>
 
@@ -38,6 +39,28 @@ const participants: Array<Player>|undefined = event.participants
     ?.sort((p1, p2) => p1!.handicap! - p2!.handicap!)
 const bucket1 = participants?.slice(0, Math.ceil(participants.length / 2))
 const bucket2 = participants?.slice(bucket1!.length)
+
+// Populate teams and Hector and Victor winners from a leaderboard data file if that
+// data is available and the event file itself does not have winners on record
+const leaderboards = getLeaderboardsByEventId(event.id)
+if (hectorWinners.length === 0 && leaderboards.hector && leaderboards.hector.length > 0) {
+    const allAreFinished = leaderboards.hector.every(team => team.through === "F")
+    if (allAreFinished) {
+        console.log(`Populating Hector winners for ${event.name} from available leaderboard data since it's missing from the event file: ${JSON.stringify(leaderboards.hector[0].players.map(p => p.id))}`)
+        leaderboards.hector[0].players.forEach((winner) => hectorWinners.push(winner))
+    } else {
+        console.log(`Not populating Hector winners for ${event.name} from available leaderboard data since not all teams are finished`)
+    }
+}
+if (victorWinners.length === 0 && leaderboards.victor && leaderboards.victor.length > 0) {
+    const allAreFinished = leaderboards.victor.every(player => player.through === "F")
+    if (allAreFinished) {
+        console.log(`Populating Victor winner(s) for ${event.name} from available leaderboard data since it's missing from the event file: ${JSON.stringify(leaderboards.victor[0].players.map(p => p.id))}`)
+        leaderboards.victor[0].players.forEach((winner) => victorWinners.push(winner))
+    } else {
+        console.log(`Not populating Victor winner(s) for ${event.name} from available leaderboard data since not all players are finished`)
+    }
+}
 
 ---
 <Layout title="Event">

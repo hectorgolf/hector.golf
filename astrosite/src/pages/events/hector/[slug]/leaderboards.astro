@@ -9,7 +9,6 @@ import { type HectorEvent } from '../../../../schemas/events'
 import { getAllEventIds, getEventById } from '../../../../code/events'
 
 import { getLeaderboardsByEventId, getEventsWithLeaderboards } from '../../../../code/leaderboards/leaderboards'
-import type { GoogleSheetIndividualLeaderboard, GoogleSheetTeamLeaderboard } from '../../../../code/leaderboards/types'
 
 
 export function getStaticPaths() {
@@ -34,43 +33,9 @@ getAllPlayers().forEach((player) => {
     getPlayerAliases(player, true).forEach(alias => { playersByName[alias] = player })
 })
 
-const playerNameToPlayer = (name: string): Player => {
-    return playersByName[name.trim()]!
-}
-
-type EnrichedLeaderboardEntry = {
-    players: Array<Player>
-    points: number
-    diff: string
-    through: string
-}
-type EnrichedLeaderboard = Array<EnrichedLeaderboardEntry>
-
-const enrichLeaderboard = (leaderboard: GoogleSheetTeamLeaderboard|GoogleSheetIndividualLeaderboard): EnrichedLeaderboard => {
-    const isFinished = (through: string): boolean => {
-        if (through && through.match(/^\d+\/\d+$/)) {
-            const [ howMany, outOfHowMany] = through.split('/')
-            return howMany === outOfHowMany
-        }
-        return false
-    }
-    const enrichLeaderboardEntry = (entry: any) => {
-        const playersString = (entry as any).team || (entry as any).player
-        const players: Array<Player> = playersString.split('+').map(playerNameToPlayer).filter((p: Player|undefined) => !!p)
-        const status = isFinished(entry.through) ? 'F' : entry.through
-        return {
-            players,
-            points: entry.points,
-            diff: entry.diff,
-            through: status
-        }
-    }
-    return leaderboard.map((entry) => enrichLeaderboardEntry(entry))
-}
-
 const leaderboards = getLeaderboardsByEventId(event.id)
-const hectorLeaderboard: EnrichedLeaderboard|undefined = leaderboards.hector ? enrichLeaderboard(leaderboards.hector) : undefined
-const victorLeaderboard: EnrichedLeaderboard|undefined = leaderboards.victor ? enrichLeaderboard(leaderboards.victor) : undefined
+const hectorLeaderboard = leaderboards.hector
+const victorLeaderboard = leaderboards.victor
 const updatedAt = leaderboards.updatedAt ? new Date(leaderboards.updatedAt) : undefined
 
 const normalizeDiff = (diff: string): string => {
@@ -79,10 +44,6 @@ const normalizeDiff = (diff: string): string => {
     }
     return diff
 }
-
-// const teamToPlayerList = (team: string): Array<Player> => {
-//     return team.split('+').map(playerNameToPlayer).filter(p => !!p)
-// }
 
 ---
 <Layout title="Leaderboard">

@@ -24,11 +24,11 @@ const hectorResultsSchema = z.object({
     teams: z.array(z.object({
         name: z.string(),
         players: z.array(z.string())
-    })),
+    })).optional(),
     winners: z.object({
         hector: z.array(z.string()).optional(),
         victor: z.array(z.string()).optional()
-    })
+    }).optional()
 }).optional()
 
 const finnkampenResultsSchema = z.object({

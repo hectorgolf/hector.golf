@@ -33,7 +33,7 @@
             "pekka-saijonmaa",
             "janne-valtakari"
         ],
-        "leaderboardSheet": "https://docs.google.com/spreadsheets/d/13avabBgD-EQ7EBTlohttWkIAQsLEMlR4OrsF_iRhodk/edit"
+        "leaderboardSheet": "https://docs.google.com/spreadsheets/d/1-TPy0oFWMK03q8nPDED2Dh3Thd-uTRCmmhIKIdWlUL8/edit"
     },
     {
         "id": "HECTORMATCHPLAY2024",
@@ -140,7 +140,7 @@
                 "victor": ["jarkko-kailanto"]
             }
         },
-        "leaderboardSheet": "https://docs.google.com/spreadsheets/d/1AMts1fvEB-ruLhHGLUa951nXt_9_lDQ_DWbjnbzd7r4/edit?gid=435370919#gid=435370919",
+        "leaderboardSheet": "https://docs.google.com/spreadsheets/d/16fvcwmQwfc6LRxw8gY_Tok0kDw_6V3LFz2kYA6tZSsA/edit",
         "description": "The world's top amateur golfers gathered to compete in the prestigious Hector Trophée 2023. Hosted at the scenic Diamond Country Club in Austria from September 23-26, this annual event showcased a thrilling 4-day stroke play format. The elite competitors battled for the honor of claiming the esteemed Hector Trophée, adding another chapter to this celebrated tournament's history."
     },
     {
@@ -209,6 +209,7 @@
             "juuso-pihamaa", "miso-lith",
             "jussi-allonen", "pekka-saijonmaa"
         ],
+        "leaderboardSheet": "https://docs.google.com/spreadsheets/d/13avabBgD-EQ7EBTlohttWkIAQsLEMlR4OrsF_iRhodk/edit",
         "results": {
             "teams": [
                 { "name": "Simo Liukkonen & Timo Lukumaa", "players": ["simo-liukkonen", "timo-lukumaa"] },

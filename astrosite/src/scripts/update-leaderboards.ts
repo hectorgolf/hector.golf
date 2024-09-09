@@ -4,13 +4,24 @@ import { updateHectorEventLeaderboard } from '../code/leaderboards/github.ts'
 
 import eventsData from '../data/events.json'
 
+type HectorTeam = {
+    name: string,
+    players: string[]
+}
 
 type HectorEvent = {
     id: string,
     name: string,
     format: string,
     date: string,
-    leaderboardSheet: string|undefined
+    leaderboardSheet: string|undefined,
+    results?: {
+        teams?: Array<HectorTeam>,
+        winners?: {
+            hector?: Array<string>,
+            victor?: Array<string>
+        }
+    }
 }
 
 const updateLeaderboardsForAllOngoingTournaments = async () => {
