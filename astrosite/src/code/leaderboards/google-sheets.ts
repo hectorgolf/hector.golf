@@ -1,7 +1,7 @@
 import { google, sheets_v4 } from 'googleapis'
 import { JWT, auth } from 'google-auth-library'
 import type { BodyResponseCallback } from '@googleapis/sheets'
-import type { IndividualLeaderboard, TeamLeaderboard } from './types'
+import type { GoogleSheetIndividualLeaderboard, GoogleSheetTeamLeaderboard } from './types'
 
 type Rows = Array<Row>
 type Row = Array<CellValue>
@@ -229,14 +229,14 @@ const processRangeInSheet = async (spreadsheetId: string, range: string, operati
 }
 
 const locateHectorLeaderboard = async (sheetId: string) => {
-    const sheetName = 'HECTOR'
-    const range = await processRangeInSheet(sheetId, `${sheetName}!A1:BB50`, findHectorLeaderboard)
+    const sheetName = 'LEADERBOARD'
+    const range = await processRangeInSheet(sheetId, `${sheetName}!A1:Z50`, findHectorLeaderboard)
     return `${sheetName}!${range}`
 }
 
 const locateVictorLeaderboard = async (sheetId: string) => {
-    const sheetName = 'VICTOR'
-    const range = await processRangeInSheet(sheetId, `${sheetName}!A1:BB50`, findVictorLeaderboard)
+    const sheetName = 'LEADERBOARD'
+    const range = await processRangeInSheet(sheetId, `${sheetName}!A1:Z50`, findVictorLeaderboard)
     return `${sheetName}!${range}`
 }
 
@@ -244,7 +244,7 @@ const valueOrEmpty = (value: string|number|undefined): string => {
     return value === undefined ? '' : value.toString()
 }
 
-export const fetchHectorLeaderboardData = async (sheetId: string): Promise<TeamLeaderboard> => {
+export const fetchHectorLeaderboardData = async (sheetId: string): Promise<GoogleSheetTeamLeaderboard> => {
     const hectorLeaderboardRange = await locateHectorLeaderboard(sheetId)
     if (hectorLeaderboardRange) {
         return await processRangeInSheet(sheetId, hectorLeaderboardRange, (rows) => {
@@ -262,7 +262,7 @@ export const fetchHectorLeaderboardData = async (sheetId: string): Promise<TeamL
     }
 }
 
-export const fetchVictorLeaderboardData = async (sheetId: string): Promise<IndividualLeaderboard> => {
+export const fetchVictorLeaderboardData = async (sheetId: string): Promise<GoogleSheetIndividualLeaderboard> => {
     const victorLeaderboardRange = await locateVictorLeaderboard(sheetId)
     if (victorLeaderboardRange) {
         return await processRangeInSheet(sheetId, victorLeaderboardRange, (rows) => {

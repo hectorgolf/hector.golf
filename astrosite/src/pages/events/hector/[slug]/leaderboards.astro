@@ -9,7 +9,7 @@ import { type HectorEvent } from '../../../../schemas/events'
 import { getAllEventIds, getEventById } from '../../../../code/events'
 
 import { getLeaderboardsByEventId, getEventsWithLeaderboards } from '../../../../code/leaderboards/leaderboards'
-import type { IndividualLeaderboard, TeamLeaderboard } from '../../../../code/leaderboards/types'
+import type { GoogleSheetIndividualLeaderboard, GoogleSheetTeamLeaderboard } from '../../../../code/leaderboards/types'
 
 
 export function getStaticPaths() {
@@ -26,17 +26,6 @@ if (!event) {
 }
 event = event!
 
-const leaderboards = getLeaderboardsByEventId(event.id)
-const hectorLeaderboard: TeamLeaderboard|undefined = leaderboards.hector
-const victorLeaderboard: IndividualLeaderboard|undefined = leaderboards.victor
-const updatedAt = leaderboards.updatedAt ? new Date(leaderboards.updatedAt) : undefined
-
-const normalizeDiff = (diff: string): string => {
-    if (diff !== '' && !diff.includes('.')) {
-        return `${diff}.0`
-    }
-    return diff
-}
 
 const playersByName: {[name:string]: Player} = {}
 getAllPlayers().forEach((player) => {
@@ -49,9 +38,51 @@ const playerNameToPlayer = (name: string): Player => {
     return playersByName[name.trim()]!
 }
 
-const teamToPlayerList = (team: string): Array<Player> => {
-    return team.split('+').map(playerNameToPlayer).filter(p => !!p)
+type EnrichedLeaderboardEntry = {
+    players: Array<Player>
+    points: number
+    diff: string
+    through: string
 }
+type EnrichedLeaderboard = Array<EnrichedLeaderboardEntry>
+
+const enrichLeaderboard = (leaderboard: GoogleSheetTeamLeaderboard|GoogleSheetIndividualLeaderboard): EnrichedLeaderboard => {
+    const isFinished = (through: string): boolean => {
+        if (through && through.match(/^\d+\/\d+$/)) {
+            const [ howMany, outOfHowMany] = through.split('/')
+            return howMany === outOfHowMany
+        }
+        return false
+    }
+    const enrichLeaderboardEntry = (entry: any) => {
+        const playersString = (entry as any).team || (entry as any).player
+        const players: Array<Player> = playersString.split('+').map(playerNameToPlayer).filter((p: Player|undefined) => !!p)
+        const status = isFinished(entry.through) ? 'F' : entry.through
+        return {
+            players,
+            points: entry.points,
+            diff: entry.diff,
+            through: status
+        }
+    }
+    return leaderboard.map((entry) => enrichLeaderboardEntry(entry))
+}
+
+const leaderboards = getLeaderboardsByEventId(event.id)
+const hectorLeaderboard: EnrichedLeaderboard|undefined = leaderboards.hector ? enrichLeaderboard(leaderboards.hector) : undefined
+const victorLeaderboard: EnrichedLeaderboard|undefined = leaderboards.victor ? enrichLeaderboard(leaderboards.victor) : undefined
+const updatedAt = leaderboards.updatedAt ? new Date(leaderboards.updatedAt) : undefined
+
+const normalizeDiff = (diff: string): string => {
+    if (diff !== '' && !diff.includes('.')) {
+        return `${diff}.0`
+    }
+    return diff
+}
+
+// const teamToPlayerList = (team: string): Array<Player> => {
+//     return team.split('+').map(playerNameToPlayer).filter(p => !!p)
+// }
 
 ---
 <Layout title="Leaderboard">
@@ -82,12 +113,12 @@ const teamToPlayerList = (team: string): Array<Player> => {
                         </tr>
                     </thead>
                     <tbody>
-                    {hectorLeaderboard.map(({ team, points, diff, through}, index) => {
+                    {hectorLeaderboard.map(({ players, points, diff, through}, index) => {
                         return (
                             <tr class="competitor">
                                 <td class="place">{index + 1}</td>
                                 <td class="name">
-                                    {teamToPlayerList(team).map((player, index) => {
+                                    {players.map((player, index) => {
                                         return (
                                             <>
                                                 {index ? (<span class="plus"> + </span>) : null}
@@ -121,14 +152,19 @@ const teamToPlayerList = (team: string): Array<Player> => {
                         </tr>
                     </thead>
                     <tbody>
-                    {victorLeaderboard.map(({ player, points, diff, through}, index) => {
+                    {victorLeaderboard.map(({ players, points, diff, through}, index) => {
                         return (
                             <tr class="competitor">
                                 <td class="place">{index + 1}</td>
                                 <td class="name">
-                                    {playerNameToPlayer(player)?.id ? (
-                                        <a class="player" href={`/players/${playerNameToPlayer(player).id}`}>{getPlayerName(playerNameToPlayer(player))}</a>
-                                    ) : player}
+                                    {players.map((player, index) => {
+                                        return (
+                                            <>
+                                                {index ? (<span class="plus"> + </span>) : null}
+                                                <a class="player" href={`/players/${player.id}`}>{getPlayerName(player)}</a>
+                                            </>
+                                        )}
+                                    )}
                                 </td>
                                 <td class="points">{points}</td>
                                 <td class="diff">{normalizeDiff(diff)}</td>

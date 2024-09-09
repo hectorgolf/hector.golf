@@ -1,5 +1,5 @@
 import { Octokit, RequestError } from 'octokit'
-import type { IndividualLeaderboard, TeamLeaderboard } from './types'
+import type { GoogleSheetIndividualLeaderboard, GoogleSheetTeamLeaderboard } from './types'
 
 const standardOptions = {
     owner: 'hectorgolf',
@@ -35,7 +35,7 @@ const fetchExistingHectorLeaderboardDataFile = async (githubToken: string, event
     return undefined
 }
 
-const createOrReplaceHectorLeaderboardDataFile = async (githubToken: string, eventId: string, existingSHA: string|undefined, hector: TeamLeaderboard, victor: IndividualLeaderboard) => {
+const createOrReplaceHectorLeaderboardDataFile = async (githubToken: string, eventId: string, existingSHA: string|undefined, hector: GoogleSheetTeamLeaderboard, victor: GoogleSheetIndividualLeaderboard) => {
     const payload = {
         event: eventId,
         hector: hector,
@@ -58,7 +58,7 @@ const createOrReplaceHectorLeaderboardDataFile = async (githubToken: string, eve
     })
 }
 
-export const updateHectorEventLeaderboard = async (githubToken: string, eventId: string, hector: TeamLeaderboard, victor: IndividualLeaderboard) => {
+export const updateHectorEventLeaderboard = async (githubToken: string, eventId: string, hector: GoogleSheetTeamLeaderboard, victor: GoogleSheetIndividualLeaderboard) => {
     const existingFile = await fetchExistingHectorLeaderboardDataFile(githubToken, eventId)
     const sha = existingFile?.sha
     if (areDeeplyEqual(existingFile?.json.hector, hector) && areDeeplyEqual(existingFile?.json.victor, victor)) {

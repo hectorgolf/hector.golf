@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
-import type { IndividualLeaderboard, TeamLeaderboard } from './types';
+import type { GoogleSheetIndividualLeaderboard, GoogleSheetTeamLeaderboard } from './types';
 
 const leaderboardFiles = Object.keys(import.meta.glob('../../data/leaderboards/*.json')).map((filepath: string) => {
     return join('src/code/leaderboards', filepath)
@@ -13,7 +13,7 @@ export const getEventsWithLeaderboards = (): Array<string> => {
     })
 }
 
-export const getLeaderboardsByEventId = (id: string): { hector: TeamLeaderboard|undefined, victor: IndividualLeaderboard|undefined, updatedAt: string|undefined } => {
+export const getLeaderboardsByEventId = (id: string): { hector: GoogleSheetTeamLeaderboard|undefined, victor: GoogleSheetIndividualLeaderboard|undefined, updatedAt: string|undefined } => {
     const dataFilePath: string|undefined = leaderboardFiles.find((filepath: string) => filepath.endsWith(`/${id}.json`))
     // const dataFilePath = join(dirname(__filename), `../../data/leaderboards/${id}.json`)
     if (dataFilePath && existsSync(dataFilePath)) {
