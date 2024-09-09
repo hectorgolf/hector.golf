@@ -2,7 +2,7 @@
   "event": "HECTOR2023",
   "hector": [
     {
-      "points": "217.7",
+      "points": "217.2",
       "team": "Ossi Laukkanen + Janne Valtakari",
       "diff": "",
       "through": "7/7"
@@ -10,67 +10,67 @@
     {
       "points": "214.3",
       "team": "Simo Liukkonen + Timo Lukumaa",
-      "diff": "+3.3",
+      "diff": "+2.8",
       "through": "7/7"
     },
     {
       "points": "211.5",
       "team": "Toni Marttila + Lassi Koto",
-      "diff": "+6.2",
+      "diff": "+5.7",
       "through": "7/7"
     },
     {
       "points": "209.2",
       "team": "Juuso Pihamaa + Miso Lith",
-      "diff": "+8.5",
+      "diff": "+8",
       "through": "7/7"
     },
     {
       "points": "209.0",
       "team": "Sami Heikkinen + Harri Vainio",
-      "diff": "+8.7",
+      "diff": "+8.2",
       "through": "7/7"
     },
     {
       "points": "207.0",
       "team": "Pasi Halmetoja + Eero Halmetoja",
-      "diff": "+10.7",
+      "diff": "+10.2",
       "through": "7/7"
     },
     {
       "points": "205.2",
       "team": "Martin Svedholm + Kristian Hiljander",
-      "diff": "+12.5",
+      "diff": "+12",
       "through": "7/7"
     },
     {
       "points": "203.5",
       "team": "Jussi Allonen + Pekka Saijonmaa",
-      "diff": "+14.2",
+      "diff": "+13.7",
       "through": "7/7"
     },
     {
       "points": "203.2",
       "team": "Marcus Mattila + Jarkko Kailanto",
-      "diff": "+14.5",
+      "diff": "+14",
       "through": "7/7"
     },
     {
       "points": "201.2",
       "team": "Mikko Oesch + Jaakko Saarinen",
-      "diff": "+16.5",
+      "diff": "+16",
       "through": "7/7"
     },
     {
       "points": "198.7",
       "team": "Okko Pykäläinen + Lasse Koskela",
-      "diff": "+19",
+      "diff": "+18.5",
       "through": "7/7"
     },
     {
       "points": "197.5",
       "team": "Olli Varis + Olli Andersson",
-      "diff": "+20.2",
+      "diff": "+19.7",
       "through": "7/7"
     }
   ],
@@ -220,5 +220,5 @@
       "through": "4/4"
     }
   ],
-  "updatedAt": "2024-09-06T13:25:28.979Z"
+  "updatedAt": "2024-09-09T21:09:11.918Z"
 }
