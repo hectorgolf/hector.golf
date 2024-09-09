@@ -5,73 +5,73 @@
       "points": "123.5",
       "team": "Pekka Saijonmaa + Pasi Halmetoja",
       "diff": "",
-      "through": "4/7"
+      "through": "3/6"
     },
     {
       "points": "120.8",
       "team": "Juuso Pihamaa + Toni Marttila",
       "diff": "+2.7",
-      "through": "4/7"
+      "through": "3/6"
     },
     {
       "points": "120.8",
       "team": "Tommy Gulin + Timo Lukumaa",
       "diff": "+2.7",
-      "through": "4/7"
+      "through": "3/6"
     },
     {
       "points": "117.5",
       "team": "Sami Heikkinen + Harri Vainio",
       "diff": "+6",
-      "through": "4/7"
+      "through": "3/6"
     },
     {
       "points": "116.7",
       "team": "Miso Korkiakoski + Janne Valtakari",
       "diff": "+6.8",
-      "through": "4/7"
+      "through": "3/6"
     },
     {
       "points": "116.3",
       "team": "Simo Liukkonen + Mikko Oesch",
       "diff": "+7.2",
-      "through": "4/7"
+      "through": "3/6"
     },
     {
       "points": "116.0",
       "team": "Olli Varis + Jarkko Kailanto",
       "diff": "+7.5",
-      "through": "4/7"
+      "through": "3/6"
     },
     {
       "points": "115.0",
       "team": "Jussi Allonen + Olli Andersson",
       "diff": "+8.5",
-      "through": "4/7"
+      "through": "3/6"
     },
     {
       "points": "112.7",
       "team": "Ossi Laukkanen + Lassi Koto",
       "diff": "+10.8",
-      "through": "4/7"
+      "through": "3/6"
     },
     {
       "points": "111.2",
       "team": "Martin Svedholm + Marcus Mattila",
       "diff": "+12.3",
-      "through": "4/7"
+      "through": "3/6"
     },
     {
       "points": "108.3",
       "team": "Ofri Porat + Lasse Koskela",
       "diff": "+15.2",
-      "through": "4/7"
+      "through": "3/6"
     },
     {
       "points": "108.0",
       "team": "Eero Halmetoja + Lauri Paatela",
       "diff": "+15.5",
-      "through": "4/7"
+      "through": "3/6"
     }
   ],
   "victor": [
@@ -220,5 +220,5 @@
       "through": "2/4"
     }
   ],
-  "updatedAt": "2024-09-06T13:25:27.842Z"
+  "updatedAt": "2024-09-09T21:09:10.489Z"
 }
