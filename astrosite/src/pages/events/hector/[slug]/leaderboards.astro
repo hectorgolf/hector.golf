@@ -60,7 +60,7 @@ const normalizeDiff = (diff: string): string => {
             <div class="event-date">{event.date}</div>
         </div>
 
-        {hectorLeaderboard && (
+        {hectorLeaderboard && hectorLeaderboard.length > 0 && (
             <div class="leaderboard hector">
                 <h2>Hector</h2>
                 <table>
@@ -99,7 +99,7 @@ const normalizeDiff = (diff: string): string => {
             </div>
         )}
 
-        {victorLeaderboard && (
+        {victorLeaderboard && victorLeaderboard.length > 0 && (
             <div class="leaderboard victor">
                 <h2>Victor</h2>
                 <table>

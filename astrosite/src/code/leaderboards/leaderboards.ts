@@ -77,5 +77,5 @@ const enrichLeaderboard = (leaderboard: GoogleSheetTeamLeaderboard|GoogleSheetIn
             through: status
         }
     }
-    return leaderboard.map((entry) => enrichLeaderboardEntry(entry))
+    return leaderboard.filter(entry => !!((entry as any).team || (entry as any).player)).map((entry) => enrichLeaderboardEntry(entry))
 }
