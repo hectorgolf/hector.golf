@@ -33,12 +33,16 @@ const victorWinners: Array<Player> = (event.results?.winners?.victor || [])
     .map(id => getPlayerById(id as string) as Player)
     .filter(p => !!p) as Array<Player>
 
-const participants: Array<Player>|undefined = event.participants
-    ?.map(id => getPlayerById(id))
-    ?.filter(p => !!p)
-    ?.sort((p1, p2) => p1!.handicap! - p2!.handicap!)
-const bucket1 = participants?.slice(0, Math.ceil(participants.length / 2))
-const bucket2 = participants?.slice(bucket1!.length)
+const untrimBucket = (trimmed: Array<{ id: string, handicap?: number }>): Array<Player> => {
+    return trimmed.map(p => {
+        const player = getPlayerById(p.id)
+        return { ...player, handicap: p.handicap || player?.handicap }
+    }).filter(p => !!p) as Array<Player>
+}
+
+const [ bucket1trimmed, bucket2trimmed ] = (event.buckets || [])
+const bucket1 = bucket1trimmed ? untrimBucket(bucket1trimmed) : undefined
+const bucket2 = bucket2trimmed ? untrimBucket(bucket2trimmed) : undefined
 
 // Populate teams and Hector and Victor winners from a leaderboard data file if that
 // data is available and the event file itself does not have winners on record
@@ -124,7 +128,7 @@ if (victorWinners.length === 0 && leaderboards.victor && leaderboards.victor.len
             </div>
         )}
 
-        {(event.participants && bucket1 && bucket2 && !event.results?.teams) && (
+        {bucket1 && bucket2 && (
             <div class="field">
                 <h2>Field and Projected Buckets</h2>
                 <span class="buckets">

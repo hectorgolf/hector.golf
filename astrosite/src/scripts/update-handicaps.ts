@@ -133,7 +133,7 @@ type HectorEvent = {
     date: string,
     format: string,
     participants: Array<string>,
-    buckets: undefined|Array<Array<{ id: string, handicap: number|undefined }>>,
+    buckets: undefined|Array<Array<{ id: string, handicap: number }>>,
 }
 
 const updateBucketsForUpcomingEvents = async () => {
@@ -154,7 +154,7 @@ const updateBucketsForUpcomingEvents = async () => {
             ?.filter(p => !!p)
             ?.sort((p1, p2) => p1!.handicap! - p2!.handicap!)
         const trimPlayer = (player: Player): { id: string, handicap: number|undefined } => {
-            return { id: player.id, handicap: player.handicap }
+            return { id: player.id, handicap: player.handicap || 0 }
         }
         const bucket1 = participants?.slice(0, Math.ceil(participants.length / 2))?.map(trimPlayer)
         const bucket2 = participants?.slice(bucket1!.length)?.map(trimPlayer)
