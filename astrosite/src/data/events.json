@@ -36,7 +36,109 @@
             "pekka-saijonmaa",
             "janne-valtakari"
         ],
-        "leaderboardSheet": "https://docs.google.com/spreadsheets/d/1-TPy0oFWMK03q8nPDED2Dh3Thd-uTRCmmhIKIdWlUL8/edit"
+        "leaderboardSheet": "https://docs.google.com/spreadsheets/d/1-TPy0oFWMK03q8nPDED2Dh3Thd-uTRCmmhIKIdWlUL8/edit",
+        "buckets": [
+            [
+                {
+                    "id": "tommy-gulin",
+                    "handicap": -0.8
+                },
+                {
+                    "id": "ofri-porat",
+                    "handicap": 4.7
+                },
+                {
+                    "id": "sami-heikkinen",
+                    "handicap": 4.7
+                },
+                {
+                    "id": "juuso-pihamaa",
+                    "handicap": 5.6
+                },
+                {
+                    "id": "simo-liukkonen",
+                    "handicap": 5.7
+                },
+                {
+                    "id": "ossi-laukkanen",
+                    "handicap": 7.5
+                },
+                {
+                    "id": "jussi-allonen",
+                    "handicap": 8.3
+                },
+                {
+                    "id": "mikko-oesch",
+                    "handicap": 8.4
+                },
+                {
+                    "id": "miso-lith",
+                    "handicap": 8.5
+                },
+                {
+                    "id": "olli-varis",
+                    "handicap": 9
+                },
+                {
+                    "id": "pasi-halmetoja",
+                    "handicap": 9.2
+                },
+                {
+                    "id": "martin-svedholm",
+                    "handicap": 9.3
+                }
+            ],
+            [
+                {
+                    "id": "eero-halmetoja",
+                    "handicap": 9.7
+                },
+                {
+                    "id": "marcus-mattila",
+                    "handicap": 11.1
+                },
+                {
+                    "id": "harri-vainio",
+                    "handicap": 11.2
+                },
+                {
+                    "id": "toni-marttila",
+                    "handicap": 11.8
+                },
+                {
+                    "id": "olli-andersson",
+                    "handicap": 11.9
+                },
+                {
+                    "id": "lassi-koto",
+                    "handicap": 12.2
+                },
+                {
+                    "id": "timo-lukumaa",
+                    "handicap": 12.8
+                },
+                {
+                    "id": "jarkko-kailanto",
+                    "handicap": 13.9
+                },
+                {
+                    "id": "lauri-paatela",
+                    "handicap": 13.9
+                },
+                {
+                    "id": "lasse-koskela",
+                    "handicap": 15.8
+                },
+                {
+                    "id": "pekka-saijonmaa",
+                    "handicap": 18.3
+                },
+                {
+                    "id": "janne-valtakari",
+                    "handicap": 18.8
+                }
+            ]
+        ]
     },
     {
         "id": "HECTORMATCHPLAY2024",
