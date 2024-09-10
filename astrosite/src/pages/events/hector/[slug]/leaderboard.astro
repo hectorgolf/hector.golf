@@ -60,81 +60,91 @@ const normalizeDiff = (diff: string): string => {
             <div class="event-date">{event.date}</div>
         </div>
 
-        {hectorLeaderboard && hectorLeaderboard.length > 0 && (
+        {hectorLeaderboard && (
             <div class="leaderboard hector">
                 <h2>Hector</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th class="place">#</th>
-                            <th class="name">Team</th>
-                            <th class="points">Score</th>
-                            <th class="diff">Diff</th>
-                            <th class="thru">Thru</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {hectorLeaderboard.map(({ players, points, diff, through}, index) => {
-                        return (
-                            <tr class="competitor">
-                                <td class="place">{index + 1}</td>
-                                <td class="name">
-                                    {players.map((player, index) => {
-                                        return (
-                                            <>
-                                                {index ? (<span class="plus"> + </span>) : null}
-                                                <a class="player" href={`/players/${player.id}`}>{getPlayerName(player)}</a>
-                                            </>
-                                        )}
-                                    )}
-                                </td>
-                                <td class="points">{points}</td>
-                                <td class="diff">{normalizeDiff(diff)}</td>
-                                <td class="thru">{through}</td>
+                {hectorLeaderboard.length === 0 && (
+                    <p class="pending">(Field pending)</p>
+                )}
+                {hectorLeaderboard.length > 0 && (
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="place">#</th>
+                                <th class="name">Team</th>
+                                <th class="points">Score</th>
+                                <th class="diff">Diff</th>
+                                <th class="thru">Thru</th>
                             </tr>
-                        )
-                    })}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                        {hectorLeaderboard.map(({ players, points, diff, through}, index) => {
+                            return (
+                                <tr class="competitor">
+                                    <td class="place">{index + 1}</td>
+                                    <td class="name">
+                                        {players.map((player, index) => {
+                                            return (
+                                                <>
+                                                    {index ? (<span class="plus"> + </span>) : null}
+                                                    <a class="player" href={`/players/${player.id}`}>{getPlayerName(player)}</a>
+                                                </>
+                                            )}
+                                        )}
+                                    </td>
+                                    <td class="points">{points}</td>
+                                    <td class="diff">{normalizeDiff(diff)}</td>
+                                    <td class="thru">{through}</td>
+                                </tr>
+                            )
+                        })}
+                        </tbody>
+                    </table>
+                )}
             </div>
         )}
 
-        {victorLeaderboard && victorLeaderboard.length > 0 && (
+        {victorLeaderboard && (
             <div class="leaderboard victor">
                 <h2>Victor</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th class="place">#</th>
-                            <th class="name">Player</th>
-                            <th class="points">Score</th>
-                            <th class="diff">Diff</th>
-                            <th class="thru">Thru</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {victorLeaderboard.map(({ players, points, diff, through}, index) => {
-                        return (
-                            <tr class="competitor">
-                                <td class="place">{index + 1}</td>
-                                <td class="name">
-                                    {players.map((player, index) => {
-                                        return (
-                                            <>
-                                                {index ? (<span class="plus"> + </span>) : null}
-                                                <a class="player" href={`/players/${player.id}`}>{getPlayerName(player)}</a>
-                                            </>
-                                        )}
-                                    )}
-                                </td>
-                                <td class="points">{points}</td>
-                                <td class="diff">{normalizeDiff(diff)}</td>
-                                <td class="thru">{through}</td>
+                {victorLeaderboard.length === 0 && (
+                    <p class="pending">(Field pending)</p>
+                )}
+                {victorLeaderboard.length > 0 && (
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="place">#</th>
+                                <th class="name">Player</th>
+                                <th class="points">Score</th>
+                                <th class="diff">Diff</th>
+                                <th class="thru">Thru</th>
                             </tr>
-                        )
-                    })}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                        {victorLeaderboard.map(({ players, points, diff, through}, index) => {
+                            return (
+                                <tr class="competitor">
+                                    <td class="place">{index + 1}</td>
+                                    <td class="name">
+                                        {players.map((player, index) => {
+                                            return (
+                                                <>
+                                                    {index ? (<span class="plus"> + </span>) : null}
+                                                    <a class="player" href={`/players/${player.id}`}>{getPlayerName(player)}</a>
+                                                </>
+                                            )}
+                                        )}
+                                    </td>
+                                    <td class="points">{points}</td>
+                                    <td class="diff">{normalizeDiff(diff)}</td>
+                                    <td class="thru">{through}</td>
+                                </tr>
+                            )
+                        })}
+                        </tbody>
+                    </table>
+                )}
             </div>
         )}
 
@@ -186,6 +196,10 @@ const normalizeDiff = (diff: string): string => {
 
     .leaderboard table {
         border-collapse: collapse;
+    }
+
+    .leaderboard .pending {
+        color: lightgray;
     }
 
     .leaderboard .competitor .name .plus {
