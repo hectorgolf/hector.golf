@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url'
 import { getPlayerHandicap, withLogin } from '../code/handicaps/teetime-api.ts'
 
 import playersData from '../data/players.json'
+import { isoDate, parseEventDateRange } from '../code/dates.ts'
 
 const getPlayerById = (id: string, handicapHistory: Array<HandicapHistoryEntry>): Player|undefined => {
     let record = playersData.find((record) => record.id === id) as Player
@@ -31,6 +32,7 @@ const readJsonFile = (pathToJsonFile: string, defaultValue: any = []): any => {
 // Get the resolved path to this file and determine the directory from that
 // (__dirname is not available in ES6 modules)
 const __filename = fileURLToPath(import.meta.url)
+const pathToEventsJson = join(dirname(__filename), '../data/events.json')
 const pathToPlayersJson = join(dirname(__filename), '../data/players.json')
 const pathToHandicapHistoryJson = join(dirname(__filename), '../data/handicaps.json')
 
@@ -86,14 +88,9 @@ const persistHandicapHistoryToDisk = (players: Player[], handicapHistory: Array<
         console.log(`Updated ${newHandicapChanges.length} players' handicap:`)
         console.log(JSON.stringify(newHandicapChanges, null, 2))
         writeFileSync(pathToHandicapHistoryJson, JSON.stringify(handicapHistory.concat(newHandicapChanges), null, 2))
+        console.log(`Done updating handicaps.`)
     }
 }
-
-// const persistPlayersToDisk = (players: Player[]) => {
-//     console.log(`Updated ${players.length} players JSON:`)
-//     console.log(JSON.stringify(players, null, 2))
-//     writeFileSync(pathToPlayersJson, JSON.stringify(players, null, 2))
-// }
 
 const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Array<HandicapHistoryEntry>, token: string): Promise<Player[]> => {
     const playerListPromises = players.map((player: any) => {
@@ -119,21 +116,73 @@ const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Arr
     return Promise.all(playerListPromises)
 }
 
-const updateHandicapsForAllPlayers = () => {
+const updateHandicapsForAllPlayers = async () => {
     const oldPlayers = readJsonFile(pathToPlayersJson, [])
     console.log(`Attempting to update handicap data for ${oldPlayers.length} players...`)
-    withLogin(async (token: string) => {
+    await withLogin(async (token: string) => {
         console.log(`Logged in with token: ${token}`)
         const handicapHistory: Array<HandicapHistoryEntry> = readJsonFile(pathToHandicapHistoryJson, [])
         const updatedPlayers = await fetchUpdatedPlayerRecords(oldPlayers, handicapHistory, token)
         persistHandicapHistoryToDisk(updatedPlayers, handicapHistory)
-
-        // TODO: maybe we should persist the players.json to disk as well, removing any
-        // redundant handicap overrides from the file in cases where we're getting a recent
-        // handicap for the player from the API? (i.e. we can see that the player's handicap
-        // changed between two consecutive API calls)
-        // persistPlayersToDisk(removeRedundantHandicapOverrides(oldPlayers, updatedPlayers))
     })
 }
 
-updateHandicapsForAllPlayers()
+type HectorEvent = {
+    id: string,
+    name: string,
+    date: string,
+    format: string,
+    participants: Array<string>,
+    buckets: undefined|Array<Array<{ id: string, handicap: number|undefined }>>,
+}
+
+const updateBucketsForUpcomingEvents = async () => {
+    const handicapHistory: Array<HandicapHistoryEntry> = readJsonFile(pathToHandicapHistoryJson, [])
+    const allEvents = readJsonFile(pathToEventsJson, [])
+
+    console.log(`Updating buckets for upcoming events...`)
+    const eventsToUpdate = allEvents.filter((e: HectorEvent) => {
+        if (e.format !== 'hector') return false
+        if (e.participants.length === 0) return false
+        return isoDate(parseEventDateRange(e.date)?.startDate) >= isoDate(new Date())
+    }) as Array<HectorEvent>
+
+    eventsToUpdate.forEach((event) => {
+        // Split participants to two buckets
+        const participants: Array<Player>|undefined = event.participants
+            ?.map(id => getPlayerById(id, handicapHistory))
+            ?.filter(p => !!p)
+            ?.sort((p1, p2) => p1!.handicap! - p2!.handicap!)
+        const trimPlayer = (player: Player): { id: string, handicap: number|undefined } => {
+            return { id: player.id, handicap: player.handicap }
+        }
+        const bucket1 = participants?.slice(0, Math.ceil(participants.length / 2))?.map(trimPlayer)
+        const bucket2 = participants?.slice(bucket1!.length)?.map(trimPlayer)
+
+        // Add the updated buckets to the event object
+        const eventObject = allEvents.find((e: any) => e.id === event.id)
+        if (eventObject) {
+            const newBuckets = [ bucket1, bucket2 ]
+            const oldBuckets = eventObject.buckets
+            if (!eventObject.buckets) {
+                console.log(`Adding buckets for event ${event.id} (${event.name} on ${event.date})`)
+            } else if (JSON.stringify(newBuckets) !== JSON.stringify(oldBuckets)) {
+                console.log(`Updating buckets for event ${event.id} (${event.name} on ${event.date})`)
+            } else {
+                console.log(`No changes to buckets for event ${event.id} (${event.name} on ${event.date})`)
+            }
+            eventObject.buckets = newBuckets
+        }
+    })
+
+    console.log(`Writing updated events data to ${pathToEventsJson}`)
+    writeFileSync(pathToEventsJson, JSON.stringify(allEvents, null, 4))
+    console.log(`Done updating buckets.`)
+}
+
+const run = async () => {
+    await updateHandicapsForAllPlayers()
+    await updateBucketsForUpcomingEvents()
+}
+
+run()

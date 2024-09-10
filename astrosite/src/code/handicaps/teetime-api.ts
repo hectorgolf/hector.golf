@@ -136,8 +136,12 @@ console.log(`teetimeUsername:   ${teetimeUsername}`)
 console.log(`teetimePassword:   ${teetimePassword?.replace(/./g, '*')}`)
 
 
-export const withLogin = (callback: (token: string) => Promise<void>) => {
-    login(teetimeClubNumber, teetimeUsername, teetimePassword).then(token => callback(token))
+export const withLogin = async (callback: (token: string) => Promise<void>): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        login(teetimeClubNumber, teetimeUsername, teetimePassword).then(token => {
+            callback(token).then(resolve).catch(reject)
+        })
+    })
 }
 
 export const getPlayerHandicap = async (firstName: string, lastName: string, clubNameOrAbbreviation: string, providedToken?: string): Promise<number|undefined> => {
