@@ -52,12 +52,12 @@
                     "handicap": 4.7
                 },
                 {
-                    "id": "juuso-pihamaa",
+                    "id": "simo-liukkonen",
                     "handicap": 5.6
                 },
                 {
-                    "id": "simo-liukkonen",
-                    "handicap": 5.7
+                    "id": "juuso-pihamaa",
+                    "handicap": 5.6
                 },
                 {
                     "id": "ossi-laukkanen",
@@ -80,18 +80,18 @@
                     "handicap": 9
                 },
                 {
-                    "id": "pasi-halmetoja",
-                    "handicap": 9.2
+                    "id": "eero-halmetoja",
+                    "handicap": 9.1
                 },
                 {
-                    "id": "martin-svedholm",
-                    "handicap": 9.3
+                    "id": "pasi-halmetoja",
+                    "handicap": 9.2
                 }
             ],
             [
                 {
-                    "id": "eero-halmetoja",
-                    "handicap": 9.7
+                    "id": "martin-svedholm",
+                    "handicap": 10
                 },
                 {
                     "id": "marcus-mattila",
@@ -111,7 +111,7 @@
                 },
                 {
                     "id": "lassi-koto",
-                    "handicap": 12.2
+                    "handicap": 12.1
                 },
                 {
                     "id": "timo-lukumaa",

@@ -1468,5 +1468,30 @@
     "date": "2024-09-10",
     "player": "olli-andersson",
     "handicap": 11.9
+  },
+  {
+    "date": "2024-09-11",
+    "player": "eero-halmetoja",
+    "handicap": 9.1
+  },
+  {
+    "date": "2024-09-11",
+    "player": "lassi-koto",
+    "handicap": 12.1
+  },
+  {
+    "date": "2024-09-11",
+    "player": "martin-svedholm",
+    "handicap": 10
+  },
+  {
+    "date": "2024-09-11",
+    "player": "okko-pykalainen",
+    "handicap": 15
+  },
+  {
+    "date": "2024-09-11",
+    "player": "simo-liukkonen",
+    "handicap": 5.6
   }
 ]
