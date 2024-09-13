@@ -68,12 +68,12 @@
                     "handicap": 8.3
                 },
                 {
-                    "id": "mikko-oesch",
-                    "handicap": 8.4
-                },
-                {
                     "id": "miso-lith",
                     "handicap": 8.5
+                },
+                {
+                    "id": "mikko-oesch",
+                    "handicap": 8.8
                 },
                 {
                     "id": "olli-varis",
@@ -85,7 +85,7 @@
                 },
                 {
                     "id": "pasi-halmetoja",
-                    "handicap": 9.2
+                    "handicap": 9.3
                 }
             ],
             [
@@ -127,7 +127,7 @@
                 },
                 {
                     "id": "lasse-koskela",
-                    "handicap": 15.8
+                    "handicap": 15.9
                 },
                 {
                     "id": "pekka-saijonmaa",

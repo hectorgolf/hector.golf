@@ -1503,5 +1503,20 @@
     "date": "2024-09-12",
     "player": "marcus-mattila",
     "handicap": 11
+  },
+  {
+    "date": "2024-09-13",
+    "player": "lasse-koskela",
+    "handicap": 15.9
+  },
+  {
+    "date": "2024-09-13",
+    "player": "mikko-oesch",
+    "handicap": 8.8
+  },
+  {
+    "date": "2024-09-13",
+    "player": "pasi-halmetoja",
+    "handicap": 9.3
   }
 ]
