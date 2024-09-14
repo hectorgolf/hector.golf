@@ -8,7 +8,7 @@ import { getAllPlayers, getPlayerName, getPlayerAliases } from '../../../../code
 import { type HectorEvent } from '../../../../schemas/events'
 import { getAllEventIds, getEventById } from '../../../../code/events'
 
-import { getLeaderboardsByEventId, getEventsWithLeaderboards } from '../../../../code/leaderboards/leaderboards'
+import { getLeaderboardsByEventId, getEventsWithLeaderboards, type EnrichedLeaderboard } from '../../../../code/leaderboards/leaderboards'
 
 
 export function getStaticPaths() {
@@ -37,6 +37,16 @@ const leaderboards = getLeaderboardsByEventId(event.id)
 const hectorLeaderboard = leaderboards.hector
 const victorLeaderboard = leaderboards.victor
 const updatedAt = leaderboards.updatedAt ? new Date(leaderboards.updatedAt) : undefined
+
+const leaderboardPosition = (leaderboard: EnrichedLeaderboard, points: number, lowerIsBetter: boolean): string => {
+    const numberOfBetterScores = leaderboard.filter(({ points: p }) => lowerIsBetter ? p < points : p > points).length
+    const numberOfEqualScores = leaderboard.filter(({ points: p }) => p === points).length
+    if (numberOfEqualScores > 1) {
+        return `T${numberOfBetterScores + 1}`
+    } else {
+        return `${numberOfBetterScores + 1}`
+    }
+}
 
 const normalizeDiff = (diff: string): string => {
     if (diff !== '' && !diff.includes('.')) {
@@ -81,7 +91,7 @@ const normalizeDiff = (diff: string): string => {
                         {hectorLeaderboard.map(({ players, points, diff, through}, index) => {
                             return (
                                 <tr class="competitor">
-                                    <td class="place">{index + 1}</td>
+                                    <td class="place">{leaderboardPosition(hectorLeaderboard, points, true)}</td>
                                     <td class="name">
                                         {players.map((player, index) => {
                                             return (
@@ -125,7 +135,7 @@ const normalizeDiff = (diff: string): string => {
                         {victorLeaderboard.map(({ players, points, diff, through}, index) => {
                             return (
                                 <tr class="competitor">
-                                    <td class="place">{index + 1}</td>
+                                    <td class="place">{leaderboardPosition(victorLeaderboard, points, false)}</td>
                                     <td class="name">
                                         {players.map((player, index) => {
                                             return (
