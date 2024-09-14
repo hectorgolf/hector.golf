@@ -113,11 +113,11 @@ if (victorWinners.length === 0 && leaderboards.victor && leaderboards.victor.len
             <div class="leaderboard">
                 <h2>Leaderboard</h2>
                 {eventHasStarted(event) ? (
-                    <a href={`${event.id}/leaderboard`}>
+                    <a href="leaderboard">
                         {(eventHasEnded(event) ? "Final results" : "Live leaderboard")}
                     </a>
                 ) : (
-                    <p>Leaderboard will be available <a href={`${event.id}/leaderboard`}>here</a> once the event starts</p>
+                    <p>Leaderboard will be available <a href="leaderboard">here</a> once the event starts</p>
                 )}
             </div>
         )}
