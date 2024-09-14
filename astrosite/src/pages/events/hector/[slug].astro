@@ -47,7 +47,7 @@ const bucket2 = bucket2trimmed ? untrimBucket(bucket2trimmed) : undefined
 // Populate teams and Hector and Victor winners from a leaderboard data file if that
 // data is available and the event file itself does not have winners on record
 const leaderboards = getLeaderboardsByEventId(event.id)
-const linkToLeaderboards = `${event.id}/leaderboard`
+const linkToLeaderboards = `/events/${event.format}/${event.id}/leaderboard`
 if (hectorWinners.length === 0 && leaderboards.hector && leaderboards.hector.length > 0) {
     const allAreFinished = leaderboards.hector.every(team => team.through === "F")
     if (allAreFinished) {
