@@ -1,4 +1,4 @@
-import { parseEventDateRange, isoDate} from '../code/dates.ts'
+import { parseEventDateRange, isoDate, isoDateToday} from '../code/dates.ts'
 import { fetchHectorLeaderboardData, fetchVictorLeaderboardData } from '../code/leaderboards/google-sheets.ts'
 import { updateHectorEventLeaderboard } from '../code/leaderboards/github.ts'
 
@@ -33,8 +33,14 @@ const updateLeaderboardsForAllOngoingTournaments = async () => {
             const { startDate, endDate } = parseEventDateRange(e.date) || {}
             if (!startDate) return false
             if (!endDate) return false
-            //if (isoDate(startDate) > isoDate(new Date())) return false  // event hasn't even started yet
-            //if (isoDate(endDate) < isoDate(new Date(new Date().getTime() - 1000 * 60 * 60 * 24))) return false  // event finished yesterday or earlier
+            if (isoDate(startDate) > isoDateToday()) {
+                console.log(`Not updating leaderboards for ${e.name} because it's in the future: the tournament's date is ${JSON.stringify(e.date)} while today is ${isoDateToday()}`)
+                return false  // event hasn't even started yet
+            }
+            if (isoDate(endDate) < isoDate(new Date(new Date().getTime() - 1000 * 60 * 60 * 24))) {
+                console.log(`Not updating leaderboards for ${e.name} because it's in the past: the tournament's date is ${JSON.stringify(e.date)} while today is ${isoDateToday()}`)
+                return false // event finished yesterday or earlier
+            }
             return true
         })
 

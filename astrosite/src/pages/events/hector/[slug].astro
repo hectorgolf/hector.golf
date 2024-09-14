@@ -5,7 +5,7 @@ import CourseCard from '../../../components/courses/CourseCard.astro'
 import { type HectorEvent } from '../../../schemas/events'
 import { type Course } from '../../../schemas/courses'
 import { type Player } from '../../../schemas/players'
-import { getAllEventIds, getCoursesOfEvent, getEventById } from '../../../code/events'
+import { getAllEventIds, getCoursesOfEvent, getEventById, eventHasStarted, eventHasEnded } from '../../../code/events'
 import { getPlayerName, getPlayerById } from '../../../code/players'
 import { getLeaderboardsByEventId } from '../../../code/leaderboards/leaderboards'
 
@@ -105,6 +105,19 @@ if (victorWinners.length === 0 && leaderboards.victor && leaderboards.victor.len
                         })}
                         {victorWinners.length > 1 && (<span class="tied">(tied)</span>)}
                     </div>
+                )}
+            </div>
+        )}
+
+        {(leaderboards.hector || leaderboards.victor) && (
+            <div class="leaderboard">
+                <h2>Leaderboard</h2>
+                {eventHasStarted(event) ? (
+                    <a href={`${event.id}/leaderboard`}>
+                        {(eventHasEnded(event) ? "Final results" : "Live leaderboard")}
+                    </a>
+                ) : (
+                    <p>Leaderboard will be available <a href={`${event.id}/leaderboard`}>here</a> once the event starts</p>
                 )}
             </div>
         )}
@@ -273,6 +286,20 @@ if (victorWinners.length === 0 && leaderboards.victor && leaderboards.victor.len
 
     .results h3 {
         margin-bottom: 0.25em;
+    }
+
+    .leaderboard .competitor .points {
+        color: lightblue;
+    }
+
+    .leaderboard td, .leaderboard th {
+        text-align: left;
+        padding-right: 10px;
+    }
+
+    .leaderboard td.name, .leaderboard th.name {
+        text-align: left;
+        padding-right: 20px;
     }
 
     @media only screen and (max-width: 500px) {

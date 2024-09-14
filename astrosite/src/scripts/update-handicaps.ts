@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 import { getPlayerHandicap, withLogin } from '../code/handicaps/teetime-api.ts'
 
 import playersData from '../data/players.json'
-import { isoDate, parseEventDateRange } from '../code/dates.ts'
+import { isoDate, isoDateToday, parseEventDateRange } from '../code/dates.ts'
 
 const getPlayerById = (id: string, handicapHistory: Array<HandicapHistoryEntry>): Player|undefined => {
     let record = playersData.find((record) => record.id === id) as Player
@@ -59,7 +59,7 @@ type HandicapHistoryEntry = {
 
 const persistHandicapHistoryToDisk = (players: Player[], handicapHistory: Array<HandicapHistoryEntry>) => {
     const newHandicapChanges: Array<HandicapHistoryEntry> = []
-    const date = new Date().toISOString().split('T')[0]
+    const date = isoDateToday()
 
     const playersWithNewHandicap = players
         .filter(p => p.handicap !== undefined)
@@ -144,7 +144,7 @@ const updateBucketsForUpcomingEvents = async () => {
     const eventsToUpdate = allEvents.filter((e: HectorEvent) => {
         if (e.format !== 'hector') return false
         if (e.participants.length === 0) return false
-        return isoDate(parseEventDateRange(e.date)?.startDate) >= isoDate(new Date())
+        return isoDate(parseEventDateRange(e.date)?.startDate) >= isoDateToday()
     }) as Array<HectorEvent>
 
     eventsToUpdate.forEach((event) => {

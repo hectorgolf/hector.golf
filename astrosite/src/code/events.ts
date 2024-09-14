@@ -4,7 +4,7 @@ import { type Event, genericEventSchema as EventSchema, type MatchplayEvent, typ
 import coursesData from '../data/courses.json';
 import { type Course, schema as CourseSchema } from '../schemas/courses';
 
-import { parseEventDateRange, isoDate } from './dates';
+import { parseEventDateRange, isoDate, isoDateToday } from './dates';
 
 
 export const linkToEvent = (event: Event|string): string => {
@@ -32,6 +32,20 @@ export function getAllEvents(providedFilter?: (e: Event) => boolean): Array<Even
         .filter(record => !!record) as Array<Event>;
 }
 
+export function eventHasStarted(event: Event): boolean {
+    const range = parseEventDateRange(event.date) || { startDate: undefined, endDate: undefined };
+    const {startDate} = range
+    console.log(`Checking if event ${event.name} has started: ${JSON.stringify(range)} vs ${isoDateToday()}`)
+    return !!(startDate && isoDate(startDate) <= isoDateToday())
+}
+
+export function eventHasEnded(event: Event): boolean {
+    const range = parseEventDateRange(event.date) || { startDate: undefined, endDate: undefined };
+    const {endDate} = range
+    console.log(`Checking if event ${event.name} has ended: ${JSON.stringify(range)} vs ${isoDateToday()}`)
+    return !!(endDate && isoDate(endDate) < isoDateToday())
+}
+
 export function getAllEventsGroupedByChronology(providedFilter?: (e: Event) => boolean): { ongoing: Array<Event>, upcoming: Array<Event>, past: Array<Event> } {
     const isFinishedMatchplayEvent = (event: Event): boolean => {
         return !!(event.format === EventFormat.Matchplay && (event as MatchplayEvent).results?.winners?.matchplay)
@@ -43,8 +57,8 @@ export function getAllEventsGroupedByChronology(providedFilter?: (e: Event) => b
     getAllEvents(providedFilter).forEach(event => {
         const range = parseEventDateRange(event.date) || { startDate: undefined, endDate: undefined };
         const {startDate, endDate} = range
-        const today = isoDate(new Date())
-        const isFuture = startDate && isoDate(startDate) >= today
+        const today = isoDateToday()
+        const isFuture = startDate && isoDate(startDate) > today
         const isPast = endDate && (isoDate(endDate) < today || isFinishedMatchplayEvent(event))
         const isOngoing = !isFuture && !isPast
         if (isFuture) {
