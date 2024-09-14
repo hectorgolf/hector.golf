@@ -53,7 +53,7 @@
                 },
                 {
                     "id": "simo-liukkonen",
-                    "handicap": 5.6
+                    "handicap": 5.5
                 },
                 {
                     "id": "juuso-pihamaa",
@@ -118,16 +118,16 @@
                     "handicap": 12.8
                 },
                 {
-                    "id": "jarkko-kailanto",
-                    "handicap": 13.9
-                },
-                {
                     "id": "lauri-paatela",
                     "handicap": 13.9
                 },
                 {
+                    "id": "jarkko-kailanto",
+                    "handicap": 14
+                },
+                {
                     "id": "lasse-koskela",
-                    "handicap": 15.9
+                    "handicap": 15.7
                 },
                 {
                     "id": "pekka-saijonmaa",
