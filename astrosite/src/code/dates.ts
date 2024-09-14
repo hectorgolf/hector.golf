@@ -1,4 +1,20 @@
+/**
+ * Gets the given date in ISO format (yyyy-mm-dd).
+ *
+ * @param date The `Date` object to convert to an ISO format `string`.
+ * @returns The date in ISO format (yyyy-mm-dd) or an empty string if the provided date was `undefined`.
+ */
 export const isoDate = (date: Date|undefined): string => date?.toISOString()?.slice(0, 10) || '';
+
+/**
+ * Get the current date in ISO format (yyyy-mm-dd)
+ * @returns the current date in ISO format (yyyy-mm-dd)
+ */
+export const isoDateToday = (): string => {
+    const now = new Date()
+    now.setHours(12, 0, 0, 0)
+    return isoDate(now)
+}
 
 export function parseEventDateRange(dateRange: string): { startDate: Date; endDate: Date } | null {
 	const months = [
@@ -24,8 +40,8 @@ export function parseEventDateRange(dateRange: string): { startDate: Date; endDa
 
 		if (monthIndex === -1) return null;
 
-		const startDate = new Date(parseInt(year), monthIndex, parseInt(startDay));
-		const endDate = new Date(parseInt(year), monthIndex, parseInt(endDay));
+		const startDate = new Date(parseInt(year), monthIndex, parseInt(startDay), 12, 0, 0);
+		const endDate = new Date(parseInt(year), monthIndex, parseInt(endDay), 12, 0, 0);
 
 		return { startDate, endDate };
 	} else if ((match = dateRange.match(twoMonthRegex))) {
@@ -36,8 +52,8 @@ export function parseEventDateRange(dateRange: string): { startDate: Date; endDa
 
 		if (startMonthIndex === -1 || endMonthIndex === -1) return null;
 
-		const startDate = new Date(parseInt(year), startMonthIndex, parseInt(startDay));
-		const endDate = new Date(parseInt(year), endMonthIndex, parseInt(endDay));
+		const startDate = new Date(parseInt(year), startMonthIndex, parseInt(startDay), 12, 0, 0);
+		const endDate = new Date(parseInt(year), endMonthIndex, parseInt(endDay), 12, 0, 0);
 
 		return { startDate, endDate };
 	} else if ((match = dateRange.match(singleDateRegex))) {
@@ -45,13 +61,13 @@ export function parseEventDateRange(dateRange: string): { startDate: Date; endDa
 		const [, month, day, year] = match;
 		const monthIndex = months.indexOf(month);
 		if (monthIndex === -1) return null;
-		const startDate = new Date(parseInt(year), monthIndex, parseInt(day));
+		const startDate = new Date(parseInt(year), monthIndex, parseInt(day), 12, 0, 0);
 		return { startDate, endDate: startDate };
 	} else if ((match = dateRange.match(singleYearRegex))) {
 		// "2024"
 		const [, year] = match;
-		const startDate = new Date(parseInt(year), 0, 1, 12);
-		const endDate = new Date(parseInt(year), 11, 31, 12);
+		const startDate = new Date(parseInt(year), 0, 1, 12, 12, 0, 0);
+		const endDate = new Date(parseInt(year), 11, 31, 12, 12, 0, 0);
 		return { startDate, endDate };
 	}
 

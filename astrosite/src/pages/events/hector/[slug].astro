@@ -5,7 +5,7 @@ import CourseCard from '../../../components/courses/CourseCard.astro'
 import { type HectorEvent } from '../../../schemas/events'
 import { type Course } from '../../../schemas/courses'
 import { type Player } from '../../../schemas/players'
-import { getAllEventIds, getCoursesOfEvent, getEventById } from '../../../code/events'
+import { getAllEventIds, getCoursesOfEvent, getEventById, eventHasStarted, eventHasEnded } from '../../../code/events'
 import { getPlayerName, getPlayerById } from '../../../code/players'
 import { getLeaderboardsByEventId } from '../../../code/leaderboards/leaderboards'
 
@@ -111,7 +111,14 @@ if (victorWinners.length === 0 && leaderboards.victor && leaderboards.victor.len
 
         {(leaderboards.hector || leaderboards.victor) && (
             <div class="leaderboard">
-                <a href={`${event.id}/leaderboard`}><h2>Leaderboard</h2></a>
+                <h2>Leaderboard</h2>
+                {eventHasStarted(event) ? (
+                    <a href={`${event.id}/leaderboard`}>
+                        {(eventHasEnded(event) ? "Final results" : "Live leaderboard")}
+                    </a>
+                ) : (
+                    <p>Leaderboard will be available <a href={`${event.id}/leaderboard`}>here</a> once the event starts</p>
+                )}
             </div>
         )}
 
