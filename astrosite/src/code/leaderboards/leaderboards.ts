@@ -6,6 +6,7 @@ import { getAllPlayers, getPlayerName, getPlayerAliases } from '../../code/playe
 
 
 export type EnrichedLeaderboardEntry = {
+    description: string,
     players: Array<Player>
     points: number
     diff: string
@@ -69,13 +70,27 @@ const enrichLeaderboard = (leaderboard: GoogleSheetTeamLeaderboard|GoogleSheetIn
     const enrichLeaderboardEntry = (entry: any) => {
         const playersString = (entry as any).team || (entry as any).player
         const players: Array<Player> = playersString.split('+').map(playerNameToPlayer).filter((p: Player|undefined) => !!p)
-        const status = isFinished(entry.through) ? 'F' : entry.through
+        const status = isFinished(entry.through) ? 'F' : (entry.through || '0')
         return {
             players,
+            description: playersString,
             points: entry.points,
             diff: entry.diff,
             through: status
         }
     }
+    const isTeamLeaderboard = leaderboard.every(entry => typeof((entry as any).team) === 'string')
+    if (isTeamLeaderboard) {
+        const noResultsYet = leaderboard.every(entry => entry.through.startsWith('0/') || entry.through === '')
+        if (noResultsYet) {
+            leaderboard = leaderboard.map((entry, index) => ({
+                ...entry,
+                team: `Team ${index + 1}`,
+                diff: index ? '0.0' : '',
+                through: '0/6'
+            }))
+        }
+    }
+
     return leaderboard.filter(entry => !!((entry as any).team || (entry as any).player)).map((entry) => enrichLeaderboardEntry(entry))
 }

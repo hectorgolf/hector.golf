@@ -88,18 +88,20 @@ const normalizeDiff = (diff: string): string => {
                             </tr>
                         </thead>
                         <tbody>
-                        {hectorLeaderboard.map(({ players, points, diff, through}, index) => {
+                        {hectorLeaderboard.map(({ players, points, diff, through, description }, index) => {
                             return (
                                 <tr class="competitor">
                                     <td class="place">{leaderboardPosition(hectorLeaderboard, points, true)}</td>
                                     <td class="name">
-                                        {players.map((player, index) => {
+                                        {(players.length > 0) ? players.map((player, index) => {
                                             return (
                                                 <>
                                                     {index ? (<span class="plus"> + </span>) : null}
                                                     <a class="player" href={`/players/${player.id}`}>{getPlayerName(player)}</a>
                                                 </>
                                             )}
+                                        ) : (
+                                            <span>{description}</span>
                                         )}
                                     </td>
                                     <td class="points">{points}</td>
