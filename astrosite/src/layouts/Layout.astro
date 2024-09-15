@@ -89,15 +89,19 @@ const { title } = Astro.props;
 		height: calc(90%);
 	}
 
-	.breadcrumbs {
-		position:absolute;
+	main .breadcrumbs {
+		position: absolute;
 	}
 
-	.breadcrumbs a {
+	main .breadcrumbs .breadcrumb:first {
+		margin-left: 0px;
+	}
+
+	main .breadcrumbs a {
         color: white;
-        font-size: 0.7em;
+        font-size: 0.6em;
         text-decoration: none;
-        margin-left: 5px;
+        margin-left: 2px;
     }
 
 	.text-gradient {
