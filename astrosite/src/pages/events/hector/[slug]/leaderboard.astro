@@ -255,17 +255,12 @@ const normalizeDiff = (diff: string): string => {
         vertical-align: top;
     }
 
-    .leaderboard td, .leaderboard th {
-        text-align: left;
-        padding-right: 10px;
-    }
-
     .leaderboard th {
         background-color: #333333;
     }
 
-    .leaderboard td.name, .leaderboard th.name {
-        padding-right: 20px;
+    .leaderboard td, .leaderboard th {
+        text-align: left;
     }
 
     @media only screen and (max-width: 500px) {
@@ -278,6 +273,27 @@ const normalizeDiff = (diff: string): string => {
 		    font-size: 2.25rem;
             margin-top: 40px;
         }
+
+        .leaderboard {
+            font-size: 0.8em;
+        }
+
+        .leaderboard td, .leaderboard th { padding-right: 6px; }
+        .leaderboard td.name, .leaderboard th.name { padding-right: 12px; }
+        .leaderboard th.place { min-width: 24px; }
+        .leaderboard th.name { min-width: 80px; }
+        .leaderboard th.points { min-width: 30px; }
+        .leaderboard th.diff { min-width: 30px; }
+        .leaderboard th.thru { min-width: 30px; }
     }
 
+    @media only screen and (min-width: 501px) {
+        .leaderboard td, .leaderboard th { padding-right: 10px; }
+        .leaderboard td.name, .leaderboard th.name { padding-right: 20px; }
+        .leaderboard th.place { min-width: 34px; }
+        .leaderboard th.name { min-width: 120px; }
+        .leaderboard th.points { min-width: 40px; }
+        .leaderboard th.diff { min-width: 40px; }
+        .leaderboard th.thru { min-width: 40px; }
+    }
 </style>
