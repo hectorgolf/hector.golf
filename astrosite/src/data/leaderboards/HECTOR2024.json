@@ -76,55 +76,13 @@
   ],
   "victor": [
     {
-      "player": "Eero Halmetoja",
+      "player": "Tommy Gulin",
       "points": "0.0",
       "diff": "",
       "through": "0/4"
     },
     {
-      "player": "Jussi Allonen",
-      "points": "0.0",
-      "diff": "0.0",
-      "through": "0/4"
-    },
-    {
-      "player": "Juuso Pihamaa",
-      "points": "0.0",
-      "diff": "0.0",
-      "through": "0/4"
-    },
-    {
-      "player": "Martin Svedholm",
-      "points": "0.0",
-      "diff": "0.0",
-      "through": "0/4"
-    },
-    {
-      "player": "Miso Korkiakoski",
-      "points": "0.0",
-      "diff": "0.0",
-      "through": "0/4"
-    },
-    {
       "player": "Ofri Porat",
-      "points": "0.0",
-      "diff": "0.0",
-      "through": "0/4"
-    },
-    {
-      "player": "Olli Varis",
-      "points": "0.0",
-      "diff": "0.0",
-      "through": "0/4"
-    },
-    {
-      "player": "Ossi Laukkanen",
-      "points": "0.0",
-      "diff": "0.0",
-      "through": "0/4"
-    },
-    {
-      "player": "Pasi Halmetoja",
       "points": "0.0",
       "diff": "0.0",
       "through": "0/4"
@@ -142,7 +100,61 @@
       "through": "0/4"
     },
     {
-      "player": "Tommy Gulin",
+      "player": "Juuso Pihamaa",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Ossi Laukkanen",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Jussi Allonen",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Miso Korkiakoski",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Mikko Oesch",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Olli Varis",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Eero Halmetoja",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Pasi Halmetoja",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Martin Svedholm",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Marcus Mattila",
       "points": "0.0",
       "diff": "0.0",
       "through": "0/4"
@@ -154,7 +166,31 @@
       "through": "0/4"
     },
     {
-      "player": "Janne Valtakari",
+      "player": "Toni Marttila",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Olli Andersson",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Lassi Koto",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Timo Lukumaa",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Lauri Paatela",
       "points": "0.0",
       "diff": "0.0",
       "through": "0/4"
@@ -172,53 +208,17 @@
       "through": "0/4"
     },
     {
-      "player": "Lassi Koto",
-      "points": "0.0",
-      "diff": "0.0",
-      "through": "0/4"
-    },
-    {
-      "player": "Lauri Paatela",
-      "points": "0.0",
-      "diff": "0.0",
-      "through": "0/4"
-    },
-    {
-      "player": "Marcus Mattila",
-      "points": "0.0",
-      "diff": "0.0",
-      "through": "0/4"
-    },
-    {
-      "player": "Mikko Oesch",
-      "points": "0.0",
-      "diff": "0.0",
-      "through": "0/4"
-    },
-    {
-      "player": "Olli Andersson",
-      "points": "0.0",
-      "diff": "0.0",
-      "through": "0/4"
-    },
-    {
       "player": "Pekka Saijonmaa",
       "points": "0.0",
       "diff": "0.0",
       "through": "0/4"
     },
     {
-      "player": "Timo Lukumaa",
-      "points": "0.0",
-      "diff": "0.0",
-      "through": "0/4"
-    },
-    {
-      "player": "Toni Marttila",
+      "player": "Janne Valtakari",
       "points": "0.0",
       "diff": "0.0",
       "through": "0/4"
     }
   ],
-  "updatedAt": "2024-09-09T23:39:56.914Z"
+  "updatedAt": "2024-09-17T16:50:10.695Z"
 }
