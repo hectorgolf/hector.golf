@@ -77,7 +77,7 @@
                 },
                 {
                     "id": "mikko-oesch",
-                    "handicap": 8.8
+                    "handicap": 8.9
                 },
                 {
                     "id": "eero-halmetoja",
@@ -102,12 +102,12 @@
                     "handicap": 11.2
                 },
                 {
-                    "id": "toni-marttila",
-                    "handicap": 11.8
-                },
-                {
                     "id": "olli-andersson",
                     "handicap": 11.9
+                },
+                {
+                    "id": "toni-marttila",
+                    "handicap": 12
                 },
                 {
                     "id": "lassi-koto",
