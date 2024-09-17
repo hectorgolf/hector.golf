@@ -69,10 +69,10 @@ const updateLeaderboardsForAllOngoingTournaments = async () => {
             const { startDate, endDate } = parseEventDateRange(e.date) || {}
             if (!startDate) return false
             if (!endDate) return false
-            if (isoDate(startDate) > isoDateToday()) {
-                console.log(`Not updating leaderboards for ${e.name} because it's in the future: the tournament's date is ${JSON.stringify(e.date)} while today is ${isoDateToday()}`)
-                return false  // event hasn't even started yet
-            }
+            // if (isoDate(startDate) > isoDateToday()) {
+            //     console.log(`Not updating leaderboards for ${e.name} because it's in the future: the tournament's date is ${JSON.stringify(e.date)} while today is ${isoDateToday()}`)
+            //     return false  // event hasn't even started yet
+            // }
             if (isoDate(endDate) < isoDate(new Date(new Date().getTime() - 1000 * 60 * 60 * 24))) {
                 console.log(`Not updating leaderboards for ${e.name} because it's in the past: the tournament's date is ${JSON.stringify(e.date)} while today is ${isoDateToday()}`)
                 return false // event finished yesterday or earlier
@@ -107,7 +107,7 @@ const updateLeaderboardsForAllOngoingTournaments = async () => {
                 // events.json does not yet have teams for this event
                 const leaderboardHasPairings = hectorLeaderboard.every((team, index) => team.team && team.team.trim().length > 0)
                 if (leaderboardHasPairings) {
-                    console.log(`The leaderboard has pairings, so we'll use them to generate the teams`)
+                    console.log(`The Hector leaderboard for ${hectorEvent.name} has pairings, so we'll use them to generate the teams`)
                     const teams = hectorLeaderboard.map(team => {
                         return {
                             name: team.team,
@@ -118,10 +118,12 @@ const updateLeaderboardsForAllOngoingTournaments = async () => {
                         const rawEvent = eventsData.find(e => e.id === hectorEvent.id)
                         if (rawEvent) {
                             rawEvent.results = { teams: teams as Array<HectorTeam>, winners: { hector: [], victor: [] } }
-                            console.log(`Added ${teams.length} teams for ${hectorEvent.name}`)
+                            console.log(`Added ${teams.length} teams for ${hectorEvent.name} from live leaderboard data`)
                             updatedTeamPairings += 1
                         }
                     }
+                } else {
+                    console.log(`The Hector leaderboard for ${hectorEvent.name} does not have pairings yet, so we can't generate the teams: ${JSON.stringify(hectorLeaderboard)}`)
                 }
             }
         }
