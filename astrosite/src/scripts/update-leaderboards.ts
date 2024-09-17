@@ -34,21 +34,6 @@ type HectorEvent = {
 }
 
 const getPlayerByName = (name: string): string|undefined => {
-    // [{
-    //     "id": "miso-lith",
-    //     "name": {
-    //       "first": "Miso",
-    //       "last": "Lith"
-    //     },
-    //     "aliases": [
-    //       { "first": "Miso", "last": "Korkiakoski" }
-    //     ],
-    //     "privacy": "shorten-last-name",
-    //     "contact": {
-    //       "phone": "+358505003049"
-    //     },
-    //     "club": "HirG"
-    // }]
     return playersData.find((player: any) => {
         const aliases = [player.name, ...(player.aliases || [])].map((name: any) => {
             if (name.first && name.last) {
@@ -56,7 +41,7 @@ const getPlayerByName = (name: string): string|undefined => {
             }
             return name.toString()
         })
-        return aliases.includes(name)
+        return aliases.map(n => n.toLowerCase()).includes(name.toLowerCase())
     })?.id
 }
 
@@ -69,10 +54,10 @@ const updateLeaderboardsForAllOngoingTournaments = async () => {
             const { startDate, endDate } = parseEventDateRange(e.date) || {}
             if (!startDate) return false
             if (!endDate) return false
-            // if (isoDate(startDate) > isoDateToday()) {
-            //     console.log(`Not updating leaderboards for ${e.name} because it's in the future: the tournament's date is ${JSON.stringify(e.date)} while today is ${isoDateToday()}`)
-            //     return false  // event hasn't even started yet
-            // }
+            if (isoDate(startDate) > isoDateToday()) {
+                console.log(`Not updating leaderboards for ${e.name} because it's in the future: the tournament's date is ${JSON.stringify(e.date)} while today is ${isoDateToday()}`)
+                return false  // event hasn't even started yet
+            }
             if (isoDate(endDate) < isoDate(new Date(new Date().getTime() - 1000 * 60 * 60 * 24))) {
                 console.log(`Not updating leaderboards for ${e.name} because it's in the past: the tournament's date is ${JSON.stringify(e.date)} while today is ${isoDateToday()}`)
                 return false // event finished yesterday or earlier
@@ -123,14 +108,14 @@ const updateLeaderboardsForAllOngoingTournaments = async () => {
                         }
                     }
                 } else {
-                    console.log(`The Hector leaderboard for ${hectorEvent.name} does not have pairings yet, so we can't generate the teams: ${JSON.stringify(hectorLeaderboard)}`)
+                    console.log(`The Hector leaderboard for ${hectorEvent.name} does not have pairings yet, so we can't generate the teams: ${JSON.stringify(hectorLeaderboard, null, 2)}`)
                 }
             }
         }
     }
     if (updatedTeamPairings > 0) {
         console.log(`Updated team pairings for ${updatedTeamPairings} events – TODO: write updated JSON to ${pathToEventsJson} : ${JSON.stringify(eventsData, null, 4)}`)
-        //writeFileSync(pathToEventsJson, JSON.stringify(eventsData, null, 4))
+        writeFileSync(pathToEventsJson, JSON.stringify(eventsData, null, 4))
     }
 }
 
