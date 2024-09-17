@@ -1,8 +1,16 @@
+import { writeFileSync } from 'fs'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
+
 import { parseEventDateRange, isoDate, isoDateToday} from '../code/dates.ts'
 import { fetchHectorLeaderboardData, fetchVictorLeaderboardData } from '../code/leaderboards/google-sheets.ts'
 import { updateHectorEventLeaderboard } from '../code/leaderboards/github.ts'
 
 import eventsData from '../data/events.json'
+import playersData from '../data/players.json'
+
+const __filename = fileURLToPath(import.meta.url)
+const pathToEventsJson = join(dirname(__filename), '../data/events.json')
 
 type HectorTeam = {
     name: string,
@@ -15,6 +23,7 @@ type HectorEvent = {
     format: string,
     date: string,
     leaderboardSheet: string|undefined,
+    participants?: Array<string>,
     results?: {
         teams?: Array<HectorTeam>,
         winners?: {
@@ -22,6 +31,33 @@ type HectorEvent = {
             victor?: Array<string>
         }
     }
+}
+
+const getPlayerByName = (name: string): string|undefined => {
+    // [{
+    //     "id": "miso-lith",
+    //     "name": {
+    //       "first": "Miso",
+    //       "last": "Lith"
+    //     },
+    //     "aliases": [
+    //       { "first": "Miso", "last": "Korkiakoski" }
+    //     ],
+    //     "privacy": "shorten-last-name",
+    //     "contact": {
+    //       "phone": "+358505003049"
+    //     },
+    //     "club": "HirG"
+    // }]
+    return playersData.find((player: any) => {
+        const aliases = [player.name, ...(player.aliases || [])].map((name: any) => {
+            if (name.first && name.last) {
+                return `${name.first} ${name.last}`
+            }
+            return name.toString()
+        })
+        return aliases.includes(name)
+    })?.id
 }
 
 const updateLeaderboardsForAllOngoingTournaments = async () => {
@@ -44,6 +80,7 @@ const updateLeaderboardsForAllOngoingTournaments = async () => {
             return true
         })
 
+    let updatedTeamPairings = 0
     console.log(`Found ${events.length} ongoing Hector events with a live leaderboard Google Sheet: ${events.map(e => e.name).join(', ')}`)
     for (let event of events) {
         console.log(`Updating leaderboard for ${event.name}...`)
@@ -62,9 +99,36 @@ const updateLeaderboardsForAllOngoingTournaments = async () => {
 
             const githubToken = process.env.GITHUB_ACCESS_TOKEN as string
             console.log(`Updating leaderboard data for ${hectorEvent.name} on Github with token ${githubToken.replace(/./g, '*')}`)
-            updateHectorEventLeaderboard(githubToken, hectorEvent.id, hectorLeaderboard, victorLeaderboard)
+            await updateHectorEventLeaderboard(githubToken, hectorEvent.id, hectorLeaderboard, victorLeaderboard)
             console.log(`Updated leaderboard data for ${hectorEvent.name}`)
+
+            const teams = event.results?.teams || []
+            if (teams.length === 0) {
+                // events.json does not yet have teams for this event
+                const leaderboardHasPairings = hectorLeaderboard.every((team, index) => team.team && team.team.trim().length > 0)
+                if (leaderboardHasPairings) {
+                    console.log(`The leaderboard has pairings, so we'll use them to generate the teams`)
+                    const teams = hectorLeaderboard.map(team => {
+                        return {
+                            name: team.team,
+                            players: team.team.split('+').map(name => getPlayerByName(name.trim()))
+                        }
+                    })
+                    if (teams.every(team => team.players.every(p => !!p))) {
+                        const rawEvent = eventsData.find(e => e.id === hectorEvent.id)
+                        if (rawEvent) {
+                            rawEvent.results = { teams: teams as Array<HectorTeam>, winners: { hector: [], victor: [] } }
+                            console.log(`Added ${teams.length} teams for ${hectorEvent.name}`)
+                            updatedTeamPairings += 1
+                        }
+                    }
+                }
+            }
         }
+    }
+    if (updatedTeamPairings > 0) {
+        console.log(`Updated team pairings for ${updatedTeamPairings} events – TODO: write updated JSON to ${pathToEventsJson} : ${JSON.stringify(eventsData, null, 4)}`)
+        //writeFileSync(pathToEventsJson, JSON.stringify(eventsData, null, 4))
     }
 }
 
