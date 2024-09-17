@@ -143,6 +143,12 @@ export function getPlayerName(player: Player|string): string {
     return renderPlayerName(player.name, player.privacy);
 }
 
+export function getPlayerByName(name: string): Player|undefined {
+    return getAllPlayers().find(player => {
+        return getPlayerAliases(player).includes(name)
+    })
+}
+
 export function getPlayerAliases(player: Player|string, ignorePrivacy?: boolean): Array<string> {
     if (typeof(player) === 'string') {
         const playerById = getPlayerById(player);
