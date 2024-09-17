@@ -2,6 +2,7 @@
 import Layout from '../../../layouts/Layout.astro'
 import Breadcrumb from '../../../components/Breadcrumb.astro'
 import CourseCard from '../../../components/courses/CourseCard.astro'
+import RoundsList from '../../../components/events/RoundsList.astro'
 import { type HectorEvent } from '../../../schemas/events'
 import { type Course } from '../../../schemas/courses'
 import { type Player } from '../../../schemas/players'
@@ -177,6 +178,7 @@ if (victorWinners.length === 0 && leaderboards.victor && leaderboards.victor.len
             </div>
         )}
 
+        <RoundsList event={event} />
     </main>
 </Layout>
 

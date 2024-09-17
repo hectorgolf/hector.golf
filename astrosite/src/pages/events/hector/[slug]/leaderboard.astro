@@ -1,6 +1,7 @@
 ---
 import Layout from '../../../../layouts/Layout.astro'
 import Breadcrumb from '../../../../components/Breadcrumb.astro'
+import RoundsList from '../../../../components/events/RoundsList.astro'
 
 import { type Player } from '../../../../schemas/players'
 import { getAllPlayers, getPlayerName, getPlayerAliases } from '../../../../code/players'
@@ -24,7 +25,6 @@ if (!event) {
     Astro.response.status = 404
 }
 event = event!
-
 
 const playersByName: {[name:string]: Player} = {}
 getAllPlayers().forEach((player) => {
@@ -159,6 +159,8 @@ const normalizeDiff = (diff: string): string => {
                 )}
             </div>
         )}
+
+        <RoundsList event={event} />
 
         {updatedAt && (<div class="updated-at">Updated:&nbsp;&nbsp;{updatedAt?.toISOString()}</div>)}
 

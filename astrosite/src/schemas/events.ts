@@ -31,6 +31,33 @@ const hectorResultsSchema = z.object({
     }).optional()
 }).optional()
 
+const gameFormatSchema = z.object({
+    format: z.enum([
+        'Stableford NET',
+        'Stableford SCR',
+        'Stroke Play NET',
+        'Stroke Play SCR',
+        'Better Ball Stroke Play NET',
+        'Better Ball Stroke Play SCR',
+        'Better Ball Stableford NET',
+        'Better Ball Stableford SCR',
+        'Scramble Stroke Play NET',
+        'Scramble Stableford NET',
+    ]),
+    competition: z.array(z.enum(['hector', 'victor'])).optional(),
+    handicapAllowance: z.number().optional(),
+    birdieBonus: z.number().optional(),
+    eagleBonus: z.number().optional(),
+})
+
+const hectorRoundSchema = z.object({
+    day: z.number(),
+    round: z.number(),
+    course: z.string(),
+    tee: z.string(),
+    gameFormats: z.array(gameFormatSchema)
+})
+
 const finnkampenResultsSchema = z.object({
     teams: z.array(z.object({
         name: z.string(),
@@ -62,6 +89,7 @@ export enum EventFormat {
 export const hectorEventSchema = BaseEventSchema.extend({
     format: z.literal(EventFormat.Hector),
     courses: z.array(z.string()).optional(),
+    rounds: z.array(hectorRoundSchema).optional(),
     buckets: z.array(z.array(z.object({
         id: z.string(),
         handicap: z.number().optional()

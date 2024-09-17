@@ -1,0 +1,100 @@
+---
+import { type HectorEvent } from '../../schemas/events'
+import { getCourseById } from '../../code/courses'
+import type { Course } from '../../schemas/courses'
+
+interface Props {
+	event: HectorEvent;
+}
+
+let { event } = Astro.props;
+event = event as HectorEvent;
+
+const linkToCourse = (course: Course): string => {
+    return `/courses/${course.id}`
+}
+
+---
+<>
+    {(event.rounds && event.rounds.length > 0) && (
+        <div class="rounds">
+            <h2>Rounds</h2>
+            {event.rounds.map((round) => {
+                const course = getCourseById(round.course)
+                if (!course) return null
+                const tee = course.course?.tees?.find(t => t.name.toLowerCase() === round.tee.toLowerCase())
+                return (
+                    <div class="round">
+                        <h3>Day {round.day}, Round {round.round}</h3>
+                        <div class="course">
+                            <a href={linkToCourse(course)}>{course.name}</a>
+                            {tee && (
+                                <>
+                                    <span class="color" style={`color: ${tee.color}`}>&#9864;</span>
+                                    <span class="name">{tee.name}</span>
+                                </>
+                            )}
+                        </div>
+                        <div class="game-formats">
+                            {round.gameFormats.map(gf => {
+                                const allowance = gf.handicapAllowance ? `${Math.round(gf.handicapAllowance * 100)}%` : ''
+                                return (
+                                    <div class="game-format">
+                                        <div>
+                                            <span class="name">{gf.format}</span>
+                                            {allowance && (<span class="handicap-allowance short">({allowance} HCP)</span>)}
+                                            {allowance && (<span class="handicap-allowance long">({allowance} handicap allowance)</span>)}
+                                        </div>
+                                        {(gf.birdieBonus || gf.eagleBonus) && (
+                                            <ul class="scoring-bonuses">
+                                                {gf.birdieBonus && (<li class="bonus birdie">{gf.birdieBonus} points for each Birdie</li>)}
+                                                {gf.eagleBonus && (<li class="bonus eagle">{gf.eagleBonus} points for each Eagle</li>)}
+                                            </ul>
+                                        )}
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
+                )
+            })}
+        </div>
+    )}
+</>
+
+<style>
+    main {
+		font-size: 20px;
+	}
+
+    ul {
+        list-style-type: "+  ";
+        margin-block-start: auto;
+        margin-block-end: auto;
+    }
+
+    .round .course .color {
+        margin-left: 16px;
+        margin-right: 4px;
+    }
+
+    .round .game-format { font-size: 0.9em; }
+    .round .game-format .handicap-allowance {
+        color: #bbb;
+        margin-left: 8px;
+    }
+
+    @media only screen and (max-width: 500px) {
+        main {
+            font-size: 16px;
+        }
+
+        .rounds .handicap-allowance.short { display: inline; }
+        .rounds .handicap-allowance.long { display: none; }
+    }
+
+    @media only screen and (min-width: 501px) {
+        .rounds .handicap-allowance.short { display: none; }
+        .rounds .handicap-allowance.long { display: inline; }
+    }
+</style>

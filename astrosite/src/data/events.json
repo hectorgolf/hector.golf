@@ -36,6 +36,107 @@
             "pekka-saijonmaa",
             "janne-valtakari"
         ],
+        "rounds": [
+            {
+                "day": 1,
+                "round": 1,
+                "course": "lafinca",
+                "tee": "Yellow",
+                "gameFormats": [
+                    {
+                        "format": "Stableford NET",
+                        "handicapAllowance": 1.0,
+                        "competition": ["hector", "victor"]
+                    },
+                    {
+                        "format": "Stroke Play SCR",
+                        "handicapAllowance": 0
+                    }
+                ]
+            },
+            {
+                "day": 2,
+                "round": 1,
+                "course": "lafinca",
+                "tee": "Blue",
+                "gameFormats": [
+                    {
+                        "format": "Stroke Play NET",
+                        "handicapAllowance": 1.0,
+                        "competition": ["hector"]
+                    },
+                    {
+                        "format": "Stableford NET",
+                        "handicapAllowance": 1.0,
+                        "competition": ["victor"]
+                    }
+                ]
+            },
+            {
+                "day": 2,
+                "round": 2,
+                "course": "lafinca",
+                "tee": "White",
+                "gameFormats": [
+                    {
+                        "format": "Better Ball Stroke Play NET",
+                        "handicapAllowance": 1.0,
+                        "competition": ["hector"]
+                    },
+                    {
+                        "format": "Stableford NET",
+                        "handicapAllowance": 1.0,
+                        "competition": ["victor"]
+                    }
+                ]
+            },
+            {
+                "day": 3,
+                "round": 1,
+                "course": "villamartin",
+                "tee": "Blue",
+                "gameFormats": [
+                    {
+                        "format": "Better Ball Stroke Play NET",
+                        "handicapAllowance": 1.0,
+                        "competition": ["hector"]
+                    },
+                    {
+                        "format": "Stableford NET",
+                        "handicapAllowance": 1.0,
+                        "competition": ["victor"]
+                    }
+                ]
+            },
+            {
+                "day": 3,
+                "round": 2,
+                "course": "villamartin",
+                "tee": "Yellow",
+                "gameFormats": [
+                    {
+                        "format": "Scramble Stroke Play NET",
+                        "handicapAllowance": 0.2,
+                        "competition": ["hector"]
+                    }
+                ]
+            },
+            {
+                "day": 4,
+                "round": 1,
+                "course": "lafinca",
+                "tee": "Yellow",
+                "gameFormats": [
+                    {
+                        "format": "Scramble Stroke Play NET",
+                        "handicapAllowance": 0.2,
+                        "competition": ["hector"],
+                        "birdieBonus": 0.5,
+                        "eagleBonus": 1.0
+                    }
+                ]
+            }
+        ],
         "leaderboardSheet": "https://docs.google.com/spreadsheets/d/1-TPy0oFWMK03q8nPDED2Dh3Thd-uTRCmmhIKIdWlUL8/edit",
         "buckets": [
             [
