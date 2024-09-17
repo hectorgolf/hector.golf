@@ -30,7 +30,7 @@ const linkToCourse = (course: Course): string => {
                             <a href={linkToCourse(course)}>{course.name}</a>
                             {tee && (
                                 <>
-                                    <span class="color" style={`color: ${tee.color}`}>&#9864;</span>
+                                    <span class="dot" style={`background-color: ${tee.color}; border: 1pt solid white;`}></span>
                                     <span class="name">{tee.name}</span>
                                 </>
                             )}
@@ -40,17 +40,15 @@ const linkToCourse = (course: Course): string => {
                                 const allowance = gf.handicapAllowance ? `${Math.round(gf.handicapAllowance * 100)}%` : ''
                                 return (
                                     <div class="game-format">
-                                        <div>
-                                            <span class="name">{gf.format}</span>
-                                            {allowance && (<span class="handicap-allowance short">({allowance} HCP)</span>)}
-                                            {allowance && (<span class="handicap-allowance long">({allowance} handicap allowance)</span>)}
-                                        </div>
-                                        {(gf.birdieBonus || gf.eagleBonus) && (
-                                            <ul class="scoring-bonuses">
-                                                {gf.birdieBonus && (<li class="bonus birdie">{gf.birdieBonus} points for each Birdie</li>)}
-                                                {gf.eagleBonus && (<li class="bonus eagle">{gf.eagleBonus} points for each Eagle</li>)}
-                                            </ul>
-                                        )}
+                                        <ul class="game-format-specification">
+                                            <li>
+                                                <span class="name">{gf.format}</span>
+                                                {allowance && (<span class="handicap-allowance short">({allowance} HCP)</span>)}
+                                                {allowance && (<span class="handicap-allowance long">({allowance} handicap allowance)</span>)}
+                                            </li>
+                                            {gf.birdieBonus && (<li class="bonus birdie">{gf.birdieBonus} points for each Birdie</li>)}
+                                            {gf.eagleBonus && (<li class="bonus eagle">{gf.eagleBonus} points for each Eagle</li>)}
+                                        </ul>
                                     </div>
                                 )
                             })}
@@ -67,15 +65,32 @@ const linkToCourse = (course: Course): string => {
 		font-size: 20px;
 	}
 
-    ul {
-        list-style-type: "+  ";
-        margin-block-start: auto;
-        margin-block-end: auto;
+    .dot {
+        height: 12px;
+        width: 12px;
+        border-radius: 50%;
+        display: inline-block;
     }
 
-    .round .course .color {
+    .game-formats ul {
+        margin-block-start: auto;
+        margin-block-end: auto;
+        padding-inline-start: 20px;
+    }
+
+    .game-formats ul li {
+        padding-inline-start: 0px;
+    }
+
+    .game-formats ul li.bonus {
+        list-style-type: "+  ";
+        margin-inline-start: 20px;
+    }
+
+    .round .course .dot {
         margin-left: 16px;
         margin-right: 4px;
+        margin-top: -2px;
     }
 
     .round .game-format { font-size: 0.9em; }
