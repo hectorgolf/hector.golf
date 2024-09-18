@@ -45,8 +45,11 @@
                 "gameFormats": [
                     {
                         "format": "Stableford NET",
-                        "handicapAllowance": 1.0,
-                        "competition": ["hector", "victor"]
+                        "handicapAllowance": 1,
+                        "competition": [
+                            "hector",
+                            "victor"
+                        ]
                     },
                     {
                         "format": "Stroke Play SCR",
@@ -62,13 +65,17 @@
                 "gameFormats": [
                     {
                         "format": "Stroke Play NET",
-                        "handicapAllowance": 1.0,
-                        "competition": ["hector"]
+                        "handicapAllowance": 1,
+                        "competition": [
+                            "hector"
+                        ]
                     },
                     {
                         "format": "Stableford NET",
-                        "handicapAllowance": 1.0,
-                        "competition": ["victor"]
+                        "handicapAllowance": 1,
+                        "competition": [
+                            "victor"
+                        ]
                     }
                 ]
             },
@@ -80,13 +87,17 @@
                 "gameFormats": [
                     {
                         "format": "Better Ball Stroke Play NET",
-                        "handicapAllowance": 1.0,
-                        "competition": ["hector"]
+                        "handicapAllowance": 1,
+                        "competition": [
+                            "hector"
+                        ]
                     },
                     {
                         "format": "Stableford NET",
-                        "handicapAllowance": 1.0,
-                        "competition": ["victor"]
+                        "handicapAllowance": 1,
+                        "competition": [
+                            "victor"
+                        ]
                     }
                 ]
             },
@@ -98,13 +109,17 @@
                 "gameFormats": [
                     {
                         "format": "Better Ball Stroke Play NET",
-                        "handicapAllowance": 1.0,
-                        "competition": ["hector"]
+                        "handicapAllowance": 1,
+                        "competition": [
+                            "hector"
+                        ]
                     },
                     {
                         "format": "Stableford NET",
-                        "handicapAllowance": 1.0,
-                        "competition": ["victor"]
+                        "handicapAllowance": 1,
+                        "competition": [
+                            "victor"
+                        ]
                     }
                 ]
             },
@@ -117,7 +132,9 @@
                     {
                         "format": "Scramble Stroke Play NET",
                         "handicapAllowance": 0.2,
-                        "competition": ["hector"]
+                        "competition": [
+                            "hector"
+                        ]
                     }
                 ]
             },
@@ -130,9 +147,11 @@
                     {
                         "format": "Scramble Stroke Play NET",
                         "handicapAllowance": 0.2,
-                        "competition": ["hector"],
+                        "competition": [
+                            "hector"
+                        ],
                         "birdieBonus": 0.5,
-                        "eagleBonus": 1.0
+                        "eagleBonus": 1
                     }
                 ]
             }
@@ -145,12 +164,12 @@
                     "handicap": -0.8
                 },
                 {
-                    "id": "ofri-porat",
-                    "handicap": 4.4
-                },
-                {
                     "id": "sami-heikkinen",
                     "handicap": 4.7
+                },
+                {
+                    "id": "ofri-porat",
+                    "handicap": 4.8
                 },
                 {
                     "id": "juuso-pihamaa",
