@@ -169,7 +169,7 @@
                 },
                 {
                     "id": "ofri-porat",
-                    "handicap": 4.8
+                    "handicap": 5.3
                 },
                 {
                     "id": "juuso-pihamaa",
@@ -185,7 +185,7 @@
                 },
                 {
                     "id": "jussi-allonen",
-                    "handicap": 8.3
+                    "handicap": 8.5
                 },
                 {
                     "id": "miso-lith",
@@ -196,15 +196,15 @@
                     "handicap": 8.7
                 },
                 {
-                    "id": "mikko-oesch",
-                    "handicap": 8.9
-                },
-                {
                     "id": "eero-halmetoja",
                     "handicap": 9.1
                 },
                 {
                     "id": "olli-varis",
+                    "handicap": 9.2
+                },
+                {
+                    "id": "mikko-oesch",
                     "handicap": 9.3
                 }
             ],
@@ -223,7 +223,7 @@
                 },
                 {
                     "id": "olli-andersson",
-                    "handicap": 11.9
+                    "handicap": 11.8
                 },
                 {
                     "id": "toni-marttila",

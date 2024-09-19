@@ -1603,5 +1603,30 @@
     "date": "2024-09-18",
     "player": "panu-liira",
     "handicap": 18.8
+  },
+  {
+    "date": "2024-09-19",
+    "player": "jussi-allonen",
+    "handicap": 8.5
+  },
+  {
+    "date": "2024-09-19",
+    "player": "mikko-oesch",
+    "handicap": 9.3
+  },
+  {
+    "date": "2024-09-19",
+    "player": "ofri-porat",
+    "handicap": 5.3
+  },
+  {
+    "date": "2024-09-19",
+    "player": "olli-andersson",
+    "handicap": 11.8
+  },
+  {
+    "date": "2024-09-19",
+    "player": "olli-varis",
+    "handicap": 9.2
   }
 ]
