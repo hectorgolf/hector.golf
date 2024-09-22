@@ -1,7 +1,5 @@
 ---
 
-import CookieConsent from '../components/cookie-consent/CookieConsent.astro';
-
 interface Props {
 	title: string;
 }
@@ -42,7 +40,6 @@ const { title } = Astro.props;
 		<!-- End Google Tag Manager (noscript) -->
 
 		<slot />
-		<CookieConsent />
 	</body>
 </html>
 <style is:global>
