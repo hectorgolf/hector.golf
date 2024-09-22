@@ -3,6 +3,8 @@ const { MD5 } = cryptojs
 import moize from 'moize'
 import { ms } from 'itty-time'
 
+import { type HandicapSource } from './handicap-source-api'
+
 
 const standardRequestHeaders = {
     'Content-Type': 'application/json',
@@ -56,6 +58,13 @@ const fetchClubs = moize.maxAge(ms('1 hour'))(async (): Promise<Array<TeetimeClu
     }
 })
 
+const sanitizePassword = (obj: any): any => {
+    if ('password' in obj) {
+        return { ...obj, password: obj.password.replace(/./g, '*') }
+    }
+    return obj
+}
+
 const login = async (clubNumberOrAbbreviation: string, username: string, password: string): Promise<string> => {
     const clubNumber = await resolveClubNumber(clubNumberOrAbbreviation)
     const payload = {
@@ -64,7 +73,7 @@ const login = async (clubNumberOrAbbreviation: string, username: string, passwor
         password: MD5(password).toString(),
         authData: { trustCode: null }
     }
-    console.log(`Logging in with ${JSON.stringify(payload)}`)
+    console.log(`Logging in with ${JSON.stringify(sanitizePassword({ ...payload, password: password }))}`)
     const response = await fetch('https://www.teetime.fi/backend/session', {
         method: 'POST',
         headers: standardRequestHeaders,
@@ -135,8 +144,19 @@ console.log(`teetimeClubNumber: ${teetimeClubNumber}`)
 console.log(`teetimeUsername:   ${teetimeUsername}`)
 console.log(`teetimePassword:   ${teetimePassword?.replace(/./g, '*')}`)
 
+export type TeetimeSession = HandicapSource
 
-export const withLogin = async (callback: (token: string) => Promise<void>): Promise<void> => {
+export const createTeetimeSession = async (): Promise<TeetimeSession> => {
+    const token = await login(teetimeClubNumber, teetimeUsername, teetimePassword)
+    return {
+        name: 'Teetime',
+        getPlayerHandicap: async (firstName: string, lastName: string, clubNameOrAbbreviation: string): Promise<number|undefined> => {
+            return await getTeetimePlayerHandicap(firstName, lastName, clubNameOrAbbreviation, token)
+        }
+    }
+}
+
+export const withTeetimeLogin = async (callback: (token: string) => Promise<void>): Promise<void> => {
     return new Promise((resolve, reject) => {
         login(teetimeClubNumber, teetimeUsername, teetimePassword).then(token => {
             callback(token).then(resolve).catch(reject)
@@ -144,7 +164,7 @@ export const withLogin = async (callback: (token: string) => Promise<void>): Pro
     })
 }
 
-export const getPlayerHandicap = async (firstName: string, lastName: string, clubNameOrAbbreviation: string, providedToken?: string): Promise<number|undefined> => {
+export const getTeetimePlayerHandicap = async (firstName: string, lastName: string, clubNameOrAbbreviation: string, providedToken?: string): Promise<number|undefined> => {
     if (clubNameOrAbbreviation) {
         if (!!teetimeClubNumber && !!teetimeUsername && !!teetimePassword) {
             const clubNumber = await resolveClubNumber(clubNameOrAbbreviation)

@@ -2,10 +2,13 @@ import { readFileSync, writeFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
-import { getPlayerHandicap, withLogin } from '../code/handicaps/teetime-api.ts'
+import type { HandicapSource } from '../code/handicaps/handicap-source-api.ts'
+import { createTeetimeSession } from '../code/handicaps/teetime-api.ts'
+import { createWisegolfSession } from '../code/handicaps/wisegolf-api.ts'
 
 import playersData from '../data/players.json'
 import { isoDate, isoDateToday, parseEventDateRange } from '../code/dates.ts'
+
 
 const getPlayerById = (id: string, handicapHistory: Array<HandicapHistoryEntry>): Player|undefined => {
     let record = playersData.find((record) => record.id === id) as Player
@@ -92,13 +95,29 @@ const persistHandicapHistoryToDisk = (players: Player[], handicapHistory: Array<
     }
 }
 
-const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Array<HandicapHistoryEntry>, token: string): Promise<Player[]> => {
+const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Array<HandicapHistoryEntry>, handicapSources: Array<HandicapSource>): Promise<Player[]> => {
     const playerListPromises = players.map((player: any) => {
         const playerObject = getPlayerById(player.id, handicapHistory)
         if (playerObject && playerObject.club) {
             const oldHandicap = playerObject.handicap  // Let's save the old handicap
-            const promiseForNewHandicap = getPlayerHandicap(playerObject.name.first, playerObject.name.last, playerObject.club, token)
-            return promiseForNewHandicap.then((newHandicap) => {
+
+            const fetchFromSources = async (sources: Array<HandicapSource>): Promise<number|undefined> => {
+                const source = sources.pop()
+                if (!source) {
+                    return Promise.reject(`No HandicapSources remaining to try :(`)
+                }
+                return source.getPlayerHandicap(playerObject.name.first, playerObject.name.last, playerObject.club!).catch(failure => {
+                    console.error(`Failed to fetch handicap for ${playerObject.name.first} ${playerObject.name.last} from ${source.name}: ${failure.message}`)
+                    if (sources.length > 0) {
+                        return fetchFromSources(sources)
+                    } else {
+                        return Promise.reject(failure)
+                    }
+                })
+            }
+
+            const sources = handicapSources.toReversed()
+            return fetchFromSources(sources).then(newHandicap => {
                 if (newHandicap !== undefined && newHandicap !== oldHandicap) {
                     playerObject.handicap = newHandicap
                     playerObject.handicapChanged = true
@@ -106,7 +125,7 @@ const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Arr
                 }
                 return Promise.resolve(playerObject)
             }).catch((failure: Error) => {
-                console.error(`Failed to fetch handicap for ${playerObject.name.first} ${playerObject.name.last}: ${failure.message}`)
+                console.error(`Failed to fetch handicap for ${playerObject.name.first} ${playerObject.name.last} from any of our sources: ${failure.message}`)
                 return Promise.resolve(playerObject)
             })
         } else {
@@ -119,12 +138,11 @@ const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Arr
 const updateHandicapsForAllPlayers = async () => {
     const oldPlayers = readJsonFile(pathToPlayersJson, [])
     console.log(`Attempting to update handicap data for ${oldPlayers.length} players...`)
-    await withLogin(async (token: string) => {
-        console.log(`Logged in with token: ${token}`)
-        const handicapHistory: Array<HandicapHistoryEntry> = readJsonFile(pathToHandicapHistoryJson, [])
-        const updatedPlayers = await fetchUpdatedPlayerRecords(oldPlayers, handicapHistory, token)
-        persistHandicapHistoryToDisk(updatedPlayers, handicapHistory)
-    })
+    const teetime = await createTeetimeSession()
+    const wisegolf = await createWisegolfSession()
+    const handicapHistory: Array<HandicapHistoryEntry> = readJsonFile(pathToHandicapHistoryJson, [])
+    const updatedPlayers = await fetchUpdatedPlayerRecords(oldPlayers, handicapHistory, [teetime, wisegolf])
+    persistHandicapHistoryToDisk(updatedPlayers, handicapHistory)
 }
 
 type HectorEvent = {
