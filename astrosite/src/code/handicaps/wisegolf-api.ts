@@ -150,18 +150,21 @@ const fetchPlayer = moize.maxAge(ms('10 minutes'))(async (token: string, clubNum
     if (response.ok) {
         try {
             const data = await response.json()
-            if (data.length === 0) {
+            if (data?.rows?.length === 0) {
                 return undefined
             }
-            if (data.length > 1) {
+            if (data.rows.length > 1) {
                 console.warn(`Expected exactly one player, but found ${data.length} players in ${clubNumber} by name of ${firstName} ${lastName}: ${JSON.stringify(data, null, 2)}`)
             }
-            const player = data[0]
-            if (!player) {
-                console.error(`WTF? Response from ${url} was ${JSON.stringify(data, null, 2)}`)
-            }
+            const player = data.rows[0]
             const club = await fetchClub(player.clubId, token)
-            return { ...player, club: club, holes: undefined, handicap: roundToTenths(player.handicap) || 0 } as WisegolfPlayer
+            return {
+                firstName: player.firstName,
+                lastName: player.familyName,
+                club: club,
+                clubMemberId: player.memberNO,
+                handicap: roundToTenths(player.handicapActive) || 0
+            } as WisegolfPlayer
         } catch (err: any) {
             console.error(`Failed to fetch player ${firstName} ${lastName} from ${JSON.stringify(clubNumber)} at ${url}: ${err.message || err}`, err)
             return undefined
