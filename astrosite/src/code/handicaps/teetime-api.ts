@@ -113,8 +113,10 @@ const fetchPlayer = moize.maxAge(ms('10 minutes'))(async (token: string, clubNum
             return undefined
         }
     } else {
-        const statusText = (response.statusText && response.statusText !== `${response.status}`) ? ` ${response.statusText}` : ''
-        console.warn(`Failed to fetch player at ${url} (HTTP ${response.status + statusText})`)
+        if (response.status !== 404) {
+            const statusText = (response.statusText && response.statusText !== `${response.status}`) ? ` ${response.statusText}` : ''
+            console.warn(`Failed to fetch player at ${url} (HTTP ${response.status + statusText})`)
+        }
         return undefined
     }
 })
@@ -148,6 +150,7 @@ export type TeetimeSession = HandicapSource
 
 export const createTeetimeSession = async (): Promise<TeetimeSession> => {
     const token = await login(teetimeClubNumber, teetimeUsername, teetimePassword)
+    const _ = await fetchClubs() // pre-fetch clubs
     return {
         name: 'Teetime',
         getPlayerHandicap: async (firstName: string, lastName: string, clubNameOrAbbreviation: string): Promise<number|undefined> => {

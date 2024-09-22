@@ -101,6 +101,7 @@ const fetchClubs = moize.maxAge(ms('1 hour'))(async (token: string): Promise<Arr
 
 export const createWisegolfSession = async (): Promise<WisegolfSession> => {
     const token = await login(wisegolfUsername, wisegolfPassword)
+    const _ = await fetchClubs(token) // pre-fetch clubs
     return {
         name: 'WiseGolf',
         getPlayerHandicap: async (firstName: string, lastName: string, clubNameOrAbbreviation: string): Promise<number|undefined> => {

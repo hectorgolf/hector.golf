@@ -133,8 +133,8 @@ const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Arr
                     console.log(`Handicap for ${playerObject.name.first} ${playerObject.name.last} changed from ${oldHandicap} to ${newHandicap}`)
                 }
                 return Promise.resolve(playerObject)
-            }).catch((failure: Error) => {
-                console.error(`Failed to fetch handicap for ${playerObject.name.first} ${playerObject.name.last} from any of our sources:`, failure)
+            }).catch((_: Error) => {
+                console.error(`Failed to fetch handicap for ${playerObject.name.first} ${playerObject.name.last} from any of our sources`)
                 return Promise.resolve(playerObject)
             })
         } else {
@@ -147,10 +147,9 @@ const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Arr
 const updateHandicapsForAllPlayers = async () => {
     const oldPlayers = readJsonFile(pathToPlayersJson, [])
     console.log(`Attempting to update handicap data for ${oldPlayers.length} players...`)
-    const teetime = await createTeetimeSession()
-    const wisegolf = await createWisegolfSession()
+    const sources = await Promise.all([createTeetimeSession(), createWisegolfSession()])
     const handicapHistory: Array<HandicapHistoryEntry> = readJsonFile(pathToHandicapHistoryJson, [])
-    const updatedPlayers = await fetchUpdatedPlayerRecords(oldPlayers, handicapHistory, [teetime, wisegolf])
+    const updatedPlayers = await fetchUpdatedPlayerRecords(oldPlayers, handicapHistory, sources)
     persistHandicapHistoryToDisk(updatedPlayers, handicapHistory)
 }
 
