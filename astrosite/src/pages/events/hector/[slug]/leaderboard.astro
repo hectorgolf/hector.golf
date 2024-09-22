@@ -164,6 +164,12 @@ const normalizeDiff = (diff: string): string => {
 
         {updatedAt && (<div class="updated-at">Updated:&nbsp;&nbsp;{updatedAt?.toISOString()}</div>)}
 
+        <script is:inline>
+            // Automatically refresh the page every 5 minutes
+            setInterval(() => {
+                location.href = location.href.split('?')[0] + '?' + Date.now();
+            }, 5 * 60 * 1000);
+        </script>
     </main>
 </Layout>
 
