@@ -123,7 +123,7 @@ const login = async (username: string, password: string): Promise<string> => {
         appId: "affbfa03",
         version: "2.7.0"
     }
-    console.log(`Logging in with ${JSON.stringify(sanitizePassword(payload))}`)
+    console.log(`Logging in to WiseGolf with ${JSON.stringify(sanitizePassword(payload))}`)
     const response = await fetch('https://api.wisegolfclub.fi/api/1.0/auth', {
         method: 'POST',
         headers: standardRequestHeaders,

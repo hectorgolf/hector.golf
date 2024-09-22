@@ -106,14 +106,22 @@ const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Arr
                 if (!source) {
                     return Promise.reject(`No HandicapSources remaining to try :(`)
                 }
-                return source.getPlayerHandicap(playerObject.name.first, playerObject.name.last, playerObject.club!).catch(failure => {
-                    console.error(`Failed to fetch handicap for ${playerObject.name.first} ${playerObject.name.last} from ${source.name}: ${failure.message}`)
-                    if (sources.length > 0) {
-                        return fetchFromSources(sources)
-                    } else {
-                        return Promise.reject(failure)
-                    }
-                })
+                return source.getPlayerHandicap(playerObject.name.first, playerObject.name.last, playerObject.club!)
+                    .then(handicap => {
+                        if (handicap !== undefined) {
+                            return Promise.resolve(handicap)
+                        } else {
+                            return Promise.reject(`No handicap found for ${playerObject.name.first} ${playerObject.name.last} from ${source.name}`)
+                        }
+                    })
+                    .catch(failure => {
+                        console.error(`Failed to fetch handicap for ${playerObject.name.first} ${playerObject.name.last} from ${source.name}: ${failure.message}`)
+                        if (sources.length > 0) {
+                            return fetchFromSources(sources)
+                        } else {
+                            return Promise.reject(failure)
+                        }
+                    })
             }
 
             const sources = handicapSources.toReversed()

@@ -73,7 +73,7 @@ const login = async (clubNumberOrAbbreviation: string, username: string, passwor
         password: MD5(password).toString(),
         authData: { trustCode: null }
     }
-    console.log(`Logging in with ${JSON.stringify(sanitizePassword({ ...payload, password: password }))}`)
+    console.log(`Logging in to Teetime.fi with ${JSON.stringify(sanitizePassword({ ...payload, password: password }))}`)
     const response = await fetch('https://www.teetime.fi/backend/session', {
         method: 'POST',
         headers: standardRequestHeaders,
@@ -156,15 +156,7 @@ export const createTeetimeSession = async (): Promise<TeetimeSession> => {
     }
 }
 
-export const withTeetimeLogin = async (callback: (token: string) => Promise<void>): Promise<void> => {
-    return new Promise((resolve, reject) => {
-        login(teetimeClubNumber, teetimeUsername, teetimePassword).then(token => {
-            callback(token).then(resolve).catch(reject)
-        })
-    })
-}
-
-export const getTeetimePlayerHandicap = async (firstName: string, lastName: string, clubNameOrAbbreviation: string, providedToken?: string): Promise<number|undefined> => {
+const getTeetimePlayerHandicap = async (firstName: string, lastName: string, clubNameOrAbbreviation: string, providedToken?: string): Promise<number|undefined> => {
     if (clubNameOrAbbreviation) {
         if (!!teetimeClubNumber && !!teetimeUsername && !!teetimePassword) {
             const clubNumber = await resolveClubNumber(clubNameOrAbbreviation)
