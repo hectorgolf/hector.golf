@@ -1633,5 +1633,35 @@
     "date": "2024-09-20",
     "player": "mikko-oesch",
     "handicap": 9.5
+  },
+  {
+    "date": "2024-09-22",
+    "player": "jussi-allonen",
+    "handicap": 9.5
+  },
+  {
+    "date": "2024-09-22",
+    "player": "marcus-mattila",
+    "handicap": 11.2
+  },
+  {
+    "date": "2024-09-22",
+    "player": "olli-andersson",
+    "handicap": 12.3
+  },
+  {
+    "date": "2024-09-22",
+    "player": "pasi-halmetoja",
+    "handicap": 8.5
+  },
+  {
+    "date": "2024-09-22",
+    "player": "simo-liukkonen",
+    "handicap": 6.1
+  },
+  {
+    "date": "2024-09-22",
+    "player": "toni-marttila",
+    "handicap": 11.9
   }
 ]
