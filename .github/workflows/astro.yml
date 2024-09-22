@@ -10,7 +10,7 @@ on:
     branches: ["main"]      # Only run when the push is to the "main" branch
     paths:
       - 'astrosite/**/*'    # Only run when the push includes changes to the Astro website
-  
+
   # Runs at 3:30am and 12:30 (UTC) every day, hopefully after
   # the 3:00/12:00 data update has been triggered and finished:
   schedule:
@@ -86,6 +86,8 @@ jobs:
           TEETIME_CLUB_NUMBER: 0134   # Tapiola Golf
           TEETIME_USERNAME: 2762
           TEETIME_PASSWORD: ${{ secrets.TEETIME_PASSWORD }}
+          WISEGOLF_USERNAME: lasse.koskela@gmail.com
+          WISEGOLF_PASSWORD: ${{ secrets.WISEGOLF_PASSWORD }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
