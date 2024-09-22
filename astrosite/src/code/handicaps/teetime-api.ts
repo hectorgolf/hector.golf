@@ -109,7 +109,7 @@ const fetchPlayer = moize.maxAge(ms('10 minutes'))(async (token: string, clubNum
             const club = await fetchClub(player.club.number)
             return { ...player, club: club, holes: undefined, handicap: roundToTenths(player.handicap) || 0 } as TeetimePlayer
         } catch (err: any) {
-            console.error(`Failed to fetch player ${firstName} ${lastName} from ${clubNumber} at ${url}: ${err.message || err}`, err)
+            console.error(`Failed to fetch player ${firstName} ${lastName} from ${JSON.stringify(clubNumber)} at ${url}: ${err.message || err}`, err)
             return undefined
         }
     } else {
