@@ -60,7 +60,7 @@ jobs:
         working-directory: ${{ env.BUILD_PATH }}
       - name: Run script
         run: |
-          npx tsx src/scripts/update-leaderboards.ts
+          npx tsx src/workflows/update-leaderboards.ts
         working-directory: ${{ env.BUILD_PATH }}
         env:
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
