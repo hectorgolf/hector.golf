@@ -34,7 +34,7 @@ const prevHoleHref = `${courseHref}/holes/${holeNumber == 1 ? numberOfHoles : ho
 const nextHoleHref = `${courseHref}/holes/${holeNumber == numberOfHoles ? 1 : holeNumber + 1}`;
 ---
 
-<Layout title={course.name}>
+<Layout title={`${course.name} #${holeNumber}`}>
     <main>
         <div class="breadcrumbs">
             <Breadcrumb title="Home" href="/" />
