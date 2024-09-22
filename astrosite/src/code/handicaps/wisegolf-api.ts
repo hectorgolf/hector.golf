@@ -84,8 +84,7 @@ const fetchClubs = moize.maxAge(ms('1 hour'))(async (token: string): Promise<Arr
     })
     if (response.ok) {
         const data = await response.json()
-        console.log(`Response from ${url}: ${JSON.stringify(data, null, 2)}`)
-        const clubs =  data
+        const clubs =  (data.rows || [])
             .map((club:any) => ({
                     name: club.name,
                     number: club.clubId,
