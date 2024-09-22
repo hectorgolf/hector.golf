@@ -250,12 +250,12 @@
                     "handicap": 14.8
                 },
                 {
-                    "id": "pekka-saijonmaa",
-                    "handicap": 18.3
-                },
-                {
                     "id": "janne-valtakari",
                     "handicap": 18.8
+                },
+                {
+                    "id": "pekka-saijonmaa",
+                    "handicap": 19.1
                 }
             ]
         ]
