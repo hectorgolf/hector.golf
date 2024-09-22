@@ -157,6 +157,9 @@ const fetchPlayer = moize.maxAge(ms('10 minutes'))(async (token: string, clubNum
                 console.warn(`Expected exactly one player, but found ${data.length} players in ${clubNumber} by name of ${firstName} ${lastName}: ${JSON.stringify(data, null, 2)}`)
             }
             const player = data[0]
+            if (!player) {
+                console.error(`WTF? Response from ${url} was ${JSON.stringify(data, null, 2)}`)
+            }
             const club = await fetchClub(player.clubId, token)
             return { ...player, club: club, holes: undefined, handicap: roundToTenths(player.handicap) || 0 } as WisegolfPlayer
         } catch (err: any) {
