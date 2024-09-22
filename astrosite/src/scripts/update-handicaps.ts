@@ -109,13 +109,14 @@ const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Arr
                 return source.getPlayerHandicap(playerObject.name.first, playerObject.name.last, playerObject.club!)
                     .then(handicap => {
                         if (handicap !== undefined) {
+                            console.log(`Handicap found for ${playerObject.name.first} ${playerObject.name.last} from ${source.name}`)
                             return Promise.resolve(handicap)
                         } else {
                             return Promise.reject(`No handicap found for ${playerObject.name.first} ${playerObject.name.last} from ${source.name}`)
                         }
                     })
                     .catch(failure => {
-                        console.error(`Failed to fetch handicap for ${playerObject.name.first} ${playerObject.name.last} from ${source.name}: ${failure.message}`)
+                        if (failure.message) console.error(`Failed to fetch handicap for ${playerObject.name.first} ${playerObject.name.last} from ${source.name}: ${failure.message}`)
                         if (sources.length > 0) {
                             return fetchFromSources(sources)
                         } else {
@@ -133,7 +134,7 @@ const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Arr
                 }
                 return Promise.resolve(playerObject)
             }).catch((failure: Error) => {
-                console.error(`Failed to fetch handicap for ${playerObject.name.first} ${playerObject.name.last} from any of our sources: ${failure.message}`)
+                console.error(`Failed to fetch handicap for ${playerObject.name.first} ${playerObject.name.last} from any of our sources:`, failure)
                 return Promise.resolve(playerObject)
             })
         } else {
