@@ -66,7 +66,7 @@ jobs:
           TEETIME_CLUB_NUMBER: 0134   # Tapiola Golf
           TEETIME_USERNAME: 2762
           TEETIME_PASSWORD: ${{ secrets.TEETIME_PASSWORD }}
-          WISEGOLF_USERNAME: ${{ env.WISEGOLF_USERNAME }}
+          WISEGOLF_USERNAME: lasse.koskela@gmail.com
           WISEGOLF_PASSWORD: ${{ secrets.WISEGOLF_PASSWORD }}
       - name: Commit changes
         run: |
