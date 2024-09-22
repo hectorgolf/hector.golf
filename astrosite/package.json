@@ -30,7 +30,8 @@
     "moize": "^6.1.6",
     "octokit": "^4.0.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "vanilla-cookieconsent": "^3.0.1"
   },
   "devDependencies": {
     "@types/crypto-js": "^4.2.2",
