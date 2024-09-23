@@ -1683,5 +1683,30 @@
     "date": "2024-09-22",
     "player": "tomas-danska",
     "handicap": 36
+  },
+  {
+    "date": "2024-09-23",
+    "player": "marcus-mattila",
+    "handicap": 11.4
+  },
+  {
+    "date": "2024-09-23",
+    "player": "martin-svedholm",
+    "handicap": 10
+  },
+  {
+    "date": "2024-09-23",
+    "player": "ofri-porat",
+    "handicap": 5.6
+  },
+  {
+    "date": "2024-09-23",
+    "player": "pasi-halmetoja",
+    "handicap": 8.3
+  },
+  {
+    "date": "2024-09-23",
+    "player": "simo-liukkonen",
+    "handicap": 6.3
   }
 ]
