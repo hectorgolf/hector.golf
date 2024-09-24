@@ -5,9 +5,10 @@ import type { Course } from '../../schemas/courses'
 
 interface Props {
 	event: HectorEvent;
+    allThrough: number;
 }
 
-let { event } = Astro.props;
+let { event, allThrough } = Astro.props;
 event = event as HectorEvent;
 
 const linkToCourse = (course: Course): string => {
@@ -19,39 +20,46 @@ const linkToCourse = (course: Course): string => {
     {(event.rounds && event.rounds.length > 0) && (
         <div class="rounds">
             <h2>Rounds</h2>
-            {event.rounds.map((round) => {
+            {event.rounds.map((round, index) => {
                 const course = getCourseById(round.course)
                 if (!course) return null
                 const tee = course.course?.tees?.find(t => t.name.toLowerCase() === round.tee.toLowerCase())
+                const isCompleted = index < allThrough
+                const isNext = index === allThrough
+                const roundClass = isCompleted ? 'completed' : (isNext ? 'next' : 'upcoming')
                 return (
-                    <div class="round">
-                        <h3>Day {round.day}, Round {round.round}</h3>
-                        <div class="course">
-                            <a href={linkToCourse(course)}>{course.name}</a>
-                            {tee && (
-                                <>
-                                    <span class="dot" style={`background-color: ${tee.color}; border: 1pt solid white;`}></span>
-                                    <span class="name">{tee.name}</span>
-                                </>
-                            )}
-                        </div>
-                        <div class="game-formats">
-                            {round.gameFormats.map(gf => {
-                                const allowance = gf.handicapAllowance ? `${Math.round(gf.handicapAllowance * 100)}%` : ''
-                                return (
-                                    <div class="game-format">
-                                        <ul class="game-format-specification">
-                                            <li>
-                                                <span class="name">{gf.format}</span>
-                                                {allowance && (<span class="handicap-allowance short">({allowance} HCP)</span>)}
-                                                {allowance && (<span class="handicap-allowance long">({allowance} handicap allowance)</span>)}
-                                            </li>
-                                            {gf.birdieBonus && (<li class="bonus birdie">{gf.birdieBonus} points for each Birdie</li>)}
-                                            {gf.eagleBonus && (<li class="bonus eagle">{gf.eagleBonus} points for each Eagle</li>)}
-                                        </ul>
-                                    </div>
-                                )
-                            })}
+                    <div class={`round ${roundClass}`.trim()}>
+                        <div class="highlight"></div>
+                        <div class="padding"></div>
+                        <div class="content">
+                            <h3>Day {round.day}, Round {round.round}</h3>
+                            <div class="course">
+                                <a href={linkToCourse(course)}>{course.name}</a>
+                                {tee && (
+                                    <>
+                                        <span class="dot" style={`background-color: ${tee.color}; border: 1pt solid white;`}></span>
+                                        <span class="name">{tee.name}</span>
+                                    </>
+                                )}
+                            </div>
+                            <div class="game-formats">
+                                {round.gameFormats.map(gf => {
+                                    const allowance = gf.handicapAllowance ? `${Math.round(gf.handicapAllowance * 100)}%` : ''
+                                    return (
+                                        <div class="game-format">
+                                            <ul class="game-format-specification">
+                                                <li>
+                                                    <span class="name">{gf.format}</span>
+                                                    {allowance && (<span class="handicap-allowance short">({allowance} HCP)</span>)}
+                                                    {allowance && (<span class="handicap-allowance long">({allowance} handicap allowance)</span>)}
+                                                </li>
+                                                {gf.birdieBonus && (<li class="bonus birdie">{gf.birdieBonus} points for each Birdie</li>)}
+                                                {gf.eagleBonus && (<li class="bonus eagle">{gf.eagleBonus} points for each Eagle</li>)}
+                                            </ul>
+                                        </div>
+                                    )
+                                })}
+                            </div>
                         </div>
                     </div>
                 )
@@ -87,6 +95,47 @@ const linkToCourse = (course: Course): string => {
         margin-inline-start: 20px;
     }
 
+
+    .round {
+        display: grid;
+        grid-template-columns: [highlighter] 4px [padding] 8px [content] 100%;
+        margin-top: 10px;
+    }
+
+    .round h3 {
+        margin-top: 8px;
+        margin-bottom: 8px;
+    }
+
+    .round .content,
+    .round .highlight {
+        display: inline-block;
+    }
+
+    .round .content { padding-bottom: 10px; }
+
+    .round.next .highlight {
+        background: linear-gradient(rgba(var(--accent-light), 66%), rgba(var(--accent-dark), 33%));
+    }
+
+    .round.upcoming .highlight {
+        background: linear-gradient(rgba(var(--accent-light), 10%), rgba(var(--accent-dark), 66%));
+    }
+
+    .round.next {
+        background: linear-gradient(rgba(var(--accent-dark), 66%), rgba(var(--accent-dark), 33%));
+    }
+
+    .round.completed,
+    .round.completed a {
+        color: grey;
+    }
+
+    .round.upcoming,
+    .round.upcoming a {
+        color: lightgrey;
+    }
+
     .round .course .dot {
         margin-left: 16px;
         margin-right: 4px;
@@ -95,7 +144,7 @@ const linkToCourse = (course: Course): string => {
 
     .round .game-format { font-size: 0.9em; }
     .round .game-format .handicap-allowance {
-        color: #bbb;
+        opacity: 0.6;
         margin-left: 8px;
     }
 

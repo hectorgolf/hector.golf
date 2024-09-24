@@ -68,6 +68,10 @@ if (victorWinners.length === 0 && leaderboards.victor && leaderboards.victor.len
     }
 }
 
+const allThrough = Math.min(...(leaderboards.hector || [])
+    .map(entry => entry.through)
+    .map(through => parseInt(through.split('/')[0] || '0')))
+
 ---
 <Layout title={event.name}>
     <main>
@@ -200,7 +204,7 @@ if (victorWinners.length === 0 && leaderboards.victor && leaderboards.victor.len
             </div>
         )}
 
-        <RoundsList event={event} />
+        <RoundsList event={event} allThrough={allThrough} />
     </main>
 </Layout>
 

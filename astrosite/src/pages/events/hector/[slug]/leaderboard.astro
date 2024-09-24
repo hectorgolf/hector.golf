@@ -38,6 +38,10 @@ const hectorLeaderboard = leaderboards.hector
 const victorLeaderboard = leaderboards.victor
 const updatedAt = leaderboards.updatedAt ? new Date(leaderboards.updatedAt) : undefined
 
+const allThrough = Math.min(...(hectorLeaderboard || [])
+    .map(entry => entry.through)
+    .map(through => parseInt(through.split('/')[0] || '0')))
+
 const leaderboardPosition = (leaderboard: EnrichedLeaderboard, points: number, lowerIsBetter: boolean): string => {
     const numberOfBetterScores = leaderboard.filter(({ points: p }) => lowerIsBetter ? p < points : p > points).length
     const numberOfEqualScores = leaderboard.filter(({ points: p }) => p === points).length
@@ -48,11 +52,10 @@ const leaderboardPosition = (leaderboard: EnrichedLeaderboard, points: number, l
     }
 }
 
-const normalizeDiff = (diff: string): string => {
-    if (diff !== '' && !diff.includes('.')) {
-        return `${diff}.0`
-    }
-    return diff
+const normalizeDiff = (diff: string, prefix?: string): string => {
+    let value = (diff !== '' && !diff.includes('.')) ? `${diff}.0` : diff
+    if (diff === '') return diff
+    return `${prefix || ''}${value}`.trim()
 }
 
 ---
@@ -106,7 +109,7 @@ const normalizeDiff = (diff: string): string => {
                                         )}
                                     </td>
                                     <td class="points">{points}</td>
-                                    <td class="diff">{normalizeDiff(diff)}</td>
+                                    <td class="diff">{normalizeDiff(diff, '+')}</td>
                                     <td class="thru">{through}</td>
                                 </tr>
                             )
@@ -151,7 +154,7 @@ const normalizeDiff = (diff: string): string => {
                                         )}
                                     </td>
                                     <td class="points">{points}</td>
-                                    <td class="diff">{normalizeDiff(diff)}</td>
+                                    <td class="diff">{normalizeDiff(diff, '-')}</td>
                                     <td class="thru">{through}</td>
                                 </tr>
                             )
@@ -162,7 +165,7 @@ const normalizeDiff = (diff: string): string => {
             </div>
         )}
 
-        <RoundsList event={event} />
+        <RoundsList event={event} allThrough={allThrough} />
 
         {updatedAt && (<div class="updated-at">Updated:&nbsp;&nbsp;{updatedAt?.toISOString()}</div>)}
 
@@ -220,6 +223,10 @@ const normalizeDiff = (diff: string): string => {
         white-space: nowrap;
     }
 
+    .leaderboard table thead {
+        background: linear-gradient(rgba(var(--accent-dark), 66%), rgba(var(--accent-dark), 33%));
+    }
+
     .leaderboard table tr.first td {
         padding-top: 12px;
         padding-bottom: 4px;
@@ -228,6 +235,11 @@ const normalizeDiff = (diff: string): string => {
     .leaderboard table tr td {
         padding-top: 4px;
         padding-bottom: 4px;
+    }
+
+    .leaderboard table thead th.place,
+    .leaderboard table tbody td.place {
+        padding-left: 8px;
     }
 
     .leaderboard .pending {
@@ -273,10 +285,6 @@ const normalizeDiff = (diff: string): string => {
 
     .leaderboard tbody {
         vertical-align: top;
-    }
-
-    .leaderboard th {
-        background-color: #333333;
     }
 
     .leaderboard td, .leaderboard th {
