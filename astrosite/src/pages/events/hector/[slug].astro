@@ -149,19 +149,41 @@ if (victorWinners.length === 0 && leaderboards.victor && leaderboards.victor.len
                 <span class="buckets">
                     <div class="bucket">
                         <h3>Bucket 1</h3>
-                        <ul role="list">
-                            {bucket1.map(player => {
-                                return (<li><a class="name" href={`/players/${player.id}`}>{getPlayerName(player)}</a> <span class="handicap">({Number(player.handicap).toFixed(1)})</span></li>)
-                            })}
-                        </ul>
+                        <table>
+                            <tbody>
+                                {bucket1.map(player => {
+                                    return (
+                                        <tr>
+                                            <td class="name">
+                                                <a href={`/players/${player.id}`}>{getPlayerName(player)}</a>
+                                            </td>
+                                            <td class="handicap">
+                                                ({Number(player.handicap).toFixed(1)})
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
                     </div>
                     <div class="bucket">
                         <h3>Bucket 2</h3>
-                        <ul role="list">
-                            {bucket2.map(player => {
-                                return (<li><a class="name" href={`/players/${player.id}`}>{getPlayerName(player)}</a> <span class="handicap">({Number(player.handicap).toFixed(1)})</span></li>)
-                            })}
-                        </ul>
+                        <table>
+                            <tbody>
+                                {bucket2.map(player => {
+                                    return (
+                                        <tr>
+                                            <td class="name">
+                                                <a href={`/players/${player.id}`}>{getPlayerName(player)}</a>
+                                            </td>
+                                            <td class="handicap">
+                                                ({Number(player.handicap).toFixed(1)})
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
                     </div>
                 </span>
             </div>
@@ -304,40 +326,45 @@ if (victorWinners.length === 0 && leaderboards.victor && leaderboards.victor.len
         padding-right: 20px;
     }
 
-    @media only screen and (max-width: 500px) {
+    .field .buckets .bucket .name {
+        display: inline-block;
+        max-width: 140px;
+    }
+
+    .field .buckets { max-width: 560px; }
+    .field .buckets .bucket { font-size: 0.75em; width: 100%; max-width: 270px; }
+    .field .buckets .bucket td.name { width: 70%; }
+    .field .buckets .bucket td.handicap { width: 20%; }
+
+    @media only screen and (min-width: 380px) {
+        .field .buckets .bucket { font-size: 0.85em; }
+    }
+
+    @media only screen and (min-width: 450px) {
+        .field .buckets .bucket { font-size: 0.95em; }
+    }
+
+    /*
+    @media only screen and (min-width: 320px) {
+
         .field .buckets {
             display: grid;
-            /* grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); */
-            grid-template-columns: repeat(auto-fit, 150px);
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 2rem;
+            padding: 0;
+        }
+    }
+
+    @media only screen and (min-width: 360px) {
+
+    }
+    */
+
+    .field .buckets {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 2rem;
             padding: 0;
         }
 
-        .field .buckets .bucket .name {
-            display: inline-block;
-            width: 85px;
-        }
-        .field .buckets .bucket .handicap {
-            display: inline-block;
-            width: 48px;
-        }
-    }
-
-    @media only screen and (min-width: 501px) {
-        .field .buckets {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, 250px);
-            gap: 2rem;
-            padding: 0;
-        }
-
-        .field .buckets .bucket .name {
-            display: inline-block;
-            width: 120px;
-        }
-        .field .buckets .bucket .handicap {
-            display: inline-block;
-            width: 60px;
-        }
-    }
 </style>
