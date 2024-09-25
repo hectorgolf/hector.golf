@@ -16,6 +16,7 @@ if [ "$CHANGED_DATA_FILES" != "" ]; then
     done
     COMMIT_MESSAGE="$(printf "Github Action: $GITHUB_WORKFLOW\nGITHUB_EVENT_NAME: $GITHUB_EVENT_NAME\nGITHUB_RUN_NUMBER: $GITHUB_RUN_NUMBER\n")"
     git commit -m "$COMMIT_MESSAGE"
+    git pull -r
     git push
 else
     echo "No changes to data files detected.";
