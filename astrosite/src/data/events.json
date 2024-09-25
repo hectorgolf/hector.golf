@@ -258,7 +258,99 @@
                     "handicap": 19.1
                 }
             ]
-        ]
+        ],
+        "results": {
+            "teams": [
+                {
+                    "name": "Olli Varis + Jarkko Kailanto",
+                    "players": [
+                        "olli-varis",
+                        "jarkko-kailanto"
+                    ]
+                },
+                {
+                    "name": "Tommy Gulin + Lauri Paatela",
+                    "players": [
+                        "tommy-gulin",
+                        "lauri-paatela"
+                    ]
+                },
+                {
+                    "name": "Ofri Porat + Toni Marttila",
+                    "players": [
+                        "ofri-porat",
+                        "toni-marttila"
+                    ]
+                },
+                {
+                    "name": "Simo Liukkonen + Martin Svedholm",
+                    "players": [
+                        "simo-liukkonen",
+                        "martin-svedholm"
+                    ]
+                },
+                {
+                    "name": "Pekka Saijonmaa + Sami Heikkinen",
+                    "players": [
+                        "pekka-saijonmaa",
+                        "sami-heikkinen"
+                    ]
+                },
+                {
+                    "name": "Ossi Laukkanen + Olli Andersson",
+                    "players": [
+                        "ossi-laukkanen",
+                        "olli-andersson"
+                    ]
+                },
+                {
+                    "name": "Lassi Koto + Mikko Oesch",
+                    "players": [
+                        "lassi-koto",
+                        "mikko-oesch"
+                    ]
+                },
+                {
+                    "name": "Timo Lukumaa + Juuso Pihamaa",
+                    "players": [
+                        "timo-lukumaa",
+                        "juuso-pihamaa"
+                    ]
+                },
+                {
+                    "name": "Eero Halmetoja + Lasse Koskela",
+                    "players": [
+                        "eero-halmetoja",
+                        "lasse-koskela"
+                    ]
+                },
+                {
+                    "name": "Janne Valtakari + Miso Korkiakoski",
+                    "players": [
+                        "janne-valtakari",
+                        "miso-lith"
+                    ]
+                },
+                {
+                    "name": "Harri Vainio + Pasi Halmetoja",
+                    "players": [
+                        "harri-vainio",
+                        "pasi-halmetoja"
+                    ]
+                },
+                {
+                    "name": "Marcus Mattila + Jussi Allonen",
+                    "players": [
+                        "marcus-mattila",
+                        "jussi-allonen"
+                    ]
+                }
+            ],
+            "winners": {
+                "hector": [],
+                "victor": []
+            }
+        }
     },
     {
         "id": "HECTORMATCHPLAY2024",
