@@ -1718,5 +1718,35 @@
     "date": "2024-09-25",
     "player": "okko-pykalainen",
     "handicap": 13.5
+  },
+  {
+    "date": "2024-09-26",
+    "player": "janne-valtakari",
+    "handicap": 19.2
+  },
+  {
+    "date": "2024-09-26",
+    "player": "ofri-porat",
+    "handicap": 5.3
+  },
+  {
+    "date": "2024-09-26",
+    "player": "olli-varis",
+    "handicap": 8.6
+  },
+  {
+    "date": "2024-09-26",
+    "player": "simo-liukkonen",
+    "handicap": 5.9
+  },
+  {
+    "date": "2024-09-26",
+    "player": "timo-lukumaa",
+    "handicap": 12.7
+  },
+  {
+    "date": "2024-09-26",
+    "player": "toni-marttila",
+    "handicap": 11.7
   }
 ]
