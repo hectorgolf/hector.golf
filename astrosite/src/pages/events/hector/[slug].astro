@@ -72,7 +72,10 @@ const allThrough = Math.min(...(leaderboards.hector || [])
     .map(entry => entry.through)
     .map(through => parseInt(through.split('/')[0] || '0')))
 
+const fieldAndBucketsTitle = eventHasStarted(event) ? 'Field and buckets' : 'Field and Projected Buckets'
+
 ---
+
 <Layout title={event.name}>
     <main>
 		<div class="breadcrumbs">
@@ -149,7 +152,7 @@ const allThrough = Math.min(...(leaderboards.hector || [])
 
         {bucket1 && bucket2 && (
             <div class="field">
-                <h2>Field and Projected Buckets</h2>
+                <h2>{fieldAndBucketsTitle}</h2>
                 <span class="buckets">
                     <div class="bucket">
                         <h3>Bucket 1</h3>
