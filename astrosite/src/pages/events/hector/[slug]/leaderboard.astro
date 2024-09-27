@@ -43,7 +43,7 @@ const allThrough = Math.min(...(hectorLeaderboard || [])
     .map(through => parseInt(through.split('/')[0] || '0')))
 
 const leaderboardPosition = (leaderboard: EnrichedLeaderboard, points: number, lowerIsBetter: boolean): string => {
-    const numberOfBetterScores = leaderboard.filter(({ points: p }) => lowerIsBetter ? p < points : p > points).length
+    const numberOfBetterScores = leaderboard.filter(({ points: p }) => lowerIsBetter ? parseFloat((p as any) as string) < points : parseFloat((p as any) as string) > points).length
     const numberOfEqualScores = leaderboard.filter(({ points: p }) => p === points).length
     if (numberOfEqualScores > 1) {
         return `T${numberOfBetterScores + 1}`
