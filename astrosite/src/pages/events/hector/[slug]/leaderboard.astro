@@ -55,6 +55,7 @@ const leaderboardPosition = (leaderboard: EnrichedLeaderboard, points: number, l
 const normalizeDiff = (diff: string, prefix?: string): string => {
     let value = (diff !== '' && !diff.includes('.')) ? `${diff}.0` : diff
     if (diff === '') return diff
+    if (diff === '0.0') return ''
     return `${prefix || ''}${value}`.trim()
 }
 
