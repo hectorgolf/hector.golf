@@ -347,7 +347,10 @@
                 }
             ],
             "winners": {
-                "hector": [],
+                "hector": [
+                    "harri-vainio",
+                    "pasi-halmetoja"
+                ],
                 "victor": [
                     "olli-varis",
                     "toni-marttila"
