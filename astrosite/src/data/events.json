@@ -348,7 +348,10 @@
             ],
             "winners": {
                 "hector": [],
-                "victor": ["olli-varis", "toni-marttila"]
+                "victor": [
+                    "olli-varis",
+                    "toni-marttila"
+                ]
             }
         }
     },
