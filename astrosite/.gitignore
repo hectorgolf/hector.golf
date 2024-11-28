@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# A "temp file" used for logging changed handicaps in the Git commit message
+.update-handicaps-commit

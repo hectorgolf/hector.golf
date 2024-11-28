@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync } from 'fs'
-import { join, dirname } from 'path'
+import { readFileSync, writeFileSync, existsSync, rmSync } from 'fs'
+import { join, dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
 
 import type { HandicapSource } from '../code/handicaps/handicap-source-api.ts'
@@ -38,6 +38,15 @@ const __filename = fileURLToPath(import.meta.url)
 const pathToEventsJson = join(dirname(__filename), '../data/events.json')
 const pathToPlayersJson = join(dirname(__filename), '../data/players.json')
 const pathToHandicapHistoryJson = join(dirname(__filename), '../data/handicaps.json')
+const pathToHandicapUpdateCommitMessage = join(dirname(__filename), '../../.update-handicaps-commit')
+
+if (existsSync(pathToHandicapUpdateCommitMessage)) {
+    console.log(`Deleting pre-existing commit message file: ${resolve(pathToHandicapUpdateCommitMessage)}`)
+    rmSync(pathToHandicapUpdateCommitMessage, { force: true })
+} else {
+    console.log(`Creating an empty commit message file: ${resolve(pathToHandicapUpdateCommitMessage)}`)
+}
+writeFileSync(pathToHandicapUpdateCommitMessage, '')
 
 type Player = {
     id: string,
@@ -52,6 +61,7 @@ type Player = {
     club?: string,
     handicap?: number,
     handicapChanged?: boolean,
+    handicapChangedFrom?: number,
 }
 
 type HandicapHistoryEntry = {
@@ -68,6 +78,8 @@ const persistHandicapHistoryToDisk = (players: Player[], handicapHistory: Array<
         .filter(p => p.handicap !== undefined)
         .filter(p => p.handicapChanged)
 
+    const commitMessage: string[] = []
+
     playersWithNewHandicap.forEach((player) => {
         const duplicate = handicapHistory.find((entry) => entry.player === player.id && entry.date === date)
         if (duplicate) {
@@ -83,14 +95,17 @@ const persistHandicapHistoryToDisk = (players: Player[], handicapHistory: Array<
         newHandicapChanges.push({
             date,
             player: player.id,
-            handicap: player.handicap as number
+            handicap: player.handicap as number,
         })
+
+        commitMessage.push(`- ${player.name.first} ${player.name.last}: ${JSON.stringify(player.handicapChangedFrom)} -> ${JSON.stringify(player.handicap)}`)
     })
 
     if (newHandicapChanges.length > 0) {
         console.log(`Updated ${newHandicapChanges.length} players' handicap:`)
         console.log(JSON.stringify(newHandicapChanges, null, 2))
         writeFileSync(pathToHandicapHistoryJson, JSON.stringify(handicapHistory.concat(newHandicapChanges), null, 2))
+        writeFileSync(pathToHandicapUpdateCommitMessage, `Updated ${newHandicapChanges.length} players' handicap:\n${commitMessage.join('\n')}`)
         console.log(`Done updating handicaps.`)
     }
 }
@@ -130,6 +145,7 @@ const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Arr
                 if (newHandicap !== undefined && newHandicap !== oldHandicap) {
                     playerObject.handicap = newHandicap
                     playerObject.handicapChanged = true
+                    playerObject.handicapChangedFrom = oldHandicap
                     console.log(`Handicap for ${playerObject.name.first} ${playerObject.name.last} changed from ${oldHandicap} to ${newHandicap}`)
                 }
                 return Promise.resolve(playerObject)
