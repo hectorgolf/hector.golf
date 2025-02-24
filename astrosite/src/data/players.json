@@ -1,5 +1,16 @@
 [
   {
+    "id": "jari-kuusela",
+    "name": {
+      "first": "Jari",
+      "last": "Kuusela"
+    },
+    "privacy": "shorten-last-name",
+    "contact": {
+      "phone": "+358504669916"
+    }
+  },
+  {
     "id": "daniel-hylton",
     "name": {
       "first": "Daniel",
