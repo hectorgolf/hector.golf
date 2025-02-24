@@ -1,5 +1,6 @@
 import moize from 'moize'
 import { ms } from 'itty-time'
+import { pRateLimit } from 'p-ratelimit'
 
 import { type HandicapSource } from './handicap-source-api'
 
@@ -106,9 +107,25 @@ export const createWisegolfSession = async (): Promise<WisegolfSession> => {
         name: 'WiseGolf',
         getPlayerHandicap: async (firstName: string, lastName: string, clubNameOrAbbreviation: string): Promise<number|undefined> => {
             return await getWisegolfPlayerHandicap(firstName, lastName, clubNameOrAbbreviation, token)
+        },
+        resolveClubMembership: async (firstName: string, lastName: string): Promise<string[]> => {
+            return await findWisegolfPlayerClubs(firstName, lastName, token)
         }
     }
 }
+
+const findWisegolfPlayerClubs = async (firstName: string, lastName: string, token: string): Promise<string[]> => {
+    const clubs = await fetchClubs(token)
+    const clubAbbreviations: string[] = []
+    for (let club of clubs) {
+        const player = await fetchPlayer(token, club.number, firstName, lastName)
+        if (player) {
+            clubAbbreviations.push(club.abbreviation)
+        }
+    }
+    return Promise.resolve(clubAbbreviations)
+}
+
 
 const sanitizePassword = (obj: any): any => {
     if ('password' in obj) {
@@ -136,6 +153,13 @@ const login = async (username: string, password: string): Promise<string> => {
 
 const roundToTenths = (num: number): number => Math.round(num * 10) / 10
 
+
+const fetchPlayerRateLimiter = pRateLimit({
+    interval: 1000,
+    rate: 5,
+    concurrency: 1
+})
+
 const fetchPlayer = moize.maxAge(ms('10 minutes'))(async (token: string, clubNumber: string, firstName: string, lastName: string): Promise<WisegolfPlayer|undefined> => {
     const url = ((): string => {
         const obj = new URL(`https://api.ringsidegolf.fi/api/1.0/golf/player/`)
@@ -145,9 +169,9 @@ const fetchPlayer = moize.maxAge(ms('10 minutes'))(async (token: string, clubNum
         obj.searchParams.append('memberno', '')
         return obj.href
     })()
-    const response = await fetch(url, {
+    const response = await fetchPlayerRateLimiter(() => fetch(url, {
         headers: { ...standardRequestHeaders, authorization: `token ${token}` }
-    })
+    }))
     if (response.ok) {
         try {
             const data = await response.json()

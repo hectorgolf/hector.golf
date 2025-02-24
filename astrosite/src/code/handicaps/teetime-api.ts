@@ -155,8 +155,23 @@ export const createTeetimeSession = async (): Promise<TeetimeSession> => {
         name: 'Teetime',
         getPlayerHandicap: async (firstName: string, lastName: string, clubNameOrAbbreviation: string): Promise<number|undefined> => {
             return await getTeetimePlayerHandicap(firstName, lastName, clubNameOrAbbreviation, token)
+        },
+        resolveClubMembership: async (firstName: string, lastName: string): Promise<string[]> => {
+            return await findTeetimePlayerClubs(firstName, lastName, token)
         }
     }
+}
+
+const findTeetimePlayerClubs = async (firstName: string, lastName: string, token: string): Promise<string[]> => {
+    const clubs = await fetchClubs()
+    const clubAbbreviations: string[] = []
+    for (let club of clubs) {
+        const player = await fetchPlayer(token, club.number, firstName, lastName)
+        if (player) {
+            clubAbbreviations.push(club.abbrevitation)
+        }
+    }
+    return Promise.resolve(clubAbbreviations)
 }
 
 const getTeetimePlayerHandicap = async (firstName: string, lastName: string, clubNameOrAbbreviation: string, providedToken?: string): Promise<number|undefined> => {
