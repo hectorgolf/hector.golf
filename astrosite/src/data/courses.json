@@ -1,5 +1,343 @@
 [
     {
+        "id": "emporda-forest",
+        "name": "Empordà Forest",
+        "homepage": "https://www.empordagolf.com/en/golf/forest",
+        "contact": {
+            "address": "Ctra. de Palafrugell a Torroella de Montgrí, 17257 Gualta, Girona, Spain",
+            "phone": "tel:+34972760450",
+            "email": "golf@empordagolf.com"
+        },
+        "hero_image": "/images/courses/emporda-forest/hero.jpg",
+        "description_short": "Empordà Forest is a masterpiece carved through ancient pines. Nestled in the heart of a century-old pine forest, Empordà Forest offers a truly immersive golfing experience, where nature and design blend seamlessly. Protected from coastal winds by towering pines, this hidden gem of the Costa Brava presents a course that is as strategic as it is scenic.",
+        "description_long": [
+            { "type": "paragraph", "content": "Empordà Forest is a masterpiece carved through ancient pines. Nestled in the heart of a century-old pine forest, Empordà Forest offers a truly immersive golfing experience, where nature and design blend seamlessly. Protected from coastal winds by towering pines, this hidden gem of the Costa Brava presents a course that is as strategic as it is scenic." },
+            { "type": "image", "url": "/images/courses/emporda-forest/hero2.jpg" },
+            { "type": "paragraph", "content": "With narrow, tree-lined fairways, golfers must navigate precise shots through dramatic corridors of light and shadow. The fast, undulating greens demand skillful approach play, while strategically placed bunkers add an extra layer of challenge. As Rick Baril envisioned, the course’s natural beauty enhances its drama, making every round an unforgettable test of precision and creativity." },
+            { "type": "image", "url": "/images/courses/emporda-forest/hero3.jpg" },
+            { "type": "paragraph", "content": "Empordà Golf's two world-class courses, designed by Robert von Hagge and Rick Baril, offer a unique experience in every round. This European Tour hosting resort combines the joy of playing golf with the pleasure of walking surrounded by nature." }
+        ],
+        "images": {
+            "hero": "/images/courses/emporda-forest/hero.jpg",
+            "course_layout": "/images/courses/emporda-forest/layout.png"
+        },
+        "course": {
+            "tees": [
+                {
+                    "name": "white",
+                    "color": "#ffffff",
+                    "length": 6165,
+                    "par": 72,
+                    "rating": {
+                        "men": 73.6,
+                        "ladies": null
+                    },
+                    "slope": {
+                        "men": 140,
+                        "ladies": null
+                    }
+                },
+                {
+                    "name": "yellow",
+                    "color": "#ffff00",
+                    "length": 5866,
+                    "par": 72,
+                    "rating": {
+                        "men": 71.4,
+                        "ladies": 77.3
+                    },
+                    "slope": {
+                        "men": 138,
+                        "ladies": 142
+                    }
+                },
+                {
+                    "name": "orange",
+                    "color": "#ffa500",
+                    "length": 5515,
+                    "par": 72,
+                    "rating": {
+                        "men": 69.6,
+                        "ladies": 75.4
+                    },
+                    "slope": {
+                        "men": 134,
+                        "ladies": 136
+                    }
+                },
+                {
+                    "name": "blue",
+                    "color": "#0000ff",
+                    "length": 5244,
+                    "par": 72,
+                    "rating": {
+                        "men": 68.1,
+                        "ladies": 73.6
+                    },
+                    "slope": {
+                        "men": 130,
+                        "ladies": 135
+                    }
+                },
+                {
+                    "name": "red",
+                    "color": "#ff0000",
+                    "length": 4959,
+                    "par": 72,
+                    "rating": {
+                        "men": 66.5,
+                        "ladies": 72.1
+                    },
+                    "slope": {
+                        "men": 123,
+                        "ladies": 131
+                    }
+                }
+            ],
+            "scorecard": {
+                "men": [
+                    { "hole":  1, "par": 4, "hcp":  7, "lengths": { "white": 364, "yellow": 359, "orange": 335, "blue": 329, "red": 326 }},
+                    { "hole":  2, "par": 3, "hcp": 15, "lengths": { "white": 165, "yellow": 159, "orange": 142, "blue": 121, "red": 118 }},
+                    { "hole":  3, "par": 4, "hcp":  5, "lengths": { "white": 379, "yellow": 363, "orange": 339, "blue": 324, "red": 315 }},
+                    { "hole":  4, "par": 5, "hcp":  9, "lengths": { "white": 498, "yellow": 481, "orange": 456, "blue": 433, "red": 414 }},
+                    { "hole":  5, "par": 3, "hcp": 17, "lengths": { "white": 152, "yellow": 146, "orange": 128, "blue": 124, "red": 105 }},
+                    { "hole":  6, "par": 4, "hcp": 11, "lengths": { "white": 292, "yellow": 281, "orange": 267, "blue": 243, "red": 214 }},
+                    { "hole":  7, "par": 5, "hcp":  1, "lengths": { "white": 566, "yellow": 518, "orange": 485, "blue": 473, "red": 459 }},
+                    { "hole":  8, "par": 3, "hcp": 13, "lengths": { "white": 171, "yellow": 164, "orange": 134, "blue": 131, "red": 120 }},
+                    { "hole":  9, "par": 5, "hcp":  3, "lengths": { "white": 491, "yellow": 465, "orange": 462, "blue": 443, "red": 417 }},
+                    { "hole": 10, "par": 5, "hcp":  8, "lengths": { "white": 479, "yellow": 469, "orange": 435, "blue": 396, "red": 374 }},
+                    { "hole": 11, "par": 4, "hcp": 14, "lengths": { "white": 309, "yellow": 295, "orange": 276, "blue": 269, "red": 257 }},
+                    { "hole": 12, "par": 3, "hcp": 18, "lengths": { "white": 171, "yellow": 151, "orange": 144, "blue": 123, "red": 107 }},
+                    { "hole": 13, "par": 5, "hcp":  4, "lengths": { "white": 485, "yellow": 465, "orange": 455, "blue": 436, "red": 416 }},
+                    { "hole": 14, "par": 3, "hcp": 16, "lengths": { "white": 158, "yellow": 143, "orange": 134, "blue": 119, "red": 108 }},
+                    { "hole": 15, "par": 4, "hcp": 12, "lengths": { "white": 335, "yellow": 319, "orange": 297, "blue": 291, "red": 275 }},
+                    { "hole": 16, "par": 4, "hcp":  6, "lengths": { "white": 377, "yellow": 351, "orange": 334, "blue": 331, "red": 299 }},
+                    { "hole": 17, "par": 4, "hcp": 10, "lengths": { "white": 363, "yellow": 353, "orange": 334, "blue": 305, "red": 298 }},
+                    { "hole": 18, "par": 4, "hcp":  2, "lengths": { "white": 410, "yellow": 384, "orange": 358, "blue": 353, "red": 337 }}
+                ],
+                "ladies": null
+            },
+            "descriptions": [
+                { "hole":  1, "layout": "/images/courses/emporda-forest/holes/1.png", "description": "" },
+                { "hole":  2, "layout": "/images/courses/emporda-forest/holes/2.png", "description": "" },
+                { "hole":  3, "layout": "/images/courses/emporda-forest/holes/3.png", "description": "" },
+                { "hole":  4, "layout": "/images/courses/emporda-forest/holes/4.png", "description": "" },
+                { "hole":  5, "layout": "/images/courses/emporda-forest/holes/5.png", "description": "" },
+                { "hole":  6, "layout": "/images/courses/emporda-forest/holes/6.png", "description": "" },
+                { "hole":  7, "layout": "/images/courses/emporda-forest/holes/7.png", "description": "" },
+                { "hole":  8, "layout": "/images/courses/emporda-forest/holes/8.png", "description": "" },
+                { "hole":  9, "layout": "/images/courses/emporda-forest/holes/9.png", "description": "" },
+                { "hole": 10, "layout": "/images/courses/emporda-forest/holes/10.png", "description": "" },
+                { "hole": 11, "layout": "/images/courses/emporda-forest/holes/11.png", "description": "" },
+                { "hole": 12, "layout": "/images/courses/emporda-forest/holes/12.png", "description": "" },
+                { "hole": 13, "layout": "/images/courses/emporda-forest/holes/13.png", "description": "" },
+                { "hole": 14, "layout": "/images/courses/emporda-forest/holes/14.png", "description": "" },
+                { "hole": 15, "layout": "/images/courses/emporda-forest/holes/15.png", "description": "" },
+                { "hole": 16, "layout": "/images/courses/emporda-forest/holes/16.png", "description": "" },
+                { "hole": 17, "layout": "/images/courses/emporda-forest/holes/17.png", "description": "" },
+                { "hole": 18, "layout": "/images/courses/emporda-forest/holes/18.png", "description": "" }
+            ]
+        },
+        "datasources": [
+            {
+                "name": "website",
+                "url": "https://www.empordagolf.com/lang/en"
+            },
+            {
+                "name": "mscorecard",
+                "url": "https://www.mscorecard.com/mscorecard/showcourse.php?cid=1145385230390"
+            },
+            {
+                "name": "official scorecard",
+                "url": "https://www.empordagolf.com/storage/golf/forest/pdf/4/forest.pdf"
+            },
+            {
+                "name": "slope table",
+                "url": "https://www.empordagolf.com/storage/golf/forest/pdf/2/forest.pdf"
+            },
+            {
+                "name": "local rules",
+                "url": "https://www.empordagolf.com/storage/golf/forest/pdf/5/forest.pdf"
+            }
+        ]
+    },
+    {
+        "id": "emporda-links",
+        "name": "Empordà Links",
+        "homepage": "https://www.empordagolf.com/en/golf/links",
+        "contact": {
+            "address": "Ctra. de Palafrugell a Torroella de Montgrí, 17257 Gualta, Girona, Spain",
+            "phone": "tel:+34972760450",
+            "email": "golf@empordagolf.com"
+        },
+        "hero_image": "/images/courses/emporda-links/hero.jpg",
+        "description_short": "Empordà Links is a bold and wind-swept challenge. Where others saw unremarkable marshland, architect Robert von Hagge saw an opportunity to craft a course of pure imagination. Empordà Links is a masterful blend of rolling inland dunes, unpredictable coastal winds, and modern water hazards, capturing the soul of traditional Scottish links while adding its own unique character.",
+        "description_long": [
+            { "type": "paragraph", "content": "Empordà Links is a bold and wind-swept challenge. Where others saw unremarkable marshland, architect Robert von Hagge saw an opportunity to craft a course of pure imagination. Empordà Links is a masterful blend of rolling inland dunes, unpredictable coastal winds, and modern water hazards, capturing the soul of traditional Scottish links while adding its own unique character." },
+            { "type": "image", "url": "/images/courses/emporda-links/hero2.jpg" },
+            { "type": "paragraph", "content": "Stretching 6300 meters, this dynamic course rewards players who combine precision, strategy, and creativity. The ever-changing wind conditions make club selection a constant challenge, while the open layout demands a keen eye for positioning. With its thrilling mix of natural beauty and strategic design, Empordà Links delivers an exhilarating test for golfers of all levels." },
+            { "type": "image", "url": "/images/courses/emporda-links/hero3.jpg" },
+            { "type": "paragraph", "content": "Empordà Golf's two world-class courses, designed by Robert von Hagge and Rick Baril, offer a unique experience in every round. This European Tour hosting resort combines the joy of playing golf with the pleasure of walking surrounded by nature." }
+        ],
+        "images": {
+            "hero": "/images/courses/emporda-links/hero.jpg",
+            "course_layout": "/images/courses/emporda-links/layout.png"
+        },
+        "course": {
+            "tees": [
+                {
+                    "name": "white",
+                    "color": "#ffffff",
+                    "length": 6304,
+                    "par": 71,
+                    "rating": {
+                        "men": 74.2,
+                        "ladies": null
+                    },
+                    "slope": {
+                        "men": 139,
+                        "ladies": null
+                    }
+                },
+                {
+                    "name": "yellow",
+                    "color": "#ffff00",
+                    "length": 5971,
+                    "par": 71,
+                    "rating": {
+                        "men": 72.1,
+                        "ladies": 78.6
+                    },
+                    "slope": {
+                        "men": 135,
+                        "ladies": 142
+                    }
+                },
+                {
+                    "name": "orange",
+                    "color": "#ffa500",
+                    "length": 5583,
+                    "par": 71,
+                    "rating": {
+                        "men": 69.9,
+                        "ladies": 75.8
+                    },
+                    "slope": {
+                        "men": 132,
+                        "ladies": 137
+                    }
+                },
+                {
+                    "name": "blue",
+                    "color": "#0000ff",
+                    "length": 5311,
+                    "par": 71,
+                    "rating": {
+                        "men": 67.8,
+                        "ladies": 73.5
+                    },
+                    "slope": {
+                        "men": 129,
+                        "ladies": 132
+                    }
+                },
+                {
+                    "name": "red",
+                    "color": "#ff0000",
+                    "length": 5060,
+                    "par": 71,
+                    "rating": {
+                        "men": 66.5,
+                        "ladies": 71.5
+                    },
+                    "slope": {
+                        "men": 117,
+                        "ladies": 126
+                    }
+                },
+                {
+                    "name": "pink",
+                    "color": "#ffcccc",
+                    "length": 4639,
+                    "par": 71,
+                    "rating": {
+                        "men": null,
+                        "ladies": 69.0
+                    },
+                    "slope": {
+                        "men": null,
+                        "ladies": 120
+                    }
+                }
+            ],
+            "scorecard": {
+                "men": [
+                    { "hole":  1, "par": 4, "hcp":  9, "lengths": { "white": 380, "yellow": 355, "orange": 325, "blue": 308, "red": 302, "pink": 280 }},
+                    { "hole":  2, "par": 4, "hcp":  5, "lengths": { "white": 372, "yellow": 345, "orange": 317, "blue": 295, "red": 278, "pink": 246 }},
+                    { "hole":  3, "par": 3, "hcp": 17, "lengths": { "white": 158, "yellow": 143, "orange": 136, "blue": 122, "red": 117, "pink":  90 }},
+                    { "hole":  4, "par": 4, "hcp": 13, "lengths": { "white": 328, "yellow": 323, "orange": 305, "blue": 281, "red": 275, "pink": 249 }},
+                    { "hole":  5, "par": 4, "hcp":  7, "lengths": { "white": 359, "yellow": 354, "orange": 327, "blue": 321, "red": 305, "pink": 287 }},
+                    { "hole":  6, "par": 3, "hcp": 15, "lengths": { "white": 168, "yellow": 159, "orange": 143, "blue": 125, "red": 122, "pink":  78 }},
+                    { "hole":  7, "par": 4, "hcp": 11, "lengths": { "white": 391, "yellow": 361, "orange": 334, "blue": 328, "red": 319, "pink": 286 }},
+                    { "hole":  8, "par": 5, "hcp":  1, "lengths": { "white": 546, "yellow": 531, "orange": 503, "blue": 480, "red": 463, "pink": 421 }},
+                    { "hole":  9, "par": 4, "hcp":  3, "lengths": { "white": 380, "yellow": 348, "orange": 316, "blue": 305, "red": 285, "pink": 263 }},
+                    { "hole": 10, "par": 4, "hcp": 16, "lengths": { "white": 330, "yellow": 319, "orange": 298, "blue": 281, "red": 275, "pink": 257 }},
+                    { "hole": 11, "par": 3, "hcp": 14, "lengths": { "white": 164, "yellow": 146, "orange": 138, "blue": 114, "red": 105, "pink":  95 }},
+                    { "hole": 12, "par": 5, "hcp":  8, "lengths": { "white": 535, "yellow": 483, "orange": 455, "blue": 446, "red": 436, "pink": 429 }},
+                    { "hole": 13, "par": 4, "hcp": 10, "lengths": { "white": 364, "yellow": 358, "orange": 332, "blue": 323, "red": 296, "pink": 267 }},
+                    { "hole": 14, "par": 4, "hcp":  4, "lengths": { "white": 391, "yellow": 367, "orange": 358, "blue": 340, "red": 315, "pink": 304 }},
+                    { "hole": 15, "par": 3, "hcp": 18, "lengths": { "white": 148, "yellow": 141, "orange": 131, "blue": 126, "red": 110, "pink":  93 }},
+                    { "hole": 16, "par": 4, "hcp":  6, "lengths": { "white": 387, "yellow": 364, "orange": 333, "blue": 300, "red": 280, "pink": 259 }},
+                    { "hole": 17, "par": 4, "hcp":  2, "lengths": { "white": 398, "yellow": 390, "orange": 379, "blue": 371, "red": 354, "pink": 334 }},
+                    { "hole": 18, "par": 5, "hcp": 12, "lengths": { "white": 505, "yellow": 484, "orange": 453, "blue": 445, "red": 423, "pink": 401 }}
+                ],
+                "ladies": null
+            },
+            "descriptions": [
+                { "hole":  1, "layout": "/images/courses/emporda-links/holes/1.png", "description": "" },
+                { "hole":  2, "layout": "/images/courses/emporda-links/holes/2.png", "description": "" },
+                { "hole":  3, "layout": "/images/courses/emporda-links/holes/3.png", "description": "" },
+                { "hole":  4, "layout": "/images/courses/emporda-links/holes/4.png", "description": "" },
+                { "hole":  5, "layout": "/images/courses/emporda-links/holes/5.png", "description": "" },
+                { "hole":  6, "layout": "/images/courses/emporda-links/holes/6.png", "description": "" },
+                { "hole":  7, "layout": "/images/courses/emporda-links/holes/7.png", "description": "" },
+                { "hole":  8, "layout": "/images/courses/emporda-links/holes/8.png", "description": "" },
+                { "hole":  9, "layout": "/images/courses/emporda-links/holes/9.png", "description": "" },
+                { "hole": 10, "layout": "/images/courses/emporda-links/holes/10.png", "description": "" },
+                { "hole": 11, "layout": "/images/courses/emporda-links/holes/11.png", "description": "" },
+                { "hole": 12, "layout": "/images/courses/emporda-links/holes/12.png", "description": "" },
+                { "hole": 13, "layout": "/images/courses/emporda-links/holes/13.png", "description": "" },
+                { "hole": 14, "layout": "/images/courses/emporda-links/holes/14.png", "description": "" },
+                { "hole": 15, "layout": "/images/courses/emporda-links/holes/15.png", "description": "" },
+                { "hole": 16, "layout": "/images/courses/emporda-links/holes/16.png", "description": "" },
+                { "hole": 17, "layout": "/images/courses/emporda-links/holes/17.png", "description": "" },
+                { "hole": 18, "layout": "/images/courses/emporda-links/holes/18.png", "description": "" }
+            ]
+        },
+        "datasources": [
+            {
+                "name": "website",
+                "url": "https://www.empordagolf.com/lang/en"
+            },
+            {
+                "name": "mscorecard",
+                "url": "https://www.mscorecard.com/mscorecard/showcourse.php?cid=1205009311600"
+            },
+            {
+                "name": "official scorecard",
+                "url": "https://www.empordagolf.com/storage/golf/links/pdf/4/links.pdf"
+            },
+            {
+                "name": "slope table",
+                "url": "https://www.empordagolf.com/storage/golf/links/pdf/2/links.pdf"
+            },
+            {
+                "name": "local rules",
+                "url": "https://www.empordagolf.com/storage/golf/links/pdf/5/links.pdf"
+            }
+        ]
+    },
+    {
         "id": "tahko-old-course",
         "name": "Tahko Old Course",
         "homepage": "https://tahkogolf.fi",

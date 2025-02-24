@@ -74,6 +74,7 @@ const allThrough = Math.min(...(leaderboards.hector || [])
 
 const fieldAndBucketsTitle = eventHasStarted(event) ? 'Field and buckets' : 'Field and Projected Buckets'
 
+const description = event.description ? event.description.split(/\n+/) : []
 ---
 
 <Layout title={event.name}>
@@ -89,8 +90,9 @@ const fieldAndBucketsTitle = eventHasStarted(event) ? 'Field and buckets' : 'Fie
             <div class="event-date">{event.date}</div>
         </div>
         {event.hero_image ? <img src={event.hero_image} title={event.name}/><br/> : ""}
-        {event.description ? (<p>{event.description}</p>) : ""}
-
+        {description.map(paragraph => {
+            return (<p>{paragraph}</p>)
+        })}
         {(hectorWinners.length > 0 || victorWinners.length > 0) && (
             <div class="results">
                 <h2>Champions</h2>
