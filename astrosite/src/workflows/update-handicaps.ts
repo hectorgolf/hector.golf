@@ -9,6 +9,7 @@ import { createWisegolfSession } from '../code/handicaps/wisegolf-api.ts'
 import { isoDateToday } from '../code/dates.ts'
 
 import { playersData, hectorEvents, hasParticipants, isUpcomingEvent, pathToEventJson } from '../code/data.ts'
+import { getPlayerName } from '../code/players.ts'
 
 
 const getPlayerById = (id: string, handicapHistory: Array<HandicapHistoryEntry>): Player|undefined => {
@@ -123,7 +124,8 @@ const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Arr
                 return source.getPlayerHandicap(playerObject.name.first, playerObject.name.last, playerObject.club!)
                     .then(handicap => {
                         if (handicap !== undefined) {
-                            console.log(`Handicap found for ${playerObject.name.first} ${playerObject.name.last} from ${source.name}`)
+                            const changeMsg = (handicap !== oldHandicap) ? `${JSON.stringify(oldHandicap)} -> ${JSON.stringify(handicap)}` : 'no change'
+                            console.log(`Handicap found for ${getPlayerName(playerObject)} from ${source.name} (${changeMsg})`)
                             return Promise.resolve(handicap)
                         } else {
                             return Promise.reject(`No handicap found for ${playerObject.name.first} ${playerObject.name.last} from ${source.name}`)
