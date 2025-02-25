@@ -1,0 +1,103 @@
+{
+    "id": "HECTOR2020",
+    "name": "Hector Trophée 2020",
+    "format": "hector",
+    "location": "Tahko Golf, Finland",
+    "date": "September 10-13, 2020",
+    "courses": [
+        "tahko-new-course",
+        "tahko-old-course"
+    ],
+    "participants": [],
+    "results": {
+        "teams": [
+            {
+                "name": "Olli Varis & Daniel Hylton",
+                "players": [
+                    "olli-varis",
+                    "daniel-hylton"
+                ]
+            },
+            {
+                "name": "Miso Lith & Lassi Koto",
+                "players": [
+                    "miso-lith",
+                    "lassi-koto"
+                ]
+            },
+            {
+                "name": "Martin Svedholm & Pekka Saijonmaa",
+                "players": [
+                    "martin-svedholm",
+                    "pekka-saijonmaa"
+                ]
+            },
+            {
+                "name": "Olli Andersson & Sami Heikkinen",
+                "players": [
+                    "olli-andersson",
+                    "sami-heikkinen"
+                ]
+            },
+            {
+                "name": "Eero Halmetoja & Lauri Paatela",
+                "players": [
+                    "eero-halmetoja",
+                    "lauri-paatela"
+                ]
+            },
+            {
+                "name": "Simo Liukkonen Janne Valtakari",
+                "players": [
+                    "simo-liukkonen",
+                    "janne-valtakari"
+                ]
+            },
+            {
+                "name": "Kristian Hiljander & Timo Lukumaa",
+                "players": [
+                    "kristian-hiljander",
+                    "timo-lukumaa"
+                ]
+            },
+            {
+                "name": "Juuso Pihamaa & Mikko Oesch",
+                "players": [
+                    "juuso-pihamaa",
+                    "mikko-oesch"
+                ]
+            },
+            {
+                "name": "Lasse Koskela & Okko Pykäläinen",
+                "players": [
+                    "lasse-koskela",
+                    "okko-pykalainen"
+                ]
+            },
+            {
+                "name": "Jussi Allonen & Jarkko Kailanto",
+                "players": [
+                    "jussi-allonen",
+                    "jarkko-kailanto"
+                ]
+            },
+            {
+                "name": "Marcus Mattila & Toni Marttila",
+                "players": [
+                    "marcus-mattila",
+                    "toni-marttila"
+                ]
+            }
+        ],
+        "winners": {
+            "hector": [
+                "martin-svedholm",
+                "pekka-saijonmaa"
+            ],
+            "victor": [
+                "Lassi Koto"
+            ]
+        }
+    },
+    "description": "Tahko Golf in Finland was the venue for the Hector Trophée 2020, occurring from September 10-13 despite a global pandemic and torrential rain reminiscent of an apocalypse on first two days of competition. The tournament’s format blended stroke play, stableford, best ball, and scramble, providing a comprehensive challenge that culminated in a dynamic competition."
+}

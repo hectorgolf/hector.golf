@@ -1,0 +1,163 @@
+{
+    "id": "quellness-beckenbauer",
+    "name": "Beckenbauer at Quellness Golf Resort",
+    "homepage": "https://www.quellness-golf.com/en/golf-world/golf-courses/beckenbauer-golf-course/",
+    "contact": {
+        "address": "An der Rottwiese 1, 94094 Rotthalmünster, Germany",
+        "phone": "tel://+49853292440",
+        "email": "gppenning@quellness-golf.com"
+    },
+    "hero_image": "/images/courses/quellness-beckenbauer/hero1.jpg",
+    "description_short": "Venue of the PGA European Tour 2013-2017, the course was already awarded the \"world class\" rating in its opening year. The 18 holes don’t hold back when it comes to challenges, but also offer plenty of opportunities for that sweet feeling of success.",
+    "description_long": [
+        {
+            "type": "paragraph",
+            "content": "There are very few golf courses in Germany where a PGA European Tour professional tournament has been held. The Beckenbauer Golf Course in Penning belongs to this exclusive group of courses that meet the high quality standards required."
+        },
+        {
+            "type": "paragraph",
+            "content": "The 18-hole course designed by world-class golfer Bernhard Langer, played host to one of the most prestigious professional tournaments in Europe in 2015 and 2016, the Porsche European Open; in 2017 the Beckenbauer Golf Course was the venue for the Paul Lawrie Matchplay, in addition, the European Tour with its Challenge Tour was held here for three years in a row between 2013 to 2015. The best golfers in Europe praised the championship course on all occasions as being a demanding test at an international level, which impressed with its technical challenges and the excellent upkeep and maintenance."
+        },
+        {
+            "type": "image",
+            "url": "/images/courses/quellness-beckenbauer/hero2.jpg"
+        },
+        {
+            "type": "paragraph",
+            "content": "The 18-hole par 72 course, named after football emperor Franz Beckenbauer, located in the immediate vicinity of the Porsche Golf Course, measures 6,500 meters from the champion tees and is the sporting figurehead of the golf resort. From the outset it was designed with the intention of being suitable for large championships, it is considered the most difficult course to play on the golf resort. The 18 fairway which are generously distributed over 80 hectares, lead in two varied 9-hole loops through the meadow landscape of the small river Rott."
+        },
+        {
+            "type": "image",
+            "url": "/images/courses/quellness-beckenbauer/hero3.jpg"
+        },
+        {
+            "type": "paragraph",
+            "content": "The level, easy-to-walk course is characterised by a variety of water hazards. These come in the form of streams, ditches, troughs or ponds and force the player to be precise both when driving and when approaching. Water comes into play at 13 of the 18 holes, particularly spectacularly at holes 9 and 18, where a large pond gives the two greens an island character being separated from the water by stone walls."
+        },
+        {
+            "type": "image",
+            "url": "/images/courses/quellness-beckenbauer/hero4.jpg"
+        },
+        {
+            "type": "paragraph",
+            "content": "The par 3 courses which are up to 200 meter long, the strategically placed bunkers and tricky doglegs give the Beckenbauer Golf Course its sporty character. The consistently first-class maintenance and upkeep is a real hallmark of the championship course: Even in mid-summer, the double-row irrigation system guarantees top-class golfing pleasure on the hand-mowed fairways and greens."
+        }
+    ],
+    "images": {
+        "hero": "/images/courses/quellness-beckenbauer/hero1.jpg",
+        "course_layout": "/images/courses/quellness-beckenbauer/layout.png"
+    },
+    "course": {
+        "tees": [
+            {
+                "name": "white",
+                "color": "#ffffff",
+                "length": 6500,
+                "par": 72,
+                "rating": {
+                    "men": 74.8,
+                    "ladies": null
+                },
+                "slope": {
+                    "men": 130,
+                    "ladies": null
+                }
+            },
+            {
+                "name": "yellow",
+                "color": "#ffff00",
+                "length": 6078,
+                "par": 72,
+                "rating": {
+                    "men": 73.1,
+                    "ladies": 73.2
+                },
+                "slope": {
+                    "men": 127,
+                    "ladies": 125
+                }
+            },
+            {
+                "name": "blue",
+                "color": "#0000ff",
+                "length": 5508,
+                "par": 72,
+                "rating": {
+                    "men": null,
+                    "ladies": 75.5
+                },
+                "slope": {
+                    "men": null,
+                    "ladies": 131
+                }
+            },
+            {
+                "name": "red",
+                "color": "#ff0000",
+                "length": 5174,
+                "par": 72,
+                "rating": {
+                    "men": null,
+                    "ladies": 73.5
+                },
+                "slope": {
+                    "men": null,
+                    "ladies": 128
+                }
+            }
+        ],
+        "scorecard": {
+            "men": [
+                { "hole":  1, "par": 4, "hcp":  5, "lengths": { "white": 385, "yellow": 362, "blue": 335, "red": 314 }},
+                { "hole":  2, "par": 4, "hcp":  3, "lengths": { "white": 342, "yellow": 320, "blue": 304, "red": 285 }},
+                { "hole":  3, "par": 5, "hcp": 15, "lengths": { "white": 500, "yellow": 481, "blue": 438, "red": 401 }},
+                { "hole":  4, "par": 3, "hcp": 17, "lengths": { "white": 198, "yellow": 182, "blue": 168, "red": 149 }},
+                { "hole":  5, "par": 4, "hcp":  1, "lengths": { "white": 430, "yellow": 407, "blue": 349, "red": 347 }},
+                { "hole":  6, "par": 4, "hcp":  9, "lengths": { "white": 366, "yellow": 345, "blue": 309, "red": 301 }},
+                { "hole":  7, "par": 3, "hcp": 11, "lengths": { "white": 206, "yellow": 192, "blue": 192, "red": 176 }},
+                { "hole":  8, "par": 5, "hcp": 13, "lengths": { "white": 529, "yellow": 494, "blue": 412, "red": 377 }},
+                { "hole":  9, "par": 4, "hcp":  7, "lengths": { "white": 392, "yellow": 328, "blue": 328, "red": 286 }},
+                { "hole": 10, "par": 5, "hcp": 10, "lengths": { "white": 470, "yellow": 448, "blue": 393, "red": 385 }},
+                { "hole": 11, "par": 4, "hcp":  8, "lengths": { "white": 346, "yellow": 328, "blue": 287, "red": 274 }},
+                { "hole": 12, "par": 5, "hcp":  4, "lengths": { "white": 518, "yellow": 479, "blue": 429, "red": 405 }},
+                { "hole": 13, "par": 4, "hcp": 12, "lengths": { "white": 337, "yellow": 331, "blue": 297, "red": 297 }},
+                { "hole": 14, "par": 3, "hcp": 18, "lengths": { "white": 167, "yellow": 148, "blue": 145, "red": 129 }},
+                { "hole": 15, "par": 4, "hcp":  6, "lengths": { "white": 400, "yellow": 382, "blue": 342, "red": 318 }},
+                { "hole": 16, "par": 4, "hcp": 16, "lengths": { "white": 323, "yellow": 301, "blue": 279, "red": 258 }},
+                { "hole": 17, "par": 3, "hcp": 14, "lengths": { "white": 163, "yellow": 150, "blue": 135, "red": 122 }},
+                { "hole": 18, "par": 4, "hcp":  2, "lengths": { "white": 428, "yellow": 400, "blue": 366, "red": 350 }}
+            ],
+            "ladies": null
+        },
+        "descriptions": [
+            { "hole":  1, "layout": "/images/courses/quellness-beckenbauer/holes/1.png", "description": "" },
+            { "hole":  2, "layout": "/images/courses/quellness-beckenbauer/holes/2.png", "description": "" },
+            { "hole":  3, "layout": "/images/courses/quellness-beckenbauer/holes/3.png", "description": "" },
+            { "hole":  4, "layout": "/images/courses/quellness-beckenbauer/holes/4.png", "description": "" },
+            { "hole":  5, "layout": "/images/courses/quellness-beckenbauer/holes/5.png", "description": "" },
+            { "hole":  6, "layout": "/images/courses/quellness-beckenbauer/holes/6.png", "description": "" },
+            { "hole":  7, "layout": "/images/courses/quellness-beckenbauer/holes/7.png", "description": "" },
+            { "hole":  8, "layout": "/images/courses/quellness-beckenbauer/holes/8.png", "description": "" },
+            { "hole":  9, "layout": "/images/courses/quellness-beckenbauer/holes/9.png", "description": "" },
+            { "hole": 10, "layout": "/images/courses/quellness-beckenbauer/holes/10.png", "description": "" },
+            { "hole": 11, "layout": "/images/courses/quellness-beckenbauer/holes/11.png", "description": "" },
+            { "hole": 12, "layout": "/images/courses/quellness-beckenbauer/holes/12.png", "description": "" },
+            { "hole": 13, "layout": "/images/courses/quellness-beckenbauer/holes/13.png", "description": "" },
+            { "hole": 14, "layout": "/images/courses/quellness-beckenbauer/holes/14.png", "description": "" },
+            { "hole": 15, "layout": "/images/courses/quellness-beckenbauer/holes/15.png", "description": "" },
+            { "hole": 16, "layout": "/images/courses/quellness-beckenbauer/holes/16.png", "description": "" },
+            { "hole": 17, "layout": "/images/courses/quellness-beckenbauer/holes/17.png", "description": "" },
+            { "hole": 18, "layout": "/images/courses/quellness-beckenbauer/holes/18.png", "description": "" }
+        ]
+    },
+    "datasources": [
+        {
+            "name": "website",
+            "url": "https://www.quellness-golf.com/en/golf-world/golf-courses/beckenbauer-golf-course/"
+        },
+        {
+            "name": "mscorecard",
+            "url": "https://www.mscorecard.com/mscorecard/showcourse.php?cid=1255093955568"
+        }
+    ]
+}

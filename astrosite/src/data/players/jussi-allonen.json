@@ -1,0 +1,12 @@
+{
+  "id": "jussi-allonen",
+  "name": {
+    "first": "Jussi",
+    "last": "Allonen"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358406803204"
+  },
+  "club": "StLG"
+}

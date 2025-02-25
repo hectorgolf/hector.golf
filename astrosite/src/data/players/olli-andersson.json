@@ -1,0 +1,12 @@
+{
+  "id": "olli-andersson",
+  "name": {
+    "first": "Olli",
+    "last": "Andersson"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358503753183"
+  },
+  "club": "HGK"
+}

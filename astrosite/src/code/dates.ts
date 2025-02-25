@@ -74,3 +74,24 @@ export function parseEventDateRange(dateRange: string): { startDate: Date; endDa
 	// If the format does not match, return null
 	return null;
 }
+
+/**
+ * Comparison/sorting function for sorting date strings (such as "January 10-15, 2024" or "February 10, 2025").
+ *
+ * @param a First date string to compare.
+ * @param b Second date string to compare.
+ * @returns Returns a negative number if `a` is before `b`, a positive number if `a` is after `b`, or 0 if they are the same.
+ */
+export const compareDateStrings = (a: string|undefined, b: string|undefined): number => {
+	if (!a && b) {
+		return 1;
+	} else if (!b && a) {
+		return -1;
+	} else if (a && b) {
+		// If both courses have had an event, sort by most recent event date
+		const aRange = parseEventDateRange(a);
+		const bRange = parseEventDateRange(b);
+		return (aRange?.endDate?.getTime() || 0) - (bRange?.endDate?.getTime() || 0);
+	}
+	return 0;
+}

@@ -1,0 +1,12 @@
+{
+  "id": "tommy-gulin",
+  "name": {
+    "first": "Tommy",
+    "last": "Gulin"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358407226282"
+  },
+  "club": "ERG"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "joakim-grader",
+  "name": {
+    "first": "Joakim",
+    "last": "Grader"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": ""
+  }
+}

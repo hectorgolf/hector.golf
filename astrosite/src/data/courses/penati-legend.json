@@ -1,0 +1,200 @@
+{
+    "id": "penati-legend",
+    "name": "Penati Golf Legend",
+    "homepage": "https://www.penatigolfresort.sk/en/",
+    "contact": {
+        "address": "453, 906 07 Šajdíkove Humence-Senica, Slovakia",
+        "phone": "tel://+421917907777",
+        "email": "reception@penatigolfresort.sk"
+    },
+    "hero_image": "/images/courses/penati-legend/hero1.jpg",
+    "description_short": "What sets apart the first of the two 18-hole courses, the Nicklaus Design LEGEND COURSE, are the wide, undulating fairways that offer players ample playing freedom, no out-of-bounds areas, sufficient privacy, and excellent visibility to the greens, all combined with the high, shaped \"Nicklaus Design\" sand bunkers and the challenging divergent terrain. The longest hole on this course measures 712 meters and has 11 tees. It plays as either a par 5 or par 6 and it also holds the title of the longest hole in Central Europe. It used to be the longest hole in all of Europe in the 2012 – 2019 period!",
+    "description_long": [
+        {
+            "type": "paragraph",
+            "content": "Penati Golf Resort is Slovakia’s largest golf course surrounded by the picturesque Little Carpathian Mountains in Záhorie less than an hour’s drive from Bratislava, and has been ranked among the best European courses by the World of Leading Golf and the World’s Premier Golf Destinations. Ever since it was established, Penati has been the most award-winning golf course in Slovakia, featured in many major rankings and reviews of courses by both golf professionals and ordinary golfers from Slovakia and around the world."
+        },
+        {
+            "type": "paragraph",
+            "content": "Opened in August 2012, the Penati Golf Resort is located near the town of Senica, about an hour’s drive north from the Slovak Republic’s capital, Bratislava, and it's now the country's largest golfing facility."
+        },
+        {
+            "type": "image",
+            "url": "/images/courses/penati-legend/hero3.jpg"
+        },
+        {
+            "type": "paragraph",
+            "content": "The resort is set within a generous 540-acre site, blessed with sandy ground and pine trees. It’s an ideal property for golf and Nicklaus Design snaffled nearly half of the available acreage to etch the first 18-holer at Penati, adding yet another new country to the Golden Bear’s flourishing collection of global golf destinations."
+        },
+        {
+            "type": "paragraph",
+            "content": "Boldly named Legend, this par 72 Nicklaus course measures a testy 6,954 yards from the tips, but you’ll need to bring your best ball striking game in order to tackle the monster par six 15th which can be stretched to a whopping 787 yards from the back tee. However, there are a staggering eleven tee boxes on this huge par six, so there’s a sensible option for golfers of all standards."
+        },
+        {
+            "type": "image",
+            "url": "/images/courses/penati-legend/hero4.jpg"
+        },
+        {
+            "type": "paragraph",
+            "content": "Some will dismiss the 15th as a gimmick, but nobody will forget the dramatic downhill par four closing hole which heads directly to the clubhouse terrace, where many golfers will be watching to see whether approach shots find a watery grave or the sanctuary of the island green."
+        },
+        {
+            "type": "paragraph",
+            "content": "In June 2013, Penati hosted the EGA European Mid-Amateur Championship and the Legend course impressed Bertrand Noël from France who won the gold medal, beating Australia’s Richard Heath at the third play-off hole. Albert Türklitz from Germany took bronze."
+        },
+        {
+            "type": "image",
+            "url": "/images/courses/penati-legend/hero5.jpg"
+        },
+        {
+            "type": "paragraph",
+            "content": "The Legend course has remained a premier layout in Slovakia and many have seen it on TV when the PGA European Challenge Tour visited Penati in 2014 and 2015."
+        }
+    ],
+    "images": {
+        "hero": "/images/courses/penati-legend/hero2.jpg",
+        "aerial": "/images/courses/penati-legend/aerial.jpg",
+        "course_layout": "/images/courses/penati-legend/layout.png"
+    },
+    "course": {
+        "tees": [
+            {
+                "name": "black",
+                "color": "#000000",
+                "length": 6539,
+                "par": 73,
+                "rating": {
+                    "men": 76.4,
+                    "ladies": null
+                },
+                "slope": {
+                    "men": 154,
+                    "ladies": null
+                }
+            },
+            {
+                "name": "white",
+                "color": "#ffffff",
+                "length": 6202,
+                "par": 73,
+                "rating": {
+                    "men": 73.7,
+                    "ladies": null
+                },
+                "slope": {
+                    "men": 151,
+                    "ladies": null
+                }
+            },
+            {
+                "name": "yellow",
+                "color": "#ffff00",
+                "length": 5720,
+                "par": 73,
+                "rating": {
+                    "men": 71.2,
+                    "ladies": null
+                },
+                "slope": {
+                    "men": 145,
+                    "ladies": null
+                }
+            },
+            {
+                "name": "blue",
+                "color": "#0000ff",
+                "length": 5342,
+                "par": 73,
+                "rating": {
+                    "ladies": 74.7,
+                    "men": null
+                },
+                "slope": {
+                    "ladies": 142,
+                    "men": null
+                }
+            },
+            {
+                "name": "red",
+                "color": "#ff0000",
+                "length": 4818,
+                "par": 73,
+                "rating": {
+                    "ladies": 71.6,
+                    "men": null
+                },
+                "slope": {
+                    "ladies": 134,
+                    "men": null
+                }
+            },
+            {
+                "name": "orange",
+                "color": "#ffa500",
+                "length": 4469,
+                "par": 73,
+                "rating": {
+                    "ladies": 69.5,
+                    "men": null
+                },
+                "slope": {
+                    "ladies": 129,
+                    "men": null
+                }
+            }
+        ],
+        "scorecard": {
+            "men": [
+                { "hole":  1, "par": 4, "hcp":  8, "lengths": { "black": 354, "white": 329, "yellow": 300, "blue": 289, "red": 262, "orange": 241 }},
+                { "hole":  2, "par": 5, "hcp": 15, "lengths": { "black": 477, "white": 450, "yellow": 429, "blue": 395, "red": 370, "orange": 353 }},
+                { "hole":  3, "par": 3, "hcp": 13, "lengths": { "black": 161, "white": 161, "yellow": 143, "blue": 132, "red": 110, "orange": 94 }},
+                { "hole":  4, "par": 4, "hcp":  3, "lengths": { "black": 400, "white": 377, "yellow": 345, "blue": 330, "red": 309, "orange": 288 }},
+                { "hole":  5, "par": 4, "hcp": 16, "lengths": { "black": 352, "white": 299, "yellow": 290, "blue": 281, "red": 257, "orange": 241 }},
+                { "hole":  6, "par": 5, "hcp": 10, "lengths": { "black": 520, "white": 496, "yellow": 471, "blue": 462, "red": 428, "orange": 406 }},
+                { "hole":  7, "par": 4, "hcp":  5, "lengths": { "black": 400, "white": 376, "yellow": 344, "blue": 319, "red": 310, "orange": 285 }},
+                { "hole":  8, "par": 3, "hcp":  4, "lengths": { "black": 188, "white": 161, "yellow": 142, "blue": 117, "red": 98, "orange": 80 }},
+                { "hole":  9, "par": 4, "hcp": 11, "lengths": { "black": 377, "white": 351, "yellow": 322, "blue": 292, "red": 260, "orange": 241 }},
+                { "hole": 10, "par": 4, "hcp":  1, "lengths": { "black": 384, "white": 361, "yellow": 330, "blue": 316, "red": 293, "orange": 272 }},
+                { "hole": 11, "par": 5, "hcp": 17, "lengths": { "black": 468, "white": 444, "yellow": 411, "blue": 390, "red": 370, "orange": 348 }},
+                { "hole": 12, "par": 3, "hcp":  7, "lengths": { "black": 153, "white": 153, "yellow": 130, "blue": 118, "red": 96, "orange": 79 }},
+                { "hole": 13, "par": 4, "hcp":  2, "lengths": { "black": 407, "white": 390, "yellow": 390, "blue": 353, "red": 323, "orange": 298 }},
+                { "hole": 14, "par": 4, "hcp": 14, "lengths": { "black": 318, "white": 318, "yellow": 271, "blue": 238, "red": 219, "orange": 209 }},
+                { "hole": 15, "par": 6, "hcp": 12, "lengths": { "black": 712, "white": 705, "yellow": 635, "blue": 615, "red": 495, "orange": 476 }},
+                { "hole": 16, "par": 3, "hcp": 18, "lengths": { "black": 152, "white": 152, "yellow": 134, "blue": 126, "red": 105, "orange": 75 }},
+                { "hole": 17, "par": 4, "hcp":  9, "lengths": { "black": 376, "white": 354, "yellow": 334, "blue": 306, "red": 266, "orange": 260 }},
+                { "hole": 18, "par": 4, "hcp":  6, "lengths": { "black": 340, "white": 325, "yellow": 299, "blue": 263, "red": 247, "orange": 223 }}
+            ],
+            "ladies": null
+        },
+        "descriptions": [
+            { "hole":  1, "shape": "wide", "layout": "/images/courses/penati-legend/holes/1.png", "description": "This opening hole is generous on the tee shot, but the closer you can hit the tee shot to the fairway bunkers on the left, the better angle you will have into the green which is protected by a large bunker to the front right. The green is fairly gentle and perfect to warm up the putter." },
+            { "hole":  2, "shape": "wide", "layout": "/images/courses/penati-legend/holes/2.png", "description": "The tee shot is uphill and the goal is to get the ball up to the high part of the fairway so you have a clear view for the second shot. The second landing area is guarded by 2 bunkers, but an opening is left between the bunkers in order to have a clear second shot towards the green. The green is guarded by a bunker to the left." },
+            { "hole":  3, "shape": "wide", "layout": "/images/courses/penati-legend/holes/3.png", "description": "Even though short on the scorecard, this hole can play very long against the wind. The hole is framed by a waste bunker on the left and there a bunker to the right of the fairway and one to the front left. It is best to bring in the tee shot from the right and the green is perched and proper shot placement will be a must." },
+            { "hole":  4, "shape": "wide", "layout": "/images/courses/penati-legend/holes/4.png", "description": "This is the longest Par-4 on the course. The landing area is protected by bunkers on the inside left and the outside right. Clearing the bunkers on the left, will give a shorter second shot, but the center of the fairway is preferred for the better angle into the green for the second shot. The second shot is uphill and the green is protected with 2 bunkers short of the green and a deep bunker to the front right. The green has various plateaus and will provide some challenging putts." },
+            { "hole":  5, "shape": "wide", "layout": "/images/courses/penati-legend/holes/5.png", "description": "Short uphill dogleg right par-4 and you should play the tee shot as close as possible to the tree line on the right in order to have the best angle for the second shot into the green. Important on the tee shot is to get the ball up the hill so you can view the green. The green is perched with a low area to the back right." },
+            { "hole":  6, "shape": "wide", "layout": "/images/courses/penati-legend/holes/6.png", "description": "This is a long par-5, but playing downhill from the first landing area on. The tee shot is best played close to the right side fairway bunker. The second shot will require a bold decision whether or not to go for the green in 2 or lay-up the second shot for an approach 3rd shot into the green. The green is protected by a front and right bunker and the angle of approach is best from the right. Be careful hitting beyond the green as a deep bunker guards the back of the green also." },
+            { "hole":  7, "shape": "wide", "layout": "/images/courses/penati-legend/holes/7.png", "description": "This strong hole requires a solid tee shot over the centre fairway bunker in order to take advantage of the bounce forward towards the green and leave a fairly easy second shot. Anything short or sideways off the center bunker will create for a partial blind shot towards the green. Second shot is best played from the left part off the fairway as the green is guarded by bunker on the right and the front." },
+            { "hole":  8, "shape": "wide", "layout": "/images/courses/penati-legend/holes/8.png", "description": "The longest par-3 on the scorecard, but playing 15meters downhill. The green sits up perched and is guarded by a lake and green bunker at the front and a large low area behind the green. Anything outside off the green will provide for a very challenging approach shot and an equally challenging green with a low section running through the middle." },
+            { "hole":  9, "shape": "wide", "layout": "/images/courses/penati-legend/holes/9.png", "description": "The lake should be avoided on the tee shot and it is preferred to keep the shot close to the fairway bunker on the right as the green is angled right to left and is easier to attack from the right part of the fairway. The green falls right to left and will create for some interesting putting." },
+            { "hole": 10, "shape": "wide", "layout": "/images/courses/penati-legend/holes/10.png", "description": "With the lake in play along the right side of the hole, it is a must to keep the tee shot as far left as possible, which will also be rewarded by giving you the best angle into the green for the second shot. The green is guarded by the lake and a bunker to the right and the surface is very undulating, putting a premium on putting." },
+            { "hole": 11, "shape": "wide", "layout": "/images/courses/penati-legend/holes/11.png", "description": "Shortest par-5 on the golf course, but against the wind, this hole will be a challenge. Important to get the tee shot up to the high part of the fairway in order to then have a good view towards the green. The green can be reached in 2 shots and needs to be attacked from the right hand side, using the slope that kicks in from right to left. The green is guarded by bunkers on the left." },
+            { "hole": 12, "shape": "wide", "layout": "/images/courses/penati-legend/holes/12.png", "description": "Strong par-3 which is surrounded and protected by bunkers pretty much all around. When the wind comes into play, good shot placement will be a must in order to avoid a long challenging putt." },
+            { "hole": 13, "shape": "wide", "layout": "/images/courses/penati-legend/holes/13.png", "description": "This strong hole doglegs left around the waste bunker on the inside left. Clearing the waste bunker will shorten the second shot into the green, but this elevated green is best attacked from the right. No bunkers around the green, but a large and deep low area guards the green at the front left." },
+            { "hole": 14, "shape": "wide", "layout": "/images/courses/penati-legend/holes/14.png", "description": "This is the shortest par-4 on the course with an uphill tee shot. The front of the fairway is guarded by 2 \"spectacle\" bunkers and the line of play is just right of these bunkers. Only a short approach shot will be required, but accuracy will be a must in order to place the ball in the proper location on this undulating and rolling green." },
+            { "hole": 15, "shape": "wide", "layout": "/images/courses/penati-legend/holes/15.png", "description": "The longest par-\"5\" on the course, if not in Europe. Two different tee areas have been set up depending on how the hole wants to be played for the day. The distance between both tee areas is the typical driver's distance, and this hole can be played as a par-5 or par-6. The fairway is split by a waster bunker on the tee shot and the second landing area is framed by a large waste bunker area to the left and protected by various fairway bunkers. This hole is not soon to be forgotten, not only because of its length, but also because of the stunning setting." },
+            { "hole": 16, "shape": "wide", "layout": "/images/courses/penati-legend/holes/16.png", "description": "After the longest hole on the golf course, you now have the shortest golf hole, only measuring 151 meters. The hole plays downhill, which will make it even play shorter. The tees and green are separated by a large waste bunker and the green is best attacked from the left." },
+            { "hole": 17, "shape": "wide", "layout": "/images/courses/penati-legend/holes/17.png", "description": "This hole with the elevated tees is bordered by water along the left side, but the water should not come into play on the tee shot. Fairway bunkers to the right can be cleared by a well executed tee shot, leaving only a short approach shot into the green. The green is protected by the lake on the left and the low area to the right and back of the green." },
+            { "hole": 18, "shape": "wide", "layout": "/images/courses/penati-legend/holes/18.png", "description": "What a great way to finish a round of golf on this picturesque downhill par-4 with the island green. The tee shot is all about ball placement in order to setup the best angle and distance for the short second shot. The island green is angled left to right, has water all around and a green bunker to the front right. Again, don't be too aggressive on the tee shot, which will result in the best setup for the second shot hopefully resulting in a birdie on the last hole proudly looking at the people sitting at the club house behind the green." }
+        ]
+    },
+    "datasources": [
+        {
+            "name": "website",
+            "url": "https://www.penatigolfresort.sk/en/rezort/legend-course/"
+        },
+        {
+            "name": "mscorecard",
+            "url": "https://www.mscorecard.com/mscorecard/showcourse.php?cid=1344849044259"
+        }
+    ]
+}

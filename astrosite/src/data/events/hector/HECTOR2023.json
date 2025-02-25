@@ -1,0 +1,119 @@
+{
+    "id": "HECTOR2023",
+    "name": "Hector Trophée 2023",
+    "format": "hector",
+    "location": "Diamond Country Club, Austria",
+    "date": "September 23-26, 2023",
+    "courses": [
+        "adamstal-championship",
+        "diamondcc-diamond",
+        "diamondcc-country",
+        "diamondcc-park"
+    ],
+    "participants": [
+        "jarkko-kailanto",
+        "olli-varis",
+        "lasse-koskela",
+        "sami-heikkinen",
+        "mikko-oesch",
+        "lassi-koto",
+        "olli-andersson",
+        "eero-halmetoja",
+        "simo-liukkonen",
+        "timo-lukumaa",
+        "martin-svedholm",
+        "lauri-paatela",
+        "juuso-pihamaa",
+        "harri-vainio",
+        "miso-lith",
+        "marcus-mattila",
+        "toni-marttila",
+        "okko-pykalainen",
+        "ofri-porat",
+        "pekka-saijonmaa"
+    ],
+    "results": {
+        "teams": [
+            {
+                "name": "Olli Varis & Jarkko Kailanto",
+                "players": [
+                    "jarkko-kailanto",
+                    "olli-varis"
+                ]
+            },
+            {
+                "name": "Sami Heikkinen & Lasse Koskela",
+                "players": [
+                    "lasse-koskela",
+                    "sami-heikkinen"
+                ]
+            },
+            {
+                "name": "Mikko Oesch & Lassi Koto",
+                "players": [
+                    "mikko-oesch",
+                    "lassi-koto"
+                ]
+            },
+            {
+                "name": "Eero Halmetoja & Olli Andersson",
+                "players": [
+                    "olli-andersson",
+                    "eero-halmetoja"
+                ]
+            },
+            {
+                "name": "Simo Liukkonen & Timo Lukumaa",
+                "players": [
+                    "simo-liukkonen",
+                    "timo-lukumaa"
+                ]
+            },
+            {
+                "name": "Martin Svedholm & Lauri Paatela",
+                "players": [
+                    "martin-svedholm",
+                    "lauri-paatela"
+                ]
+            },
+            {
+                "name": "Juuso Pihamaa & Harri Vainio",
+                "players": [
+                    "juuso-pihamaa",
+                    "harri-vainio"
+                ]
+            },
+            {
+                "name": "Marcus Mattila & Miso Lith",
+                "players": [
+                    "miso-lith",
+                    "marcus-mattila"
+                ]
+            },
+            {
+                "name": "Okko Pykäläinen & Toni Marttila",
+                "players": [
+                    "toni-marttila",
+                    "okko-pykalainen"
+                ]
+            },
+            {
+                "name": "Ofri Porat & Pekka Saijonmaa",
+                "players": [
+                    "ofri-porat",
+                    "pekka-saijonmaa"
+                ]
+            }
+        ],
+        "winners": {
+            "hector": [
+                "olli-varis",
+                "jarkko-kailanto"
+            ],
+            "victor": [
+                "jarkko-kailanto"
+            ]
+        }
+    },
+    "description": "The world's top amateur golfers gathered to compete in the prestigious Hector Trophée 2023. Hosted at the scenic Diamond Country Club in Austria from September 23-26, this annual event showcased a thrilling 4-day stroke play format. The elite competitors battled for the honor of claiming the esteemed Hector Trophée, adding another chapter to this celebrated tournament's history."
+}

@@ -1,11 +1,9 @@
 import { type Event, type HectorEvent, type MatchplayEvent, type FinnkampenEvent } from '../schemas/events';
-import { getAllEvents } from './events';
-
-import playersData from '../data/players.json';
 import { type Player, schema as PlayerSchema } from '../schemas/players';
-
 import { type HandicapHistoryEntry } from '../schemas/handicaps';
 import { getPlayerHandicapHistoryById as getPlayerHandicapHistoryByIdImplementation } from './handicaps';
+import { getAllEvents } from './events';
+import { playersData } from './data';
 
 
 export function getAllPlayerIds(): Array<string> {

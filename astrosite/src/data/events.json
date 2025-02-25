@@ -990,7 +990,7 @@
                 }
             ],
             "winners": {
-                "finnkampen": "Ukkometsot"
+                "finnkampen": ["Ukkometsot"]
             }
         }
     },

@@ -1,0 +1,12 @@
+{
+  "id": "janne-valtakari",
+  "name": {
+    "first": "Janne",
+    "last": "Valtakari"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358451673611"
+  },
+  "club": "ReG"
+}

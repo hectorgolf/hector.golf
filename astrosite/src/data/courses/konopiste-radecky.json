@@ -1,0 +1,183 @@
+{
+    "id": "konopiste-radecky",
+    "name": "Konopiště - Radecký",
+    "homepage": "https://www.golf-konopiste.cz/index.php?lang=en",
+    "hero_image": "/images/courses/konopiste-radecky/hero.jpg",
+    "images": {
+        "course_layout": "/images/courses/konopiste-radecky/layout.png"
+    },
+    "description_short": "The Radecký course at Konopiště is an impressive course cut through a beautiful forest area. This championship course is up to 6,484 meters from the back tee. Named after the property’s original residents, Radecký was built in consultation with the European PGA and is a great test even for the low handicapper.",
+    "description_deste": "D’Este Course The resort’s second course is called the d’Este Course, and although it is also a par-72, its length of 6,116 meters makes it a more manageable course for all skill levels. However, D’Este is not without its challenges; the fairways are narrowed in places by the property’s impressive forest, so it’s often wise to play conservatively to achieve a good position.",
+    "description_long": [
+        {
+            "type": "paragraph",
+            "content": "Konopiště Golf Resort in Benešov, Czech Republic is an unparalleled experience. Not only is it a short distance from Prague, but it also offers two par 72 championship courses and a nine-hole academy course, making it the perfect choice for a golf trip. As couples, groups or for training stays."
+        },
+        {
+            "type": "paragraph",
+            "content": "The 4-star Manor Hotel at Konopiště Resort offers comfortable accommodation in the beautiful surroundings of the beautifully converted manor house. With roots dating back to the 14th century, this hotel has been beautifully remodeled and now has the facilities and amenities required of a good modern hotel, including satellite TV, safe, minibar, private bathroom and more."
+        },
+        {
+            "type": "image",
+            "url": "/images/courses/konopiste-radecky/hero-18th-green2.jpg"
+        },
+        {
+            "type": "paragraph",
+            "content": "The Radecký course at Konopiště is an impressive course cut through a beautiful forest area. Designed by Keith Preston and named after the property’s original residents, Radecký was built in consultation with the European PGA and is a great test even for the low handicapper. The course was opened in 2002."
+        },
+        {
+            "type": "paragraph",
+            "content": "As a challenging par 72, the 18-hole Radecký plays up to an impressive 6,484 meters from the back tee for which the course has been rated as 75.6 with a slope rating of 147. The course features 4 sets of tees for different skill levels, however, offering the option of much more approachable distances off the tee."
+        },
+        {
+            "type": "image",
+            "url": "/images/courses/konopiste-radecky/hero-18th-green.jpg"
+        },
+        {
+            "type": "paragraph",
+            "content": "Designed and built to blend seamlessly into the surrounding rolling landscape, Radecký's wooded scenery, ample bunkering, and water hazards give the course character and challenge. The large, contoured greens are renowned for their excellent condition and first-time players are known to gasp at the approach to the picturesque 18th green over a narrow bridge."
+        }
+    ],
+    "contact": {
+        "address": "Tvoršovice 27, CZ-25601 Benešov, Czechia",
+        "phone": "tel://+420317784044",
+        "email": "gcko@gcko.cz"
+    },
+    "datasources": [
+        {
+            "name": "website",
+            "url": "https://www.golf-konopiste.cz/index.php?lang=en"
+        },
+        {
+            "name": "official scorecard",
+            "url": "https://www.golf-konopiste.cz/source/H%C5%98I%C5%A0T%C4%9A/score_Radecký.pdf"
+        },
+        {
+            "name": "mscorecard",
+            "url": "https://www.mscorecard.com/mscorecard/showcourse.php?cid=1083957032512_1_2"
+        }
+    ],
+    "course": {
+        "tees": [
+            {
+                "name": "black",
+                "name_cz": "černá",
+                "color": "#000000",
+                "stroke": "#ffffff",
+                "length": 6484,
+                "par": 72,
+                "rating": {
+                    "men": 75.6,
+                    "ladies": null
+                },
+                "slope": {
+                    "men": 147,
+                    "ladies": null
+                }
+            },
+            {
+                "name": "white",
+                "name_cz": "bílá",
+                "color": "#ffffff",
+                "length": 6168,
+                "par": 72,
+                "rating": {
+                    "men": 73.7,
+                    "ladies": null
+                },
+                "slope": {
+                    "men": 146,
+                    "ladies": null
+                }
+            },
+            {
+                "name": "yellow",
+                "name_cz": "žlutá",
+                "color": "#dddd00",
+                "length": 5859,
+                "par": 72,
+                "rating": {
+                    "men": 72.2,
+                    "ladies": null
+                },
+                "slope": {
+                    "men": 142,
+                    "ladies": null
+                }
+            },
+            {
+                "name": "blue",
+                "name_cz": "modrá",
+                "color": "#0000dd",
+                "length": 5522,
+                "par": 72,
+                "rating": {
+                    "men": null,
+                    "ladies": 76.1
+                },
+                "slope": {
+                    "men": null,
+                    "ladies": 145
+                }
+            },
+            {
+                "name": "red",
+                "name_cz": "červená",
+                "color": "#dd0000",
+                "length": 5221,
+                "par": 72,
+                "rating": {
+                    "men": null,
+                    "ladies": 74.2
+                },
+                "slope": {
+                    "men": null,
+                    "ladies": 140
+                }
+            }
+        ],
+        "scorecard": {
+            "men": [
+                { "hole":  1, "par": 5, "hcp": 10, "lengths": { "black": 471, "white": 453, "yellow": 421, "blue": 412, "red": 391 }},
+                { "hole":  2, "par": 4, "hcp": 18, "lengths": { "black": 360, "white": 330, "yellow": 308, "blue": 277, "red": 257 }},
+                { "hole":  3, "par": 4, "hcp":  4, "lengths": { "black": 358, "white": 337, "yellow": 319, "blue": 301, "red": 288 }},
+                { "hole":  4, "par": 5, "hcp": 14, "lengths": { "black": 436, "white": 419, "yellow": 403, "blue": 383, "red": 363 }},
+                { "hole":  5, "par": 4, "hcp":  6, "lengths": { "black": 352, "white": 332, "yellow": 313, "blue": 296, "red": 296 }},
+                { "hole":  6, "par": 3, "hcp": 16, "lengths": { "black": 166, "white": 155, "yellow": 147, "blue": 124, "red": 105 }},
+                { "hole":  7, "par": 4, "hcp":  2, "lengths": { "black": 376, "white": 357, "yellow": 337, "blue": 305, "red": 278 }},
+                { "hole":  8, "par": 3, "hcp":  8, "lengths": { "black": 189, "white": 178, "yellow": 163, "blue": 153, "red": 138 }},
+                { "hole":  9, "par": 4, "hcp": 12, "lengths": { "black": 379, "white": 353, "yellow": 335, "blue": 324, "red": 303 }},
+                { "hole": 10, "par": 3, "hcp": 11, "lengths": { "black": 128, "white": 128, "yellow": 128, "blue": 112, "red": 112 }},
+                { "hole": 11, "par": 4, "hcp":  7, "lengths": { "black": 370, "white": 354, "yellow": 339, "blue": 323, "red": 306 }},
+                { "hole": 12, "par": 5, "hcp":  5, "lengths": { "black": 545, "white": 528, "yellow": 503, "blue": 482, "red": 459 }},
+                { "hole": 13, "par": 4, "hcp": 17, "lengths": { "black": 384, "white": 368, "yellow": 344, "blue": 336, "red": 308 }},
+                { "hole": 14, "par": 5, "hcp":  1, "lengths": { "black": 542, "white": 519, "yellow": 499, "blue": 478, "red": 454 }},
+                { "hole": 15, "par": 4, "hcp": 13, "lengths": { "black": 422, "white": 399, "yellow": 383, "blue": 375, "red": 355 }},
+                { "hole": 16, "par": 3, "hcp":  3, "lengths": { "black": 192, "white": 182, "yellow": 168, "blue": 147, "red": 138 }},
+                { "hole": 17, "par": 4, "hcp": 15, "lengths": { "black": 421, "white": 398, "yellow": 387, "blue": 370, "red": 370 }},
+                { "hole": 18, "par": 4, "hcp":  9, "lengths": { "black": 393, "white": 378, "yellow": 362, "blue": 324, "red": 300 }}
+            ],
+            "ladies": null
+        },
+        "descriptions": [
+            { "hole":  1, "layout": "/images/courses/konopiste-radecky/holes/1.png", "description": "" },
+            { "hole":  2, "layout": "/images/courses/konopiste-radecky/holes/2.png", "description": "" },
+            { "hole":  3, "layout": "/images/courses/konopiste-radecky/holes/3.png", "description": "" },
+            { "hole":  4, "layout": "/images/courses/konopiste-radecky/holes/4.png", "description": "" },
+            { "hole":  5, "layout": "/images/courses/konopiste-radecky/holes/5.png", "description": "" },
+            { "hole":  6, "layout": "/images/courses/konopiste-radecky/holes/6.png", "description": "" },
+            { "hole":  7, "layout": "/images/courses/konopiste-radecky/holes/7.png", "description": "" },
+            { "hole":  8, "layout": "/images/courses/konopiste-radecky/holes/8.png", "description": "" },
+            { "hole":  9, "layout": "/images/courses/konopiste-radecky/holes/9.png", "description": "" },
+            { "hole": 10, "layout": "/images/courses/konopiste-radecky/holes/10.png", "description": "" },
+            { "hole": 11, "layout": "/images/courses/konopiste-radecky/holes/11.png", "description": "" },
+            { "hole": 12, "layout": "/images/courses/konopiste-radecky/holes/12.png", "description": "" },
+            { "hole": 13, "layout": "/images/courses/konopiste-radecky/holes/13.png", "description": "" },
+            { "hole": 14, "layout": "/images/courses/konopiste-radecky/holes/14.png", "description": "" },
+            { "hole": 15, "layout": "/images/courses/konopiste-radecky/holes/15.png", "description": "" },
+            { "hole": 16, "layout": "/images/courses/konopiste-radecky/holes/16.png", "description": "" },
+            { "hole": 17, "layout": "/images/courses/konopiste-radecky/holes/17.png", "description": "" },
+            { "hole": 18, "layout": "/images/courses/konopiste-radecky/holes/18.png", "description": "" }
+        ]
+    }
+}

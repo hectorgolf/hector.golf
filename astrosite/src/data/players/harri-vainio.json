@@ -1,0 +1,12 @@
+{
+  "id": "harri-vainio",
+  "name": {
+    "first": "Harri",
+    "last": "Vainio"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358505980893"
+  },
+  "club": "HaG"
+}

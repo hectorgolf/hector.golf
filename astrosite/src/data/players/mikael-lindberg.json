@@ -1,0 +1,12 @@
+{
+  "id": "mikael-lindberg",
+  "name": {
+    "first": "Mikael",
+    "last": "Lindberg"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": ""
+  },
+  "club": "Kurk"
+}

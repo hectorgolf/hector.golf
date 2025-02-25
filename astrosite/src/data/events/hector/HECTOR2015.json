@@ -1,0 +1,57 @@
+{
+    "id": "HECTOR2015",
+    "name": "Hector Trophée II",
+    "format": "hector",
+    "location": "Pickala Golf, Finland",
+    "date": "September 12, 2015",
+    "courses": [
+        "pickala-seaside"
+    ],
+    "participants": [],
+    "results": {
+        "teams": [
+            {
+                "name": "Toni Marttila & Daniel Hylton",
+                "players": [
+                    "toni-marttila",
+                    "daniel-hylton"
+                ]
+            },
+            {
+                "name": "Jarkko Kailanto & Lasse Koskela",
+                "players": [
+                    "jarkko-kailanto",
+                    "lasse-koskela"
+                ]
+            },
+            {
+                "name": "Marcus Mattila & Miso Korkiakoski",
+                "players": [
+                    "marcus-mattila",
+                    "miso-lith"
+                ]
+            },
+            {
+                "name": "Tomas Danska & Jonas Löfman",
+                "players": [
+                    "tomas-danska",
+                    "jonas-lofman"
+                ]
+            },
+            {
+                "name": "Ricke Blomqvist & Matti Vahtola",
+                "players": [
+                    "ricke-blomqvist",
+                    "matias-vahtola"
+                ]
+            }
+        ],
+        "winners": {
+            "hector": [
+                "daniel-hylton",
+                "toni-marttila"
+            ]
+        }
+    },
+    "description": "For 2015, Hector Trophée returned to the beautiful Siuntio area and Pickala Golf for a much-awaited Hector Trophée II. Starting to gain momentum as a premier amateur golf event, Hector Trophée II featured many of Finland's most promising young atheletes and Mikko Oesch. The shortness of most holes combined with the ever-present water on the Seaside course tested these talented players' adaptability and strategic skills, providing an engaging and dynamic event."
+}

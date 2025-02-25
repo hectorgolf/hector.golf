@@ -1,0 +1,188 @@
+{
+    "id": "HECTORMATCHPLAY2024",
+    "name": "Hector Matchplay 2024",
+    "format": "matchplay",
+    "location": "Finland",
+    "date": "June 19 - September 1, 2024",
+    "description": "16 of the world's best amateur golfers face each other in a sequence of grueling head-to-head battles to the lip-out bogey. This matchplay tournament format uses a single elimination bracket, making the stakes high from the very start.",
+    "participants": [
+        "lasse-koskela",
+        "martin-svedholm",
+        "eero-halmetoja",
+        "harri-vainio",
+        "jaakko-saarinen",
+        "janne-valtakari",
+        "jussi-allonen",
+        "juuso-pihamaa",
+        "mikko-oesch",
+        "miso-lith",
+        "olli-andersson",
+        "sami-heikkinen",
+        "simo-liukkonen",
+        "timo-lukumaa",
+        "toni-marttila",
+        "ossi-laukkanen"
+    ],
+    "results": {
+        "winners": {
+            "matchplay": "simo-liukkonen"
+        },
+        "bracket": [
+            {
+                "round": 1,
+                "matches": [
+                    {
+                        "id": "M01",
+                        "leftSource": null,
+                        "rightSource": null,
+                        "left": "simo-liukkonen",
+                        "right": "janne-valtakari",
+                        "score": "1UP",
+                        "winner": "simo-liukkonen"
+                    },
+                    {
+                        "id": "M02",
+                        "leftSource": null,
+                        "rightSource": null,
+                        "left": "miso-lith",
+                        "right": "mikko-oesch",
+                        "score": "4&2",
+                        "winner": "mikko-oesch"
+                    },
+                    {
+                        "id": "M03",
+                        "leftSource": null,
+                        "rightSource": null,
+                        "left": "harri-vainio",
+                        "right": "sami-heikkinen",
+                        "score": "7&6",
+                        "winner": "sami-heikkinen"
+                    },
+                    {
+                        "id": "M04",
+                        "leftSource": null,
+                        "rightSource": null,
+                        "left": "olli-andersson",
+                        "right": "juuso-pihamaa",
+                        "score": "AS",
+                        "winner": "olli-andersson"
+                    },
+                    {
+                        "id": "M05",
+                        "leftSource": null,
+                        "rightSource": null,
+                        "left": "jussi-allonen",
+                        "right": "jaakko-saarinen",
+                        "score": "4&3",
+                        "winner": "jussi-allonen"
+                    },
+                    {
+                        "id": "M06",
+                        "leftSource": null,
+                        "rightSource": null,
+                        "left": "eero-halmetoja",
+                        "right": "timo-lukumaa",
+                        "score": "4&2",
+                        "winner": "eero-halmetoja"
+                    },
+                    {
+                        "id": "M07",
+                        "leftSource": null,
+                        "rightSource": null,
+                        "left": "toni-marttila",
+                        "right": "martin-svedholm",
+                        "score": "AS",
+                        "winner": "martin-svedholm"
+                    },
+                    {
+                        "id": "M08",
+                        "leftSource": null,
+                        "rightSource": null,
+                        "left": "lasse-koskela",
+                        "right": "ossi-laukkanen",
+                        "score": "8&7",
+                        "winner": "ossi-laukkanen"
+                    }
+                ]
+            },
+            {
+                "round": 2,
+                "matches": [
+                    {
+                        "id": "M09",
+                        "leftSource": "M01",
+                        "rightSource": "M02",
+                        "left": "simo-liukkonen",
+                        "right": "mikko-oesch",
+                        "score": "4&3",
+                        "winner": "simo-liukkonen"
+                    },
+                    {
+                        "id": "M10",
+                        "leftSource": "M03",
+                        "rightSource": "M04",
+                        "left": "sami-heikkinen",
+                        "right": "olli-andersson",
+                        "score": "6&4",
+                        "winner": "sami-heikkinen"
+                    },
+                    {
+                        "id": "M11",
+                        "leftSource": "M05",
+                        "rightSource": "M06",
+                        "left": "jussi-allonen",
+                        "right": "eero-halmetoja",
+                        "score": "2UP",
+                        "winner": "eero-halmetoja"
+                    },
+                    {
+                        "id": "M12",
+                        "leftSource": "M07",
+                        "rightSource": "M08",
+                        "left": "martin-svedholm",
+                        "right": "ossi-laukkanen",
+                        "score": "1UP",
+                        "winner": "ossi-laukkanen"
+                    }
+                ]
+            },
+            {
+                "round": 3,
+                "matches": [
+                    {
+                        "id": "M13",
+                        "leftSource": "M09",
+                        "rightSource": "M10",
+                        "left": "simo-liukkonen",
+                        "right": "sami-heikkinen",
+                        "score": "5&3",
+                        "winner": "simo-liukkonen"
+                    },
+                    {
+                        "id": "M14",
+                        "leftSource": "M11",
+                        "rightSource": "M12",
+                        "left": "eero-halmetoja",
+                        "right": "ossi-laukkanen",
+                        "score": "1UP",
+                        "winner": "eero-halmetoja"
+                    }
+                ]
+            },
+            {
+                "round": 4,
+                "matches": [
+                    {
+                        "id": "M15",
+                        "leftSource": "M13",
+                        "rightSource": "M14",
+                        "left": "simo-liukkonen",
+                        "right": "eero-halmetoja",
+                        "score": "9&7",
+                        "winner": "simo-liukkonen"
+                    }
+                ]
+            }
+        ]
+    }
+}

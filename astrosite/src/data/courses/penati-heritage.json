@@ -1,0 +1,178 @@
+{
+    "id": "penati-heritage",
+    "name": "Penati Golf Heritage",
+    "homepage": "https://www.penatigolfresort.sk/en/",
+    "contact": {
+        "address": "453, 906 07 Šajdíkove Humence-Senica, Slovakia",
+        "phone": "tel://+421917907777",
+        "email": "reception@penatigolfresort.sk"
+    },
+    "hero_image": "/images/courses/penati-heritage/hero.jpg",
+    "description_short": "",
+    "description_long": [
+        {
+            "type": "paragraph",
+            "content": "Penati Golf Resort is Slovakia’s largest golf course surrounded by the picturesque Little Carpathian Mountains in Záhorie less than an hour’s drive from Bratislava, and has been ranked among the best European courses by the World of Leading Golf and the World’s Premier Golf Destinations. Ever since it was established, Penati has been the most award-winning golf course in Slovakia, featured in many major rankings and reviews of courses by both golf professionals and ordinary golfers from Slovakia and around the world."
+        },
+        {
+            "type": "paragraph",
+            "content": "Opened in August 2012, the Penati Golf Resort is located near the town of Senica, about an hour’s drive north from the Slovak Republic’s capital, Bratislava, and it's now the country's largest golfing facility."
+        },
+        {
+            "type": "image",
+            "url": "/images/courses/penati-heritage/hero2.jpg"
+        },
+        {
+            "type": "paragraph",
+            "content": "Design of the second course – the Heritage - was entrusted to Jonathan Davison. The second eighteen holes in its high standard complement the Legend course, creating an attractive alternative."
+        },
+        {
+            "type": "paragraph",
+            "content": "The difference is a return to the roots and traditions of island-design courses, enhancing the views of the splendour and natural colours of the countryside abundant in this area."
+        },
+        {
+            "type": "image",
+            "url": "/images/courses/penati-heritage/hero3.jpg"
+        },
+        {
+            "type": "paragraph",
+            "content": "World-renowned shaper Mick McShane was in charge of shaping the holes.  His signature is on such courses as Kingsbarnes and The Castle Course in the Home of Golf, St Andrews Links in Scotland."
+        },
+        {
+            "type": "paragraph",
+            "content": "The grand opening of the second 18-hole course Heritage took place in August 2013."
+        }
+    ],
+    "images": {
+        "hero": "/images/courses/penati-heritage/hero.jpg",
+        "aerial": "/images/courses/penati-heritage/aerial.jpg",
+        "course_layout": "/images/courses/penati-heritage/layout.png"
+    },
+    "course": {
+        "tees": [
+            {
+                "name": "black",
+                "color": "#000000",
+                "length": 6207,
+                "par": 72,
+                "rating": {
+                    "men": 73.7,
+                    "ladies": null
+                },
+                "slope": {
+                    "men": 140,
+                    "ladies": null
+                }
+            },
+            {
+                "name": "white",
+                "color": "#ffffff",
+                "length": 5964,
+                "par": 72,
+                "rating": {
+                    "men": 72.0,
+                    "ladies": null
+                },
+                "slope": {
+                    "men": 139,
+                    "ladies": null
+                }
+            },
+            {
+                "name": "yellow",
+                "color": "#ffff00",
+                "length": 5647,
+                "par": 72,
+                "rating": {
+                    "men": 70.3,
+                    "ladies": null
+                },
+                "slope": {
+                    "men": 135,
+                    "ladies": null
+                }
+            },
+            {
+                "name": "blue",
+                "color": "#0000ff",
+                "length": 5213,
+                "par": 72,
+                "rating": {
+                    "men": null,
+                    "ladies": 73.8
+                },
+                "slope": {
+                    "men": null,
+                    "ladies": 137
+                }
+            },
+            {
+                "name": "red",
+                "color": "#ff0000",
+                "length": 4623,
+                "par": 72,
+                "rating": {
+                    "men": null,
+                    "ladies": 70.0
+                },
+                "slope": {
+                    "men": null,
+                    "ladies": 123
+                }
+            }
+        ],
+        "scorecard": {
+            "men": [
+                { "hole":  1, "par": 4, "hcp": 11, "lengths": { "black": 316, "white": 292, "yellow": 284, "blue": 249, "red": 237 }},
+                { "hole":  2, "par": 4, "hcp": 17, "lengths": { "black": 360, "white": 351, "yellow": 335, "blue": 306, "red": 262 }},
+                { "hole":  3, "par": 5, "hcp":  5, "lengths": { "black": 507, "white": 500, "yellow": 480, "blue": 464, "red": 413 }},
+                { "hole":  4, "par": 3, "hcp": 13, "lengths": { "black": 165, "white": 165, "yellow": 144, "blue": 123, "red": 123 }},
+                { "hole":  5, "par": 4, "hcp":  3, "lengths": { "black": 399, "white": 364, "yellow": 343, "blue": 316, "red": 266 }},
+                { "hole":  6, "par": 4, "hcp":  9, "lengths": { "black": 333, "white": 316, "yellow": 292, "blue": 285, "red": 237 }},
+                { "hole":  7, "par": 3, "hcp": 15, "lengths": { "black": 161, "white": 152, "yellow": 139, "blue": 123, "red": 110 }},
+                { "hole":  8, "par": 4, "hcp":  1, "lengths": { "black": 350, "white": 342, "yellow": 331, "blue": 313, "red": 287 }},
+                { "hole":  9, "par": 5, "hcp":  7, "lengths": { "black": 472, "white": 472, "yellow": 459, "blue": 430, "red": 387 }},
+                { "hole": 10, "par": 4, "hcp": 14, "lengths": { "black": 350, "white": 339, "yellow": 306, "blue": 297, "red": 251 }},
+                { "hole": 11, "par": 5, "hcp":  4, "lengths": { "black": 464, "white": 450, "yellow": 448, "blue": 386, "red": 348 }},
+                { "hole": 12, "par": 3, "hcp": 18, "lengths": { "black": 127, "white": 112, "yellow": 106, "blue": 92, "red": 78 }},
+                { "hole": 13, "par": 4, "hcp": 16, "lengths": { "black": 318, "white": 296, "yellow": 282, "blue": 272, "red": 232 }},
+                { "hole": 14, "par": 3, "hcp": 10, "lengths": { "black": 199, "white": 188, "yellow": 176, "blue": 156, "red": 128 }},
+                { "hole": 15, "par": 4, "hcp":  6, "lengths": { "black": 354, "white": 350, "yellow": 334, "blue": 302, "red": 274 }},
+                { "hole": 16, "par": 4, "hcp":  8, "lengths": { "black": 413, "white": 383, "yellow": 349, "blue": 340, "red": 296 }},
+                { "hole": 17, "par": 5, "hcp":  2, "lengths": { "black": 509, "white": 497, "yellow": 476, "blue": 432, "red": 427 }},
+                { "hole": 18, "par": 4, "hcp": 12, "lengths": { "black": 410, "white": 395, "yellow": 363, "blue": 327, "red": 267 }}
+            ],
+            "ladies": null
+        },
+        "descriptions": [
+            { "hole":  1, "shape": "wide", "layout": "/images/courses/penati-heritage/holes/1.png", "description": "Drive up the right side of the fairway for the easiest approach to attack the first green. Club selection is vital for your second shot to this small green." },
+            { "hole":  2, "shape": "wide", "layout": "/images/courses/penati-heritage/holes/2.png", "description": "Options are available from the tee. Long hitters can play up the right side to get close to the green. Play up the left side will leave an interesting shot over the water." },
+            { "hole":  3, "shape": "wide", "layout": "/images/courses/penati-heritage/holes/3.png", "description": "Drive up the left hand side of the fairway for the shortest route to this long par 5. You can be aggressive with shots into the green as the slopes will help run the ball to the pin." },
+            { "hole":  4, "shape": "wide", "layout": "/images/courses/penati-heritage/holes/4.png", "description": "A par 3 which will reward a left to right ball flight shot. Be careful with your club selection as trouble can be found for the long shot." },
+            { "hole":  5, "shape": "wide", "layout": "/images/courses/penati-heritage/holes/5.png", "description": "A long par 4 hole. The ideal shot from the tee is a right to left ball flight, this will leave a good approach to the narrow green. A four is a good score on this hole." },
+            { "hole":  6, "shape": "wide", "layout": "/images/courses/penati-heritage/holes/6.png", "description": "The green was designed to favour a tee shot up the right side of the fairway, any tee shots up the left will face a tricky shot over a deep bunker." },
+            { "hole":  7, "shape": "wide", "layout": "/images/courses/penati-heritage/holes/7.png", "description": "The draw shot is the perfect shot if you are looking a birdie on this short par 3 hole. Miss the green and the contours will leave you some interesting shots." },
+            { "hole":  8, "shape": "wide", "layout": "/images/courses/penati-heritage/holes/8.png", "description": "The fairway bunker will give you an ideal line on the 8th hole. Be careful on your second shot as water can be found with any shot not struck 100%." },
+            { "hole":  9, "shape": "wide", "layout": "/images/courses/penati-heritage/holes/9.png", "description": "Lots of options and decisions for the golfer. Play close to the fairway bunkers if you want to reach this short par 5 in two shots." },
+            { "hole": 10, "shape": "wide", "layout": "/images/courses/penati-heritage/holes/10.png", "description": "Play close to the fairway bunker to give you a perfect line into the green. The green is bigger than it looks so be aggressive with the approach shot." },
+            { "hole": 11, "shape": "wide", "layout": "/images/courses/penati-heritage/holes/11.png", "description": "An interesting par 5. Drive up the left side for the easier shot to the green. Carry the bunkers on your second shot and the contours will feed you close to the green." },
+            { "hole": 12, "shape": "wide", "layout": "/images/courses/penati-heritage/holes/12.png", "description": "The shortest hole on the golf course but not the easiest. Be bold with your tee shot as anything short and weak will find trouble." },
+            { "hole": 13, "shape": "wide", "layout": "/images/courses/penati-heritage/holes/13.png", "description": "An interesting par 4. The ideal shot will be a 3 wood or hybrid club down the left side, trouble can be found on the right side with 2 large bunkers. Play your second shot to the right side of the green and use the contours to run the ball down to the pin." },
+            { "hole": 14, "shape": "wide", "layout": "/images/courses/penati-heritage/holes/14.png", "description": "A long par 3 hole which will play shorter than it looks. The ideal shot should carry the bunkers short and feed to the green. Do not go long as you will be faced with a difficult pitch back up the green." },
+            { "hole": 15, "shape": "wide", "layout": "/images/courses/penati-heritage/holes/15.png", "description": "A big wide fairway is available on hole 15, play on the right side for an easier line to the green. Drives on the left side of the fairway will be faced with a difficult second shot across two deep bunkers." },
+            { "hole": 16, "shape": "wide", "layout": "/images/courses/penati-heritage/holes/16.png", "description": "A tough long par 4, the perfect tee shot will carry over the fairway bunker on the right side of the fairway. Take an extra club for your second shot as 2 large bunkers can be found short and right of the green." },
+            { "hole": 17, "shape": "wide", "layout": "/images/courses/penati-heritage/holes/17.png", "description": "A long par 5. Drive over the bunkers in the middle of the fairway to gain some extra distance from the downslope. The second shot is crucial, be careful of water and trees which can be found with a careless shot." },
+            { "hole": 18, "shape": "wide", "layout": "/images/courses/penati-heritage/holes/18.png", "description": "A right to left tee shot is the favoured shot on the finishing hole. Once in the fairway a bold shot will be required if you are searching for a birdie finish!" }
+        ]
+    },
+    "datasources": [
+        {
+            "name": "website",
+            "url": "https://www.penatigolfresort.sk/en/rezort/heritage-course/"
+        },
+        {
+            "name": "mscorecard",
+            "url": "https://www.mscorecard.com/mscorecard/showcourse.php?cid=1397640700154953"
+        }
+    ]
+}

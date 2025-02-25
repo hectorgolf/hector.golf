@@ -1,0 +1,12 @@
+{
+  "id": "riku-liira",
+  "name": {
+    "first": "Riku",
+    "last": "Liira"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": ""
+  },
+  "club": "KJKG"
+}

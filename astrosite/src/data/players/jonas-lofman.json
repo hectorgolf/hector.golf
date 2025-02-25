@@ -1,0 +1,12 @@
+{
+  "id": "jonas-lofman",
+  "name": {
+    "first": "Jonas",
+    "last": "Löfman"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": ""
+  },
+  "club": "VaGo"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "marcus-mattila",
+  "name": {
+    "first": "Marcus",
+    "last": "Mattila"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358400645949"
+  },
+  "club": "Kurk"
+}

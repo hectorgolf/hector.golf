@@ -1,0 +1,96 @@
+{
+    "id": "HECTOR2021",
+    "name": "Hector Trophée 2021",
+    "format": "hector",
+    "location": "Penati Golf Resort, Slovakia",
+    "date": "September 1-4, 2021",
+    "courses": [
+        "penati-legend",
+        "penati-heritage"
+    ],
+    "participants": [],
+    "results": {
+        "teams": [
+            {
+                "name": "Pasi Halmetoja & Olli Andersson",
+                "players": [
+                    "pasi-halmetoja",
+                    "olli-andersson"
+                ]
+            },
+            {
+                "name": "Simo Liukkonen & Timo Lukumaa",
+                "players": [
+                    "simo-liukkonen",
+                    "timo-lukumaa"
+                ]
+            },
+            {
+                "name": "Toni Marttila & Lauri Paatela",
+                "players": [
+                    "toni-marttila",
+                    "lauri-paatela"
+                ]
+            },
+            {
+                "name": "Eero Halmetoja & Marcus Mattila",
+                "players": [
+                    "eero-halmetoja",
+                    "marcus-mattila"
+                ]
+            },
+            {
+                "name": "Martin Svedholm & Pekka Saijonmaa",
+                "players": [
+                    "martin-svedholm",
+                    "pekka-saijonmaa"
+                ]
+            },
+            {
+                "name": "Sami Heikkinen & Jaakko Saarinen",
+                "players": [
+                    "sami-heikkinen",
+                    "jaakko-saarinen"
+                ]
+            },
+            {
+                "name": "Jussi Allonen & Janne Valtakari",
+                "players": [
+                    "jussi-allonen",
+                    "janne-valtakari"
+                ]
+            },
+            {
+                "name": "Juuso Pihamaa & Lassi Koto",
+                "players": [
+                    "juuso-pihamaa",
+                    "lassi-koto"
+                ]
+            },
+            {
+                "name": "Harri Vainio & Miso Lith",
+                "players": [
+                    "harri-vainio",
+                    "miso-lith"
+                ]
+            },
+            {
+                "name": "Mikko Oesch & Lasse Koskela",
+                "players": [
+                    "mikko-oesch",
+                    "lasse-koskela"
+                ]
+            }
+        ],
+        "winners": {
+            "hector": [
+                "simo-liukkonen",
+                "timo-lukumaa"
+            ],
+            "victor": [
+                "toni-marttila"
+            ]
+        }
+    },
+    "description": "The Hector Trophée 2021, held at the Penati Golf Resort in Slovakia from September 1-4, offered a diverse competition format including stroke play, stableford, best ball, and scramble. This format tested the golfers' adaptability and skill, making for an engaging and multifaceted event."
+}

@@ -1,0 +1,161 @@
+{
+    "id": "adamstal-championship",
+    "name": "Adamstal - Championship",
+    "homepage": "https://www.adamstal.at/en/championship-course/",
+    "contact": {
+        "address": "Gaupmannsgraben 21, A – 3172 Ramsau, Austria",
+        "phone": "+4327643500",
+        "email": "info@adamstal.at"
+    },
+    "hero_image": "/images/courses/adamstal-championship/hero1.jpg",
+    "description_short": "The \"Championship Course\" of the Adamstal golf club is quite sporty: the professionals of the European Challenge Tour, who made several guest appearances, were able to find that out. Thanks to up to five tees per hole, the course is still fair for golfers of all levels. Another plus: The \"Championship Course\" is fully e-car compatible – even a challenge should be a pleasure.",
+    "description_long": [
+        {
+            "type": "paragraph",
+            "content": "In the middle of the Lower Austrian Alpine foothills lies the Adamstal Golf Club, one of the most spectacular golf courses in Europe, grandiose in design and always immaculately maintained."
+        },
+        {
+            "type": "image",
+            "url": "/images/courses/adamstal-championship/hero3.jpg"
+        },
+        {
+            "type": "paragraph",
+            "content": "Designer Jeff Howes has succeeded in skillfully integrating streams and terrain levels, forest clearings and rock formations into the impressive landscape. The varied foothills of the Alps thus naturally determine the rhythm of the fairways and green landscapes."
+        },
+        {
+            "type": "image",
+            "url": "/images/courses/adamstal-championship/hero4.jpg"
+        },
+        {
+            "type": "paragraph",
+            "content": "Therefore, it comes as no surprise that the Adamstal Golf Club has already voted Austria's Golf Course of the Year six times by a jury of experts and recently voted one of the top two most popular golf courses in Europe for the fourth time in an online survey (Golf Guide Award). Adamstal has also been one of the leading golf courses since 2002."
+        },
+        {
+            "type": "image",
+            "url": "/images/courses/adamstal-championship/hero5.jpg"
+        },
+        {
+            "type": "paragraph",
+            "content": "Club president Franz Wittmann: \"There is hardly a golf course like ours in Adamstal anywhere else in the world. Not only our international guests are impressed. A round at Adamstal is certainly a unique experience that you will never forget.\""
+        }
+    ],
+    "images": {
+        "course_layout": "/images/courses/adamstal-championship/layout.png"
+    },
+    "course": {
+        "tees": [
+            {
+                "name": "white",
+                "color": "#ffffff",
+                "stroke": "#000000",
+                "length": 5919,
+                "par": 70,
+                "rating": {
+                    "men": 73.3,
+                    "ladies": null
+                },
+                "slope": {
+                    "men": 137,
+                    "ladies": null
+                }
+            },
+            {
+                "name": "yellow",
+                "color": "#ffff00",
+                "stroke": "#000000",
+                "length": 5604,
+                "par": 70,
+                "rating": {
+                    "men": 71.0,
+                    "ladies": 77.5
+                },
+                "slope": {
+                    "men": 140,
+                    "ladies": 135
+                }
+            },
+            {
+                "name": "blue",
+                "color": "#0000ff",
+                "stroke": "#000000",
+                "length": 5188,
+                "par": 70,
+                "rating": {
+                    "men": 68.9,
+                    "ladies": 74.8
+                },
+                "slope": {
+                    "men": 135,
+                    "ladies": 136
+                }
+            },
+            {
+                "name": "red",
+                "color": "#ff0000",
+                "stroke": "#000000",
+                "length": 4775,
+                "par": 70,
+                "rating": {
+                    "men": 66.9,
+                    "ladies": 72.2
+                },
+                "slope": {
+                    "men": 125,
+                    "ladies": 131
+                }
+            },
+            {
+                "name": "orange",
+                "color": "#ffa500",
+                "stroke": "#000000",
+                "length": 4414,
+                "par": 70,
+                "rating": {
+                    "men": 65.1,
+                    "ladies": 69.5
+                },
+                "slope": {
+                    "men": 118,
+                    "ladies": 125
+                }
+            }
+        ],
+        "scorecard": {
+            "men": [
+                { "hole":  1, "par": 4, "hcp": 13, "lengths": { "white": 363, "yellow": 353, "blue": 321, "red": 293, "orange": 268 }},
+                { "hole":  2, "par": 4, "hcp":  5, "lengths": { "white": 313, "yellow": 312, "blue": 283, "red": 250, "orange": 241 }},
+                { "hole":  3, "par": 5, "hcp": 17, "lengths": { "white": 440, "yellow": 426, "blue": 396, "red": 387, "orange": 353 }},
+                { "hole":  4, "par": 4, "hcp":  7, "lengths": { "white": 372, "yellow": 342, "blue": 294, "red": 258, "orange": 221 }},
+                { "hole":  5, "par": 4, "hcp": 11, "lengths": { "white": 367, "yellow": 346, "blue": 321, "red": 297, "orange": 297 }},
+                { "hole":  6, "par": 3, "hcp": 15, "lengths": { "white": 155, "yellow": 137, "blue": 121, "red": 121, "orange": 105 }},
+                { "hole":  7, "par": 5, "hcp":  1, "lengths": { "white": 555, "yellow": 526, "blue": 495, "red": 479, "orange": 446 }},
+                { "hole":  8, "par": 3, "hcp":  9, "lengths": { "white": 181, "yellow": 162, "blue": 139, "red": 139, "orange": 126 }},
+                { "hole":  9, "par": 4, "hcp":  3, "lengths": { "white": 411, "yellow": 392, "blue": 375, "red": 327, "orange": 323 }},
+                { "hole": 10, "par": 4, "hcp": 12, "lengths": { "white": 333, "yellow": 312, "blue": 312, "red": 281, "orange": 252 }},
+                { "hole": 11, "par": 4, "hcp":  8, "lengths": { "white": 383, "yellow": 345, "blue": 329, "red": 306, "orange": 258 }},
+                { "hole": 12, "par": 3, "hcp": 18, "lengths": { "white": 126, "yellow": 126, "blue": 117, "red": 105, "orange": 105 }},
+                { "hole": 13, "par": 4, "hcp":  4, "lengths": { "white": 372, "yellow": 343, "blue": 302, "red": 260, "orange": 213 }},
+                { "hole": 14, "par": 4, "hcp": 14, "lengths": { "white": 339, "yellow": 339, "blue": 313, "red": 288, "orange": 271 }},
+                { "hole": 15, "par": 5, "hcp":  2, "lengths": { "white": 452, "yellow": 431, "blue": 407, "red": 367, "orange": 367 }},
+                { "hole": 16, "par": 3, "hcp":  6, "lengths": { "white": 181, "yellow": 175, "blue": 157, "red": 142, "orange": 132 }},
+                { "hole": 17, "par": 4, "hcp": 10, "lengths": { "white": 376, "yellow": 351, "blue": 333, "red": 327, "orange": 288 }},
+                { "hole": 18, "par": 3, "hcp": 16, "lengths": { "white": 200, "yellow": 186, "blue": 173, "red": 148, "orange": 148 }}
+            ],
+            "ladies": null
+        }
+    },
+    "datasources": [
+        {
+            "name": "website",
+            "url": "https://www.adamstal.at/en/"
+        },
+        {
+            "name": "mscorecard",
+            "url": "https://www.mscorecard.com/mscorecard/showcourse.php?cid=1185108211748"
+        },
+        {
+            "name": "top100golfcourses",
+            "url": "https://www.top100golfcourses.com/golf-course/adamstal"
+        }
+    ]
+}

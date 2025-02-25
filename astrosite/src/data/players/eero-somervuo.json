@@ -1,0 +1,11 @@
+{
+  "id": "eero-somervuo",
+  "name": {
+    "first": "Eero",
+    "last": "Somervuo"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": ""
+  }
+}

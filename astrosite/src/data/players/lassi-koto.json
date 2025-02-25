@@ -1,0 +1,12 @@
+{
+  "id": "lassi-koto",
+  "name": {
+    "first": "Lassi",
+    "last": "Koto"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358505435610"
+  },
+  "club": "LGV"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "olli-varis",
+  "name": {
+    "first": "Olli",
+    "last": "Varis"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358445455556"
+  },
+  "club": "HirG"
+}

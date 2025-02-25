@@ -1,0 +1,12 @@
+{
+    "id": "rasmus-back",
+    "name": {
+    "first": "Rasmus",
+    "last": "Back"
+    },
+    "privacy": "shorten-last-name",
+    "contact": {
+    "phone": ""
+    },
+    "club": "VGC"
+}

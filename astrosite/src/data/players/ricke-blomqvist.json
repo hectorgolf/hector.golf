@@ -1,0 +1,11 @@
+{
+  "id": "ricke-blomqvist",
+  "name": {
+    "first": "Ricke",
+    "last": "Blomqvist"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358503050220"
+  }
+}

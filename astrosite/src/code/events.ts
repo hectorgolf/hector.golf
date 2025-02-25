@@ -1,10 +1,7 @@
-import eventsData from '../data/events.json';
-import { type Event, genericEventSchema as EventSchema, type MatchplayEvent, type MatchplayResults, type HectorEvent, type FinnkampenEvent, EventFormat } from '../schemas/events';
-
-import coursesData from '../data/courses.json';
+import { type Event, genericEventSchema as EventSchema, type MatchplayEvent, type MatchplayResults, type HectorEvent, type FinnkampenEvent, EventFormat, hectorEventSchema } from '../schemas/events';
 import { type Course, schema as CourseSchema } from '../schemas/courses';
-
 import { parseEventDateRange, isoDate, isoDateToday } from './dates';
+import { eventsData, coursesData } from './data';
 
 
 export const linkToEvent = (event: Event|string): string => {
@@ -119,7 +116,7 @@ export function getEventById(id: string): Event|undefined {
 }
 
 export function getEventsAtCourse(courseId: string): Array<Event> {
-    return eventsData.filter((event) => event.courses?.includes(courseId)).map(e => EventSchema.parse(e));
+    return eventsData.filter((event) => (event as HectorEvent)?.courses?.includes(courseId)).map(e => EventSchema.parse(e));
 }
 
 export function getCoursesOfEvent(eventId: string): Array<Course> {

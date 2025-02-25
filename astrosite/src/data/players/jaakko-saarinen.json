@@ -1,0 +1,12 @@
+{
+  "id": "jaakko-saarinen",
+  "name": {
+    "first": "Jaakko",
+    "last": "Saarinen"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358442443347"
+  },
+  "club": "HirG"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "matias-vahtola",
+  "name": {
+    "first": "Matti",
+    "last": "Vahtola"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": ""
+  }
+}
