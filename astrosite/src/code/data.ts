@@ -3,7 +3,7 @@ import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { glob } from 'glob';
 
-import { type Event, type HectorEvent, genericEventSchema as EventSchema } from '../schemas/events';
+import { type Event, type FinnkampenEvent, type HectorEvent, type MatchplayEvent, genericEventSchema as EventSchema } from '../schemas/events';
 import { type Course, schema as CourseSchema } from '../schemas/courses';
 import { type Player, schema as PlayerSchema } from '../schemas/players';
 import { isoDate, isoDateToday, parseEventDateRange } from '../code/dates.ts'
@@ -24,7 +24,7 @@ export function pathToPlayerJson(player: Player): string {
  * @param x Candidate value.
  * @returns true if the value is defined (and presumably of the right type), false if it is `undefined`.
  */
-const nonUndefined = <T>(x: T | undefined): x is T => x !== undefined;
+export function nonUndefined<T>(value: T | undefined | null): value is T { return value !== undefined && value !== null; }
 
 /**
  * Filter function for dropping non-`HectorEvent` values.
@@ -32,7 +32,7 @@ const nonUndefined = <T>(x: T | undefined): x is T => x !== undefined;
  * @param event `Event` object to evaluate the predicate against.
  * @returns true if the `Event` is a `HectorEvent`.
  */
-function isHectorEvent(event: Event | undefined): event is HectorEvent { return event?.format === 'hector'; }
+export function isHectorEvent(event: Event|HectorEvent|MatchplayEvent|FinnkampenEvent|undefined): event is HectorEvent { return event?.format === 'hector'; }
 
 /**
  * Filter function for dropping past events.
