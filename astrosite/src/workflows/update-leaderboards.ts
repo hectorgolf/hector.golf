@@ -30,7 +30,6 @@ function getOngoingEvents(): Array<HectorEvent> {
         .filter(e => !!(e.leaderboardSheet))
         .filter(e => {
             const { startDate, endDate } = parseEventDateRange(e.date) || {}
-            if (e.id === 'HECTOR2025') return true
             if (!startDate) return false
             if (!endDate) return false
             if (isoDate(startDate) > isoDateToday()) {
