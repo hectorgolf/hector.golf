@@ -1,0 +1,78 @@
+{
+    "id": "HECTOR2018",
+    "name": "Hector Trophée V",
+    "format": "hector",
+    "location": "Sand Valley Golf Resort, Poland",
+    "date": "August 3-5, 2018",
+    "courses": [
+        "sandvalley"
+    ],
+    "participants": [],
+    "results": {
+        "teams": [
+            {
+                "name": "Simo Liukkonen & Toni Marttila",
+                "players": [
+                    "simo-liukkonen",
+                    "toni-marttila"
+                ]
+            },
+            {
+                "name": "Olli Andersson & Juuso Pihamaa",
+                "players": [
+                    "olli-andersson",
+                    "juuso-pihamaa"
+                ]
+            },
+            {
+                "name": "Martin Svedholm & Eero Halmetoja",
+                "players": [
+                    "martin-svedholm",
+                    "eero-halmetoja"
+                ]
+            },
+            {
+                "name": "Daniel Hylton & Lassi Koto",
+                "players": [
+                    "daniel-hylton",
+                    "lassi-koto"
+                ]
+            },
+            {
+                "name": "Olli Varis & Jarkko Kailanto",
+                "players": [
+                    "olli-varis",
+                    "jarkko-kailanto"
+                ]
+            },
+            {
+                "name": "Marcus Mattila & Joakim Grader",
+                "players": [
+                    "marcus-mattila",
+                    "joakim-grader"
+                ]
+            },
+            {
+                "name": "Janne Valtakari & Timo Lukumaa",
+                "players": [
+                    "janne-valtakari",
+                    "timo-lukumaa"
+                ]
+            },
+            {
+                "name": "Miso Lith & Mikko Oesch",
+                "players": [
+                    "miso-lith",
+                    "mikko-oesch"
+                ]
+            }
+        ],
+        "winners": {
+            "hector": [
+                "simo-liukkonen",
+                "toni-marttila"
+            ]
+        }
+    },
+    "description": "At Sand Valley in Poland, the Hector Trophée VI in 2018 unfolded over August 3-5, featuring a combination of stroke play, stableford, best ball, and scramble. This variety in formats heightened the competitive spirit and showcased the participants’ strategic acumen and resilience towards high levels of alcohol in their blood."
+}

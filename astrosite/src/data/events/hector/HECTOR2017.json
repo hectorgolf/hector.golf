@@ -1,0 +1,78 @@
+{
+    "id": "HECTOR2017",
+    "name": "Hector Trophée IV",
+    "format": "hector",
+    "location": "Pickala Golf, Finland",
+    "date": "July 28, 2017",
+    "courses": [
+        "pickala-forest"
+    ],
+    "participants": [],
+    "results": {
+        "teams": [
+            {
+                "name": "Toni Marttila & Panu Liira",
+                "players": [
+                    "toni-marttila",
+                    "panu-liira"
+                ]
+            },
+            {
+                "name": "Mikko Oesch & Olli Varis",
+                "players": [
+                    "mikko-oesch",
+                    "olli-varis"
+                ]
+            },
+            {
+                "name": "Daniel Hylton & Simo Liukkonen",
+                "players": [
+                    "daniel-hylton",
+                    "simo-liukkonen"
+                ]
+            },
+            {
+                "name": "Tuomas Lesonen & Tommy Nordberg",
+                "players": [
+                    "tuomas-lesonen",
+                    "tommy-nordberg"
+                ]
+            },
+            {
+                "name": "Marcus Mattila & Eero Somervuo",
+                "players": [
+                    "marcus-mattila",
+                    "eero-somervuo"
+                ]
+            },
+            {
+                "name": "Martin Svedholm & Erik Fagerström",
+                "players": [
+                    "martin-svedholm",
+                    "erik-fagerstrom"
+                ]
+            },
+            {
+                "name": "Juuso Pihamaa & Lauri Saarela",
+                "players": [
+                    "juuso-pihamaa",
+                    "lauri-saarela"
+                ]
+            },
+            {
+                "name": "Janne Valtakari & Mikael Lindberg",
+                "players": [
+                    "janne-valtakari",
+                    "mikael-lindberg"
+                ]
+            }
+        ],
+        "winners": {
+            "hector": [
+                "toni-marttila",
+                "panu-liira"
+            ]
+        }
+    },
+    "description": "On July 28, 2017, Hector Trophée returned to Pickala Golf for Hector Trophée V. Incorporating multiple formats into a one-day competitive golf outing, Hector Trophée V is considered by many to have been the last great event before a three-year drop in quality as some of the top players took a hiatus from participating in Hector events through 2018-2019. This format diversity highlighted the players’ tactical skills and endurance."
+}

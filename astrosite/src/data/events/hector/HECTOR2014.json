@@ -1,0 +1,64 @@
+{
+    "id": "HECTOR2014",
+    "name": "Hector Trophée I",
+    "format": "hector",
+    "location": "Pickala Golf, Finland",
+    "date": "August 22, 2014",
+    "courses": [
+        "pickala-forest"
+    ],
+    "participants": [],
+    "results": {
+        "teams": [
+            {
+                "name": "Marcus Mattila & Mikko Oesch",
+                "players": [
+                    "marcus-mattila",
+                    "mikko-oesch"
+                ]
+            },
+            {
+                "name": "Anders Forss & Matti Vahtola",
+                "players": [
+                    "anders-forss",
+                    "matias-vahtola"
+                ]
+            },
+            {
+                "name": "Daniel Hylton & Joni Valkeapää",
+                "players": [
+                    "daniel-hylton",
+                    "joni-valkeapaa"
+                ]
+            },
+            {
+                "name": "Rasmus Back & Jarkko Kailanto",
+                "players": [
+                    "rasmus-back",
+                    "jarkko-kailanto"
+                ]
+            },
+            {
+                "name": "Lasse Koskela & Panu Liira",
+                "players": [
+                    "lasse-koskela",
+                    "panu-liira"
+                ]
+            },
+            {
+                "name": "Toni Marttila & Tomas Danska",
+                "players": [
+                    "toni-marttila",
+                    "tomas-danska"
+                ]
+            }
+        ],
+        "winners": {
+            "hector": [
+                "daniel-hylton",
+                "joni-valkeapaa"
+            ]
+        }
+    },
+    "description": "The inaugural Hector Trophée competition was held in 2014 at Pickala Golf's Forest Course, marking the beginning of a prestigious amateur golf event that would grow in popularity and reputation over the years. While a markedly small event featuring a somewhat questionable field and a plethora of suspected rules violations, the first Hector Trophée set the stage for future tournaments, showcasing the talent and competitive spirit of amateur golfers from around the world."
+}

@@ -1,0 +1,67 @@
+{
+    "ignore": true,
+    "id": "FINNKAMPEN2022",
+    "name": "Finnkampen 2022",
+    "format": "finnkampen",
+    "location": "Kurk Golf, Finland",
+    "date": "October 22, 2022",
+    "courses": [
+        "kurk-golf"
+    ],
+    "description": "",
+    "participants": [
+        "jussi-allonen-hcp070",
+        "eero-halmetoja-hcp115",
+        "pasi-halmetoja-hcp065",
+        "sami-heikkinen-hcp055",
+        "lasse-koskela-hcp183",
+        "jari-kuusela-hcp060",
+        "simo-liukkonen-hcp063",
+        "mikko-oesch-hcp108",
+        "janne-valtakari-hcp196",
+        "jussi-siltanen-hcp060",
+        "tommy-gulin-hcp+023",
+        "jaakko-saarinen-hcp149",
+        "timo-lukumaa-hcp140",
+        "miso-lith-hcp121",
+        "toni-marttila-hcp092",
+        "marcus-mattila-hcp090",
+        "martin-svedholm-hcp089",
+        "harri-vainio-hcp110"
+    ],
+    "results": {
+        "teams": [
+            {
+                "name": "Ukkometsot",
+                "players": [
+                    "jussi-allonen-hcp070",
+                    "eero-halmetoja-hcp115",
+                    "pasi-halmetoja-hcp065",
+                    "sami-heikkinen-hcp055",
+                    "lasse-koskela-hcp183",
+                    "jari-kuusela-hcp060",
+                    "simo-liukkonen-hcp063",
+                    "mikko-oesch-hcp108",
+                    "janne-valtakari-hcp196"
+                ]
+            },
+            {
+                "name": "Peppikset",
+                "players": [
+                    "jussi-siltanen-hcp060",
+                    "tommy-gulin-hcp+023",
+                    "jaakko-saarinen-hcp149",
+                    "timo-lukumaa-hcp140",
+                    "miso-lith-hcp121",
+                    "toni-marttila-hcp092",
+                    "marcus-mattila-hcp090",
+                    "martin-svedholm-hcp089",
+                    "harri-vainio-hcp110"
+                ]
+            }
+        ],
+        "winners": {
+            "finnkampen": ["Ukkometsot"]
+        }
+    }
+}

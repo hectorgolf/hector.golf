@@ -2,11 +2,45 @@
 import Layout from '../../layouts/Layout.astro';
 import CourseCard from '../../components/courses/CourseCard.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
-import data from '../../data/courses.json';
+import { getCollection } from 'astro:content';
+import { getEventsAtCourse } from '../../code/courses';
+import { compareDateStrings } from '../../code/dates';
+import type { Course } from '../../schemas/courses';
+import type { Event } from '../../schemas/events';
+
 
 function linkToCourse(course: any) {
     return `/courses/${course.id}`;
 }
+
+type CourseAndMostRecentEvent = {
+	course: Course;
+	mostRecentEvent: Event|undefined;
+};
+
+const courses: Course[] = (await getCollection('courses')).map(course => course.data);
+
+const coursesSortedByDate = courses
+	.map(course => ({ course: course, mostRecentEvent: getEventsAtCourse(course.id)[0] }))
+	.sort((a: CourseAndMostRecentEvent, b: CourseAndMostRecentEvent) => {
+		const aDate = a.mostRecentEvent?.date
+		const bDate = b.mostRecentEvent?.date
+
+		if (!aDate && bDate) {
+			return 1;
+		} else if (!bDate && aDate) {
+			return -1;
+		}
+		if (aDate && bDate) {
+			const c = compareDateStrings(aDate, bDate);
+			if (c !== 0) {
+				return c;
+			}
+		}
+		return a.course.name.localeCompare(b.course.name);
+	})
+	.map((courseAndEvent: CourseAndMostRecentEvent) => courseAndEvent.course)
+	.reverse();
 
 ---
 <Layout title="Courses">
@@ -16,7 +50,7 @@ function linkToCourse(course: any) {
 		</div>
         <h1><span class="text-gradient">Courses</span></h1>
         <ul role="list" class="link-card-grid">
-            {data.map((course) => {
+            {coursesSortedByDate.map((course) => {
                 return <CourseCard name={course.name} image={course.hero_image} location={course.contact.address} href={linkToCourse(course)}/>
             })}
         </ul>

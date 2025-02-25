@@ -1,0 +1,12 @@
+{
+  "id": "pasi-halmetoja",
+  "name": {
+    "first": "Pasi",
+    "last": "Halmetoja"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358408423660"
+  },
+  "club": "VGH"
+}

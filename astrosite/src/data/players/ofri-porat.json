@@ -1,0 +1,12 @@
+{
+  "id": "ofri-porat",
+  "name": {
+    "first": "Ofri",
+    "last": "Porat"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358504873415"
+  },
+  "club": "GPi"
+}

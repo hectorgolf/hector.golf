@@ -1,11 +1,9 @@
 import { type Event, type HectorEvent, type MatchplayEvent, type FinnkampenEvent } from '../schemas/events';
-import { getAllEvents } from './events';
-
-import playersData from '../data/players.json';
 import { type Player, schema as PlayerSchema } from '../schemas/players';
-
 import { type HandicapHistoryEntry } from '../schemas/handicaps';
 import { getPlayerHandicapHistoryById as getPlayerHandicapHistoryByIdImplementation } from './handicaps';
+import { getAllEvents } from './events';
+import { playersData } from './data';
 
 
 export function getAllPlayerIds(): Array<string> {
@@ -24,7 +22,7 @@ export function getPlayerById(id: string): Player|undefined {
         return undefined
     }
     const player = PlayerSchema.parse(_record);
-    // TODO: update handicap from handicap history, allowing the player data (players.json)
+    // TODO: update handicap from handicap history, allowing the player data ("src/data/players/{id}.json")
     // to manually override the history data:
     const handicapFromAPI = getPlayerHandicapById(player.id)
     const handicapOverride = player.handicap

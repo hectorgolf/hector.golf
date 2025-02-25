@@ -1,0 +1,12 @@
+{
+  "id": "lasse-koskela",
+  "name": {
+    "first": "Lasse",
+    "last": "Koskela"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358456709770"
+  },
+  "club": "TaG"
+}

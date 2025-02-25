@@ -1,0 +1,159 @@
+{
+    "id": "quellness-porsche",
+    "name": "Porsche at Quellness Golf Resort",
+    "homepage": "https://www.quellness-golf.com/en/golf-world/golf-courses/porsche-golf-course/",
+    "contact": {
+        "address": "An der Rottwiese 1, 94094 Rotthalmünster, Germany",
+        "phone": "tel://+49853292440",
+        "email": "gppenning@quellness-golf.com"
+    },
+    "hero_image": "/images/courses/quellness-porsche/hero1.jpg",
+    "description_short": "The Porsche Golf Course, which is directly opposite the Beckenbauer Golf Course, is the \"little brother\" of the European Tour championship course in sporting terms, and thus an ideal complement. The par 71 course was also designed by Germany’s world-class golfer Bernhard Langer and has comparable features, but was geared more towards the requirements of leisure-time golfers.",
+    "description_long": [
+        {
+            "type": "paragraph",
+            "content": "In sporting terms, the Porsche Golf Course, located right next to the Beckenbauer Golf Course, can be seen as the little brother of the European Tour proven championship course and is therefore a perfect addition. The design of the Par 71 course also comes from Germany's world-class golfer Bernhard Langer and has comparable features, but was more geared towards the needs of recreational players."
+        },
+        {
+            "type": "paragraph",
+            "content": "The terrain is flat, the 18 fairways lead through a mix of short and long holes through the floodplain of the small Rott river, which has also been integrated into the layout in some places. At 65 hectares, the area of the Porsche Golf Course is somewhat more compact than the Beckenbauer Golf Course, with its gently undulating fairways and mature old trees, it is also more visually pleasing than the more open neighbouring course."
+        },
+        {
+            "type": "image",
+            "url": "/images/courses/quellness-porsche/hero2.jpg"
+        },
+        {
+            "type": "paragraph",
+            "content": "Wider fairways, fewer troughs on the sides and relatively short courses make the Porsche Golf Course more pleasant and, overall, a little easier to play. However, the fair course, which is suitable for all handicap classes and is easy to walk, lacks nothing in terms of game technology and good fairways."
+        },
+        {
+            "type": "image",
+            "url": "/images/courses/quellness-porsche/hero3.jpg"
+        },
+        {
+            "type": "paragraph",
+            "content": "Hole 4 is particularly memorable, a long par 4 dogleg on the left of the river Rott with a difficult second shot on to the green, which is protected at the front by a small stream, hole 13 is also one to remember, a par 3 with peninsula green, and the strong finale of the holes 16 to 18, where water is a constant feature: Whether at the drive towards hole 16, a 90 degree dogleg around a pond, the teeshot on 17 on the green protected by the same pond or the approach to the final hole on a green with a pond in front."
+        },
+        {
+            "type": "image",
+            "url": "/images/courses/quellness-porsche/hero4.jpg"
+        }
+    ],
+    "images": {
+        "hero": "/images/courses/quellness-porsche/hero1.jpg",
+        "course_layout": "/images/courses/quellness-porsche/layout.png"
+    },
+    "course": {
+        "tees": [
+            {
+                "name": "white",
+                "color": "#ffffff",
+                "length": 6037,
+                "par": 71,
+                "rating": {
+                    "men": 72.5,
+                    "ladies": null
+                },
+                "slope": {
+                    "men": 135,
+                    "ladies": null
+                }
+            },
+            {
+                "name": "yellow",
+                "color": "#ffff00",
+                "length": 5690,
+                "par": 71,
+                "rating": {
+                    "men": 71.1,
+                    "ladies": null
+                },
+                "slope": {
+                    "men": 129,
+                    "ladies": null
+                }
+            },
+            {
+                "name": "blue",
+                "color": "#0000ff",
+                "length": 5216,
+                "par": 71,
+                "rating": {
+                    "men": null,
+                    "ladies": 74.0
+                },
+                "slope": {
+                    "men": null,
+                    "ladies": 130
+                }
+            },
+            {
+                "name": "red",
+                "color": "#ff0000",
+                "length": 4920,
+                "par": 71,
+                "rating": {
+                    "men": null,
+                    "ladies": 72.3
+                },
+                "slope": {
+                    "men": null,
+                    "ladies": 128
+                }
+            }
+        ],
+        "scorecard": {
+            "men": [
+                { "hole":  1, "par": 4, "hcp":  7, "lengths": { "white": 342, "yellow": 327, "blue": 304, "red": 289 }},
+                { "hole":  2, "par": 5, "hcp":  9, "lengths": { "white": 461, "yellow": 435, "blue": 406, "red": 383 }},
+                { "hole":  3, "par": 4, "hcp":  5, "lengths": { "white": 336, "yellow": 321, "blue": 308, "red": 284 }},
+                { "hole":  4, "par": 4, "hcp":  3, "lengths": { "white": 423, "yellow": 395, "blue": 360, "red": 348 }},
+                { "hole":  5, "par": 3, "hcp": 11, "lengths": { "white": 199, "yellow": 177, "blue": 160, "red": 151 }},
+                { "hole":  6, "par": 4, "hcp":  1, "lengths": { "white": 399, "yellow": 385, "blue": 366, "red": 348 }},
+                { "hole":  7, "par": 3, "hcp": 15, "lengths": { "white": 156, "yellow": 145, "blue": 145, "red": 130 }},
+                { "hole":  8, "par": 5, "hcp": 13, "lengths": { "white": 464, "yellow": 445, "blue": 383, "red": 383 }},
+                { "hole":  9, "par": 3, "hcp": 17, "lengths": { "white": 152, "yellow": 135, "blue": 135, "red": 115 }},
+                { "hole": 10, "par": 4, "hcp": 14, "lengths": { "white": 348, "yellow": 330, "blue": 294, "red": 272 }},
+                { "hole": 11, "par": 5, "hcp":  8, "lengths": { "white": 459, "yellow": 444, "blue": 396, "red": 372 }},
+                { "hole": 12, "par": 4, "hcp": 18, "lengths": { "white": 315, "yellow": 304, "blue": 264, "red": 239 }},
+                { "hole": 13, "par": 3, "hcp": 12, "lengths": { "white": 158, "yellow": 140, "blue": 127, "red": 113 }},
+                { "hole": 14, "par": 4, "hcp":  6, "lengths": { "white": 373, "yellow": 343, "blue": 318, "red": 306 }},
+                { "hole": 15, "par": 5, "hcp": 10, "lengths": { "white": 497, "yellow": 462, "blue": 420, "red": 391 }},
+                { "hole": 16, "par": 4, "hcp":  4, "lengths": { "white": 355, "yellow": 340, "blue": 314, "red": 295 }},
+                { "hole": 17, "par": 3, "hcp": 16, "lengths": { "white": 171, "yellow": 154, "blue": 154, "red": 139 }},
+                { "hole": 18, "par": 4, "hcp":  2, "lengths": { "white": 429, "yellow": 408, "blue": 362, "red": 362 }}
+            ],
+            "ladies": null
+        },
+        "descriptions": [
+            { "hole":  1, "layout": "/images/courses/quellness-porsche/holes/1.png", "description": "" },
+            { "hole":  2, "layout": "/images/courses/quellness-porsche/holes/2.png", "description": "" },
+            { "hole":  3, "layout": "/images/courses/quellness-porsche/holes/3.png", "description": "" },
+            { "hole":  4, "layout": "/images/courses/quellness-porsche/holes/4.png", "description": "" },
+            { "hole":  5, "layout": "/images/courses/quellness-porsche/holes/5.png", "description": "" },
+            { "hole":  6, "layout": "/images/courses/quellness-porsche/holes/6.png", "description": "" },
+            { "hole":  7, "layout": "/images/courses/quellness-porsche/holes/7.png", "description": "" },
+            { "hole":  8, "layout": "/images/courses/quellness-porsche/holes/8.png", "description": "" },
+            { "hole":  9, "layout": "/images/courses/quellness-porsche/holes/9.png", "description": "" },
+            { "hole": 10, "layout": "/images/courses/quellness-porsche/holes/10.png", "description": "" },
+            { "hole": 11, "layout": "/images/courses/quellness-porsche/holes/11.png", "description": "" },
+            { "hole": 12, "layout": "/images/courses/quellness-porsche/holes/12.png", "description": "" },
+            { "hole": 13, "layout": "/images/courses/quellness-porsche/holes/13.png", "description": "" },
+            { "hole": 14, "layout": "/images/courses/quellness-porsche/holes/14.png", "description": "" },
+            { "hole": 15, "layout": "/images/courses/quellness-porsche/holes/15.png", "description": "" },
+            { "hole": 16, "layout": "/images/courses/quellness-porsche/holes/16.png", "description": "" },
+            { "hole": 17, "layout": "/images/courses/quellness-porsche/holes/17.png", "description": "" },
+            { "hole": 18, "layout": "/images/courses/quellness-porsche/holes/18.png", "description": "" }
+        ]
+    },
+    "datasources": [
+        {
+            "name": "website",
+            "url": "https://www.quellness-golf.com/en/golf-world/golf-courses/porsche-golf-course/"
+        },
+        {
+            "name": "mscorecard",
+            "url": "https://www.mscorecard.com/mscorecard/showcourse.php?cid=1424942980857261"
+        }
+    ]
+}

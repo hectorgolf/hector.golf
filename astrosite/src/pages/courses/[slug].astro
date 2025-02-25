@@ -5,13 +5,16 @@ import CourseRatingTable from '../../components/courses/CourseRatingTable.astro'
 import ScorecardTable from '../../components/courses/ScorecardTable.astro';
 import { type Course } from '../../schemas/courses';
 import { getEventsAtCourse, linkToEvent } from '../../code/events';
-import { getAllCourseIds, getCourseById } from '../../code/courses';
+import { getCourseById } from '../../code/courses';
+import { getCollection } from 'astro:content';
 
 
-export function getStaticPaths() {
-    return getAllCourseIds().map((id) => {
-        return { params: { slug: id } };
-    });
+export async function getStaticPaths() {
+    const courses = await getCollection('courses');
+    return courses.map(course => ({
+        params: { slug: course.id },
+        props: course,
+    }));
 }
 
 const { slug } = Astro.params;

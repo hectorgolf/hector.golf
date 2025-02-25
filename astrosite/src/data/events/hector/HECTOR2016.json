@@ -1,0 +1,78 @@
+{
+    "id": "HECTOR2016",
+    "name": "Hector Trophée III",
+    "format": "hector",
+    "location": "Kurk Golf, Finland",
+    "date": "July 21, 2016",
+    "courses": [
+        "kurk-golf"
+    ],
+    "participants": [],
+    "results": {
+        "teams": [
+            {
+                "name": "Miso Korkiakoski & Timo Lukumaa",
+                "players": [
+                    "miso-lith",
+                    "timo-lukumaa"
+                ]
+            },
+            {
+                "name": "Mikko Oesch & Olli Varis",
+                "players": [
+                    "mikko-oesch",
+                    "olli-varis"
+                ]
+            },
+            {
+                "name": "Simo Liukkonen & Daniel Hylton",
+                "players": [
+                    "simo-liukkonen",
+                    "daniel-hylton"
+                ]
+            },
+            {
+                "name": "Martin Svedholm & Marcus Mattila",
+                "players": [
+                    "martin-svedholm",
+                    "marcus-mattila"
+                ]
+            },
+            {
+                "name": "Lasse Koskela & Panu Liira",
+                "players": [
+                    "lasse-koskela",
+                    "panu-liira"
+                ]
+            },
+            {
+                "name": "Toni Marttila & Ricke Blomqvist",
+                "players": [
+                    "toni-marttila",
+                    "ricke-blomqvist"
+                ]
+            },
+            {
+                "name": "Lassi Koto & Riku Liira",
+                "players": [
+                    "lassi-koto",
+                    "riku-liira"
+                ]
+            },
+            {
+                "name": "Tomas Danska & Jonas Löfman",
+                "players": [
+                    "tomas-danska",
+                    "jonas-lofman"
+                ]
+            }
+        ],
+        "winners": {
+            "hector": [
+                "timo-lukumaa",
+                "miso-lith"
+            ]
+        }
+    },
+    "description": "The serene Kurk Golf in Finland set the stage for Hector Trophée IV on July 21, 2016. The demanding venue for the tournament tested the golfers' resilience, versatility and strategic thinking throughout the one-day event, facing challenging course conditions at the swamp-like mud pit repurposed as a golf course."
+}

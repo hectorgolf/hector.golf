@@ -1,0 +1,111 @@
+{
+    "id": "HECTOR2019",
+    "name": "Hector Trophée VI",
+    "format": "hector",
+    "location": "Golf & Spa Resort Konopiště, Czechia",
+    "date": "September 20-22, 2019",
+    "courses": [
+        "konopiste-radecky",
+        "konopiste-deste"
+    ],
+    "participants": [],
+    "results": {
+        "teams": [
+            {
+                "name": "Tommy Gulin & Erik Fagerström",
+                "players": [
+                    "tommy-gulin",
+                    "erik-fagerstrom"
+                ]
+            },
+            {
+                "name": "Juuso Pihamaa & Lassi Koto",
+                "players": [
+                    "juuso-pihamaa",
+                    "lassi-koto"
+                ]
+            },
+            {
+                "name": "Simo Liukkonen & Jarkko Kailanto",
+                "players": [
+                    "simo-liukkonen",
+                    "jarkko-kailanto"
+                ]
+            },
+            {
+                "name": "Okko Pykäläinen & Harri Vainio",
+                "players": [
+                    "okko-pykalainen",
+                    "harri-vainio"
+                ]
+            },
+            {
+                "name": "Martin Svedholm & Olli Andersson",
+                "players": [
+                    "martin-svedholm",
+                    "olli-andersson"
+                ]
+            },
+            {
+                "name": "Eero Halmetoja & Marcus Mattila",
+                "players": [
+                    "eero-halmetoja",
+                    "marcus-mattila"
+                ]
+            },
+            {
+                "name": "Olli Varis & Jaakko Saarinen",
+                "players": [
+                    "olli-varis",
+                    "jaakko-saarinen"
+                ]
+            },
+            {
+                "name": "Sami Heikkinen & Daniel Hylton",
+                "players": [
+                    "sami-heikkinen",
+                    "daniel-hylton"
+                ]
+            },
+            {
+                "name": "Toni Marttila & Pekka Saijonmaa",
+                "players": [
+                    "toni-marttila",
+                    "pekka-saijonmaa"
+                ]
+            },
+            {
+                "name": "Kristian Hiljander & Janne Valtakari",
+                "players": [
+                    "kristian-hiljander",
+                    "janne-valtakari"
+                ]
+            },
+            {
+                "name": "Mikko Oesch & Mikko Lifflander",
+                "players": [
+                    "mikko-oesch",
+                    "mikko-lifflander"
+                ]
+            },
+            {
+                "name": "Miso Lith & Timo Lukumaa",
+                "players": [
+                    "timo-lukumaa",
+                    "miso-lith"
+                ]
+            }
+        ],
+        "winners": {
+            "hector": [
+                "okko-pykalainen",
+                "harri-vainio"
+            ],
+            "victor": [
+                "eero-halmetoja",
+                "martin-svedholm"
+            ]
+        }
+    },
+    "description": ""
+}

@@ -1,0 +1,12 @@
+{
+  "id": "sami-heikkinen",
+  "name": {
+    "first": "Sami",
+    "last": "Heikkinen"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358405392115"
+  },
+  "club": "HirG"
+}

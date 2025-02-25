@@ -1,8 +1,6 @@
-import eventsData from '../data/events.json';
-import { type Event, genericEventSchema as GenericEventSchema } from '../schemas/events';
-
-import coursesData from '../data/courses.json';
+import { type Event, genericEventSchema as GenericEventSchema, type HectorEvent } from '../schemas/events';
 import { type Course, schema as CourseSchema } from '../schemas/courses';
+import { eventsData, coursesData } from './data';
 
 
 export function getAllCourseIds(): Array<string> {
@@ -18,5 +16,5 @@ export function getCourseById(id: string): Course|undefined {
 }
 
 export function getEventsAtCourse(courseId: string): Array<Event> {
-    return eventsData.filter((event) => event.courses?.includes(courseId)).map(e => GenericEventSchema.parse(e));
+    return eventsData.filter((event) => (event as HectorEvent)?.courses?.includes(courseId)).map(e => GenericEventSchema.parse(e));
 }

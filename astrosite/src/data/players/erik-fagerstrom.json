@@ -1,0 +1,12 @@
+{
+  "id": "erik-fagerstrom",
+  "name": {
+    "first": "Erik",
+    "last": "Fagerström"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": ""
+  },
+  "club": "RuG"
+}

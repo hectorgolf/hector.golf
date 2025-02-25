@@ -1,0 +1,12 @@
+{
+  "id": "ossi-laukkanen",
+  "name": {
+    "first": "Ossi",
+    "last": "Laukkanen"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358400492149"
+  },
+  "club": "KGC"
+}

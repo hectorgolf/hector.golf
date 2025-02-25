@@ -1,0 +1,12 @@
+{
+  "id": "toni-marttila",
+  "name": {
+    "first": "Toni",
+    "last": "Marttila"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358504418241"
+  },
+  "club": "HirG"
+}

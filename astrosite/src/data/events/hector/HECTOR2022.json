@@ -1,0 +1,135 @@
+{
+    "id": "HECTOR2022",
+    "name": "Hector Trophée 2022",
+    "format": "hector",
+    "location": "Quellness Golf Resort, Germany",
+    "date": "September 14-17, 2022",
+    "courses": [
+        "quellness-porsche",
+        "quellness-beckenbauer"
+    ],
+    "participants": [
+        "simo-liukkonen",
+        "timo-lukumaa",
+        "jarkko-kailanto",
+        "marcus-mattila",
+        "lasse-koskela",
+        "okko-pykalainen",
+        "mikko-oesch",
+        "jaakko-saarinen",
+        "pasi-halmetoja",
+        "eero-halmetoja",
+        "olli-varis",
+        "olli-andersson",
+        "toni-marttila",
+        "lassi-koto",
+        "ossi-laukkanen",
+        "janne-valtakari",
+        "sami-heikkinen",
+        "harri-vainio",
+        "martin-svedholm",
+        "kristian-hiljander",
+        "juuso-pihamaa",
+        "miso-lith",
+        "jussi-allonen",
+        "pekka-saijonmaa"
+    ],
+    "results": {
+        "teams": [
+            {
+                "name": "Simo Liukkonen & Timo Lukumaa",
+                "players": [
+                    "simo-liukkonen",
+                    "timo-lukumaa"
+                ]
+            },
+            {
+                "name": "Marcus Mattila & Jarkko Kailanto",
+                "players": [
+                    "jarkko-kailanto",
+                    "marcus-mattila"
+                ]
+            },
+            {
+                "name": "Okko Pykäläinen & Lasse Koskela",
+                "players": [
+                    "lasse-koskela",
+                    "okko-pykalainen"
+                ]
+            },
+            {
+                "name": "Mikko Oesch & Jaakko Saarinen",
+                "players": [
+                    "mikko-oesch",
+                    "jaakko-saarinen"
+                ]
+            },
+            {
+                "name": "Pasi Halmetoja & Eero Halmetoja",
+                "players": [
+                    "pasi-halmetoja",
+                    "eero-halmetoja"
+                ]
+            },
+            {
+                "name": "Olli Varis & Olli Andersson",
+                "players": [
+                    "olli-varis",
+                    "olli-andersson"
+                ]
+            },
+            {
+                "name": "Toni Marttila & Lassi Koto",
+                "players": [
+                    "toni-marttila",
+                    "lassi-koto"
+                ]
+            },
+            {
+                "name": "Ossi Laukkanen & Janne Valtakari",
+                "players": [
+                    "ossi-laukkanen",
+                    "janne-valtakari"
+                ]
+            },
+            {
+                "name": "Sami Heikkinen & Harri Vainio",
+                "players": [
+                    "sami-heikkinen",
+                    "harri-vainio"
+                ]
+            },
+            {
+                "name": "Martin Svedholm & Kristian Hiljander",
+                "players": [
+                    "martin-svedholm",
+                    "kristian-hiljander"
+                ]
+            },
+            {
+                "name": "Juuso Pihamaa & Miso Lith",
+                "players": [
+                    "juuso-pihamaa",
+                    "miso-lith"
+                ]
+            },
+            {
+                "name": "Jussi Allonen & Pekka Saijonmaa",
+                "players": [
+                    "jussi-allonen",
+                    "pekka-saijonmaa"
+                ]
+            }
+        ],
+        "winners": {
+            "hector": [
+                "simo-liukkonen",
+                "timo-lukumaa"
+            ],
+            "victor": [
+                "lassi-koto"
+            ]
+        }
+    },
+    "description": "In 2022, the Quellness Golf Resort in Germany hosted the eclectic Hector Trophée, from September 14-17. This tournament featured a unique mix of stroke play, stableford, best ball, and scramble formats, showcasing the versatility and strategic depth of the world’s elite amateur golfers."
+}

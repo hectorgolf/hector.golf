@@ -1,0 +1,139 @@
+{
+    "id": "villamartin",
+    "name": "Villamartin Golf Club",
+    "homepage": "http://www.villamartingolfclub.com/en/",
+    "contact": {
+        "address": "Avenida las Brisas 8, 03189 Orihuela Costa, Spain",
+        "phone": "tel://+34966765170",
+        "email": "golfvillamartin@grupoquara.com"
+    },
+    "hero_image": "/images/courses/villamartin/hero.jpg",
+    "description_short": "Villamartin hosted the 1994 Mediterranean Open which was won by Jose Maria Olazabal after an exciting play-off with Paul McGinley.\n\nVillamartin Golf Course, designed by Paul Putman, is situated within a mile of the sea between Torrevieja and Murcia airport at San Javier on the south eastern tip of the Costa Blanca. The par for the course is 72 and it measures 6005 metres.\n\nIt is built on hilly ground with the front nine holes being at the highest point of the course offering some spectacular sea views. The second nine are situated more in valleys with brancas ( ravines ) coming into play on several holes.",
+    "description_long": [
+        { "type": "paragraph", "content": "Since 1972, the Villamartín golf course has been a benchmark in the courses of the Valencian Community. The design of Golf Villamartín is due to the work of John Puttman, who already carried out work on La Manga Club in the late 60s." },
+        { "type": "image", "url": "/images/courses/villamartin/hero1.jpg" },
+        { "type": "paragraph", "content": "Vegetation with more than 50 years of history, beautiful views of the Mediterranean and generous greens that hosted a European circuit test in 1997. Severiano Ballesteros, José María Olazabal, Ian Woosnan, Sam Torrance and many other international golf figures have played and honored this great golf course with their presence." },
+        { "type": "paragraph", "content": "The greens of Villamartín are internationally famous, with well-known holes, such as hole 17, a par 3 that requires you to cross a leafy, tree-lined boulevard to reach a huge and generous green with two platforms." },
+        { "type": "image", "url": "/images/courses/villamartin/hero2.jpg" },
+        { "type": "paragraph", "content": "Villamartín Golf has an extensive community of players from all over Europe who chose this beautiful golf course as a place to live, with golf and this course being part of their lifestyle." },
+        { "type": "paragraph", "content": "The Villamartín Club House , recently restored, has a wonderful restaurant with a high terrace that gives us great views of the 18th hole." },
+        { "type": "paragraph", "content": "Villamartín Golf is, without a doubt, one of the best courses in the Valencian Community, as well as one of the deans of golf in the community." }
+    ],
+    "images": {
+        "hero": "/images/courses/villamartin/hero.jpg",
+        "course_layout": "/images/courses/villamartin/layout.png"
+    },
+    "course": {
+        "tees": [
+            {
+                "name": "white",
+                "color": "#ffffff",
+                "length": 6005,
+                "par": 72,
+                "rating": {
+                    "men": 72.2,
+                    "ladies": null
+                },
+                "slope": {
+                    "men": 140,
+                    "ladies": null
+                }
+            },
+            {
+                "name": "yellow",
+                "color": "#ffff00",
+                "length": 5868,
+                "par": 72,
+                "rating": {
+                    "men": 71.5,
+                    "ladies": null
+                },
+                "slope": {
+                    "men": 139,
+                    "ladies": null
+                }
+            },
+            {
+                "name": "blue",
+                "color": "#0000ff",
+                "length": 5499,
+                "par": 72,
+                "rating": {
+                    "men": 69.6,
+                    "ladies": 75.5
+                },
+                "slope": {
+                    "men": 133,
+                    "ladies": 138
+                }
+            },
+            {
+                "name": "red",
+                "color": "#ff0000",
+                "length": 5007,
+                "par": 72,
+                "rating": {
+                    "men": 66.6,
+                    "ladies": 72.5
+                },
+                "slope": {
+                    "men": 122,
+                    "ladies": 131
+                }
+            }
+        ],
+        "scorecard": {
+            "men": [
+                { "hole":  1, "par": 5, "hcp":  4, "lengths": { "white": 475, "yellow": 470, "blue": 444, "red": 402 }},
+                { "hole":  2, "par": 4, "hcp":  6, "lengths": { "white": 355, "yellow": 345, "blue": 328, "red": 310 }},
+                { "hole":  3, "par": 4, "hcp": 14, "lengths": { "white": 345, "yellow": 340, "blue": 318, "red": 293 }},
+                { "hole":  4, "par": 4, "hcp": 12, "lengths": { "white": 336, "yellow": 331, "blue": 301, "red": 280 }},
+                { "hole":  5, "par": 5, "hcp":  2, "lengths": { "white": 453, "yellow": 448, "blue": 426, "red": 399 }},
+                { "hole":  6, "par": 3, "hcp": 10, "lengths": { "white": 199, "yellow": 188, "blue": 175, "red": 159 }},
+                { "hole":  7, "par": 4, "hcp": 16, "lengths": { "white": 313, "yellow": 308, "blue": 298, "red": 280 }},
+                { "hole":  8, "par": 4, "hcp":  8, "lengths": { "white": 325, "yellow": 320, "blue": 304, "red": 275 }},
+                { "hole":  9, "par": 3, "hcp": 18, "lengths": { "white": 145, "yellow": 140, "blue": 120, "red": 107 }},
+                { "hole": 10, "par": 4, "hcp":  9, "lengths": { "white": 314, "yellow": 309, "blue": 303, "red": 269 }},
+                { "hole": 11, "par": 5, "hcp": 17, "lengths": { "white": 441, "yellow": 437, "blue": 410, "red": 368 }},
+                { "hole": 12, "par": 4, "hcp":  3, "lengths": { "white": 382, "yellow": 377, "blue": 359, "red": 310 }},
+                { "hole": 13, "par": 3, "hcp": 15, "lengths": { "white": 178, "yellow": 173, "blue": 154, "red": 139 }},
+                { "hole": 14, "par": 5, "hcp":  1, "lengths": { "white": 478, "yellow": 473, "blue": 443, "red": 400 }},
+                { "hole": 15, "par": 4, "hcp": 11, "lengths": { "white": 313, "yellow": 308, "blue": 284, "red": 266 }},
+                { "hole": 16, "par": 4, "hcp":  7, "lengths": { "white": 367, "yellow": 362, "blue": 337, "red": 293 }},
+                { "hole": 17, "par": 3, "hcp": 13, "lengths": { "white": 204, "yellow": 175, "blue": 148, "red": 137 }},
+                { "hole": 18, "par": 4, "hcp":  5, "lengths": { "white": 382, "yellow": 264, "blue": 347, "red": 320 }}
+            ],
+            "ladies": null
+        },
+        "descriptions": [
+            { "hole":  1, "layout": "/images/courses/villamartin/holes/1.png", "description": "A winding dog-leg par 5 well protected by trees. Possible to reach in 2 after a long, straight drive. Green protected by 2 bunkers." },
+            { "hole":  2, "layout": "/images/courses/villamartin/holes/2.png", "description": "A long tight par 4 between a local road on one side and houses on the other. A tough hole." },
+            { "hole":  3, "layout": "/images/courses/villamartin/holes/3.png", "description": "An uphill par 4 with a blind drive and a drop down to the hole.Keep to the left on the drive." },
+            { "hole":  4, "layout": "/images/courses/villamartin/holes/4.png", "description": "A short tight par 4 with a lateral water hazard on the left which protects the line of the second shot." },
+            { "hole":  5, "layout": "/images/courses/villamartin/holes/5.png", "description": "A long uphill par 5 with houses on the left and lateral water hazards protecting the green on both sides. Take care for the upright stone after a good drive." },
+            { "hole":  6, "layout": "/images/courses/villamartin/holes/6.png", "description": "A spectacular par3 with a three tiered green protected by a front bunker. You look right down to the sea from this tee." },
+            { "hole":  7, "layout": "/images/courses/villamartin/holes/7.png", "description": "A short par 4 that falls down to the tree protected green after a right angled dog leg. Demanding second shot to the green for those with a short drive." },
+            { "hole":  8, "layout": "/images/courses/villamartin/holes/8.png", "description": "A blind uphill drive that then turns right to the green for the second shot. The dogleg on this par 4 is protected by a large tree and bunker. Keep left with your drive." },
+            { "hole":  9, "layout": "/images/courses/villamartin/holes/9.png", "description": "A short par 3 which is surrounded by trees. The tee shot is played over a pond and waterfall. Avoid drive to the left of the green." },
+            { "hole": 10, "layout": "/images/courses/villamartin/holes/10.png", "description": "A tight driving short par 4 where the green is protected behind and to the right by a tree lined ravine, and in front by a valley." },
+            { "hole": 11, "layout": "/images/courses/villamartin/holes/11.png", "description": "An undulating par 5 with a blind second/third shot to the green. A good birdie hole." },
+            { "hole": 12, "layout": "/images/courses/villamartin/holes/12.png", "description": "A long par 4 with a dip half way. Fairway bunkers before the dip." },
+            { "hole": 13, "layout": "/images/courses/villamartin/holes/13.png", "description": "A downhill 180-meter par 3. Protected by bunkers and a ravine in the back of the tee." },
+            { "hole": 14, "layout": "/images/courses/villamartin/holes/14.png", "description": "This hole has been described as one of the best par 5’s in Spain. It is protected laterally by a branca which works its way across the hole to give protection, with some trees, to the third shot to the green over some very high trees. Adventurous golfers may like to reach the green in 2." },
+            { "hole": 15, "layout": "/images/courses/villamartin/holes/15.png", "description": "A straight par 4. A water hazard to the right asks for drive in the middle of the fairway. The green protected by bunkers and 2 waters." },
+            { "hole": 16, "layout": "/images/courses/villamartin/holes/16.png", "description": "A long dog leg par 4 with a down hill approach to the green." },
+            { "hole": 17, "layout": "/images/courses/villamartin/holes/17.png", "description": "The signature hole for the course, often described as the best par 3 in Spain, is 210 meters from the elevated back tee and is all carry over a valley and branca to a three tiered green. The green is surrounded by trees and bunkers and the view from the tee is spectacular." },
+            { "hole": 18, "layout": "/images/courses/villamartin/holes/18.png", "description": "A tight driving hole, this dog legged par 4 is a fitting climax to an exciting round of golf. Positioned near to the clubhouse, it has a natural amphitheatre surrounding the green where spectators watch the final shots. Keep away from the drivingrange on the tee shot." }
+        ]
+    },
+    "datasources": [
+        {
+            "name": "website",
+            "url": "http://www.villamartingolfclub.com/en/"
+        },
+        {
+            "name": "mscorecard",
+            "url": "https://www.mscorecard.com/mscorecard/showcourse.php?cid=1107812511656"
+        }
+    ]
+}

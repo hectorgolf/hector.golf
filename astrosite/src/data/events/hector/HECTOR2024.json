@@ -1,0 +1,359 @@
+{
+    "id": "HECTOR2024",
+    "name": "Hector Trophée 2024",
+    "format": "hector",
+    "location": "La Finca Golf, Spain",
+    "date": "September 25-28, 2024",
+    "courses": [
+        "lafinca",
+        "villamartin"
+    ],
+    "description": "The world's best amateur golfers will once again face off with each other in Hector Trophée 2024. The tournament will be played at La Finca and Villamartin. The tournament will be played in the classic 4-day stroke play format and the proud winners will be awarded with the prestigious Hector Trophée.",
+    "participants": [
+        "tommy-gulin",
+        "simo-liukkonen",
+        "ofri-porat",
+        "sami-heikkinen",
+        "juuso-pihamaa",
+        "ossi-laukkanen",
+        "pasi-halmetoja",
+        "jussi-allonen",
+        "martin-svedholm",
+        "miso-lith",
+        "mikko-oesch",
+        "olli-varis",
+        "eero-halmetoja",
+        "toni-marttila",
+        "timo-lukumaa",
+        "marcus-mattila",
+        "harri-vainio",
+        "olli-andersson",
+        "lassi-koto",
+        "jarkko-kailanto",
+        "lauri-paatela",
+        "lasse-koskela",
+        "pekka-saijonmaa",
+        "janne-valtakari"
+    ],
+    "rounds": [
+        {
+            "day": 1,
+            "round": 1,
+            "course": "lafinca",
+            "tee": "Yellow",
+            "gameFormats": [
+                {
+                    "format": "Stableford NET",
+                    "handicapAllowance": 1,
+                    "competition": [
+                        "hector",
+                        "victor"
+                    ]
+                },
+                {
+                    "format": "Stroke Play SCR",
+                    "handicapAllowance": 0
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "round": 1,
+            "course": "lafinca",
+            "tee": "Blue",
+            "gameFormats": [
+                {
+                    "format": "Stroke Play NET",
+                    "handicapAllowance": 1,
+                    "competition": [
+                        "hector"
+                    ]
+                },
+                {
+                    "format": "Stableford NET",
+                    "handicapAllowance": 1,
+                    "competition": [
+                        "victor"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "round": 2,
+            "course": "lafinca",
+            "tee": "White",
+            "gameFormats": [
+                {
+                    "format": "Better Ball Stroke Play NET",
+                    "handicapAllowance": 1,
+                    "competition": [
+                        "hector"
+                    ]
+                },
+                {
+                    "format": "Stableford NET",
+                    "handicapAllowance": 1,
+                    "competition": [
+                        "victor"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "round": 1,
+            "course": "villamartin",
+            "tee": "Blue",
+            "gameFormats": [
+                {
+                    "format": "Better Ball Stroke Play NET",
+                    "handicapAllowance": 1,
+                    "competition": [
+                        "hector"
+                    ]
+                },
+                {
+                    "format": "Stableford NET",
+                    "handicapAllowance": 1,
+                    "competition": [
+                        "victor"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "round": 2,
+            "course": "villamartin",
+            "tee": "Yellow",
+            "gameFormats": [
+                {
+                    "format": "Scramble Stroke Play NET",
+                    "handicapAllowance": 0.2,
+                    "competition": [
+                        "hector"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 4,
+            "round": 1,
+            "course": "lafinca",
+            "tee": "Yellow",
+            "gameFormats": [
+                {
+                    "format": "Scramble Stroke Play NET",
+                    "handicapAllowance": 0.2,
+                    "competition": [
+                        "hector"
+                    ],
+                    "birdieBonus": 0.5,
+                    "eagleBonus": 1
+                }
+            ]
+        }
+    ],
+    "leaderboardSheet": "https://docs.google.com/spreadsheets/d/1-TPy0oFWMK03q8nPDED2Dh3Thd-uTRCmmhIKIdWlUL8/edit",
+    "buckets": [
+        [
+            {
+                "id": "tommy-gulin",
+                "handicap": -0.8
+            },
+            {
+                "id": "sami-heikkinen",
+                "handicap": 4.7
+            },
+            {
+                "id": "ofri-porat",
+                "handicap": 5.6
+            },
+            {
+                "id": "juuso-pihamaa",
+                "handicap": 5.6
+            },
+            {
+                "id": "simo-liukkonen",
+                "handicap": 6.3
+            },
+            {
+                "id": "ossi-laukkanen",
+                "handicap": 7.5
+            },
+            {
+                "id": "pasi-halmetoja",
+                "handicap": 8.3
+            },
+            {
+                "id": "miso-lith",
+                "handicap": 8.5
+            },
+            {
+                "id": "eero-halmetoja",
+                "handicap": 9.1
+            },
+            {
+                "id": "olli-varis",
+                "handicap": 9.2
+            },
+            {
+                "id": "mikko-oesch",
+                "handicap": 9.3
+            },
+            {
+                "id": "jussi-allonen",
+                "handicap": 9.5
+            }
+        ],
+        [
+            {
+                "id": "martin-svedholm",
+                "handicap": 10
+            },
+            {
+                "id": "harri-vainio",
+                "handicap": 11.2
+            },
+            {
+                "id": "marcus-mattila",
+                "handicap": 11.4
+            },
+            {
+                "id": "toni-marttila",
+                "handicap": 11.9
+            },
+            {
+                "id": "olli-andersson",
+                "handicap": 12.3
+            },
+            {
+                "id": "lassi-koto",
+                "handicap": 12.4
+            },
+            {
+                "id": "timo-lukumaa",
+                "handicap": 12.8
+            },
+            {
+                "id": "lauri-paatela",
+                "handicap": 13.9
+            },
+            {
+                "id": "jarkko-kailanto",
+                "handicap": 14
+            },
+            {
+                "id": "lasse-koskela",
+                "handicap": 14.8
+            },
+            {
+                "id": "janne-valtakari",
+                "handicap": 18.8
+            },
+            {
+                "id": "pekka-saijonmaa",
+                "handicap": 19.1
+            }
+        ]
+    ],
+    "results": {
+        "teams": [
+            {
+                "name": "Olli Varis + Jarkko Kailanto",
+                "players": [
+                    "olli-varis",
+                    "jarkko-kailanto"
+                ]
+            },
+            {
+                "name": "Tommy Gulin + Lauri Paatela",
+                "players": [
+                    "tommy-gulin",
+                    "lauri-paatela"
+                ]
+            },
+            {
+                "name": "Ofri Porat + Toni Marttila",
+                "players": [
+                    "ofri-porat",
+                    "toni-marttila"
+                ]
+            },
+            {
+                "name": "Simo Liukkonen + Martin Svedholm",
+                "players": [
+                    "simo-liukkonen",
+                    "martin-svedholm"
+                ]
+            },
+            {
+                "name": "Pekka Saijonmaa + Sami Heikkinen",
+                "players": [
+                    "pekka-saijonmaa",
+                    "sami-heikkinen"
+                ]
+            },
+            {
+                "name": "Ossi Laukkanen + Olli Andersson",
+                "players": [
+                    "ossi-laukkanen",
+                    "olli-andersson"
+                ]
+            },
+            {
+                "name": "Lassi Koto + Mikko Oesch",
+                "players": [
+                    "lassi-koto",
+                    "mikko-oesch"
+                ]
+            },
+            {
+                "name": "Timo Lukumaa + Juuso Pihamaa",
+                "players": [
+                    "timo-lukumaa",
+                    "juuso-pihamaa"
+                ]
+            },
+            {
+                "name": "Eero Halmetoja + Lasse Koskela",
+                "players": [
+                    "eero-halmetoja",
+                    "lasse-koskela"
+                ]
+            },
+            {
+                "name": "Janne Valtakari + Miso Korkiakoski",
+                "players": [
+                    "janne-valtakari",
+                    "miso-lith"
+                ]
+            },
+            {
+                "name": "Harri Vainio + Pasi Halmetoja",
+                "players": [
+                    "harri-vainio",
+                    "pasi-halmetoja"
+                ]
+            },
+            {
+                "name": "Marcus Mattila + Jussi Allonen",
+                "players": [
+                    "marcus-mattila",
+                    "jussi-allonen"
+                ]
+            }
+        ],
+        "winners": {
+            "hector": [
+                "harri-vainio",
+                "pasi-halmetoja"
+            ],
+            "victor": [
+                "olli-varis",
+                "toni-marttila"
+            ]
+        }
+    }
+}

@@ -1,0 +1,166 @@
+{
+    "id": "konopiste-deste",
+    "name": "Konopiště - d'Este",
+    "homepage": "https://www.golf-konopiste.cz/index.php?lang=en",
+    "hero_image": "/images/courses/konopiste-deste/hero.jpg",
+    "images": {
+        "course_layout": "/images/courses/konopiste-deste/layout.png"
+    },
+    "description_short": "The d'Este course at Konopiště is a par-72 championship course that stretches up to 6,086 meters from the back tee. Located in the beautiful Czech countryside at the Konopiště golf resort, the D’ Este course is tougher than its sibling, Radecký, and requires skill and golf planning. The key is to stay on the fairways and off the rough – as several golfers have found that it can be quite treacherous.",
+    "description_long": [
+        {
+            "type": "paragraph",
+            "content": "Konopiště Golf Resort in Benešov, Czech Republic is an unparalleled experience. Not only is it a short distance from Prague, but it also offers two par 72 championship courses and a nine-hole academy course, making it the perfect choice for a golf trip. As couples, groups or for training stays."
+        },
+        {
+            "type": "paragraph",
+            "content": "The 4-star Manor Hotel at Konopiště Resort offers comfortable accommodation in the beautiful surroundings of the beautifully converted manor house. With roots dating back to the 14th century, this hotel has been beautifully remodeled and now has the facilities and amenities required of a good modern hotel, including satellite TV, safe, minibar, private bathroom and more."
+        },
+        {
+            "type": "image",
+            "url": "/images/courses/konopiste-deste/hero2.jpg"
+        },
+        {
+            "type": "paragraph",
+            "content": "The d'Este course at Konopiště is a par-72 championship course that stretches up to 6,086 meters from the back tee. The D’ Este course is tougher than its sibling, Radecký, and requires skill and golf planning. The key is to stay on the fairways and off the rough – as several golfers have found that it can be quite treacherous. While shorter than its bigger brother, D’Este is indeed not without its challenges; the fairways are narrowed in places by the property’s impressive forest, so it’s often wise to play conservatively to achieve a good position."
+        },
+        {
+            "type": "image",
+            "url": "/images/courses/konopiste-deste/hero3.jpg"
+        },
+        {
+            "type": "paragraph",
+            "content": "Simply walking in this magnificent setting is an experience in itself as the d’Este course is immersed in the surrounding nature, with several of its fairways lined by the park’s ancient oaks. The course’s highlight and certainly the most picturesque hole is the 9th, which features an island green accessible only by a narrow walkway."
+        }
+    ],
+    "contact": {
+        "address": "Tvoršovice 27, CZ-25601 Benešov, Czechia",
+        "phone": "tel://+420317784044",
+        "email": "gcko@gcko.cz"
+    },
+    "datasources": [
+        {
+            "name": "website",
+            "url": "https://www.golf-konopiste.cz/index.php?lang=en"
+        },
+        {
+            "name": "official scorecard",
+            "url": "https://www.golf-konopiste.cz/source/H%C5%98I%C5%A0T%C4%9A/score_DEste.pdf"
+        },
+        {
+            "name": "mscorecard",
+            "url": "https://www.mscorecard.com/mscorecard/showcourse.php?cid=1124132860093_1_2"
+        }
+    ],
+    "course": {
+        "tees": [
+            {
+                "name": "white",
+                "name_cz": "bílá",
+                "color": "#ffffff",
+                "stroke": "#000000",
+                "length": 6086,
+                "par": 72,
+                "rating": {
+                    "men": 73.5,
+                    "ladies": null
+                },
+                "slope": {
+                    "men": 145,
+                    "ladies": null
+                }
+            },
+            {
+                "name": "yellow",
+                "name_cz": "žlutá",
+                "color": "#dddd00",
+                "stroke": "#000000",
+                "length": 5730,
+                "par": 72,
+                "rating": {
+                    "men": 71.7,
+                    "ladies": null
+                },
+                "slope": {
+                    "men": 140,
+                    "ladies": null
+                }
+            },
+            {
+                "name": "blue",
+                "name_cz": "modrá",
+                "color": "#0000dd",
+                "stroke": "#000000",
+                "length": 5372,
+                "par": 72,
+                "rating": {
+                    "men": null,
+                    "ladies": 75.8
+                },
+                "slope": {
+                    "men": null,
+                    "ladies": 145
+                }
+            },
+            {
+                "name": "red",
+                "name_cz": "červená",
+                "color": "#dd0000",
+                "stroke": "#000000",
+                "length": 5011,
+                "par": 72,
+                "rating": {
+                    "men": null,
+                    "ladies": 73.9
+                },
+                "slope": {
+                    "men": null,
+                    "ladies": 139
+                }
+            }
+        ],
+        "scorecard": {
+            "men": [
+                { "hole":  1, "par": 4, "hcp": 11, "lengths": { "white": 334, "yellow": 321, "blue": 299, "red": 283 }},
+                { "hole":  2, "par": 4, "hcp":  7, "lengths": { "white": 369, "yellow": 355, "blue": 333, "red": 305 }},
+                { "hole":  3, "par": 5, "hcp":  1, "lengths": { "white": 483, "yellow": 453, "blue": 423, "red": 391 }},
+                { "hole":  4, "par": 3, "hcp": 17, "lengths": { "white": 135, "yellow": 127, "blue": 120, "red": 113 }},
+                { "hole":  5, "par": 4, "hcp": 15, "lengths": { "white": 336, "yellow": 319, "blue": 297, "red": 273 }},
+                { "hole":  6, "par": 4, "hcp":  5, "lengths": { "white": 359, "yellow": 346, "blue": 332, "red": 320 }},
+                { "hole":  7, "par": 5, "hcp": 13, "lengths": { "white": 460, "yellow": 436, "blue": 416, "red": 395 }},
+                { "hole":  8, "par": 3, "hcp":  3, "lengths": { "white": 218, "yellow": 193, "blue": 172, "red": 149 }},
+                { "hole":  9, "par": 4, "hcp":  9, "lengths": { "white": 328, "yellow": 306, "blue": 285, "red": 262 }},
+                { "hole": 10, "par": 4, "hcp": 12, "lengths": { "white": 301, "yellow": 288, "blue": 264, "red": 252 }},
+                { "hole": 11, "par": 3, "hcp":  6, "lengths": { "white": 177, "yellow": 154, "blue": 140, "red": 120 }},
+                { "hole": 12, "par": 5, "hcp": 16, "lengths": { "white": 478, "yellow": 454, "blue": 428, "red": 395 }},
+                { "hole": 13, "par": 4, "hcp":  2, "lengths": { "white": 408, "yellow": 384, "blue": 365, "red": 338 }},
+                { "hole": 14, "par": 4, "hcp": 18, "lengths": { "white": 364, "yellow": 333, "blue": 313, "red": 290 }},
+                { "hole": 15, "par": 4, "hcp":  4, "lengths": { "white": 351, "yellow": 340, "blue": 322, "red": 311 }},
+                { "hole": 16, "par": 5, "hcp":  8, "lengths": { "white": 458, "yellow": 429, "blue": 409, "red": 390 }},
+                { "hole": 17, "par": 3, "hcp": 14, "lengths": { "white": 150, "yellow": 140, "blue": 131, "red": 121 }},
+                { "hole": 18, "par": 4, "hcp": 10, "lengths": { "white": 377, "yellow": 352, "blue": 323, "red": 303 }}
+            ],
+            "ladies": null
+        },
+        "descriptions": [
+            { "hole":  1, "layout": "/images/courses/konopiste-deste/holes/1.png", "description": "" },
+            { "hole":  2, "layout": "/images/courses/konopiste-deste/holes/2.png", "description": "" },
+            { "hole":  3, "layout": "/images/courses/konopiste-deste/holes/3.png", "description": "" },
+            { "hole":  4, "layout": "/images/courses/konopiste-deste/holes/4.png", "description": "" },
+            { "hole":  5, "layout": "/images/courses/konopiste-deste/holes/5.png", "description": "" },
+            { "hole":  6, "layout": "/images/courses/konopiste-deste/holes/6.png", "description": "" },
+            { "hole":  7, "layout": "/images/courses/konopiste-deste/holes/7.png", "description": "" },
+            { "hole":  8, "layout": "/images/courses/konopiste-deste/holes/8.png", "description": "" },
+            { "hole":  9, "layout": "/images/courses/konopiste-deste/holes/9.png", "description": "" },
+            { "hole": 10, "layout": "/images/courses/konopiste-deste/holes/10.png", "description": "" },
+            { "hole": 11, "layout": "/images/courses/konopiste-deste/holes/11.png", "description": "" },
+            { "hole": 12, "layout": "/images/courses/konopiste-deste/holes/12.png", "description": "" },
+            { "hole": 13, "layout": "/images/courses/konopiste-deste/holes/13.png", "description": "" },
+            { "hole": 14, "layout": "/images/courses/konopiste-deste/holes/14.png", "description": "" },
+            { "hole": 15, "layout": "/images/courses/konopiste-deste/holes/15.png", "description": "" },
+            { "hole": 16, "layout": "/images/courses/konopiste-deste/holes/16.png", "description": "" },
+            { "hole": 17, "layout": "/images/courses/konopiste-deste/holes/17.png", "description": "" },
+            { "hole": 18, "layout": "/images/courses/konopiste-deste/holes/18.png", "description": "" }
+        ]
+    }
+}

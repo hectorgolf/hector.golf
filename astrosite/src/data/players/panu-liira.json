@@ -1,0 +1,12 @@
+{
+  "id": "panu-liira",
+  "name": {
+    "first": "Panu",
+    "last": "Liira"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358505658474"
+  },
+  "club": "KJKG"
+}

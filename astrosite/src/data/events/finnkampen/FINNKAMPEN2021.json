@@ -1,0 +1,17 @@
+{
+    "ignore": true,
+    "id": "FINNKAMPEN2021",
+    "name": "Finnkampen 2021",
+    "format": "finnkampen",
+    "location": "?",
+    "date": "October 23, 2022",
+    "courses": [
+        ""
+    ],
+    "participants": [],
+    "results": {
+        "teams": [],
+        "winners": {}
+    },
+    "description": ""
+}

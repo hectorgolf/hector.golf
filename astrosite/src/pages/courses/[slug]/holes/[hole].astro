@@ -1,12 +1,15 @@
 ---
 import Layout from '../../../../layouts/Layout.astro';
 import Breadcrumb from '../../../../components/Breadcrumb.astro';
-import data from '../../../../data/courses.json';
 import { type Course } from '../../../../schemas/courses';
 import { getCourseById } from '../../../../code/courses';
+import { getCollection } from 'astro:content';
 
-export function getStaticPaths() {
-    return data.flatMap((course) => {
+
+export async function getStaticPaths() {
+    const coursesData: Promise<Course[]> = getCollection('courses').then(collection => collection.map(course => course.data));
+    const courses = await coursesData;
+    return courses.flatMap((course) => {
         return (course.course?.descriptions || []).map((description) => {
             return { params: { slug: course.id, hole: description.hole.toString() } };
         });

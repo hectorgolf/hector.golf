@@ -38,6 +38,8 @@ export type TeetimePlayer = {
     birthDate: string
 }
 
+const SOURCE_NAME = 'Teetime'
+
 const fetchClubs = moize.maxAge(ms('1 hour'))(async (): Promise<Array<TeetimeClub>> => {
     console.log(`Fetching clubs from https://www.teetime.fi/backend/club?includeExternal=true`)
     const response = await fetch('https://www.teetime.fi/backend/club?includeExternal=true', {
@@ -51,7 +53,7 @@ const fetchClubs = moize.maxAge(ms('1 hour'))(async (): Promise<Array<TeetimeClu
         const clubs =  data
             .map((club:any) => ({ ...club, name: club.marketingName || club.name, marketingName: undefined }) as TeetimeClub)
             .sort((a: TeetimeClub, b: TeetimeClub) => a.name.localeCompare(b.name))
-        console.log(`Got ${clubs.length} clubs from teetime.fi`)
+        console.log(`Got ${clubs.length} clubs from ${SOURCE_NAME}`)
         return clubs
     } else {
         return Promise.reject(`Failed to fetch clubs from https://www.teetime.fi/backend/club?includeExternal=true (HTTP ${response.status})`)
@@ -146,13 +148,11 @@ console.log(`teetimeClubNumber: ${teetimeClubNumber}`)
 console.log(`teetimeUsername:   ${teetimeUsername}`)
 console.log(`teetimePassword:   ${teetimePassword?.replace(/./g, '*')}`)
 
-export type TeetimeSession = HandicapSource
-
-export const createTeetimeSession = async (): Promise<TeetimeSession> => {
+export const createTeetimeSession = async (): Promise<HandicapSource> => {
     const token = await login(teetimeClubNumber, teetimeUsername, teetimePassword)
     const _ = await fetchClubs() // pre-fetch clubs
     return {
-        name: 'Teetime',
+        name: SOURCE_NAME,
         getPlayerHandicap: async (firstName: string, lastName: string, clubNameOrAbbreviation: string): Promise<number|undefined> => {
             return await getTeetimePlayerHandicap(firstName, lastName, clubNameOrAbbreviation, token)
         },

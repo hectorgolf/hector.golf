@@ -1,0 +1,12 @@
+{
+  "id": "pekka-saijonmaa",
+  "name": {
+    "first": "Pekka",
+    "last": "Saijonmaa"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358503788364"
+  },
+  "club": "ERG"
+}

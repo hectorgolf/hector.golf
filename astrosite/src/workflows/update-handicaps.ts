@@ -6,8 +6,9 @@ import type { HandicapSource } from '../code/handicaps/handicap-source-api.ts'
 import { createTeetimeSession } from '../code/handicaps/teetime-api.ts'
 import { createWisegolfSession } from '../code/handicaps/wisegolf-api.ts'
 
-import playersData from '../data/players.json'
-import { isoDate, isoDateToday, parseEventDateRange } from '../code/dates.ts'
+import { isoDateToday } from '../code/dates.ts'
+
+import { playersData, hectorEvents, hasParticipants, isUpcomingEvent, pathToEventJson } from '../code/data.ts'
 
 
 const getPlayerById = (id: string, handicapHistory: Array<HandicapHistoryEntry>): Player|undefined => {
@@ -35,8 +36,6 @@ const readJsonFile = (pathToJsonFile: string, defaultValue: any = []): any => {
 // Get the resolved path to this file and determine the directory from that
 // (__dirname is not available in ES6 modules)
 const __filename = fileURLToPath(import.meta.url)
-const pathToEventsJson = join(dirname(__filename), '../data/events.json')
-const pathToPlayersJson = join(dirname(__filename), '../data/players.json')
 const pathToHandicapHistoryJson = join(dirname(__filename), '../data/handicaps.json')
 const pathToHandicapUpdateCommitMessage = join(dirname(__filename), '../../.update-handicaps-commit')
 
@@ -161,11 +160,10 @@ const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Arr
 }
 
 const updateHandicapsForAllPlayers = async () => {
-    const oldPlayers = readJsonFile(pathToPlayersJson, [])
-    console.log(`Attempting to update handicap data for ${oldPlayers.length} players...`)
+    console.log(`Attempting to update handicap data for ${playersData.length} players...`)
     const sources = await Promise.all([createTeetimeSession(), createWisegolfSession()])
     const handicapHistory: Array<HandicapHistoryEntry> = readJsonFile(pathToHandicapHistoryJson, [])
-    const updatedPlayers = await fetchUpdatedPlayerRecords(oldPlayers, handicapHistory, sources)
+    const updatedPlayers = await fetchUpdatedPlayerRecords(playersData, handicapHistory, sources)
     persistHandicapHistoryToDisk(updatedPlayers, handicapHistory)
 }
 
@@ -180,14 +178,9 @@ type HectorEvent = {
 
 const updateBucketsForUpcomingEvents = async () => {
     const handicapHistory: Array<HandicapHistoryEntry> = readJsonFile(pathToHandicapHistoryJson, [])
-    const allEvents = readJsonFile(pathToEventsJson, [])
 
     console.log(`Updating buckets for upcoming events...`)
-    const eventsToUpdate = allEvents.filter((e: HectorEvent) => {
-        if (e.format !== 'hector') return false
-        if (e.participants.length === 0) return false
-        return isoDate(parseEventDateRange(e.date)?.startDate) >= isoDateToday()
-    }) as Array<HectorEvent>
+    const eventsToUpdate = hectorEvents.filter(hasParticipants).filter(isUpcomingEvent) as HectorEvent[]
 
     eventsToUpdate.forEach((event) => {
         // Split participants to two buckets
@@ -202,23 +195,20 @@ const updateBucketsForUpcomingEvents = async () => {
         const bucket2 = participants?.slice(bucket1!.length)?.map(trimPlayer)
 
         // Add the updated buckets to the event object
-        const eventObject = allEvents.find((e: any) => e.id === event.id)
+        const eventObject = hectorEvents.find((e: any) => e.id === event.id)
         if (eventObject) {
             const newBuckets = [ bucket1, bucket2 ]
             const oldBuckets = eventObject.buckets
-            if (!eventObject.buckets) {
-                console.log(`Adding buckets for event ${event.id} (${event.name} on ${event.date})`)
-            } else if (JSON.stringify(newBuckets) !== JSON.stringify(oldBuckets)) {
-                console.log(`Updating buckets for event ${event.id} (${event.name} on ${event.date})`)
+            if (JSON.stringify(newBuckets) !== JSON.stringify(oldBuckets)) {
+                eventObject.buckets = newBuckets
+                const filePath = pathToEventJson(eventObject)
+                writeFileSync(filePath, JSON.stringify(eventObject, null, 2))
+                console.log(`Updated buckets for ${eventObject.name} in ${filePath}`)
             } else {
                 console.log(`No changes to buckets for event ${event.id} (${event.name} on ${event.date})`)
             }
-            eventObject.buckets = newBuckets
         }
     })
-
-    console.log(`Writing updated events data to ${pathToEventsJson}`)
-    writeFileSync(pathToEventsJson, JSON.stringify(allEvents, null, 4))
     console.log(`Done updating buckets.`)
 }
 

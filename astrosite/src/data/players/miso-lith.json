@@ -1,0 +1,18 @@
+{
+  "id": "miso-lith",
+  "name": {
+    "first": "Miso",
+    "last": "Lith"
+  },
+  "aliases": [
+    {
+      "first": "Miso",
+      "last": "Korkiakoski"
+    }
+  ],
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358505003049"
+  },
+  "club": "HirG"
+}

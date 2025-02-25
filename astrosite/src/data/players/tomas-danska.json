@@ -1,0 +1,12 @@
+{
+  "id": "tomas-danska",
+  "name": {
+    "first": "Tomas",
+    "last": "Danska"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": ""
+  },
+  "club": "ERG"
+}
