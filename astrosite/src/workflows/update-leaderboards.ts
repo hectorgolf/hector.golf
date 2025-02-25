@@ -1,7 +1,8 @@
 import { writeFileSync } from 'fs'
 
+import { type HectorEvent } from '../schemas/events.ts'
 import { parseEventDateRange, isoDate, isoDateToday} from '../code/dates.ts'
-import { playersData, eventsData, pathToEventJson } from '../code/data.ts'
+import { playersData, eventsData, pathToEventJson, isHectorEvent } from '../code/data.ts'
 import { fetchHectorLeaderboardData, fetchVictorLeaderboardData } from '../code/leaderboards/google-sheets.ts'
 import { updateHectorEventLeaderboard } from '../code/leaderboards/github.ts'
 
@@ -9,22 +10,6 @@ import { updateHectorEventLeaderboard } from '../code/leaderboards/github.ts'
 type HectorTeam = {
     name: string,
     players: string[]
-}
-
-type HectorEvent = {
-    id: string,
-    name: string,
-    format: string,
-    date: string,
-    leaderboardSheet: string|undefined,
-    participants?: Array<string>,
-    results?: {
-        teams?: Array<HectorTeam>,
-        winners?: {
-            hector?: Array<string>,
-            victor?: Array<string>
-        }
-    }
 }
 
 function getPlayerByName(name: string): string|undefined {
@@ -41,11 +26,11 @@ function getPlayerByName(name: string): string|undefined {
 
 function getOngoingEvents(): Array<HectorEvent> {
     return (eventsData as Array<HectorEvent>)
-        .filter(e => e.format === 'hector')
-        .map(e => e as HectorEvent)
+        .filter(isHectorEvent)
         .filter(e => !!(e.leaderboardSheet))
         .filter(e => {
             const { startDate, endDate } = parseEventDateRange(e.date) || {}
+            if (e.id === 'HECTOR2025') return true
             if (!startDate) return false
             if (!endDate) return false
             if (isoDate(startDate) > isoDateToday()) {
