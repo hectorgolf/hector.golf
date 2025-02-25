@@ -1,4 +1,5 @@
-import { z } from 'astro:content';
+//import { z } from 'astro:content';
+import { z } from 'zod';
 
 const matchplayMatchSchema = z.object({
     id: z.string(),

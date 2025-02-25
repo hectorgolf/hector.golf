@@ -1,16 +1,10 @@
 import { writeFileSync } from 'fs'
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
 
 import { parseEventDateRange, isoDate, isoDateToday} from '../code/dates.ts'
+import { playersData, eventsData, pathToEventJson } from '../code/data.ts'
 import { fetchHectorLeaderboardData, fetchVictorLeaderboardData } from '../code/leaderboards/google-sheets.ts'
 import { updateHectorEventLeaderboard } from '../code/leaderboards/github.ts'
 
-import eventsData from '../data/events.json'
-import playersData from '../data/players.json'
-
-const __filename = fileURLToPath(import.meta.url)
-const pathToEventsJson = join(dirname(__filename), '../data/events.json')
 
 type HectorTeam = {
     name: string,
@@ -33,7 +27,7 @@ type HectorEvent = {
     }
 }
 
-const getPlayerByName = (name: string): string|undefined => {
+function getPlayerByName(name: string): string|undefined {
     return playersData.find((player: any) => {
         const aliases = [player.name, ...(player.aliases || [])].map((name: any) => {
             if (name.first && name.last) {
@@ -45,8 +39,8 @@ const getPlayerByName = (name: string): string|undefined => {
     })?.id
 }
 
-const updateLeaderboardsForAllOngoingTournaments = async () => {
-    const events = (eventsData as Array<HectorEvent>)
+function getOngoingEvents(): Array<HectorEvent> {
+    return (eventsData as Array<HectorEvent>)
         .filter(e => e.format === 'hector')
         .map(e => e as HectorEvent)
         .filter(e => !!(e.leaderboardSheet))
@@ -63,7 +57,11 @@ const updateLeaderboardsForAllOngoingTournaments = async () => {
                 return false // event finished yesterday or earlier
             }
             return true
-        })
+        });
+}
+
+async function updateLeaderboardsForAllOngoingTournaments(): Promise<void> {
+    const events = getOngoingEvents()
 
     let updatedTeamPairings = 0
     console.log(`Found ${events.length} ongoing Hector events with a live leaderboard Google Sheet: ${events.map(e => e.name).join(', ')}`)
@@ -89,7 +87,7 @@ const updateLeaderboardsForAllOngoingTournaments = async () => {
 
             const teams = event.results?.teams || []
             if (teams.length === 0) {
-                // events.json does not yet have teams for this event
+                // src/data/events/{id}.json does not yet have teams for this event
                 const leaderboardHasPairings = hectorLeaderboard.every((team, index) => team.team && team.team.trim().length > 0)
                 if (leaderboardHasPairings) {
                     console.log(`The Hector leaderboard for ${hectorEvent.name} has pairings, so we'll use them to generate the teams`)
@@ -105,6 +103,9 @@ const updateLeaderboardsForAllOngoingTournaments = async () => {
                             rawEvent.results = { teams: teams as Array<HectorTeam>, winners: { hector: [], victor: [] } }
                             console.log(`Added ${teams.length} teams for ${hectorEvent.name} from live leaderboard data`)
                             updatedTeamPairings += 1
+                            const filePath = pathToEventJson(rawEvent)
+                            writeFileSync(filePath, JSON.stringify(rawEvent, null, 4))
+                            console.log(`Updated team pairings for ${updatedTeamPairings} events in ${filePath}`)
                         }
                     }
                 } else {
@@ -112,10 +113,6 @@ const updateLeaderboardsForAllOngoingTournaments = async () => {
                 }
             }
         }
-    }
-    if (updatedTeamPairings > 0) {
-        console.log(`Updated team pairings for ${updatedTeamPairings} events – TODO: write updated JSON to ${pathToEventsJson} : ${JSON.stringify(eventsData, null, 4)}`)
-        writeFileSync(pathToEventsJson, JSON.stringify(eventsData, null, 4))
     }
 }
 

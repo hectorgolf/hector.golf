@@ -1,10 +1,22 @@
 import { readFileSync } from 'fs';
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import { glob } from 'glob';
 
-import { type Event, genericEventSchema as EventSchema } from '../schemas/events';
-
+import { type Event, type HectorEvent, genericEventSchema as EventSchema } from '../schemas/events';
 import { type Course, schema as CourseSchema } from '../schemas/courses';
 import { type Player, schema as PlayerSchema } from '../schemas/players';
+import { isoDate, isoDateToday, parseEventDateRange } from '../code/dates.ts'
+
+const __filename = fileURLToPath(import.meta.url)
+
+export function pathToEventJson(event: Event): string {
+    return join(dirname(__filename), `../data/events/${event.id}.json`)
+}
+
+export function pathToPlayerJson(player: Player): string {
+    return join(dirname(__filename), `../data/players/${player.id}.json`)
+}
 
 /**
  * Filter function for dropping undefined values.
@@ -15,11 +27,45 @@ import { type Player, schema as PlayerSchema } from '../schemas/players';
 const nonUndefined = <T>(x: T | undefined): x is T => x !== undefined;
 
 /**
+ * Filter function for dropping non-`HectorEvent` values.
+ *
+ * @param event `Event` object to evaluate the predicate against.
+ * @returns true if the `Event` is a `HectorEvent`.
+ */
+function isHectorEvent(event: Event | undefined): event is HectorEvent { return event?.format === 'hector'; }
+
+/**
+ * Filter function for dropping past events.
+ *
+ * @param event `Event` object to evaluate the predicate against.
+ * @returns true if the `Event`'s start date is either today or in the future.
+ */
+export function isUpcomingEvent(event: Event | undefined): boolean {
+    if (!event) return false
+    return isoDate(parseEventDateRange(event.date)?.startDate) >= isoDateToday()
+}
+
+/**
+ * Filter function for dropping `Event`s without participants.
+ *
+ * @param event `Event` object to evaluate the predicate against.
+ * @returns true if the `Event` has participants.
+ */
+export function hasParticipants(event: Event | undefined): boolean { return (event?.participants?.length || 0) > 0; }
+
+/**
  * All `Event` objects found from `src/data/events/`.
  */
 export const eventsData: Event[] = (await glob('src/data/events/**/*.json')).map(filePath => {
     return EventSchema.safeParse(JSON.parse(readFileSync(filePath, 'utf-8'))).data
 }).filter(nonUndefined);
+
+/**
+ * All `Event` objects found from `src/data/events/`.
+ */
+export const hectorEvents: HectorEvent[] = (await glob('src/data/events/**/*.json')).map(filePath => {
+    return EventSchema.safeParse(JSON.parse(readFileSync(filePath, 'utf-8'))).data
+}).filter(isHectorEvent);
 
 /**
  * All `Course` objects found from `src/data/courses/`.

@@ -22,7 +22,7 @@ export function getPlayerById(id: string): Player|undefined {
         return undefined
     }
     const player = PlayerSchema.parse(_record);
-    // TODO: update handicap from handicap history, allowing the player data (players.json)
+    // TODO: update handicap from handicap history, allowing the player data ("src/data/players/{id}.json")
     // to manually override the history data:
     const handicapFromAPI = getPlayerHandicapById(player.id)
     const handicapOverride = player.handicap

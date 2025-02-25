@@ -73,9 +73,10 @@ const standardRequestHeaders = {
     'x-session-type': 'wisegolf',
 }
 
+const SOURCE_NAME = 'WiseGolf'
+
 const fetchClubs = moize.maxAge(ms('1 hour'))(async (token: string): Promise<Array<WisegolfClub>> => {
     const url = 'https://api.wisegolfclub.fi/api/1.0/golf/club/'
-    console.log(`Fetching clubs from ${url}`)
     const response = await fetch(url, {
         headers: {
             'Content-Type': 'application/json',
@@ -93,7 +94,7 @@ const fetchClubs = moize.maxAge(ms('1 hour'))(async (token: string): Promise<Arr
                     softwareVendorName: club.softwareVendorName
                 }) as WisegolfClub
             ).sort((a: WisegolfClub, b: WisegolfClub) => a.name.localeCompare(b.name))
-        console.log(`Got ${clubs.length} clubs from ${url}`)
+        console.log(`Got ${clubs.length} clubs from ${SOURCE_NAME}`)
         return clubs
     } else {
         return Promise.reject(`Failed to fetch clubs from ${url} (HTTP ${response.status})`)
@@ -104,7 +105,7 @@ export const createWisegolfSession = async (): Promise<WisegolfSession> => {
     const token = await login(wisegolfUsername, wisegolfPassword)
     const _ = await fetchClubs(token) // pre-fetch clubs
     return {
-        name: 'WiseGolf',
+        name: SOURCE_NAME,
         getPlayerHandicap: async (firstName: string, lastName: string, clubNameOrAbbreviation: string): Promise<number|undefined> => {
             return await getWisegolfPlayerHandicap(firstName, lastName, clubNameOrAbbreviation, token)
         },

@@ -6,7 +6,8 @@ import type { HandicapSource } from '../code/handicaps/handicap-source-api.ts'
 import { createTeetimeSession } from '../code/handicaps/teetime-api.ts'
 import { createWisegolfSession } from '../code/handicaps/wisegolf-api.ts'
 
-import playersData from '../data/players.json'
+import { pathToPlayerJson, playersData } from '../code/data.ts'
+import { getPlayerName } from '../code/players.ts'
 
 
 const getPlayerById = (id: string): Player|undefined => {
@@ -30,7 +31,6 @@ const readJsonFile = (pathToJsonFile: string, defaultValue: any = []): any => {
 // Get the resolved path to this file and determine the directory from that
 // (__dirname is not available in ES6 modules)
 const __filename = fileURLToPath(import.meta.url)
-const pathToPlayersJson = join(dirname(__filename), '../data/players.json')
 const pathToClubMembershipUpdateCommitMessage = join(dirname(__filename), '../../.identify-clubs-commit')
 
 if (existsSync(pathToClubMembershipUpdateCommitMessage)) {
@@ -56,20 +56,22 @@ type Player = {
     clubFound?: boolean,
 }
 
-const persistPlayersToDisk = (players: Player[], playersWithNewClub: Player[]) => {
-    if (playersWithNewClub.length === 0) {
+const persistPlayersToDisk = (players: Player[]) => {
+    if (players.length === 0) {
         console.log(`No new clubs found. Skipping persisting to disk.`)
         return
     }
 
-    const commitMessage: string[] = playersWithNewClub.map((player: any) => {
+    const commitMessage: string[] = players.map((player: any) => {
         return `  - ${player.name.first} ${player.name.last} was only found from ${player.club}`
     })
 
-    console.log(`Updated ${playersWithNewClub.length} players' club membership:`)
-    console.log(JSON.stringify(playersWithNewClub, null, 2))
-    writeFileSync(pathToPlayersJson, JSON.stringify(players, null, 2))
-    writeFileSync(pathToClubMembershipUpdateCommitMessage, `Updated ${playersWithNewClub.length} players' club membership:\n${commitMessage.join('\n')}`)
+    console.log(`Updating ${players.length} players' club membership:`)
+    players.forEach((player: Player) => {
+        console.log(JSON.stringify(player, null, 4))
+        writeFileSync(pathToPlayerJson(player), JSON.stringify(player, null, 4))
+    })
+    writeFileSync(pathToClubMembershipUpdateCommitMessage, `Updated ${players.length} players' club membership:\n${commitMessage.join('\n')}`)
     console.log(`Done updating club memberships.`)
 }
 
@@ -83,6 +85,7 @@ const updatePlayerRecords = async (players: Player[], handicapSources: Array<Han
             const promises: Array<Promise<string[]>> = []
             for (const source of handicapSources) {
                 const foundInClubs = source.resolveClubMembership(playerObject.name.first, playerObject.name.last)
+                foundInClubs.then(clubs => console.log(`${getPlayerName(playerObject)} found at ${clubs.length} clubs via ${source.name}: ${JSON.stringify(clubs.sort())}`))
                 promises.push(foundInClubs)
             }
             return Promise.all(promises)
@@ -111,30 +114,17 @@ const updatePlayerRecords = async (players: Player[], handicapSources: Array<Han
     return Promise.all(playerListPromises)
 }
 
-const merge = (oldPlayers: Player[], updatedPlayers: Player[]): Player[] => {
-    const updatedPlayersMap = new Map(updatedPlayers.map((player: any) => [player.id, player]))
-    const mergedPlayers = oldPlayers.map((player: any) => {
-        const updatedPlayer = updatedPlayersMap.get(player.id)
-        if (updatedPlayer) {
-            return updatedPlayer
-        } else {
-            return player
-        }
-    })
-    return mergedPlayers
-}
-
 const updateHandicapsForAllPlayers = async () => {
-    const oldPlayers = readJsonFile(pathToPlayersJson, [])
+    const oldPlayers = playersData
     const playersWithoutClub = oldPlayers.filter((player: any) => !player.club)
     if (playersWithoutClub.length > 0) {
         console.log(`Attempting to identify club for ${playersWithoutClub.length} players...`)
         const sources = await Promise.all([createTeetimeSession(), createWisegolfSession()])
-        const attemptedPlayers = await updatePlayerRecords(oldPlayers, sources)
+        const attemptedPlayers = await updatePlayerRecords(playersWithoutClub, sources)
         const updatedPlayers = attemptedPlayers.filter((player: any) => !!player.club)
         if (updatedPlayers.length > 0) {
             console.log(`Found clubs for ${updatedPlayers.length} players. Persisting to disk...`)
-            persistPlayersToDisk(merge(oldPlayers, updatedPlayers), updatedPlayers)
+            persistPlayersToDisk(updatedPlayers)
         } else {
             console.log(`No new clubs found. Skipping persisting to disk.`)
         }
