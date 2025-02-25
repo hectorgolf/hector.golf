@@ -8,7 +8,8 @@
     "privacy": "shorten-last-name",
     "contact": {
       "phone": "+358504669916"
-    }
+    },
+    "club": "ArGC"
   },
   {
     "id": "daniel-hylton",
@@ -198,7 +199,10 @@
       "last": "Lith"
     },
     "aliases": [
-      { "first": "Miso", "last": "Korkiakoski" }
+      {
+        "first": "Miso",
+        "last": "Korkiakoski"
+      }
     ],
     "privacy": "shorten-last-name",
     "contact": {
@@ -511,7 +515,8 @@
     "privacy": "shorten-last-name",
     "contact": {
       "phone": ""
-    }
+    },
+    "club": "VGC"
   },
   {
     "id": "rasmus-back",
@@ -522,6 +527,7 @@
     "privacy": "shorten-last-name",
     "contact": {
       "phone": ""
-    }
+    },
+    "club": "VGC"
   }
 ]

@@ -165,6 +165,10 @@
                     "handicap": -1.1
                 },
                 {
+                    "id": "jari-kuusela",
+                    "handicap": 1.7
+                },
+                {
                     "id": "sami-heikkinen",
                     "handicap": 4.5
                 },
@@ -203,13 +207,13 @@
                 {
                     "id": "martin-svedholm",
                     "handicap": 10.3
-                },
-                {
-                    "id": "lassi-koto",
-                    "handicap": 10.4
                 }
             ],
             [
+                {
+                    "id": "lassi-koto",
+                    "handicap": 10.4
+                },
                 {
                     "id": "toni-marttila",
                     "handicap": 11
@@ -253,10 +257,6 @@
                 {
                     "id": "pekka-saijonmaa",
                     "handicap": 19
-                },
-                {
-                    "id": "jari-kuusela",
-                    "handicap": 0
                 }
             ]
         ]
