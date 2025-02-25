@@ -1,6 +1,6 @@
 import { type Event, genericEventSchema as EventSchema, type MatchplayEvent, type MatchplayResults, type HectorEvent, type FinnkampenEvent, EventFormat, hectorEventSchema } from '../schemas/events';
 import { type Course, schema as CourseSchema } from '../schemas/courses';
-import { parseEventDateRange, isoDate, isoDateToday } from './dates';
+import { parseEventDateRange, isoDate, isoDateToday, compareDateStrings } from './dates';
 import { eventsData, coursesData } from './data';
 
 
@@ -68,7 +68,14 @@ export function getAllEventsGroupedByChronology(providedFilter?: (e: Event) => b
             console.warn(`How is this possible? An event is neither past, ongoing, nor upcoming: ${JSON.stringify(event, null, 2)}`)
         }
     })
-    return { ongoing: ongoingEvents, upcoming: upcomingEvents, past: pastEvents }
+    const sortByDate = (a: Event, b: Event): number => {
+        const c = compareDateStrings(a.date, b.date);
+        if (c !== 0) {
+            return -c;
+        }
+        return a.name.localeCompare(b.name)
+    }
+    return { ongoing: ongoingEvents.sort(sortByDate), upcoming: upcomingEvents.sort(sortByDate), past: pastEvents.sort(sortByDate) }
 }
 
 const populateMissingParticipants = (event: Event): Event => {
