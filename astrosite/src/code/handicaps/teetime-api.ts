@@ -77,7 +77,11 @@ const extractJsonFromResponse = async (response: Response): Promise<any> => {
         return Promise.reject(`Unexpected content-type from ${response.url}: ${contentType}`)
     }
     console.log(`Response from ${response.url} is HTTP ${response.status} of ${contentType}`)
-    return await response.json()
+    try {
+        return await response.json()
+    } catch (err: any) {
+        return Promise.reject(`Failed to parse JSON from ${response.url} due to ${JSON.stringify(err.message)}: ${await response.text()}`)
+    }
 }
 
 const login = async (clubNumberOrAbbreviation: string, username: string, password: string): Promise<string> => {
