@@ -11,7 +11,7 @@ import { isoDate, isoDateToday, parseEventDateRange } from '../code/dates.ts'
 const __filename = fileURLToPath(import.meta.url)
 
 export function pathToEventJson(event: Event): string {
-    return join(dirname(__filename), `../data/events/${event.id}.json`)
+    return join(dirname(__filename), `../data/events/${event.format}/${event.id}.json`)
 }
 
 export function pathToPlayerJson(player: Player): string {
