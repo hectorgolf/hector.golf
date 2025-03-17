@@ -163,9 +163,13 @@ const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Arr
 
 const updateHandicapsForAllPlayers = async () => {
     console.log(`Attempting to update handicap data for ${playersData.length} players...`)
-    const sources = await Promise.all([createTeetimeSession(), createWisegolfSession()])
+    const sourcePromises = await Promise.allSettled([createTeetimeSession(), createWisegolfSession()])
+    const availableSources = sourcePromises.filter(r => r.status === 'fulfilled').map(r => r.value)
+    if (availableSources.length < sourcePromises.length) {
+        console.error(`Failed to access all handicap sources. Only ${availableSources.length} out of ${sourcePromises.length} API connections were successfully established.`)
+    }
     const handicapHistory: Array<HandicapHistoryEntry> = readJsonFile(pathToHandicapHistoryJson, [])
-    const updatedPlayers = await fetchUpdatedPlayerRecords(playersData, handicapHistory, sources)
+    const updatedPlayers = await fetchUpdatedPlayerRecords(playersData, handicapHistory, availableSources)
     persistHandicapHistoryToDisk(updatedPlayers, handicapHistory)
 }
 

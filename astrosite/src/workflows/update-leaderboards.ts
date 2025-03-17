@@ -71,7 +71,7 @@ async function updateLeaderboardsForAllOngoingTournaments(): Promise<void> {
 
             const teams = event.results?.teams || []
             if (teams.length === 0) {
-                // src/data/events/{id}.json does not yet have teams for this event
+                // src/data/events/{format}/{id}.json does not yet have teams for this event
                 const leaderboardHasPairings = hectorLeaderboard.every((team, index) => team.team && team.team.trim().length > 0)
                 if (leaderboardHasPairings) {
                     console.log(`The Hector leaderboard for ${hectorEvent.name} has pairings, so we'll use them to generate the teams`)
