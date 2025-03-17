@@ -2,6 +2,7 @@ import cryptojs from 'crypto-js'
 const { MD5 } = cryptojs
 import moize from 'moize'
 import { ms } from 'itty-time'
+import mime from 'mime'
 
 import { type HandicapSource } from './handicap-source-api'
 
@@ -67,6 +68,18 @@ const sanitizePassword = (obj: any): any => {
     return obj
 }
 
+const extractJsonFromResponse = async (response: Response): Promise<any> => {
+    if (!response.ok) {
+        return Promise.reject(`Failed to login to Teetime.fi: HTTP ${response.status}`)
+    }
+    const contentType = response.headers.get('content-type')
+    if (!contentType ||  mime.getExtension(contentType) !== 'json') {
+        return Promise.reject(`Unexpected content-type from ${response.url}: ${contentType}`)
+    }
+    console.log(`Response from ${response.url} is HTTP ${response.status} of ${contentType}`)
+    return await response.json()
+}
+
 const login = async (clubNumberOrAbbreviation: string, username: string, password: string): Promise<string> => {
     const clubNumber = await resolveClubNumber(clubNumberOrAbbreviation)
     const payload = {
@@ -81,8 +94,8 @@ const login = async (clubNumberOrAbbreviation: string, username: string, passwor
         headers: standardRequestHeaders,
         body: JSON.stringify(payload)
     })
-    const data = await response.json()
-    return data.token
+    const data = await extractJsonFromResponse(response)
+    return data.token ? data.token : Promise.reject(`Failed to login to Teetime.fi: ${JSON.stringify(data)}`)
 }
 
 const roundToTenths = (num: number): number => Math.round(num * 10) / 10
