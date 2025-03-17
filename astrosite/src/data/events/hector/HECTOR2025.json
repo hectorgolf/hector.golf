@@ -59,8 +59,30 @@
         {
             "day": 2,
             "round": 1,
+            "course": "emporda-forest",
+            "tee": "Yellow",
+            "gameFormats": [
+                {
+                    "format": "Better Ball Stroke Play NET",
+                    "handicapAllowance": 1,
+                    "competition": [
+                        "hector"
+                    ]
+                },
+                {
+                    "format": "Stableford NET",
+                    "handicapAllowance": 1,
+                    "competition": [
+                        "victor"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "round": 2,
             "course": "emporda-links",
-            "tee": "Blue",
+            "tee": "Yellow",
             "gameFormats": [
                 {
                     "format": "Stroke Play NET",
@@ -79,52 +101,8 @@
             ]
         },
         {
-            "day": 2,
-            "round": 2,
-            "course": "emporda-forest",
-            "tee": "White",
-            "gameFormats": [
-                {
-                    "format": "Better Ball Stroke Play NET",
-                    "handicapAllowance": 1,
-                    "competition": [
-                        "hector"
-                    ]
-                },
-                {
-                    "format": "Stableford NET",
-                    "handicapAllowance": 1,
-                    "competition": [
-                        "victor"
-                    ]
-                }
-            ]
-        },
-        {
             "day": 3,
             "round": 1,
-            "course": "emporda-links",
-            "tee": "Blue",
-            "gameFormats": [
-                {
-                    "format": "Better Ball Stroke Play NET",
-                    "handicapAllowance": 1,
-                    "competition": [
-                        "hector"
-                    ]
-                },
-                {
-                    "format": "Stableford NET",
-                    "handicapAllowance": 1,
-                    "competition": [
-                        "victor"
-                    ]
-                }
-            ]
-        },
-        {
-            "day": 3,
-            "round": 2,
             "course": "emporda-forest",
             "tee": "Yellow",
             "gameFormats": [
@@ -133,6 +111,28 @@
                     "handicapAllowance": 0.2,
                     "competition": [
                         "hector"
+                    ]
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "round": 2,
+            "course": "emporda-links",
+            "tee": "Yellow",
+            "gameFormats": [
+                {
+                    "format": "Better Ball Stroke Play NET",
+                    "handicapAllowance": 1,
+                    "competition": [
+                        "hector"
+                    ]
+                },
+                {
+                    "format": "Stableford NET",
+                    "handicapAllowance": 1,
+                    "competition": [
+                        "victor"
                     ]
                 }
             ]
