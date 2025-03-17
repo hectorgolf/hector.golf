@@ -80,7 +80,9 @@ const extractJsonFromResponse = async (response: Response): Promise<any> => {
     try {
         return await response.json()
     } catch (err: any) {
-        return Promise.reject(`Failed to parse JSON from ${response.url} due to ${JSON.stringify(err.message)}: ${await response.text()}`)
+        console.error(`Failed to parse JSON from ${response.url}:`, err.message || err)
+        console.error(`Response body: ${await response.text()}`)
+        return Promise.reject(`Failed to parse JSON from ${response.url}: ${err.message || err}`)
     }
 }
 
