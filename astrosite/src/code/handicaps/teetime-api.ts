@@ -76,7 +76,11 @@ const extractJsonFromResponse = async (response: Response): Promise<any> => {
     if (!contentType ||  mime.getExtension(contentType) !== 'json') {
         return Promise.reject(`Unexpected content-type from ${response.url}: ${contentType}`)
     }
-    console.log(`Response from ${response.url} is HTTP ${response.status} of ${contentType}`)
+    console.log(`Response from ${response.url} is HTTP ${response.status} of ${contentType}:`)
+    console.log(`HTTP ${response.status} ${response.statusText}`.trim());
+    response.headers.forEach((value, key) => {
+        console.log(`  ${key}: ${value}`)
+    });
     try {
         return await response.json()
     } catch (err: any) {
