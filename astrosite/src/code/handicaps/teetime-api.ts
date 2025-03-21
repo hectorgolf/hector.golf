@@ -70,7 +70,7 @@ const sanitizePassword = (obj: any): any => {
 
 const extractJsonFromResponse = async (response: Response): Promise<any> => {
     if (!response.ok) {
-        return Promise.reject(`Failed to login to Teetime.fi: HTTP ${response.status}`)
+        return Promise.reject(`Failed to extract JSON response from login request to Teetime.fi: HTTP ${response.status} ${response.statusText} ${await response.text().catch(() => '(response body not available)')}`)
     }
     const contentType = response.headers.get('content-type')
     if (!contentType ||  mime.getExtension(contentType) !== 'json') {
@@ -100,8 +100,12 @@ const login = async (clubNumberOrAbbreviation: string, username: string, passwor
         headers: standardRequestHeaders,
         body: JSON.stringify(payload)
     })
-    const data = await extractJsonFromResponse(response)
-    return data.token ? data.token : Promise.reject(`Failed to login to Teetime.fi: ${JSON.stringify(data)}`)
+    try {
+        const data = await extractJsonFromResponse(response)
+        return data.token ? data.token : Promise.reject(`Failed to login to Teetime.fi: ${JSON.stringify(data)}`)
+    } catch (error) {
+        return Promise.reject(error);
+    }
 }
 
 const roundToTenths = (num: number): number => Math.round(num * 10) / 10
