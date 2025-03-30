@@ -3,7 +3,7 @@ import moize from 'moize'
 import { ms } from 'itty-time'
 import { pRateLimit } from 'p-ratelimit'
 
-import { type HandicapSource } from './handicap-source-api'
+import { NullHandicapSource, type HandicapSource } from './handicap-source-api'
 
 export type WisegolfSession = HandicapSource
 
@@ -102,16 +102,21 @@ const fetchClubs = moize.maxAge(ms('1 hour'))(async (token: string): Promise<Arr
 })
 
 export const createWisegolfSession = async (): Promise<WisegolfSession> => {
-    const token = await login(wisegolfUsername, wisegolfPassword)
-    const _ = await fetchClubs(token) // pre-fetch clubs
-    return {
-        name: SOURCE_NAME,
-        getPlayerHandicap: async (firstName: string, lastName: string, clubNameOrAbbreviation: string): Promise<number|undefined> => {
-            return await getWisegolfPlayerHandicap(firstName, lastName, clubNameOrAbbreviation, token)
-        },
-        resolveClubMembership: async (firstName: string, lastName: string): Promise<string[]> => {
-            return await findWisegolfPlayerClubs(firstName, lastName, token)
+    try {
+        const token = await login(wisegolfUsername, wisegolfPassword)
+        const _ = await fetchClubs(token) // pre-fetch clubs
+        return {
+            name: SOURCE_NAME,
+            getPlayerHandicap: async (firstName: string, lastName: string, clubNameOrAbbreviation: string): Promise<number|undefined> => {
+                return await getWisegolfPlayerHandicap(firstName, lastName, clubNameOrAbbreviation, token)
+            },
+            resolveClubMembership: async (firstName: string, lastName: string): Promise<string[]> => {
+                return await findWisegolfPlayerClubs(firstName, lastName, token)
+            }
         }
+    } catch (error: any) {
+        console.error(`Failed to create a Wisegolf session (${error.message || error}) so returning a null handicap source for ${SOURCE_NAME}.`)
+        return new NullHandicapSource(SOURCE_NAME);
     }
 }
 

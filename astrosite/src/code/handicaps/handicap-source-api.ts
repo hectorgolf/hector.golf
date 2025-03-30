@@ -23,3 +23,18 @@ export type HandicapSource = {
      */
     resolveClubMembership: (firstName: string, lastName: string) => Promise<string[]>;
 }
+
+/**
+ * A null handicap source that returns undefined for all handicaps and an empty array for club membership.
+ */
+export class NullHandicapSource implements HandicapSource {
+    constructor(readonly name: string) {
+        this.name = `${name} (disabled)`;
+    }
+    getPlayerHandicap(_firstName: string, _lastName: string, _clubNameOrAbbreviation: string): Promise<number|undefined> {
+        return Promise.resolve(undefined)
+    }
+    resolveClubMembership(_firstName: string, _lastName: string): Promise<string[]> {
+        return Promise.resolve([])
+    }
+};

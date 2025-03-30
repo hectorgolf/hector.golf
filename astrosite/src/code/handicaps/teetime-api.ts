@@ -5,8 +5,8 @@ import moize from 'moize'
 import { ms } from 'itty-time'
 import mime from 'mime'
 
-import { type HandicapSource } from './handicap-source-api'
-import { describeResponse, describeResponseBody } from './response-helpers'
+import { NullHandicapSource, type HandicapSource } from './handicap-source-api'
+import { describeRequest, describeResponse, describeResponseBody } from './http-helpers'
 
 
 const standardRequestHeaders = {
@@ -72,9 +72,9 @@ const sanitizePassword = (obj: any): any => {
 
 const extractJsonFromResponse = async (response: Response): Promise<any> => {
     if (!response.ok) {
-        const error = `Failed to extract JSON response from login request to Teetime.fi:` +
-            `Response from ${response.url}:` + describeResponse(response) +
-            '\n' + (await describeResponseBody(response));
+        const error = `Failed to extract JSON response from Teetime.fi login request! ` +
+            `Response to ${describeRequest(response)}:\n` +
+            `${describeResponse(response)}\n`+ `${await describeResponseBody(response)}`;
         console.log(error);
         return Promise.reject(error);
     }
@@ -179,16 +179,21 @@ console.log(`teetimeUsername:   ${teetimeUsername}`)
 console.log(`teetimePassword:   ${teetimePassword?.replace(/./g, '*')}`)
 
 export const createTeetimeSession = async (): Promise<HandicapSource> => {
-    const token = await login(teetimeClubNumber, teetimeUsername, teetimePassword)
-    const _ = await fetchClubs() // pre-fetch clubs
-    return {
-        name: SOURCE_NAME,
-        getPlayerHandicap: async (firstName: string, lastName: string, clubNameOrAbbreviation: string): Promise<number|undefined> => {
-            return await getTeetimePlayerHandicap(firstName, lastName, clubNameOrAbbreviation, token)
-        },
-        resolveClubMembership: async (firstName: string, lastName: string): Promise<string[]> => {
-            return await findTeetimePlayerClubs(firstName, lastName, token)
+    try {
+        const token = await login(teetimeClubNumber, teetimeUsername, teetimePassword)
+        const _ = await fetchClubs() // pre-fetch clubs
+        return {
+            name: SOURCE_NAME,
+            getPlayerHandicap: async (firstName: string, lastName: string, clubNameOrAbbreviation: string): Promise<number|undefined> => {
+                return await getTeetimePlayerHandicap(firstName, lastName, clubNameOrAbbreviation, token)
+            },
+            resolveClubMembership: async (firstName: string, lastName: string): Promise<string[]> => {
+                return await findTeetimePlayerClubs(firstName, lastName, token)
+            }
         }
+    } catch (error: any) {
+        console.error(`Failed to create Teetime session (${error.message || error}) so returning a null handicap source for ${SOURCE_NAME}.`)
+        return new NullHandicapSource(SOURCE_NAME);
     }
 }
 
@@ -204,12 +209,11 @@ const findTeetimePlayerClubs = async (firstName: string, lastName: string, token
     return Promise.resolve(clubAbbreviations)
 }
 
-const getTeetimePlayerHandicap = async (firstName: string, lastName: string, clubNameOrAbbreviation: string, providedToken?: string): Promise<number|undefined> => {
+const getTeetimePlayerHandicap = async (firstName: string, lastName: string, clubNameOrAbbreviation: string, token: string): Promise<number|undefined> => {
     if (clubNameOrAbbreviation) {
         if (!!teetimeClubNumber && !!teetimeUsername && !!teetimePassword) {
             const clubNumber = await resolveClubNumber(clubNameOrAbbreviation)
             if (clubNumber) {
-                const token = providedToken || await login(teetimeClubNumber, teetimeUsername, teetimePassword)
                 return await fetchHandicap(token, clubNumber, firstName, lastName)
             }
         }

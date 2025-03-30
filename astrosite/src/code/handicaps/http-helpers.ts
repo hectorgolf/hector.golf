@@ -1,5 +1,9 @@
 import { Response } from 'fetch-h2'
 
+export function describeRequest(response: Response): string {
+    return `HTTP/${response.httpVersion} ${response.url}`;
+}
+
 export function describeResponse(response: Response): string {
     const lines: string[] = [];
     lines.push(describeResponseStatus(response));
@@ -10,7 +14,7 @@ export function describeResponse(response: Response): string {
 export function describeResponseStatus(response: Response): string {
     const statusText = response.statusText?.trim() ?? '';
     const suffix = statusText !== response.status.toString() ? ` ${statusText}` : '';
-    return `HTTP ${response.status}${suffix}`;
+    return `HTTP/${response.httpVersion} ${response.status}${suffix}`;
 }
 
 export function describeResponseHeaders(response: Response): string[] {
