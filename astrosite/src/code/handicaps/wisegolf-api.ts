@@ -3,7 +3,7 @@ import moize from 'moize'
 import { ms } from 'itty-time'
 import { pRateLimit } from 'p-ratelimit'
 
-import { NullHandicapSource, type HandicapSource } from './handicap-source-api'
+import { NullHandicapSource, type GolfClub, type HandicapSource } from './handicap-source-api'
 
 export type WisegolfSession = HandicapSource
 
@@ -110,7 +110,7 @@ export const createWisegolfSession = async (): Promise<WisegolfSession> => {
             getPlayerHandicap: async (firstName: string, lastName: string, clubNameOrAbbreviation: string): Promise<number|undefined> => {
                 return await getWisegolfPlayerHandicap(firstName, lastName, clubNameOrAbbreviation, token)
             },
-            resolveClubMembership: async (firstName: string, lastName: string): Promise<string[]> => {
+            resolveClubMembership: async (firstName: string, lastName: string): Promise<GolfClub[]> => {
                 return await findWisegolfPlayerClubs(firstName, lastName, token)
             }
         }
@@ -120,13 +120,17 @@ export const createWisegolfSession = async (): Promise<WisegolfSession> => {
     }
 }
 
-const findWisegolfPlayerClubs = async (firstName: string, lastName: string, token: string): Promise<string[]> => {
+const findWisegolfPlayerClubs = async (firstName: string, lastName: string, token: string): Promise<GolfClub[]> => {
     const clubs = await fetchClubs(token)
-    const clubAbbreviations: string[] = []
+    const clubAbbreviations: GolfClub[] = []
     for (let club of clubs) {
         const player = await fetchPlayer(token, club.number, firstName, lastName)
         if (player) {
-            clubAbbreviations.push(club.abbreviation)
+            clubAbbreviations.push({
+                name: club.name,
+                abbreviation: club.abbreviation,
+                sources: [ { name: SOURCE_NAME, id: club.number } ]
+            })
         }
     }
     return Promise.resolve(clubAbbreviations)
@@ -135,7 +139,7 @@ const findWisegolfPlayerClubs = async (firstName: string, lastName: string, toke
 
 const sanitizePassword = (obj: any): any => {
     if ('password' in obj) {
-        return { ...obj, password: obj.password.replace(/./g, '*') }
+        return { ...obj, password: '**********' }
     }
     return obj
 }

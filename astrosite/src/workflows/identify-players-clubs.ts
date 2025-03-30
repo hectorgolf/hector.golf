@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, existsSync, rmSync } from 'fs'
 import { join, dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
 
-import type { HandicapSource } from '../code/handicaps/handicap-source-api.ts'
+import type { GolfClub, HandicapSource } from '../code/handicaps/handicap-source-api.ts'
 import { createTeetimeSession } from '../code/handicaps/teetime-api.ts'
 import { createWisegolfSession } from '../code/handicaps/wisegolf-api.ts'
 
@@ -82,7 +82,7 @@ const updatePlayerRecords = async (players: Player[], handicapSources: Array<Han
             // Ok. The player does not have a club on record - let's try to find them from all of our sources.
             // We'll only assign a club to a player if there's exactly one club with a member matching our player's name.
 
-            const promises: Array<Promise<string[]>> = []
+            const promises: Array<Promise<GolfClub[]>> = []
             for (const source of handicapSources) {
                 const foundInClubs = source.resolveClubMembership(playerObject.name.first, playerObject.name.last)
                 foundInClubs.then(clubs => console.log(`${getPlayerName(playerObject)} found at ${clubs.length} clubs via ${source.name}: ${JSON.stringify(clubs.sort())}`))
@@ -90,7 +90,7 @@ const updatePlayerRecords = async (players: Player[], handicapSources: Array<Han
             }
             return Promise.all(promises)
                 .then(clubs => clubs.flat())
-                .then(clubs => [...new Set(clubs)].sort())
+                .then(clubs => [...new Set(clubs)].sort((a, b) => a.name.localeCompare(b.name)))
                 .then(clubs => {
                     if (clubs.length === 1) {
                         return clubs[0]
@@ -99,8 +99,8 @@ const updatePlayerRecords = async (players: Player[], handicapSources: Array<Han
                     }
                 }).then(club => {
                     if (club) {
-                        playerObject.club = club
-                        console.log(`Club found for ${playerObject.name.first} ${playerObject.name.last}: ${playerObject.club}`)
+                        playerObject.club = club.abbreviation
+                        console.log(`Club found for ${playerObject.name.first} ${playerObject.name.last}: ${playerObject.club} (${club.name})`)
                     }
                     return Promise.resolve(playerObject)
                 }).catch((_: Error) => {
