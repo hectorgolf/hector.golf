@@ -1,3 +1,4 @@
+import { fetch, Response } from 'fetch-h2'
 import cryptojs from 'crypto-js'
 const { MD5 } = cryptojs
 import moize from 'moize'
@@ -5,6 +6,7 @@ import { ms } from 'itty-time'
 import mime from 'mime'
 
 import { type HandicapSource } from './handicap-source-api'
+import { describeResponse, describeResponseBody } from './response-helpers'
 
 
 const standardRequestHeaders = {
@@ -70,17 +72,16 @@ const sanitizePassword = (obj: any): any => {
 
 const extractJsonFromResponse = async (response: Response): Promise<any> => {
     if (!response.ok) {
-        return Promise.reject(`Failed to extract JSON response from login request to Teetime.fi: HTTP ${response.status} ${response.statusText} ${await response.text().catch(() => '(response body not available)')}`)
+        const error = `Failed to extract JSON response from login request to Teetime.fi:` +
+            `Response from ${response.url}:` + describeResponse(response) +
+            '\n' + (await describeResponseBody(response));
+        console.log(error);
+        return Promise.reject(error);
     }
     const contentType = response.headers.get('content-type')
     if (!contentType ||  mime.getExtension(contentType) !== 'json') {
         return Promise.reject(`Unexpected content-type from ${response.url}: ${contentType}`)
     }
-    console.log(`Response from ${response.url} is HTTP ${response.status} of ${contentType}:`)
-    console.log(`HTTP ${response.status} ${response.statusText}`.trim());
-    response.headers.forEach((value, key) => {
-        console.log(`  ${key}: ${value}`)
-    });
     try {
         return await response.json()
     } catch (err: any) {
@@ -102,6 +103,7 @@ const login = async (clubNumberOrAbbreviation: string, username: string, passwor
     const response = await fetch('https://www.teetime.fi/backend/session', {
         method: 'POST',
         headers: standardRequestHeaders,
+        allowForbiddenHeaders: true,
         body: JSON.stringify(payload)
     })
     try {
@@ -123,7 +125,8 @@ const fetchPlayer = moize.maxAge(ms('10 minutes'))(async (token: string, clubNum
         return obj.href
     })()
     const response = await fetch(url, {
-        headers: standardRequestHeaders
+        headers: standardRequestHeaders,
+        allowForbiddenHeaders: true
     })
     if (response.ok) {
         try {

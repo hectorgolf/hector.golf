@@ -1,3 +1,4 @@
+import { fetch } from 'fetch-h2'
 import moize from 'moize'
 import { ms } from 'itty-time'
 import { pRateLimit } from 'p-ratelimit'
@@ -62,7 +63,6 @@ const standardRequestHeaders = {
     'Accept': 'application/json',
     'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
     'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
     'Content-Type': 'application/json',
     'Origin': 'https://app.wisegolf.fi',
     'Pragma': 'no-cache',
@@ -146,6 +146,7 @@ const login = async (username: string, password: string): Promise<string> => {
     const response = await fetch('https://api.wisegolfclub.fi/api/1.0/auth', {
         method: 'POST',
         headers: standardRequestHeaders,
+        allowForbiddenHeaders: true,
         body: JSON.stringify(payload)
     })
     const data = await response.json()
@@ -171,7 +172,8 @@ const fetchPlayer = moize.maxAge(ms('10 minutes'))(async (token: string, clubNum
         return obj.href
     })()
     const response = await fetchPlayerRateLimiter(() => fetch(url, {
-        headers: { ...standardRequestHeaders, authorization: `token ${token}` }
+        headers: { ...standardRequestHeaders, authorization: `token ${token}` },
+        allowForbiddenHeaders: true
     }))
     if (response.ok) {
         try {
