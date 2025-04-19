@@ -2118,5 +2118,25 @@
     "date": "2025-04-18",
     "player": "martin-svedholm",
     "handicap": 10.4
+  },
+  {
+    "date": "2025-04-19",
+    "player": "simo-liukkonen",
+    "handicap": 5.8
+  },
+  {
+    "date": "2025-04-19",
+    "player": "mikko-lifflander",
+    "handicap": 20.8
+  },
+  {
+    "date": "2025-04-19",
+    "player": "marcus-mattila",
+    "handicap": 11.1
+  },
+  {
+    "date": "2025-04-19",
+    "player": "kristian-hiljander",
+    "handicap": 10.5
   }
 ]
