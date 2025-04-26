@@ -183,12 +183,12 @@
         "handicap": 7.3
       },
       {
-        "id": "olli-varis",
-        "handicap": 7.9
-      },
-      {
         "id": "eero-halmetoja",
         "handicap": 8
+      },
+      {
+        "id": "olli-varis",
+        "handicap": 8.2
       },
       {
         "id": "pasi-halmetoja",
@@ -246,7 +246,7 @@
       },
       {
         "id": "lasse-koskela",
-        "handicap": 14.6
+        "handicap": 14.9
       },
       {
         "id": "janne-valtakari",
