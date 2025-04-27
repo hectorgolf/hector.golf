@@ -12,7 +12,8 @@
     "test-unit": "env-cmd vitest run --dir ./test/unit",
     "test": "npm run test-unit ; npm run test-astro",
     "update-handicaps": "env-cmd npx tsx src/workflows/update-handicaps.ts",
-    "update-leaderboards": "env-cmd npx tsx src/workflows/update-leaderboards.ts"
+    "update-leaderboards": "env-cmd npx tsx src/workflows/update-leaderboards.ts",
+    "update-player-biographies": "env-cmd npx tsx src/workflows/update-player-biographies.ts"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
