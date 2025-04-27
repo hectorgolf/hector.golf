@@ -1,0 +1,32 @@
+{
+  "name": "hector-cloud-functions",
+  "version": "1.0.0",
+  "main": "dist/functions/index.js",
+  "scripts": {
+    "cli": "npx tsx src/cli/cli.ts samples/1.png",
+    "clean": "rm -rf ./dist",
+    "gcp-build": "tsc",
+    "start:scorecard-detection": "npm run gcp-build && npx functions-framework --target=ExtractScorecardInformation --source=dist/functions/scorecard-detection/index.js",
+    "deploy:scorecard-detection": "npm run clean && npm run gcp-build && export $(cat .env | xargs) && gcloud config set project $GCLOUD_PROJECT_ID && gcloud functions deploy ExtractScorecardInformation --set-env-vars GOOGLE_GEMINI_API_KEY=$GOOGLE_GEMINI_API_KEY --gen2 --region=europe-north1 --runtime=nodejs20 --trigger-http --allow-unauthenticated --entry-point=ExtractScorecardInformation --source=.",
+    "start:generate-player-biography": "npm run gcp-build && npx functions-framework --target=GeneratePlayerBiography --source=dist/functions/generate-player-biography/index.js",
+    "deploy:generate-player-biography": "npm run clean && npm run gcp-build && export $(cat .env | xargs) && gcloud config set project $GCLOUD_PROJECT_ID && gcloud functions deploy GeneratePlayerBiography --set-env-vars GOOGLE_GEMINI_API_KEY=$GOOGLE_GEMINI_API_KEY --gen2 --region=europe-north1 --runtime=nodejs20 --trigger-http --allow-unauthenticated --entry-point=GeneratePlayerBiography --source=. --timeout=540s",
+    "deploy:all": "npm run deploy:scorecard-detection && npm run deploy:generate-player-biography",
+    "dev:scorecard-detection": "npm run gcp-build && npx @google-cloud/functions-framework --target=ExtractScorecardInformation --source=dist/functions/scorecard-detection/index.js",
+    "dev:generate-player-biography": "npm run gcp-build && npx @google-cloud/functions-framework --target=GeneratePlayerBiography --source=dist/functions/generate-player-biography/index.js"
+  },
+  "keywords": [],
+  "author": "Lasse Koskela",
+  "license": "MIT",
+  "description": "GCP Cloud Functions for Hector.golf",
+  "devDependencies": {
+    "glob": "^11.0.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.0.0",
+    "@google/generative-ai": "^0.17.1",
+    "dotenv": "^16.4.5"
+  }
+}
