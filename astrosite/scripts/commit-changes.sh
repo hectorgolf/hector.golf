@@ -37,23 +37,33 @@ echo "" >> "$COMMIT_MESSAGE_FILE"
 #
 # Append any handicap updates to the commit message based on the contents of `.update-handicaps-commit`
 #
-HANDICAP_UPDATES_FILE="./.update-handicaps-commit"
-if [ -s "$HANDICAP_UPDATES_FILE" ]; then  # "-s" tests that the file exists and isn't empty
-    cat "$HANDICAP_UPDATES_FILE" >> "$COMMIT_MESSAGE_FILE"
-else
-    echo "No handicap updates found in $HANDICAP_UPDATES_FILE"
-    echo "(No handicap updates?)" >> "$COMMIT_MESSAGE_FILE"
+UPDATES_FILE="./.update-handicaps-commit"
+if [ -f "$UPDATES_FILE" ]; then
+    echo "" >> "$COMMIT_MESSAGE_FILE"
+    if [ -s "$UPDATES_FILE" ]; then  # "-s" tests that the file exists and isn't empty
+        echo "Handicap updates found in $UPDATES_FILE – copying to commit message and deleting $(basename $UPDATES_FILE)"
+        cat "$UPDATES_FILE" >> "$COMMIT_MESSAGE_FILE"
+        rm "$UPDATES_FILE"
+    elif [ -f "$UPDATES_FILE" ]; then  # Only report handicap updates if the file exists (empty or not)
+        echo "Handicap updates not found in $UPDATES_FILE"
+        echo "Handicap updates not found in $UPDATES_FILE" >> $COMMIT_MESSAGE_FILE
+    fi
 fi
 
 #
 # Append any biography updates to the commit message based on the contents of `.update-biographies-commit`
 #
-BIOGRAPHY_UPDATES_FILE="./.update-biographies-commit"
-if [ -s "$BIOGRAPHY_UPDATES_FILE" ]; then  # "-s" tests that the file exists and isn't empty
-    cat "$BIOGRAPHY_UPDATES_FILE" >> "$COMMIT_MESSAGE_FILE"
-else
-    echo "No biography updates found in $BIOGRAPHY_UPDATES_FILE"
-    echo "(No biography updates?)" >> "$COMMIT_MESSAGE_FILE"
+UPDATES_FILE="./.update-biographies-commit"
+if [ -f "$UPDATES_FILE" ]; then
+    echo "" >> "$COMMIT_MESSAGE_FILE"
+    if [ -s "$UPDATES_FILE" ]; then  # "-s" tests that the file exists and isn't empty
+        echo "Biography updates found in $UPDATES_FILE – copying to commit message and deleting $(basename $UPDATES_FILE)"
+        cat "$UPDATES_FILE" >> "$COMMIT_MESSAGE_FILE"
+        rm "$UPDATES_FILE"
+    elif [ -f "$UPDATES_FILE" ]; then  # Only report biography updates if the file exists (empty or not)
+        echo "Biography updates not found in $UPDATES_FILE"
+        echo "Biography updates not found in $UPDATES_FILE" >> $COMMIT_MESSAGE_FILE
+    fi
 fi
 
 #
