@@ -46,6 +46,17 @@ else
 fi
 
 #
+# Append any biography updates to the commit message based on the contents of `.update-biographies-commit`
+#
+BIOGRAPHY_UPDATES_FILE="./.update-biographies-commit"
+if [ -s "$BIOGRAPHY_UPDATES_FILE" ]; then  # "-s" tests that the file exists and isn't empty
+    cat "$BIOGRAPHY_UPDATES_FILE" >> "$COMMIT_MESSAGE_FILE"
+else
+    echo "No biography updates found in $BIOGRAPHY_UPDATES_FILE"
+    echo "(No biography updates?)" >> "$COMMIT_MESSAGE_FILE"
+fi
+
+#
 # Add the list of changed data files to the commit message and stage them for commit.
 #
 echo "" >> "$COMMIT_MESSAGE_FILE"
