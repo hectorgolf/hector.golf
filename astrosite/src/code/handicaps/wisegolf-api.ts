@@ -101,6 +101,14 @@ const fetchClubs = moize.maxAge(ms('1 hour'))(async (token: string): Promise<Arr
     }
 })
 
+function convertWisegolfClubToGolfClub(club: WisegolfClub): GolfClub {
+    return {
+        name: club.name,
+        abbreviation: club.abbreviation,
+        sources: [{ name: SOURCE_NAME, id: club.number }],
+    }
+}
+
 export const createWisegolfSession = async (): Promise<WisegolfSession> => {
     try {
         const token = await login(wisegolfUsername, wisegolfPassword)
@@ -112,7 +120,10 @@ export const createWisegolfSession = async (): Promise<WisegolfSession> => {
             },
             resolveClubMembership: async (firstName: string, lastName: string): Promise<GolfClub[]> => {
                 return await findWisegolfPlayerClubs(firstName, lastName, token)
-            }
+            },
+            getClubs: async (): Promise<GolfClub[]> => {
+                return (await fetchClubs(token)).map(convertWisegolfClubToGolfClub);
+            },
         }
     } catch (error: any) {
         console.error(`Failed to create a Wisegolf session (${error.message || error}) so returning a null handicap source for ${SOURCE_NAME}.`)
@@ -126,11 +137,7 @@ const findWisegolfPlayerClubs = async (firstName: string, lastName: string, toke
     for (let club of clubs) {
         const player = await fetchPlayer(token, club.number, firstName, lastName)
         if (player) {
-            clubAbbreviations.push({
-                name: club.name,
-                abbreviation: club.abbreviation,
-                sources: [ { name: SOURCE_NAME, id: club.number } ]
-            })
+            clubAbbreviations.push(convertWisegolfClubToGolfClub(club));
         }
     }
     return Promise.resolve(clubAbbreviations)

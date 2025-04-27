@@ -3,8 +3,16 @@ import { type Player, schema as PlayerSchema } from '../schemas/players';
 import { type HandicapHistoryEntry } from '../schemas/handicaps';
 import { getPlayerHandicapHistoryById as getPlayerHandicapHistoryByIdImplementation } from './handicaps';
 import { getAllEvents } from './events';
-import { playersData } from './data';
+import { playersData, playerDataPath } from './data';
+import { writeFileSync } from 'fs';
 
+export async function updatePlayerData(player: Player): Promise<void> {
+    const path = await playerDataPath(player);
+    if (!path) {
+        return Promise.reject(`No path found for player ${player.id}`);
+    }
+    writeFileSync(path, JSON.stringify(player, null, 2));
+}
 
 export function getAllPlayerIds(): Array<string> {
     return playersData.map((record) => record.id);

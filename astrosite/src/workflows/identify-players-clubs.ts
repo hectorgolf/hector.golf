@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, existsSync, rmSync } from 'fs'
+import { writeFileSync, existsSync, rmSync } from 'fs'
 import { join, dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -16,16 +16,6 @@ const getPlayerById = (id: string): Player|undefined => {
         return undefined
     }
     return { ...record, handicap: record.handicap }
-}
-
-const readJsonFile = (pathToJsonFile: string, defaultValue: any = []): any => {
-    try {
-        const content = readFileSync(pathToJsonFile, 'utf-8').toString()
-        return JSON.parse(content);
-    } catch (err) {
-        console.error(`Error reading JSON file ${pathToJsonFile} (${err}) - returning ${JSON.stringify(defaultValue)}`)
-        return defaultValue
-    }
 }
 
 // Get the resolved path to this file and determine the directory from that

@@ -30,6 +30,13 @@ export type HandicapSource = {
      * @returns The player's home club(s), or an empty array if not found.
      */
     resolveClubMembership: (firstName: string, lastName: string) => Promise<GolfClub[]>;
+
+    /**
+     * Get all clubs from the source.
+     *
+     * @returns All clubs from the source.
+     */
+    getClubs(): Promise<GolfClub[]>;
 }
 
 /**
@@ -43,6 +50,9 @@ export class NullHandicapSource implements HandicapSource {
         return Promise.resolve(undefined)
     }
     resolveClubMembership(_firstName: string, _lastName: string): Promise<GolfClub[]> {
+        return Promise.resolve([])
+    }
+    getClubs(): Promise<GolfClub[]> {
         return Promise.resolve([])
     }
 };

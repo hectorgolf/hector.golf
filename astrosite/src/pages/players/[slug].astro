@@ -25,6 +25,8 @@ const relatedEvents = getEventsOfPlayer(player.id);
 
 const handicapHistory: Array<HandicapHistoryEntry>|null = player.handicap ? getPlayerHandicapHistoryById(player.id) : null;
 
+const biography = player.biography && player.biography.length > 0 ? player.biography : null;
+
 ---
 
 <Layout title={getPlayerName(player)}>
@@ -34,6 +36,12 @@ const handicapHistory: Array<HandicapHistoryEntry>|null = player.handicap ? getP
             <Breadcrumb title="Players" href="/players" />
         </div>
         <h1><span class="text-gradient">{getPlayerName(player)}</span></h1>
+
+        {player.biography && player.biography.length > 0 ? player.biography.map(paragraph => (
+            <div class="biography">
+                <p>{paragraph}</p>
+            </div>
+        )) : null}
 
         {player.image ? (
             <div class="hero">
@@ -114,6 +122,11 @@ const handicapHistory: Array<HandicapHistoryEntry>|null = player.handicap ? getP
     }
     .description img {
         width: calc(100%);
+    }
+
+    .biography {
+        margin-block-start: 1em;
+        margin-block-end: 1em;
     }
 
 </style>

@@ -4,15 +4,23 @@
     "first": "Miso",
     "last": "Lith"
   },
+  "privacy": "shorten-last-name",
   "aliases": [
     {
       "first": "Miso",
       "last": "Korkiakoski"
     }
   ],
-  "privacy": "shorten-last-name",
   "contact": {
     "phone": "+358505003049"
   },
-  "club": "HirG"
+  "club": "HirG",
+  "misc": [
+    "Bags Miura irons and is rumoured to sleep with them."
+  ],
+  "biography": [
+    "Hailing from Hirsala Golf, Miso is a familiar face at the Hector Trophée, having competed in every edition since 2022.  A testament to his dedication and skill, Miso’s consistent participation speaks volumes about his commitment to this prestigious event.",
+    "His impressive track record includes a remarkable victory in the Hector Trophée III, showcasing his prowess in the demanding team format. While the Victor trophy remains elusive, Miso’s undeniable talent and strategic gameplay consistently place him among the tournament's top contenders.",
+    "Known for his meticulous preparation and unwavering focus, Miso is a captivating player to watch.  Rumors abound regarding his deep connection to his Miura irons, so much so that it's said he even sleeps with his clubs!  This dedication to his craft speaks to the level of preparation and commitment he brings to each round."
+  ]
 }

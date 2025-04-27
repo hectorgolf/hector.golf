@@ -226,6 +226,9 @@ export const createTeetimeSession = async (): Promise<HandicapSource> => {
             resolveClubMembership: async (firstName: string, lastName: string): Promise<GolfClub[]> => {
                 return await findTeetimePlayerClubs(firstName, lastName, token);
             },
+            getClubs: async (): Promise<GolfClub[]> => {
+                return (await fetchClubs()).map(convertTeetimeClubToGolfClub);
+            },
         };
     } catch (error: any) {
         console.error(
@@ -235,17 +238,21 @@ export const createTeetimeSession = async (): Promise<HandicapSource> => {
     }
 };
 
+function convertTeetimeClubToGolfClub(club: TeetimeClub): GolfClub {
+    return {
+        name: club.name,
+        abbreviation: club.abbrevitation,
+        sources: [{ name: SOURCE_NAME, id: club.number }],
+    }
+}
+
 const findTeetimePlayerClubs = async (firstName: string, lastName: string, token: string): Promise<GolfClub[]> => {
     const clubs = await fetchClubs();
     const clubAbbreviations: GolfClub[] = [];
     for (let club of clubs) {
         const player = await fetchPlayer(token, club.number, firstName, lastName);
         if (player) {
-            clubAbbreviations.push({
-                name: club.name,
-                abbreviation: club.abbrevitation,
-                sources: [{ name: SOURCE_NAME, id: club.number }],
-            });
+            clubAbbreviations.push(convertTeetimeClubToGolfClub(club));
         }
     }
     return Promise.resolve(clubAbbreviations);
