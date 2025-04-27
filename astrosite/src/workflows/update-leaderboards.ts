@@ -52,7 +52,7 @@ async function updateLeaderboardsForAllOngoingTournaments(): Promise<void> {
     for (let event of events) {
         console.log(`Updating leaderboard for ${event.name}...`)
         const hectorEvent = event as HectorEvent
-        const leaderboardSheetId = hectorEvent.leaderboardSheet?.replace(/https?:\/\/docs.google.com\/spreadsheets\/d\//, '').replace(/\/.*$/, '')
+        const leaderboardSheetId = hectorEvent.leaderboardSheet?.replace(/https?:\/\/docs\.google\.com\/spreadsheets\/d\//, '').replace(/\/.*$/, '')
         console.log(`Leaderboard sheet URL: ${hectorEvent.leaderboardSheet}`)
         console.log(`Leaderboard sheet ID:  ${leaderboardSheetId}`)
         if (leaderboardSheetId) {
