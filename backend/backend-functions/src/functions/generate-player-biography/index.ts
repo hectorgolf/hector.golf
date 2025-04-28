@@ -24,15 +24,7 @@ export const GeneratePlayerBiography: HttpFunction = async (request: Request, re
             return;
         }
 
-        const biography = await generatePlayerBiography(process.env.GOOGLE_GEMINI_API_KEY, {
-            name: payload.name,
-            gender: payload.gender,
-            homeClub: payload.homeClub,
-            previousAppearances: payload.previousAppearances,
-            hectorWins: payload.hectorWins,
-            victorWins: payload.victorWins,
-            miscellaneousDetails: payload.miscellaneousDetails,
-        });
+        const biography = await generatePlayerBiography(process.env.GOOGLE_GEMINI_API_KEY, payload);
 
         response.status(200).send(biography);
     } catch (error) {

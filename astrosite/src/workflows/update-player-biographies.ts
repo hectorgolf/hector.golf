@@ -2,13 +2,15 @@ import { writeFileSync, existsSync, rmSync } from "fs";
 import { join, dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 
-import { playersData, hectorEvents, hasParticipants, isUpcomingEvent, pathToEventJson } from "../code/data.ts";
-import { getPlayerName, updatePlayerData } from "../code/players.ts";
+import { playersData, hectorEvents, hasParticipants, isUpcomingEvent, isPastEvent } from "../code/data.ts";
+import { getAllPlayers, getPlayerName, updatePlayerData } from "../code/players.ts";
 import { type Player } from "../schemas/players.ts";
+import { type HectorEvent } from "../schemas/events.ts";
 
 import { createTeetimeSession } from "../code/handicaps/teetime-api";
 import { createWisegolfSession } from "../code/handicaps/wisegolf-api";
 import { type GolfClub, type HandicapSource } from "../code/handicaps/handicap-source-api";
+import { parseEventDateRange } from "../code/dates.ts";
 
 // Get the resolved path to this file and determine the directory from that
 // (__dirname is not available in ES6 modules)
@@ -72,49 +74,93 @@ if (existsSync(pathToCommitMessage)) {
 }
 writeFileSync(pathToCommitMessage, "");
 
-// type Player = {
-//     id: string;
-//     gender: "male" | "female" | undefined;
-//     name: {
-//         first: string;
-//         last: string;
-//     };
-//     contact: {
-//         phone: string;
-//     };
-//     image?: string;
-//     club?: string;
-//     misc?: string[];
-// };
-
-type HectorEvent = {
-    id: string;
+type EventNameAndYear = {
     name: string;
-    date: string;
-    format: string;
-    participants: Array<string>;
-    buckets: undefined | Array<Array<{ id: string; handicap: number }>>;
+    year: number;
+};
+
+type NextEvent = EventNameAndYear & {
+    participates: boolean;
 };
 
 type PlayerBiographyInput = {
     name: string;
     gender: "male" | "female";
     homeClub: string;
-    previousAppearances: string[];
-    hectorWins: string[];
-    victorWins: string[];
     miscellaneousDetails: string[];
+    previousAppearances: EventNameAndYear[];
+    hectorWins: EventNameAndYear[];
+    victorWins: EventNameAndYear[];
+    allPastEvents: EventNameAndYear[];
+    nextEvent: NextEvent | undefined;
+    retired: boolean;
 };
 
+function EventNameAndYearFrom(event: { name: string; date: string }): EventNameAndYear {
+    return {
+        name: event.name,
+        year: parseInt(event.date.split("-")[0]),
+    };
+}
+
+function describeEvent(event: { name: string; date: string }): string {
+    return `${event.name} (${parseEventDateRange(event.date)?.startDate.getFullYear()})`;
+}
+
+function describePlayer(player: Player): string {
+    return `${player.name.first} ${player.name.last}`;
+}
+
+function playerParticipatedInEvent(player: Player, event: HectorEvent): boolean {
+    return (
+        event.participants.includes(player.id) ||
+        event.results?.winners?.hector?.includes(player.id) ||
+        event.results?.winners?.victor?.includes(player.id) ||
+        false
+    );
+}
+
 async function extractPlayerBiographyInput(player: Player): Promise<PlayerBiographyInput> {
+    const allPastEvents = hectorEvents.filter(isPastEvent);
+    const pastAppearances = allPastEvents.filter((e) => playerParticipatedInEvent(player, e));
+    const lastAppearance = pastAppearances[0];
+    const eventsSinceLastAppearance = lastAppearance ? hectorEvents.indexOf(lastAppearance) : -1;
+    console.log(`${describePlayer(player)}: ${eventsSinceLastAppearance} events since last appearance in Hector.`);
+
+    console.log(`${allPastEvents.length} past events in total:`);
+    for (const event of allPastEvents) {
+        console.log(`- ${describeEvent(event)}`);
+    }
+    console.log(`${pastAppearances.length} past appearances for ${describePlayer(player)}:`);
+    for (const event of pastAppearances) {
+        console.log(`- ${describeEvent(event)}`);
+    }
+    console.log(
+        `Last appearances for ${describePlayer(player)} was ${lastAppearance ? describeEvent(lastAppearance) : "(none)"}`
+    );
+
+    // const lastAppearanceYear = parseEventDateRange(lastAppearance.date)?.endDate.getFullYear();
+    const nextHectorEvent = hectorEvents.filter(isUpcomingEvent).filter(hasParticipants)[0];
     return {
         name: player.name.first,
         gender: player.gender || "male",
         homeClub: await getClubName(player.club),
-        previousAppearances: hectorEvents.filter((e) => e.participants.includes(player.id)).map((e) => e.name),
-        hectorWins: hectorEvents.filter((e) => e.results?.winners?.hector?.includes(player.id)).map((e) => e.name),
-        victorWins: hectorEvents.filter((e) => e.results?.winners?.victor?.includes(player.id)).map((e) => e.name),
+        previousAppearances: pastAppearances.map(EventNameAndYearFrom),
+        hectorWins: hectorEvents
+            .filter((e) => e.results?.winners?.hector?.includes(player.id))
+            .map(EventNameAndYearFrom),
+        victorWins: hectorEvents
+            .filter((e) => e.results?.winners?.victor?.includes(player.id))
+            .map(EventNameAndYearFrom),
         miscellaneousDetails: player.misc || [],
+        allPastEvents: hectorEvents.filter(isPastEvent).map(EventNameAndYearFrom),
+        nextEvent: nextHectorEvent
+            ? {
+                  ...EventNameAndYearFrom(nextHectorEvent),
+                  participates: nextHectorEvent?.participants.includes(player.id),
+              }
+            : undefined,
+        retired: eventsSinceLastAppearance > 7,
     };
 }
 
@@ -136,6 +182,7 @@ async function generateBiography(input: PlayerBiographyInput): Promise<string[]>
 
     const data = await response.json();
     if (Array.isArray(data.biography)) {
+        console.log(`\n<<<<<\nGot biography for ${input.name}:\n\n${data.biography.join("\n\n")}\n>>>>>\n`);
         return data.biography as string[];
     } else {
         return Promise.reject(
@@ -145,9 +192,9 @@ async function generateBiography(input: PlayerBiographyInput): Promise<string[]>
 }
 
 async function updateBiographiesForEvent(event: HectorEvent) {
-    const participants: Array<Player> = (event.participants || []).map((id) => getPlayerById(id)).filter((p) => !!p);
+    getAllPlayers();
     const commitMessage: string[] = [];
-    for (const player of participants) {
+    for (const player of getAllPlayers()) {
         const input = await extractPlayerBiographyInput(player);
         const biography = await generateBiography(input);
         const playerName = getPlayerName(player);

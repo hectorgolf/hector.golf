@@ -8,5 +8,11 @@
   "contact": {
     "phone": ""
   },
-  "club": "KJKG"
+  "club": "KJKG",
+  "handicap": 22,
+  "biography": [
+    "Riku, a golfer of considerable renown from the esteemed Kotojärven Kartanogolf, is known for his contemplative approach to the game. While his presence on the course is marked by a quiet intensity, those who know him well speak of a sharp wit and an unwavering dedication to the spirit of the sport.",
+    "Riku has graced the Hector Trophée on one occasion, bringing his characteristic blend of strategy and precision to the fairways. Though he has not yet claimed the coveted Hector Trophée or the individual Victor Trophy, his participation is a testament to his commitment to the values of the competition.",
+    "Currently considered retired from Hector events, Riku's absence is noted with a sense of respect and anticipation. Whether he chooses to return to the competitive arena remains to be seen, but his legacy as a thoughtful and dedicated golfer endures."
+  ]
 }

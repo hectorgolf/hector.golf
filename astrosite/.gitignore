@@ -27,4 +27,7 @@ pnpm-debug.log*
 .update-handicaps-commit
 
 # A "temp file" used for logging changed club memberships in the Git commit message
-.identify-clubs-commit
+.identify-clubs-commit.update-*
+
+# A "temp file" used for logging changed player biographies in the Git commit message
+.update-player-biographies-commit

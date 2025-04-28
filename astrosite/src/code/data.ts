@@ -47,7 +47,7 @@ export function isHectorEvent(
 }
 
 /**
- * Filter function for dropping past events.
+ * Filter function for selecting future events.
  *
  * @param event `Event` object to evaluate the predicate against.
  * @returns true if the `Event`'s start date is either today or in the future.
@@ -55,6 +55,17 @@ export function isHectorEvent(
 export function isUpcomingEvent(event: Event | undefined): boolean {
     if (!event) return false;
     return isoDate(parseEventDateRange(event.date)?.startDate) >= isoDateToday();
+}
+
+/**
+ * Filter function for selecting past events.
+ *
+ * @param event `Event` object to evaluate the predicate against.
+ * @returns true if the `Event`'s start date is either today or in the future.
+ */
+export function isPastEvent(event: Event | undefined): boolean {
+    if (!event) return false;
+    return isoDate(parseEventDateRange(event.date)?.endDate) < isoDateToday();
 }
 
 /**

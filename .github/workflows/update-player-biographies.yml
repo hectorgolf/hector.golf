@@ -4,9 +4,9 @@
 name: Update players' biographies leading to an upcoming Hector event
 
 on:
-  # Runs at 02:30 UTC every Monday
+  # Runs at 02:30 UTC on the 10th and 25th of every month
   schedule:
-    - cron: "30 2 * * 1"
+    - cron: "30 2 10,25 * *"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:

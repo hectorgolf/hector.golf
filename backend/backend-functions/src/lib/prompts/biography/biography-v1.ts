@@ -1,92 +1,103 @@
 import "dotenv/config"; // apply the ".env" file to process.env
 
 import { GenerativeModel } from "@google/generative-ai";
+import { PlayerBiographyInput, describeEvent, nth } from "./common";
 
-export type PlayerBiographyInput = {
-    name: string;
-    gender: "male" | "female";
-    homeClub: string;
-    previousAppearances: string[];
-    hectorWins: string[];
-    victorWins: string[];
-    miscellaneousDetails: string[];
-};
+function buildPrimaryPrompt(input: PlayerBiographyInput): string {
+    const prompt: string[] = [];
+    prompt.push(
+        [
+            "I am going to provide you with some facts about a golfer.",
+            "Please peruse the facts first, making sure you understand them and that you know the correct",
+            "number of appearances in past events and the correct number of wins for the player.",
+            "Proceed only once you have verified that you have the facts right.",
+            "Please generate a biography for the tournament website for this player based on the facts I am going to provide below.",
+        ].join("\n")
+    );
+
+    // TOURNAMENT HISTORY
+    prompt.push(`<TOURNAMENT HISTORY>`);
+    prompt.push(
+        [
+            `The tournament has been organized ${input.allPastEvents.length} times:`,
+            ...input.allPastEvents.map((x) => `- ${describeEvent(x)}`),
+        ].join("\n")
+    );
+    if (input.nextEvent) {
+        prompt.push(`The next event is going to be ${describeEvent(input.nextEvent)}.`);
+    } else {
+        prompt.push(`The date of the next event is not yet known.`);
+    }
+
+    // PLAYER'S DATA
+    prompt.push(`<PLAYER>`);
+    prompt.push(
+        [
+            `- Name: ${input.name}.`,
+            `- Gender: ${input.gender}.`,
+            `- Home club: ${input.homeClub}.`,
+            `- Past appearances: ${input.previousAppearances.length}.`,
+            `- Past wins (Hector Trophée): ${input.hectorWins.length}.`,
+            `- Past individual titles (Victor trophy): ${input.victorWins.length}.`,
+            `- ${input.retired ? 'Considered as retired from Hector events' : 'Still active in Hector events'}`,
+        ].join("\n")
+    );
+
+    if (input.nextEvent) {
+        if (input.nextEvent.participates) {
+            if (input.previousAppearances.length === 0) {
+                prompt.push(
+                    `${input.nextEvent.name} in ${input.nextEvent.year} is going to be their first appearance in Hector Trophée.`
+                );
+            } else {
+                prompt.push(
+                    `${input.nextEvent.name} in ${input.nextEvent.year} is going to be their ${nth(
+                        input.previousAppearances.length + 1
+                    )} appearance in Hector Trophée.`
+                );
+            }
+        } else {
+            prompt.push(
+                `They are not participating ${input.nextEvent.name} in ${input.nextEvent.year}, although it's always possible there are last-minute changes to the field.`
+            );
+        }
+    }
+
+    // MISCELLANEOUS DETAILS ABOUT THE PLAYER
+    if (input.miscellaneousDetails.length > 0) {
+        prompt.push(
+            [
+                `Miscellaneous details the biography should include somehow:`,
+                ...input.miscellaneousDetails.map((x) => `- ${x}`),
+            ].join("\n")
+        );
+    }
+    prompt.push(`</PLAYER>`);
+
+    return prompt.join("\n\n");
+}
 
 export const GeneratePlayerBiographyPromptV1 = async (
     model: GenerativeModel,
     input: PlayerBiographyInput
 ): Promise<string> => {
-    const prompt: string[] = [];
-    prompt.push(`
-I am going to describe a golfer who is competing in an annual invitational golf tournament called "Hector Trophée".
-In addition to the Hector Trophée itself, which is a pair competition, the best individual player is awarded with the "Victor" trophy.
+    const posteriorQualityControlPrompt = [
+        "Double-check that the generated biography is factually accurate and does not contain any errors.",
+        "If you find any such errors in the generated biography, please fix them and return an updated JSON object.",
+    ].join("\n");
 
-Please generate a biography for the tournament website for this player based on the data I am going to provide below.
+    const primaryPrompt = buildPrimaryPrompt(input);
 
-The style of the biography should be relatively formal – something a talking head on Golf Channel might say when asked
-to analyze a PGA Tour player. As a notable deviation from your otherwise formal style, you must only refer to the player by their first name.
+    const fullPrompt = [primaryPrompt, posteriorQualityControlPrompt].flat().join("\n\n");
 
-Be extra careful to misrepresent the player's historical appearance and winning record. It is of utmost importance that 
-a player's biography is factually accurate and does not contain any errors.
-
-Split the biography into paragraphs as necessary to avoid overwhelming the reader.
-
-Provide the generated biography in JSON format following this schema:
-{
-    "biography": ["<first paragraph>", "<second paragraph>", ...]
-}
-
-THE PLAYER'S DATA:`);
-
-    prompt.push(`The player's name is ${input.name}. They are ${input.gender}.`);
-
-    prompt.push(`Their home club is ${input.homeClub}.`);
-
-    if (input.previousAppearances.length > 0) {
-        prompt.push(`Their previous appearances include: ${input.previousAppearances.join(", ")}.`);
-    } else {
-        prompt.push(`This is their first appearance in Hector Trophée.`);
-    }
-
-    if (input.hectorWins.length === 1) {
-        prompt.push(`They have won the Hector Trophée once: ${input.hectorWins[0]}`);
-    } else if (input.hectorWins.length > 1) {
-        prompt.push(
-            `They have won the Hector Trophée ${
-                input.hectorWins.length
-            } times in the following years:\n${input.hectorWins.map((x) => `- ${x}`).join("\n")}.`
-        );
-    } else {
-        prompt.push(`They have never won the Hector Trophée.`);
-    }
-
-    if (input.victorWins.length === 1) {
-        prompt.push(`They have won the Victor trophy once: ${input.victorWins[0]}`);
-    } else if (input.victorWins.length > 1) {
-        prompt.push(
-            `They have won the Victor trophy ${
-                input.victorWins.length
-            } times in the following years:\n${input.victorWins.map((x) => `- ${x}`).join("\n")}.`
-        );
-    } else {
-        prompt.push(`They have never won the Victor trophy.`);
-    }
-
-    if (input.miscellaneousDetails.length > 0) {
-        prompt.push(
-            `Miscellaneous details the biography should include somehow:\n${input.miscellaneousDetails
-                .map((x) => `- ${x}`)
-                .join("\n")}`
-        );
-    }
-
-    const result = await model.generateContent([prompt.join("\n\n")]);
+    const result = await model.generateContent([primaryPrompt, posteriorQualityControlPrompt]);
     try {
         const data = JSON.parse(result.response.text());
         console.log(JSON.stringify(data, null, 2));
-        return JSON.stringify(data, null, 2);
-    } catch {
-        console.error(`Gemini produced invalid JSON as output:\n` + result.response.text());
-        return Promise.reject("Failed to extract scorecard information");
+        return JSON.stringify({ ...data, prompt: fullPrompt }, null, 2);
+    } catch (error: any) {
+        const errorResponse = { error: error.message || error, prompt: fullPrompt, response: result.response.text() };
+        console.error(`Gemini failed producing a valid JSON response.`, errorResponse);
+        return JSON.stringify(errorResponse, null, 2);
     }
 };

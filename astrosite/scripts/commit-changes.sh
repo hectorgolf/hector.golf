@@ -53,7 +53,7 @@ fi
 #
 # Append any biography updates to the commit message based on the contents of `.update-biographies-commit`
 #
-UPDATES_FILE="./.update-biographies-commit"
+UPDATES_FILE="./.update-player-biographies-commit"
 if [ -f "$UPDATES_FILE" ]; then
     echo "" >> "$COMMIT_MESSAGE_FILE"
     if [ -s "$UPDATES_FILE" ]; then  # "-s" tests that the file exists and isn't empty

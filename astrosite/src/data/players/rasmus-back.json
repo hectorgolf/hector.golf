@@ -1,12 +1,17 @@
 {
-    "id": "rasmus-back",
-    "name": {
-        "first": "Rasmus",
-        "last": "Back"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": ""
-    },
-    "club": "VGC"
+  "id": "rasmus-back",
+  "name": {
+    "first": "Rasmus",
+    "last": "Back"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": ""
+  },
+  "club": "VGC",
+  "handicap": 19.2,
+  "biography": [
+    "Rasmus, a name synonymous with the stoic determination, once graced the fairways of the Hector Trophée representing Vihti Golf Club. With a single appearance in the tournament, Rasmus may not have hoisted the coveted Hector Trophée or the Victor Trophy, but his presence was nonetheless felt.",
+    "Known for his meticulous approach to the game, Rasmus was often seen meticulously charting courses and analyzing every possible variable. Though officially considered retired from the Hector Trophée, whispers still circulate about a possible return, fueled by his enduring passion for the sport. Whether he decides to compete again remains to be seen, but his dedication to golf is undeniable."
+  ]
 }
