@@ -14,96 +14,96 @@
             {
                 "name": "Tommy Gulin & Erik Fagerström",
                 "players": [
-                    "tommy-gulin",
-                    "erik-fagerstrom"
+                    "tommy-g",
+                    "erik-f"
                 ]
             },
             {
                 "name": "Juuso Pihamaa & Lassi Koto",
                 "players": [
-                    "juuso-pihamaa",
-                    "lassi-koto"
+                    "juuso-p",
+                    "lassi-k"
                 ]
             },
             {
                 "name": "Simo Liukkonen & Jarkko Kailanto",
                 "players": [
-                    "simo-liukkonen",
-                    "jarkko-kailanto"
+                    "simo-l",
+                    "jarkko-k"
                 ]
             },
             {
                 "name": "Okko Pykäläinen & Harri Vainio",
                 "players": [
-                    "okko-pykalainen",
-                    "harri-vainio"
+                    "okko-p",
+                    "harri-v"
                 ]
             },
             {
                 "name": "Martin Svedholm & Olli Andersson",
                 "players": [
-                    "martin-svedholm",
-                    "olli-andersson"
+                    "martin-s",
+                    "olli-a"
                 ]
             },
             {
                 "name": "Eero Halmetoja & Marcus Mattila",
                 "players": [
-                    "eero-halmetoja",
-                    "marcus-mattila"
+                    "eero-h",
+                    "marcus-m"
                 ]
             },
             {
                 "name": "Olli Varis & Jaakko Saarinen",
                 "players": [
-                    "olli-varis",
-                    "jaakko-saarinen"
+                    "olli-v",
+                    "jaakko-s"
                 ]
             },
             {
                 "name": "Sami Heikkinen & Daniel Hylton",
                 "players": [
-                    "sami-heikkinen",
-                    "daniel-hylton"
+                    "sami-h",
+                    "daniel-h"
                 ]
             },
             {
                 "name": "Toni Marttila & Pekka Saijonmaa",
                 "players": [
-                    "toni-marttila",
-                    "pekka-saijonmaa"
+                    "toni-m",
+                    "pekka-s"
                 ]
             },
             {
                 "name": "Kristian Hiljander & Janne Valtakari",
                 "players": [
-                    "kristian-hiljander",
-                    "janne-valtakari"
+                    "kristian-h",
+                    "janne-v"
                 ]
             },
             {
                 "name": "Mikko Oesch & Mikko Lifflander",
                 "players": [
-                    "mikko-oesch",
-                    "mikko-lifflander"
+                    "mikko-o",
+                    "mikko-l"
                 ]
             },
             {
                 "name": "Miso Lith & Timo Lukumaa",
                 "players": [
-                    "timo-lukumaa",
-                    "miso-lith"
+                    "timo-l",
+                    "miso-l"
                 ]
             }
         ],
         "winners": {
             "hector": [
-                "okko-pykalainen",
-                "harri-vainio"
+                "okko-p",
+                "harri-v"
             ],
             "victor": [
-                "eero-halmetoja",
-                "martin-svedholm"
+                "eero-h",
+                "martin-s"
             ]
         }
     },

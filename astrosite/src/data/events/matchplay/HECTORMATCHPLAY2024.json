@@ -6,26 +6,26 @@
     "date": "June 19 - September 1, 2024",
     "description": "16 of the world's best amateur golfers face each other in a sequence of grueling head-to-head battles to the lip-out bogey. This matchplay tournament format uses a single elimination bracket, making the stakes high from the very start.",
     "participants": [
-        "lasse-koskela",
-        "martin-svedholm",
-        "eero-halmetoja",
-        "harri-vainio",
-        "jaakko-saarinen",
-        "janne-valtakari",
-        "jussi-allonen",
-        "juuso-pihamaa",
-        "mikko-oesch",
-        "miso-lith",
-        "olli-andersson",
-        "sami-heikkinen",
-        "simo-liukkonen",
-        "timo-lukumaa",
-        "toni-marttila",
-        "ossi-laukkanen"
+        "lasse-k",
+        "martin-s",
+        "eero-h",
+        "harri-v",
+        "jaakko-s",
+        "janne-v",
+        "jussi-a",
+        "juuso-p",
+        "mikko-o",
+        "miso-l",
+        "olli-a",
+        "sami-h",
+        "simo-l",
+        "timo-l",
+        "toni-m",
+        "ossi-l"
     ],
     "results": {
         "winners": {
-            "matchplay": "simo-liukkonen"
+            "matchplay": "simo-l"
         },
         "bracket": [
             {
@@ -35,73 +35,73 @@
                         "id": "M01",
                         "leftSource": null,
                         "rightSource": null,
-                        "left": "simo-liukkonen",
-                        "right": "janne-valtakari",
+                        "left": "simo-l",
+                        "right": "janne-v",
                         "score": "1UP",
-                        "winner": "simo-liukkonen"
+                        "winner": "simo-l"
                     },
                     {
                         "id": "M02",
                         "leftSource": null,
                         "rightSource": null,
-                        "left": "miso-lith",
-                        "right": "mikko-oesch",
+                        "left": "miso-l",
+                        "right": "mikko-o",
                         "score": "4&2",
-                        "winner": "mikko-oesch"
+                        "winner": "mikko-o"
                     },
                     {
                         "id": "M03",
                         "leftSource": null,
                         "rightSource": null,
-                        "left": "harri-vainio",
-                        "right": "sami-heikkinen",
+                        "left": "harri-v",
+                        "right": "sami-h",
                         "score": "7&6",
-                        "winner": "sami-heikkinen"
+                        "winner": "sami-h"
                     },
                     {
                         "id": "M04",
                         "leftSource": null,
                         "rightSource": null,
-                        "left": "olli-andersson",
-                        "right": "juuso-pihamaa",
+                        "left": "olli-a",
+                        "right": "juuso-p",
                         "score": "AS",
-                        "winner": "olli-andersson"
+                        "winner": "olli-a"
                     },
                     {
                         "id": "M05",
                         "leftSource": null,
                         "rightSource": null,
-                        "left": "jussi-allonen",
-                        "right": "jaakko-saarinen",
+                        "left": "jussi-a",
+                        "right": "jaakko-s",
                         "score": "4&3",
-                        "winner": "jussi-allonen"
+                        "winner": "jussi-a"
                     },
                     {
                         "id": "M06",
                         "leftSource": null,
                         "rightSource": null,
-                        "left": "eero-halmetoja",
-                        "right": "timo-lukumaa",
+                        "left": "eero-h",
+                        "right": "timo-l",
                         "score": "4&2",
-                        "winner": "eero-halmetoja"
+                        "winner": "eero-h"
                     },
                     {
                         "id": "M07",
                         "leftSource": null,
                         "rightSource": null,
-                        "left": "toni-marttila",
-                        "right": "martin-svedholm",
+                        "left": "toni-m",
+                        "right": "martin-s",
                         "score": "AS",
-                        "winner": "martin-svedholm"
+                        "winner": "martin-s"
                     },
                     {
                         "id": "M08",
                         "leftSource": null,
                         "rightSource": null,
-                        "left": "lasse-koskela",
-                        "right": "ossi-laukkanen",
+                        "left": "lasse-k",
+                        "right": "ossi-l",
                         "score": "8&7",
-                        "winner": "ossi-laukkanen"
+                        "winner": "ossi-l"
                     }
                 ]
             },
@@ -112,37 +112,37 @@
                         "id": "M09",
                         "leftSource": "M01",
                         "rightSource": "M02",
-                        "left": "simo-liukkonen",
-                        "right": "mikko-oesch",
+                        "left": "simo-l",
+                        "right": "mikko-o",
                         "score": "4&3",
-                        "winner": "simo-liukkonen"
+                        "winner": "simo-l"
                     },
                     {
                         "id": "M10",
                         "leftSource": "M03",
                         "rightSource": "M04",
-                        "left": "sami-heikkinen",
-                        "right": "olli-andersson",
+                        "left": "sami-h",
+                        "right": "olli-a",
                         "score": "6&4",
-                        "winner": "sami-heikkinen"
+                        "winner": "sami-h"
                     },
                     {
                         "id": "M11",
                         "leftSource": "M05",
                         "rightSource": "M06",
-                        "left": "jussi-allonen",
-                        "right": "eero-halmetoja",
+                        "left": "jussi-a",
+                        "right": "eero-h",
                         "score": "2UP",
-                        "winner": "eero-halmetoja"
+                        "winner": "eero-h"
                     },
                     {
                         "id": "M12",
                         "leftSource": "M07",
                         "rightSource": "M08",
-                        "left": "martin-svedholm",
-                        "right": "ossi-laukkanen",
+                        "left": "martin-s",
+                        "right": "ossi-l",
                         "score": "1UP",
-                        "winner": "ossi-laukkanen"
+                        "winner": "ossi-l"
                     }
                 ]
             },
@@ -153,19 +153,19 @@
                         "id": "M13",
                         "leftSource": "M09",
                         "rightSource": "M10",
-                        "left": "simo-liukkonen",
-                        "right": "sami-heikkinen",
+                        "left": "simo-l",
+                        "right": "sami-h",
                         "score": "5&3",
-                        "winner": "simo-liukkonen"
+                        "winner": "simo-l"
                     },
                     {
                         "id": "M14",
                         "leftSource": "M11",
                         "rightSource": "M12",
-                        "left": "eero-halmetoja",
-                        "right": "ossi-laukkanen",
+                        "left": "eero-h",
+                        "right": "ossi-l",
                         "score": "1UP",
-                        "winner": "eero-halmetoja"
+                        "winner": "eero-h"
                     }
                 ]
             },
@@ -176,10 +176,10 @@
                         "id": "M15",
                         "leftSource": "M13",
                         "rightSource": "M14",
-                        "left": "simo-liukkonen",
-                        "right": "eero-halmetoja",
+                        "left": "simo-l",
+                        "right": "eero-h",
                         "score": "9&7",
-                        "winner": "simo-liukkonen"
+                        "winner": "simo-l"
                     }
                 ]
             }

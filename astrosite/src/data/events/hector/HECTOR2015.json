@@ -13,43 +13,43 @@
             {
                 "name": "Toni Marttila & Daniel Hylton",
                 "players": [
-                    "toni-marttila",
-                    "daniel-hylton"
+                    "toni-m",
+                    "daniel-h"
                 ]
             },
             {
                 "name": "Jarkko Kailanto & Lasse Koskela",
                 "players": [
-                    "jarkko-kailanto",
-                    "lasse-koskela"
+                    "jarkko-k",
+                    "lasse-k"
                 ]
             },
             {
                 "name": "Marcus Mattila & Miso Korkiakoski",
                 "players": [
-                    "marcus-mattila",
-                    "miso-lith"
+                    "marcus-m",
+                    "miso-l"
                 ]
             },
             {
                 "name": "Tomas Danska & Jonas Löfman",
                 "players": [
-                    "tomas-danska",
-                    "jonas-lofman"
+                    "tomas-d",
+                    "jonas-l"
                 ]
             },
             {
                 "name": "Ricke Blomqvist & Matti Vahtola",
                 "players": [
-                    "ricke-blomqvist",
-                    "matias-vahtola"
+                    "ricke-b",
+                    "matias-v"
                 ]
             }
         ],
         "winners": {
             "hector": [
-                "daniel-hylton",
-                "toni-marttila"
+                "daniel-h",
+                "toni-m"
             ]
         }
     },

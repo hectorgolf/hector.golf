@@ -13,50 +13,50 @@
             {
                 "name": "Marcus Mattila & Mikko Oesch",
                 "players": [
-                    "marcus-mattila",
-                    "mikko-oesch"
+                    "marcus-m",
+                    "mikko-o"
                 ]
             },
             {
                 "name": "Anders Forss & Matti Vahtola",
                 "players": [
-                    "anders-forss",
-                    "matias-vahtola"
+                    "anders-f",
+                    "matias-v"
                 ]
             },
             {
                 "name": "Daniel Hylton & Joni Valkeapää",
                 "players": [
-                    "daniel-hylton",
-                    "joni-valkeapaa"
+                    "daniel-h",
+                    "joni-v"
                 ]
             },
             {
                 "name": "Rasmus Back & Jarkko Kailanto",
                 "players": [
-                    "rasmus-back",
-                    "jarkko-kailanto"
+                    "rasmus-b",
+                    "jarkko-k"
                 ]
             },
             {
                 "name": "Lasse Koskela & Panu Liira",
                 "players": [
-                    "lasse-koskela",
-                    "panu-liira"
+                    "lasse-k",
+                    "panu-l"
                 ]
             },
             {
                 "name": "Toni Marttila & Tomas Danska",
                 "players": [
-                    "toni-marttila",
-                    "tomas-danska"
+                    "toni-m",
+                    "tomas-d"
                 ]
             }
         ],
         "winners": {
             "hector": [
-                "daniel-hylton",
-                "joni-valkeapaa"
+                "daniel-h",
+                "joni-v"
             ]
         }
     },

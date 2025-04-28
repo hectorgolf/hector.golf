@@ -13,64 +13,64 @@
             {
                 "name": "Simo Liukkonen & Toni Marttila",
                 "players": [
-                    "simo-liukkonen",
-                    "toni-marttila"
+                    "simo-l",
+                    "toni-m"
                 ]
             },
             {
                 "name": "Olli Andersson & Juuso Pihamaa",
                 "players": [
-                    "olli-andersson",
-                    "juuso-pihamaa"
+                    "olli-a",
+                    "juuso-p"
                 ]
             },
             {
                 "name": "Martin Svedholm & Eero Halmetoja",
                 "players": [
-                    "martin-svedholm",
-                    "eero-halmetoja"
+                    "martin-s",
+                    "eero-h"
                 ]
             },
             {
                 "name": "Daniel Hylton & Lassi Koto",
                 "players": [
-                    "daniel-hylton",
-                    "lassi-koto"
+                    "daniel-h",
+                    "lassi-k"
                 ]
             },
             {
                 "name": "Olli Varis & Jarkko Kailanto",
                 "players": [
-                    "olli-varis",
-                    "jarkko-kailanto"
+                    "olli-v",
+                    "jarkko-k"
                 ]
             },
             {
                 "name": "Marcus Mattila & Joakim Grader",
                 "players": [
-                    "marcus-mattila",
-                    "joakim-grader"
+                    "marcus-m",
+                    "joakim-g"
                 ]
             },
             {
                 "name": "Janne Valtakari & Timo Lukumaa",
                 "players": [
-                    "janne-valtakari",
-                    "timo-lukumaa"
+                    "janne-v",
+                    "timo-l"
                 ]
             },
             {
                 "name": "Miso Lith & Mikko Oesch",
                 "players": [
-                    "miso-lith",
-                    "mikko-oesch"
+                    "miso-l",
+                    "mikko-o"
                 ]
             }
         ],
         "winners": {
             "hector": [
-                "simo-liukkonen",
-                "toni-marttila"
+                "simo-l",
+                "toni-m"
             ]
         }
     },

@@ -11,107 +11,107 @@
         "diamondcc-park"
     ],
     "participants": [
-        "jarkko-kailanto",
-        "olli-varis",
-        "lasse-koskela",
-        "sami-heikkinen",
-        "mikko-oesch",
-        "lassi-koto",
-        "olli-andersson",
-        "eero-halmetoja",
-        "simo-liukkonen",
-        "timo-lukumaa",
-        "martin-svedholm",
-        "lauri-paatela",
-        "juuso-pihamaa",
-        "harri-vainio",
-        "miso-lith",
-        "marcus-mattila",
-        "toni-marttila",
-        "okko-pykalainen",
-        "ofri-porat",
-        "pekka-saijonmaa"
+        "jarkko-k",
+        "olli-v",
+        "lasse-k",
+        "sami-h",
+        "mikko-o",
+        "lassi-k",
+        "olli-a",
+        "eero-h",
+        "simo-l",
+        "timo-l",
+        "martin-s",
+        "lauri-p",
+        "juuso-p",
+        "harri-v",
+        "miso-l",
+        "marcus-m",
+        "toni-m",
+        "okko-p",
+        "ofri-p",
+        "pekka-s"
     ],
     "results": {
         "teams": [
             {
                 "name": "Olli Varis & Jarkko Kailanto",
                 "players": [
-                    "jarkko-kailanto",
-                    "olli-varis"
+                    "jarkko-k",
+                    "olli-v"
                 ]
             },
             {
                 "name": "Sami Heikkinen & Lasse Koskela",
                 "players": [
-                    "lasse-koskela",
-                    "sami-heikkinen"
+                    "lasse-k",
+                    "sami-h"
                 ]
             },
             {
                 "name": "Mikko Oesch & Lassi Koto",
                 "players": [
-                    "mikko-oesch",
-                    "lassi-koto"
+                    "mikko-o",
+                    "lassi-k"
                 ]
             },
             {
                 "name": "Eero Halmetoja & Olli Andersson",
                 "players": [
-                    "olli-andersson",
-                    "eero-halmetoja"
+                    "olli-a",
+                    "eero-h"
                 ]
             },
             {
                 "name": "Simo Liukkonen & Timo Lukumaa",
                 "players": [
-                    "simo-liukkonen",
-                    "timo-lukumaa"
+                    "simo-l",
+                    "timo-l"
                 ]
             },
             {
                 "name": "Martin Svedholm & Lauri Paatela",
                 "players": [
-                    "martin-svedholm",
-                    "lauri-paatela"
+                    "martin-s",
+                    "lauri-p"
                 ]
             },
             {
                 "name": "Juuso Pihamaa & Harri Vainio",
                 "players": [
-                    "juuso-pihamaa",
-                    "harri-vainio"
+                    "juuso-p",
+                    "harri-v"
                 ]
             },
             {
                 "name": "Marcus Mattila & Miso Lith",
                 "players": [
-                    "miso-lith",
-                    "marcus-mattila"
+                    "miso-l",
+                    "marcus-m"
                 ]
             },
             {
                 "name": "Okko Pykäläinen & Toni Marttila",
                 "players": [
-                    "toni-marttila",
-                    "okko-pykalainen"
+                    "toni-m",
+                    "okko-p"
                 ]
             },
             {
                 "name": "Ofri Porat & Pekka Saijonmaa",
                 "players": [
-                    "ofri-porat",
-                    "pekka-saijonmaa"
+                    "ofri-p",
+                    "pekka-s"
                 ]
             }
         ],
         "winners": {
             "hector": [
-                "olli-varis",
-                "jarkko-kailanto"
+                "olli-v",
+                "jarkko-k"
             ],
             "victor": [
-                "jarkko-kailanto"
+                "jarkko-k"
             ]
         }
     },

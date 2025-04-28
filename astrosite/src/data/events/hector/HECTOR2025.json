@@ -6,30 +6,30 @@
   "date": "September 25-28, 2025",
   "description": "The world’s best amateur golfers are set to compete once again in Hector Trophée 2025, this time at the stunning Empordà Golf, where the Forest and Links courses will provide a challenging yet breathtaking backdrop for the battle. Following last year’s classic format, the tournament will span four days and six rounds of intense stroke play, culminating in the crowning of this year’s champions.\n\nHowever, unlike in previous years, the players won’t be rushing to the airport after the final putt drops—fueling speculation that the 2025 edition will go down as the most legendary (and most boozy) finale in Hector Trophée history. Expect fierce competition, unforgettable moments, and a celebration worthy of the sport’s finest amateur talents.",
   "participants": [
-    "tommy-gulin",
-    "simo-liukkonen",
-    "ofri-porat",
-    "sami-heikkinen",
-    "ossi-laukkanen",
-    "pasi-halmetoja",
-    "martin-svedholm",
-    "miso-lith",
-    "mikko-oesch",
-    "olli-varis",
-    "eero-halmetoja",
-    "toni-marttila",
-    "timo-lukumaa",
-    "marcus-mattila",
-    "harri-vainio",
-    "olli-andersson",
-    "lassi-koto",
-    "jarkko-kailanto",
-    "lauri-paatela",
-    "lasse-koskela",
-    "pekka-saijonmaa",
-    "janne-valtakari",
-    "jari-kuusela",
-    "okko-pykalainen"
+    "tommy-g",
+    "simo-l",
+    "ofri-p",
+    "sami-h",
+    "ossi-l",
+    "pasi-h",
+    "martin-s",
+    "miso-l",
+    "mikko-o",
+    "olli-v",
+    "eero-h",
+    "toni-m",
+    "timo-l",
+    "marcus-m",
+    "harri-v",
+    "olli-a",
+    "lassi-k",
+    "jarkko-k",
+    "lauri-p",
+    "lasse-k",
+    "pekka-s",
+    "janne-v",
+    "jari-k",
+    "okko-p"
   ],
   "format": "hector",
   "courses": [
@@ -159,101 +159,101 @@
   "buckets": [
     [
       {
-        "id": "tommy-gulin",
+        "id": "tommy-g",
         "handicap": -1.1
       },
       {
-        "id": "jari-kuusela",
+        "id": "jari-k",
         "handicap": 1.7
       },
       {
-        "id": "sami-heikkinen",
+        "id": "sami-h",
         "handicap": 4.5
       },
       {
-        "id": "ofri-porat",
+        "id": "ofri-p",
         "handicap": 5.3
       },
       {
-        "id": "simo-liukkonen",
+        "id": "simo-l",
         "handicap": 6
       },
       {
-        "id": "mikko-oesch",
+        "id": "mikko-o",
         "handicap": 7.4
       },
       {
-        "id": "eero-halmetoja",
+        "id": "eero-h",
         "handicap": 8.1
       },
       {
-        "id": "olli-varis",
+        "id": "olli-v",
         "handicap": 8.2
       },
       {
-        "id": "pasi-halmetoja",
+        "id": "pasi-h",
         "handicap": 8.3
       },
       {
-        "id": "ossi-laukkanen",
+        "id": "ossi-l",
         "handicap": 8.6
       },
       {
-        "id": "miso-lith",
+        "id": "miso-l",
         "handicap": 9.3
       },
       {
-        "id": "martin-svedholm",
+        "id": "martin-s",
         "handicap": 10.4
       }
     ],
     [
       {
-        "id": "toni-marttila",
+        "id": "toni-m",
         "handicap": 11
       },
       {
-        "id": "lassi-koto",
+        "id": "lassi-k",
         "handicap": 11
       },
       {
-        "id": "marcus-mattila",
+        "id": "marcus-m",
         "handicap": 11.1
       },
       {
-        "id": "harri-vainio",
+        "id": "harri-v",
         "handicap": 11.2
       },
       {
-        "id": "timo-lukumaa",
+        "id": "timo-l",
         "handicap": 11.3
       },
       {
-        "id": "lauri-paatela",
+        "id": "lauri-p",
         "handicap": 12.3
       },
       {
-        "id": "olli-andersson",
+        "id": "olli-a",
         "handicap": 12.4
       },
       {
-        "id": "okko-pykalainen",
+        "id": "okko-p",
         "handicap": 13.5
       },
       {
-        "id": "jarkko-kailanto",
+        "id": "jarkko-k",
         "handicap": 14.5
       },
       {
-        "id": "lasse-koskela",
+        "id": "lasse-k",
         "handicap": 14.9
       },
       {
-        "id": "janne-valtakari",
+        "id": "janne-v",
         "handicap": 18.9
       },
       {
-        "id": "pekka-saijonmaa",
+        "id": "pekka-s",
         "handicap": 19.7
       }
     ]

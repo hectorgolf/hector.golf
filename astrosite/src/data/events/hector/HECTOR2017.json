@@ -13,22 +13,22 @@
             {
                 "name": "Toni Marttila & Panu Liira",
                 "players": [
-                    "toni-marttila",
-                    "panu-liira"
+                    "toni-m",
+                    "panu-l"
                 ]
             },
             {
                 "name": "Mikko Oesch & Olli Varis",
                 "players": [
-                    "mikko-oesch",
-                    "olli-varis"
+                    "mikko-o",
+                    "olli-v"
                 ]
             },
             {
                 "name": "Daniel Hylton & Simo Liukkonen",
                 "players": [
-                    "daniel-hylton",
-                    "simo-liukkonen"
+                    "daniel-h",
+                    "simo-l"
                 ]
             },
             {
@@ -41,36 +41,36 @@
             {
                 "name": "Marcus Mattila & Eero Somervuo",
                 "players": [
-                    "marcus-mattila",
-                    "eero-somervuo"
+                    "marcus-m",
+                    "eero-s"
                 ]
             },
             {
                 "name": "Martin Svedholm & Erik Fagerström",
                 "players": [
-                    "martin-svedholm",
-                    "erik-fagerstrom"
+                    "martin-s",
+                    "erik-f"
                 ]
             },
             {
                 "name": "Juuso Pihamaa & Lauri Saarela",
                 "players": [
-                    "juuso-pihamaa",
-                    "lauri-saarela"
+                    "juuso-p",
+                    "lauri-s"
                 ]
             },
             {
                 "name": "Janne Valtakari & Mikael Lindberg",
                 "players": [
-                    "janne-valtakari",
-                    "mikael-lindberg"
+                    "janne-v",
+                    "mikael-l"
                 ]
             }
         ],
         "winners": {
             "hector": [
-                "toni-marttila",
-                "panu-liira"
+                "toni-m",
+                "panu-l"
             ]
         }
     },

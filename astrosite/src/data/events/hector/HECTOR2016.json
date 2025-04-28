@@ -13,64 +13,64 @@
             {
                 "name": "Miso Korkiakoski & Timo Lukumaa",
                 "players": [
-                    "miso-lith",
-                    "timo-lukumaa"
+                    "miso-l",
+                    "timo-l"
                 ]
             },
             {
                 "name": "Mikko Oesch & Olli Varis",
                 "players": [
-                    "mikko-oesch",
-                    "olli-varis"
+                    "mikko-o",
+                    "olli-v"
                 ]
             },
             {
                 "name": "Simo Liukkonen & Daniel Hylton",
                 "players": [
-                    "simo-liukkonen",
-                    "daniel-hylton"
+                    "simo-l",
+                    "daniel-h"
                 ]
             },
             {
                 "name": "Martin Svedholm & Marcus Mattila",
                 "players": [
-                    "martin-svedholm",
-                    "marcus-mattila"
+                    "martin-s",
+                    "marcus-m"
                 ]
             },
             {
                 "name": "Lasse Koskela & Panu Liira",
                 "players": [
-                    "lasse-koskela",
-                    "panu-liira"
+                    "lasse-k",
+                    "panu-l"
                 ]
             },
             {
                 "name": "Toni Marttila & Ricke Blomqvist",
                 "players": [
-                    "toni-marttila",
-                    "ricke-blomqvist"
+                    "toni-m",
+                    "ricke-b"
                 ]
             },
             {
                 "name": "Lassi Koto & Riku Liira",
                 "players": [
-                    "lassi-koto",
-                    "riku-liira"
+                    "lassi-k",
+                    "riku-l"
                 ]
             },
             {
                 "name": "Tomas Danska & Jonas Löfman",
                 "players": [
-                    "tomas-danska",
-                    "jonas-lofman"
+                    "tomas-d",
+                    "jonas-l"
                 ]
             }
         ],
         "winners": {
             "hector": [
-                "timo-lukumaa",
-                "miso-lith"
+                "timo-l",
+                "miso-l"
             ]
         }
     },
