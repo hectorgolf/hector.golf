@@ -11,6 +11,7 @@
     "test-astro": "env-cmd vitest run --dir ./test/astro",
     "test-unit": "env-cmd vitest run --dir ./test/unit",
     "test": "npm run test-unit ; npm run test-astro",
+    "update-player-club-memberships": "env-cmd npx tsx src/workflows/update-player-club-memberships.ts",
     "update-handicaps": "env-cmd npx tsx src/workflows/update-handicaps.ts",
     "update-leaderboards": "env-cmd npx tsx src/workflows/update-leaderboards.ts",
     "update-player-biographies": "env-cmd npx tsx src/workflows/update-player-biographies.ts"
