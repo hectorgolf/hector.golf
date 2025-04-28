@@ -1,6 +1,15 @@
 import { HttpFunction, Request, Response } from "@google-cloud/functions-framework";
 import { generatePlayerBiography, type PlayerBiographyInput } from "../../lib/prompts/biography/genai";
 
+function extractAuthToken(request: Request): string | undefined {
+    const authorizationHeader = request.header("authorization");
+    if (!authorizationHeader) {
+        return undefined;
+    }
+    const token = authorizationHeader.replace(/^Bearer /i, "");
+    return token ? token : undefined;
+}
+
 export const GeneratePlayerBiography: HttpFunction = async (request: Request, response: Response) => {
     response.set("Access-Control-Allow-Origin", "*");
     response.set("content-type", "application/json");
@@ -11,6 +20,12 @@ export const GeneratePlayerBiography: HttpFunction = async (request: Request, re
     }
 
     try {
+        const token = extractAuthToken(request);
+        if (token !== process.env.ASTROSITE_API_KEY) {
+            response.status(401).send("Valid API key required");
+            return;
+        }
+
         const payload: PlayerBiographyInput =
             typeof request.body === "string" ? JSON.parse(request.body) : request.body;
 

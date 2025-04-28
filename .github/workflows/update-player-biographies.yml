@@ -68,6 +68,7 @@ jobs:
           TEETIME_PASSWORD: ${{ secrets.TEETIME_PASSWORD }}
           WISEGOLF_USERNAME: lasse.koskela@gmail.com
           WISEGOLF_PASSWORD: ${{ secrets.WISEGOLF_PASSWORD }}
+          ASTROSITE_API_KEY: ${{ secrets.ASTROSITE_API_KEY }}
       - name: Commit changes
         run: |
           scripts/commit-changes.sh

@@ -12,6 +12,9 @@ import { createWisegolfSession } from "../code/handicaps/wisegolf-api";
 import { type GolfClub, type HandicapSource } from "../code/handicaps/handicap-source-api";
 import { parseEventDateRange } from "../code/dates.ts";
 
+const ENV = import.meta.env || process.env || {}
+const apiKeyForBackendFunctions = ENV.ASTROSITE_API_KEY
+
 // Get the resolved path to this file and determine the directory from that
 // (__dirname is not available in ES6 modules)
 const __filename = fileURLToPath(import.meta.url);
@@ -171,6 +174,7 @@ async function generateBiography(input: PlayerBiographyInput): Promise<string[]>
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": `Bearer ${apiKeyForBackendFunctions}`,
             },
             body: JSON.stringify(input),
         }
