@@ -1,7 +1,7 @@
 # Workflow for updating the live leaderboards for ongoing tournaments and thus
 # potentially triggering a new build of the Astro site.
 #
-name: Update the leaderboards for ongoing tournaments
+name: Update tournament leaderboards
 
 on:
   # Runs at 03:15 and 13:15 UTC every day
