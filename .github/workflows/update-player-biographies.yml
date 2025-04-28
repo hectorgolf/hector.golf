@@ -1,7 +1,7 @@
 # Workflow for running weekly player biography updates and thus potentially
 # triggering a new build of the Astro site.
 #
-name: Update players' biographies leading to an upcoming Hector event
+name: Update players' biographies
 
 on:
   # Runs at 02:30 UTC on the 10th and 25th of every month
