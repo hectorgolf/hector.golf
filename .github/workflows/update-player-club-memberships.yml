@@ -1,7 +1,7 @@
-# Workflow for running nightly handicap updates and thus potentially triggering
-# a new build of the Astro site.
+# Workflow for attempting to identify club memberships for players who don't have one on record
+# and thus potentially triggering a new build of the Astro site.
 #
-name: Attempt to identify club memberships for players who don't have one on record
+name: Update club memberships
 
 on:
   # Runs at 22:15 UTC on day 15 of every month
