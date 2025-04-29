@@ -1,0 +1,78 @@
+{
+  "event": "HECTOR2020",
+  "scoring": {
+    "hector": "descending",
+    "victor": "descending"
+  },
+  "hector": [
+    {
+      "points": "206",
+      "team": "Pekka S + Martin S",
+      "diff": "",
+      "through": "6/6"
+    },
+    {
+      "points": "198",
+      "team": "Janne V + Simo L",
+      "diff": "-8",
+      "through": "6/6"
+    },
+    {
+      "points": "194",
+      "team": "Jussi A + Jarkko K",
+      "diff": "-12",
+      "through": "6/6"
+    },
+    {
+      "points": "193",
+      "team": "Miso L + Lassi K",
+      "diff": "-13",
+      "through": "6/6"
+    },
+    {
+      "points": "191",
+      "team": "Daniel H + Olli V",
+      "diff": "-15",
+      "through": "6/6"
+    },
+    {
+      "points": "190",
+      "team": "Juuso P + Mikko O",
+      "diff": "-16",
+      "through": "6/6"
+    },
+    {
+      "points": "188",
+      "team": "Sami H + Olli A",
+      "diff": "-18",
+      "through": "6/6"
+    },
+    {
+      "points": "187",
+      "team": "Toni M + Marcus M",
+      "diff": "-19",
+      "through": "6/6"
+    },
+    {
+      "points": "187",
+      "team": "Kristian H + Timo L",
+      "diff": "-19",
+      "through": "6/6"
+    },
+    {
+      "points": "187",
+      "team": "Eero H + Lauri P",
+      "diff": "-19",
+      "through": "6/6"
+    },
+    {
+      "points": "185",
+      "team": "Lasse K + Okko P",
+      "diff": "-21",
+      "through": "6/6"
+    }
+  ],
+  "victor": [
+ ],
+  "updatedAt": "2020-09-30T00:00:00.000Z"
+}

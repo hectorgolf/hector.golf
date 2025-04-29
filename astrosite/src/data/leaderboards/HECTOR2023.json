@@ -1,5 +1,9 @@
 {
   "event": "HECTOR2023",
+  "scoring": {
+    "hector": "ascending",
+    "victor": "descending"
+  },
   "hector": [
     {
       "points": "308.7",
@@ -63,6 +67,126 @@
     }
   ],
   "victor": [
- ],
+    {
+      "player": "Jarkko K",
+      "points": "150",
+      "diff": "",
+      "through": "4/4"
+    },
+    {
+      "player": "Simo L",
+      "points": "148",
+      "diff": "-2",
+      "through": "4/4"
+    },
+    {
+      "player": "Olli V",
+      "points": "148",
+      "diff": "-2",
+      "through": "4/4"
+    },
+    {
+      "player": "Sami H",
+      "points": "143",
+      "diff": "-7",
+      "through": "4/4"
+    },
+    {
+      "player": "Eero H",
+      "points": "142",
+      "diff": "-8",
+      "through": "4/4"
+    },
+    {
+      "player": "Olli A",
+      "points": "141",
+      "diff": "-9",
+      "through": "4/4"
+    },
+    {
+      "player": "Martin S",
+      "points": "140",
+      "diff": "-10",
+      "through": "4/4"
+    },
+    {
+      "player": "Mikko O",
+      "points": "140",
+      "diff": "-10",
+      "through": "4/4"
+    },
+    {
+      "player": "Toni M",
+      "points": "140",
+      "diff": "-10",
+      "through": "4/4"
+    },
+    {
+      "player": "Juuso P",
+      "points": "139",
+      "diff": "-11",
+      "through": "4/4"
+    },
+    {
+      "player": "Harri V",
+      "points": "138",
+      "diff": "-12",
+      "through": "4/4"
+    },
+    {
+      "player": "Marcus M",
+      "points": "137",
+      "diff": "-13",
+      "through": "4/4"
+    },
+    {
+      "player": "Lassi K",
+      "points": "135",
+      "diff": "-15",
+      "through": "4/4"
+    },
+    {
+      "player": "Okko P",
+      "points": "134",
+      "diff": "-16",
+      "through": "4/4"
+    },
+    {
+      "player": "Miso L",
+      "points": "133",
+      "diff": "-17",
+      "through": "4/4"
+    },
+    {
+      "player": "Timo L",
+      "points": "132",
+      "diff": "-18",
+      "through": "4/4"
+    },
+    {
+      "player": "Ofri P",
+      "points": "129",
+      "diff": "-21",
+      "through": "4/4"
+    },
+    {
+      "player": "Lasse K",
+      "points": "127",
+      "diff": "-23",
+      "through": "4/4"
+    },
+    {
+      "player": "Lauri P",
+      "points": "127",
+      "diff": "-23",
+      "through": "4/4"
+    },
+    {
+      "player": "Pekka S",
+      "points": "124",
+      "diff": "-26",
+      "through": "4/4"
+    }    
+  ],
   "updatedAt": "2023-09-29T10:00:00.001Z"
 }

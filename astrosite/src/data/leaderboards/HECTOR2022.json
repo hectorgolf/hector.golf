@@ -1,5 +1,9 @@
 {
   "event": "HECTOR2022",
+  "scoring": {
+    "hector": "descending",
+    "victor": "descending"
+  },
   "hector": [
     {
       "points": "164",

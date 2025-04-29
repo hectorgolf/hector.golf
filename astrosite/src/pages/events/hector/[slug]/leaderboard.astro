@@ -9,7 +9,8 @@ import { getAllPlayers, getPlayerName, getPlayerAliases } from '../../../../code
 import { type HectorEvent } from '../../../../schemas/events'
 import { getAllEventIds, getEventById } from '../../../../code/events'
 
-import { getLeaderboardsByEventId, getEventsWithLeaderboards, type EnrichedLeaderboard } from '../../../../code/leaderboards/leaderboards'
+import { getLeaderboardsByEventId, getEventsWithLeaderboards, type EnrichedLeaderboard, leaderboardPosition } from '../../../../code/leaderboards/leaderboards'
+import { parseEventDateRange } from '../../../../code/dates'
 
 
 export function getStaticPaths() {
@@ -26,6 +27,9 @@ if (!event) {
 }
 event = event!
 
+const year = parseEventDateRange(event.date)?.startDate.getFullYear();
+const resultsMissingLabel = (year && year < new Date().getFullYear()) ? 'Results missing' : 'Results pending';
+
 const playersByName: {[name:string]: Player} = {}
 getAllPlayers().forEach((player) => {
     playersByName[getPlayerName(player)] = player
@@ -35,22 +39,14 @@ getAllPlayers().forEach((player) => {
 
 const leaderboards = getLeaderboardsByEventId(event.id)
 const hectorLeaderboard = leaderboards.hector
+const hectorLeaderboardScoringDirection = leaderboards.scoring?.hector || 'ascending'  // For Hector, default to ascending (lower score is better)
 const victorLeaderboard = leaderboards.victor
+const victorLeaderboardScoringDirection = leaderboards.scoring?.victor || 'descending'  // For Victor, default to descending (higher score is better)
 const updatedAt = leaderboards.updatedAt ? new Date(leaderboards.updatedAt) : undefined
 
 const allThrough = Math.min(...(hectorLeaderboard || [])
     .map(entry => entry.through)
     .map(through => parseInt(through.split('/')[0] || '0')))
-
-const leaderboardPosition = (leaderboard: EnrichedLeaderboard, points: number, lowerIsBetter: boolean): string => {
-    const numberOfBetterScores = leaderboard.filter(({ points: p }) => lowerIsBetter ? parseFloat((p as any) as string) < points : parseFloat((p as any) as string) > points).length
-    const numberOfEqualScores = leaderboard.filter(({ points: p }) => p === points).length
-    if (numberOfEqualScores > 1) {
-        return `T${numberOfBetterScores + 1}`
-    } else {
-        return `${numberOfBetterScores + 1}`
-    }
-}
 
 const normalizeDiff = (diff: string, prefix?: string): string => {
     let value = (diff !== '' && !diff.includes('.')) ? `${diff}.0` : diff
@@ -78,7 +74,7 @@ const normalizeDiff = (diff: string, prefix?: string): string => {
             <div class="leaderboard hector">
                 <h2>Hector</h2>
                 {hectorLeaderboard.length === 0 && (
-                    <p class="pending">(Results pending)</p>
+                    <p class="pending">({resultsMissingLabel})</p>
                 )}
                 {hectorLeaderboard.length > 0 && (
                     <table>
@@ -96,7 +92,7 @@ const normalizeDiff = (diff: string, prefix?: string): string => {
                             const firstClass = index === 0 ? 'first' : ''
                             return (
                                 <tr class={`competitor ${firstClass}`.trim()}>
-                                    <td class="place">{leaderboardPosition(hectorLeaderboard, points, true)}</td>
+                                    <td class="place">{leaderboardPosition(hectorLeaderboard, points, hectorLeaderboardScoringDirection === 'ascending')}</td>
                                     <td class="name">
                                         {(players.length > 0) ? players.map((player, index) => {
                                             return (
@@ -125,7 +121,7 @@ const normalizeDiff = (diff: string, prefix?: string): string => {
             <div class="leaderboard victor">
                 <h2>Victor</h2>
                 {victorLeaderboard.length === 0 && (
-                    <p class="pending">(Results pending)</p>
+                    <p class="pending">({resultsMissingLabel})</p>
                 )}
                 {victorLeaderboard.length > 0 && (
                     <table>
@@ -143,7 +139,7 @@ const normalizeDiff = (diff: string, prefix?: string): string => {
                             const firstClass = index === 0 ? 'first' : ''
                             return (
                                 <tr class={`competitor ${firstClass}`.trim()}>
-                                    <td class="place">{leaderboardPosition(victorLeaderboard, points, false)}</td>
+                                    <td class="place">{leaderboardPosition(victorLeaderboard, points, victorLeaderboardScoringDirection === 'ascending')}</td>
                                     <td class="name">
                                         {players.map((player, index) => {
                                             return (

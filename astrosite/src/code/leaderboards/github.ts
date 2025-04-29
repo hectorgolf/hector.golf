@@ -38,6 +38,10 @@ const fetchExistingHectorLeaderboardDataFile = async (githubToken: string, event
 const createOrReplaceHectorLeaderboardDataFile = async (githubToken: string, eventId: string, existingSHA: string|undefined, hector: GoogleSheetTeamLeaderboard, victor: GoogleSheetIndividualLeaderboard) => {
     const payload = {
         event: eventId,
+        scoring: {
+            hector: "ascending",  // for Hector, lower score is better since we're counting strokes (starting from 2023 onwards)
+            victor: "descending"  // for Victor, higher score is better since we're counting Stableford points
+        },        
         hector: hector,
         victor: victor,
         updatedAt: new Date().toISOString()

@@ -1,0 +1,72 @@
+{
+  "event": "HECTOR2021",
+  "scoring": {
+    "hector": "descending",
+    "victor": "descending"
+  },
+  "hector": [
+    {
+      "points": "156",
+      "team": "Timo L + Simo L",
+      "diff": "",
+      "through": "6/6"
+    },
+    {
+      "points": "147",
+      "team": "Marcus M + Eero H",
+      "diff": "-9",
+      "through": "6/6"
+    },
+    {
+      "points": "140",
+      "team": "Toni M + Lauri P",
+      "diff": "-16",
+      "through": "6/6"
+    },
+    {
+      "points": "138",
+      "team": "Olli A + Pasi H",
+      "diff": "-18",
+      "through": "6/6"
+    },
+    {
+      "points": "137",
+      "team": "Lassi K + Juuso P",
+      "diff": "-19",
+      "through": "6/6"
+    },
+    {
+      "points": "135",
+      "team": "Martin S + Pekka S",
+      "diff": "-21",
+      "through": "6/6"
+    },
+    {
+      "points": "133",
+      "team": "Miso L + Harri V",
+      "diff": "-23",
+      "through": "6/6"
+    },
+    {
+      "points": "131",
+      "team": "Lasse K + Mikko O",
+      "diff": "-25",
+      "through": "6/6"
+    },
+    {
+      "points": "126",
+      "team": "Jaakko S + Sami H",
+      "diff": "-30",
+      "through": "6/6"
+    },
+    {
+      "points": "121",
+      "team": "Jussi A + Janne V",
+      "diff": "-35",
+      "through": "6/6"
+    }
+  ],
+  "victor": [
+ ],
+  "updatedAt": "2021-09-04T23:50:00.500Z"
+}

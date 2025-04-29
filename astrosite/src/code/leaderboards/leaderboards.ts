@@ -6,11 +6,11 @@ import { getAllPlayers, getPlayerName, getPlayerAliases } from '../../code/playe
 
 
 export type EnrichedLeaderboardEntry = {
-    description: string,
-    players: Array<Player>
-    points: number
-    diff: string
-    through: string
+    description: string;
+    players: Array<Player>;
+    points: number;
+    diff: string;
+    through: string;
 }
 
 export type EnrichedLeaderboard = Array<EnrichedLeaderboardEntry>
@@ -30,6 +30,10 @@ export type HectorEventLeaderboard = {
     hector?: EnrichedLeaderboard,
     victor?: EnrichedLeaderboard,
     updatedAt?: string,
+    scoring?: {
+        hector: 'ascending' | 'descending',
+        victor: 'ascending' | 'descending'
+    }
 }
 
 export const getLeaderboardsByEventId = (id: string): HectorEventLeaderboard => {
@@ -45,7 +49,7 @@ export const getLeaderboardsByEventId = (id: string): HectorEventLeaderboard => 
             console.warn(`Leaderboard data file ${dataFilePath} is missing the 'updatedAt' field:\n${JSON.stringify(rawData, null, 2)}`)
         }
     }
-    return { hector: undefined, victor: undefined, updatedAt: undefined }
+    return { hector: undefined, victor: undefined, updatedAt: undefined, scoring: undefined }
 }
 
 const playersByName: {[name:string]: Player} = {}
@@ -67,7 +71,7 @@ const enrichLeaderboard = (leaderboard: GoogleSheetTeamLeaderboard|GoogleSheetIn
         }
         return false
     }
-    const enrichLeaderboardEntry = (entry: any) => {
+    const enrichLeaderboardEntry = (entry: any): EnrichedLeaderboardEntry => {
         const playersString = (entry as any).team || (entry as any).player
         const players: Array<Player> = playersString.split('+').map(playerNameToPlayer).filter((p: Player|undefined) => !!p)
         const status = isFinished(entry.through) ? 'F' : (entry.through || '0')
@@ -76,7 +80,7 @@ const enrichLeaderboard = (leaderboard: GoogleSheetTeamLeaderboard|GoogleSheetIn
             description: playersString,
             points: entry.points,
             diff: entry.diff,
-            through: status
+            through: status,
         }
     }
     const isTeamLeaderboard = leaderboard.every(entry => typeof((entry as any).team) === 'string')
@@ -93,4 +97,14 @@ const enrichLeaderboard = (leaderboard: GoogleSheetTeamLeaderboard|GoogleSheetIn
     }
 
     return leaderboard.filter(entry => !!((entry as any).team || (entry as any).player)).map((entry) => enrichLeaderboardEntry(entry))
+}
+
+export const leaderboardPosition = (leaderboard: EnrichedLeaderboard, points: number, lowerIsBetter: boolean): string => {
+    const numberOfBetterScores = leaderboard.filter(({ points: p }) => lowerIsBetter ? parseFloat((p as any) as string) < points : parseFloat((p as any) as string) > points).length
+    const numberOfEqualScores = leaderboard.filter(({ points: p }) => p === points).length
+    if (numberOfEqualScores > 1) {
+        return `T${numberOfBetterScores + 1}`
+    } else {
+        return `${numberOfBetterScores + 1}`
+    }
 }
