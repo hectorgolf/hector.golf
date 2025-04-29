@@ -1,0 +1,68 @@
+{
+  "event": "HECTOR2023",
+  "hector": [
+    {
+      "points": "308.7",
+      "team": "Jarkko K + Olli V",
+      "diff": "",
+      "through": "6/6"
+    },
+    {
+      "points": "311.8",
+      "team": "Olli A + Eero H",
+      "diff": "+3.1",
+      "through": "6/6"
+    },
+    {
+      "points": "315.7",
+      "team": "Lassi K + Mikko O",
+      "diff": "+7.0",
+      "through": "6/6"
+    },
+    {
+      "points": "316.8",
+      "team": "Sami H + Lasse K",
+      "diff": "+8.1",
+      "through": "6/6"
+    },
+    {
+      "points": "321.8",
+      "team": "Okko P + Toni M",
+      "diff": "+13.1",
+      "through": "6/6"
+    },
+    {
+      "points": "322.5",
+      "team": "Timo L + Simo L",
+      "diff": "+13.8",
+      "through": "6/6"
+    },
+    {
+      "points": "328.0",
+      "team": "Lauri P + Martin S",
+      "diff": "+19.3",
+      "through": "6/6"
+    },
+    {
+      "points": "329.7",
+      "team": "Juuso P + Harri V",
+      "diff": "+21.0",
+      "through": "6/6"
+    },
+    {
+      "points": "333.8",
+      "team": "Miso L + Marcus M",
+      "diff": "+25.1",
+      "through": "6/6"
+    },
+    {
+      "points": "335.5",
+      "team": "Ofri P + Pekka S",
+      "diff": "+26.8",
+      "through": "6/6"
+    }
+  ],
+  "victor": [
+ ],
+  "updatedAt": "2023-09-29T10:00:00.001Z"
+}

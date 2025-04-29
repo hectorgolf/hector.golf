@@ -1,0 +1,80 @@
+{
+  "event": "HECTOR2022",
+  "hector": [
+    {
+      "points": "164",
+      "team": "Timo L + Simo L",
+      "diff": "",
+      "through": "6/6"
+    },
+    {
+      "points": "157",
+      "team": "Toni M + Lassi K",
+      "diff": "-7",
+      "through": "6/6"
+    },
+    {
+      "points": "154",
+      "team": "Eero H + Pasi H",
+      "diff": "-10",
+      "through": "6/6"
+    },
+    {
+      "points": "151",
+      "team": "Olli A + Olli V",
+      "diff": "-13",
+      "through": "6/6"
+    },
+    {
+      "points": "150",
+      "team": "Kristian H + Martin S",
+      "diff": "-14",
+      "through": "6/6"
+    },
+    {
+      "points": "149",
+      "team": "Janne V + Ossi L",
+      "diff": "-15",
+      "through": "6/6"
+    },
+    {
+      "points": "144",
+      "team": "Sami H + Harri V",
+      "diff": "-20",
+      "through": "6/6"
+    },
+    {
+      "points": "143",
+      "team": "Miso L + Juuso P",
+      "diff": "-21",
+      "through": "6/6"
+    },
+    {
+      "points": "141",
+      "team": "Jarkko K + Marcus M",
+      "diff": "-23",
+      "through": "6/6"
+    },
+    {
+      "points": "138",
+      "team": "Jussi A + Pekka S",
+      "diff": "-26",
+      "through": "6/6"
+    },
+    {
+      "points": "137",
+      "team": "Jaakko S + Mikko O",
+      "diff": "-27",
+      "through": "6/6"
+    },
+    {
+      "points": "133",
+      "team": "Okko P + Lasse K",
+      "diff": "-31",
+      "through": "6/6"
+    }
+  ],
+  "victor": [
+ ],
+  "updatedAt": "2022-09-17T23:04:56.105Z"
+}
