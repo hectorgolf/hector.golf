@@ -11,9 +11,11 @@ import { createTeetimeSession } from "../code/handicaps/teetime-api";
 import { createWisegolfSession } from "../code/handicaps/wisegolf-api";
 import { type GolfClub, type HandicapSource } from "../code/handicaps/handicap-source-api";
 import { parseEventDateRange } from "../code/dates.ts";
+import { formatForPrinting } from "../code/strings.ts";
 
-const ENV = import.meta.env || process.env || {}
-const apiKeyForBackendFunctions = ENV.ASTROSITE_API_KEY
+const ENV = import.meta.env || process.env || {};
+const apiKeyForBackendFunctions = ENV.ASTROSITE_API_KEY;
+const DEBUG_GENAI_BIOGRAPHY = !!ENV.DEBUG_GENAI_BIOGRAPHY;
 
 // Get the resolved path to this file and determine the directory from that
 // (__dirname is not available in ES6 modules)
@@ -100,9 +102,10 @@ type PlayerBiographyInput = {
 };
 
 function EventNameAndYearFrom(event: { name: string; date: string }): EventNameAndYear {
+    const range = parseEventDateRange(event.date)
     return {
         name: event.name,
-        year: parseInt(event.date.split("-")[0]),
+        year: range?.endDate.getFullYear() || range?.startDate.getFullYear() || 0,
     };
 }
 
@@ -127,20 +130,23 @@ async function extractPlayerBiographyInput(player: Player): Promise<PlayerBiogra
     const allPastEvents = hectorEvents.filter(isPastEvent);
     const pastAppearances = allPastEvents.filter((e) => playerParticipatedInEvent(player, e));
     const lastAppearance = pastAppearances[0];
-    const eventsSinceLastAppearance = lastAppearance ? hectorEvents.indexOf(lastAppearance) : -1;
-    console.log(`${describePlayer(player)}: ${eventsSinceLastAppearance} events since last appearance in Hector.`);
+    const eventsSinceLastAppearance = lastAppearance ? hectorEvents.indexOf(lastAppearance) : hectorEvents.length;
 
-    console.log(`${allPastEvents.length} past events in total:`);
-    for (const event of allPastEvents) {
-        console.log(`- ${describeEvent(event)}`);
+    if (DEBUG_GENAI_BIOGRAPHY) {
+        console.log(`${describePlayer(player)}: ${eventsSinceLastAppearance} events since last appearance in Hector.`);
+    
+        console.log(`${allPastEvents.length} past events in total:`);
+        for (const event of allPastEvents) {
+            console.log(`- ${describeEvent(event)}`);
+        }
+        console.log(`${pastAppearances.length} past appearances for ${describePlayer(player)}:`);
+        for (const event of pastAppearances) {
+            console.log(`- ${describeEvent(event)}`);
+        }
+        console.log(
+            `Last appearances for ${describePlayer(player)} was ${lastAppearance ? describeEvent(lastAppearance) : "(none)"}`
+        );
     }
-    console.log(`${pastAppearances.length} past appearances for ${describePlayer(player)}:`);
-    for (const event of pastAppearances) {
-        console.log(`- ${describeEvent(event)}`);
-    }
-    console.log(
-        `Last appearances for ${describePlayer(player)} was ${lastAppearance ? describeEvent(lastAppearance) : "(none)"}`
-    );
 
     // const lastAppearanceYear = parseEventDateRange(lastAppearance.date)?.endDate.getFullYear();
     const nextHectorEvent = hectorEvents.filter(isUpcomingEvent).filter(hasParticipants)[0];
@@ -174,7 +180,7 @@ async function generateBiography(input: PlayerBiographyInput): Promise<string[]>
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${apiKeyForBackendFunctions}`,
+                Authorization: `Bearer ${apiKeyForBackendFunctions}`,
             },
             body: JSON.stringify(input),
         }
@@ -186,7 +192,11 @@ async function generateBiography(input: PlayerBiographyInput): Promise<string[]>
 
     const data = await response.json();
     if (Array.isArray(data.biography)) {
-        console.log(`\n<<<<<\nGot biography for ${input.name}:\n\n${data.biography.join("\n\n")}\n>>>>>\n`);
+        console.log(`\n<<<<<\nGot biography for ${input.name}:`)
+        if (DEBUG_GENAI_BIOGRAPHY) {
+            console.log(`\n${JSON.stringify(input, null, 2)}`);
+        }
+        console.log(`\n=>\n\n${formatForPrinting(data.biography)}\n\n>>>>>\n`);
         return data.biography as string[];
     } else {
         return Promise.reject(

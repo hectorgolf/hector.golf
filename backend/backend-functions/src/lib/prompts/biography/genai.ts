@@ -1,7 +1,34 @@
-import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai";
+import { GoogleGenerativeAI, GenerativeModel, SchemaType, ResponseSchema } from "@google/generative-ai";
 
 import { GeneratePlayerBiographyPromptV1 } from "./biography-v1";
 import { EventNameAndYear, PlayerBiographyInput, describeEvent } from "./common";
+
+/**
+ * The response schema for the Gemini GenAI model for generating player biographies.
+ *
+ * This is used to ensure that the response is always in the correct format.
+ *
+ * The response is always a JSON object with one of the following properties:
+ * - `biography`: an array of strings, each representing a paragraph of the biography
+ * - `error`: a string, representing the error message if the response is an error
+ */
+const responseSchema: ResponseSchema = {
+    type: SchemaType.OBJECT,
+    properties: {
+        biography: {
+            type: SchemaType.ARRAY,
+            description: "An array of strings, each representing a paragraph of the biography",
+            items: { type: SchemaType.STRING },
+            nullable: true,
+        },
+        error: {
+            type: SchemaType.STRING,
+            description: "A string, representing the error message if the response is an error",
+            nullable: true,
+        },
+    },
+    required: [], // all fields are optional (because it might be a success response or an error response)
+};
 
 function initializeGenAIModel(
     apiKey: string,
@@ -27,24 +54,6 @@ function initializeGenAIModel(
         "split the text into paragraphs as necessary to avoid overwhelming the reader.",
         "Be extra careful to misrepresent the player's historical appearance and winning record. It is of utmost",
         "importance that a player's biography is factually accurate and does not contain any errors.",
-        "",
-        "Only ever respond in JSON format. Do not include any other text in your response - just the JSON object.",
-        "",
-        "When asked to write a biography for a player, your response should be a JSON object in this format:",
-        "{",
-        '  "biography": ["<first paragraph>", "<second paragraph>", ...]',
-        "}",
-        "",
-        "When asked to write an analysis of a player's current or recent form and performance,",
-        "your response should be a JSON object in this format:",
-        "{",
-        '  "analysis": ["<first paragraph>", "<second paragraph>", ...]',
-        "}",
-        "",
-        "If you are unable to produce the requested content, your response should be a JSON object describing the problem:",
-        "{",
-        '  "error": "<description of the problem>"',
-        "}",
         "</INSTRUCTIONS>",
         "",
     ];
@@ -69,6 +78,7 @@ function initializeGenAIModel(
         model: "gemini-2.0-flash",
         generationConfig: {
             responseMimeType: "application/json",
+            responseSchema: responseSchema,
         },
         systemInstruction: systemInstruction.join("\n"),
     });
