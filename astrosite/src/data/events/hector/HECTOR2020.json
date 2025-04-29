@@ -8,7 +8,30 @@
         "tahko-new-course",
         "tahko-old-course"
     ],
-    "participants": [],
+    "participants": [
+        "olli-v",
+        "daniel-h",
+        "miso-l",
+        "lassi-k",
+        "martin-s",
+        "pekka-s",
+        "olli-a",
+        "sami-h",
+        "eero-h",
+        "lauri-p",
+        "simo-l",
+        "janne-v",
+        "kristian-h",
+        "timo-l",
+        "juuso-p",
+        "mikko-o",
+        "lasse-k",
+        "okko-p",
+        "jussi-a",
+        "jarkko-k",
+        "marcus-m",
+        "toni-m"
+    ],
     "results": {
         "teams": [
             {
