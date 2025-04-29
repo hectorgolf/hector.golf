@@ -20,7 +20,7 @@ const DEBUG_GENAI_BIOGRAPHY = !!ENV.DEBUG_GENAI_BIOGRAPHY;
 // Get the resolved path to this file and determine the directory from that
 // (__dirname is not available in ES6 modules)
 const __filename = fileURLToPath(import.meta.url);
-const pathToCommitMessage = join(dirname(__filename), "../../.update-biographies-commit");
+const pathToCommitMessage = join(dirname(__filename), "../../.update-player-biographies-commit");
 
 function createHandicapSources(): Promise<HandicapSource[]> {
     return Promise.all([createWisegolfSession(), createTeetimeSession()]);

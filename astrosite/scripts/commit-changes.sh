@@ -51,7 +51,7 @@ if [ -f "$UPDATES_FILE" ]; then
 fi
 
 #
-# Append any biography updates to the commit message based on the contents of `.update-biographies-commit`
+# Append any biography updates to the commit message based on the contents of `.update-player-biographies-commit`
 #
 UPDATES_FILE="./.update-player-biographies-commit"
 if [ -f "$UPDATES_FILE" ]; then
