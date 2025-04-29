@@ -32,14 +32,14 @@ export function getAllEvents(providedFilter?: (e: Event) => boolean): Array<Even
 export function eventHasStarted(event: Event): boolean {
     const range = parseEventDateRange(event.date) || { startDate: undefined, endDate: undefined };
     const {startDate} = range
-    console.log(`Checking if event ${event.name} has started: ${JSON.stringify(range)} vs ${isoDateToday()}`)
+    // console.log(`Checking if event ${event.name} has started: ${JSON.stringify(range)} vs ${isoDateToday()}`)
     return !!(startDate && isoDate(startDate) <= isoDateToday())
 }
 
 export function eventHasEnded(event: Event): boolean {
     const range = parseEventDateRange(event.date) || { startDate: undefined, endDate: undefined };
     const {endDate} = range
-    console.log(`Checking if event ${event.name} has ended: ${JSON.stringify(range)} vs ${isoDateToday()}`)
+    // console.log(`Checking if event ${event.name} has ended: ${JSON.stringify(range)} vs ${isoDateToday()}`)
     return !!(endDate && isoDate(endDate) < isoDateToday())
 }
 
