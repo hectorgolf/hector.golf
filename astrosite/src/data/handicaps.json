@@ -2513,5 +2513,55 @@
     "date": "2025-05-07",
     "player": "jari-k",
     "handicap": 2
+  },
+  {
+    "date": "2025-05-08",
+    "player": "simo-l",
+    "handicap": 6.5
+  },
+  {
+    "date": "2025-05-08",
+    "player": "sami-h",
+    "handicap": 4.9
+  },
+  {
+    "date": "2025-05-08",
+    "player": "olli-v",
+    "handicap": 8.3
+  },
+  {
+    "date": "2025-05-08",
+    "player": "mikko-o",
+    "handicap": 7.7
+  },
+  {
+    "date": "2025-05-08",
+    "player": "mikko-l",
+    "handicap": 20.7
+  },
+  {
+    "date": "2025-05-08",
+    "player": "martin-s",
+    "handicap": 10.9
+  },
+  {
+    "date": "2025-05-08",
+    "player": "marcus-m",
+    "handicap": 11.7
+  },
+  {
+    "date": "2025-05-08",
+    "player": "lassi-k",
+    "handicap": 11
+  },
+  {
+    "date": "2025-05-08",
+    "player": "kristian-h",
+    "handicap": 10.5
+  },
+  {
+    "date": "2025-05-08",
+    "player": "jari-k",
+    "handicap": 2.4
   }
 ]
