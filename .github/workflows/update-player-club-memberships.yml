@@ -60,7 +60,7 @@ jobs:
         working-directory: ${{ env.BUILD_PATH }}
       - name: Run script
         run: |
-          npx tsx src/workflows/update-memberships.ts
+          npx tsx src/workflows/update-player-club-memberships.ts
         working-directory: ${{ env.BUILD_PATH }}
         env:
           TEETIME_CLUB_NUMBER: 0134   # Tapiola Golf
