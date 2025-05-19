@@ -18,7 +18,7 @@
     "olli-v",
     "eero-h",
     "toni-m",
-    "timo-l",
+    "jaakko-s",
     "marcus-m",
     "harri-v",
     "olli-a",
@@ -164,35 +164,35 @@
       },
       {
         "id": "jari-k",
-        "handicap": 1.7
-      },
-      {
-        "id": "sami-h",
-        "handicap": 4.5
+        "handicap": 3.3
       },
       {
         "id": "ofri-p",
-        "handicap": 5.3
+        "handicap": 4.6
       },
       {
-        "id": "simo-l",
-        "handicap": 6
-      },
-      {
-        "id": "mikko-o",
-        "handicap": 7.4
-      },
-      {
-        "id": "eero-h",
-        "handicap": 8.1
+        "id": "sami-h",
+        "handicap": 4.9
       },
       {
         "id": "olli-v",
-        "handicap": 8.2
+        "handicap": 7
+      },
+      {
+        "id": "simo-l",
+        "handicap": 7.2
+      },
+      {
+        "id": "mikko-o",
+        "handicap": 8.1
       },
       {
         "id": "pasi-h",
         "handicap": 8.3
+      },
+      {
+        "id": "eero-h",
+        "handicap": 8.4
       },
       {
         "id": "ossi-l",
@@ -204,29 +204,25 @@
       },
       {
         "id": "martin-s",
-        "handicap": 10.4
+        "handicap": 11
       }
     ],
     [
-      {
-        "id": "lassi-k",
-        "handicap": 10.8
-      },
-      {
-        "id": "toni-m",
-        "handicap": 11
-      },
-      {
-        "id": "marcus-m",
-        "handicap": 11.1
-      },
       {
         "id": "harri-v",
         "handicap": 11.2
       },
       {
-        "id": "timo-l",
+        "id": "toni-m",
         "handicap": 11.3
+      },
+      {
+        "id": "lassi-k",
+        "handicap": 11.3
+      },
+      {
+        "id": "marcus-m",
+        "handicap": 11.8
       },
       {
         "id": "lauri-p",
@@ -242,11 +238,15 @@
       },
       {
         "id": "jarkko-k",
-        "handicap": 14.5
+        "handicap": 14
       },
       {
         "id": "lasse-k",
         "handicap": 14.9
+      },
+      {
+        "id": "jaakko-s",
+        "handicap": 18.8
       },
       {
         "id": "janne-v",
