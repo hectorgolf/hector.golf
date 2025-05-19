@@ -9,7 +9,7 @@
     "phone": "+358504653824"
   },
   "club": "HirG",
-  "handicap": 6,
+  "handicap": 7.2,
   "misc": [
     "Swears a lot",
     "Adopted a L.A.B. Golf zero torque putter for the 2025 season"
@@ -18,5 +18,7 @@
     "Simo, a force to be reckoned with on the greens, hails from the prestigious Hirsala Golf club. Known for his fiery temperament and occasional colorful language, Simo is a formidable competitor in the Hector Trophée.",
     "With nine past appearances under his belt and three Hector Trophée victories, Simo's experience is undeniable. Though the Victor Trophy has eluded him, his sights are set on future triumphs. The upcoming Hector Trophée 2025 marks his tenth appearance, a testament to his enduring commitment to the tournament.",
     "For the 2025 season, Simo has adopted a L.A.B. Golf zero torque putter, hoping to gain an edge on the putting surfaces. The change in equipment reflects Simo's continuous strive for perfection and his willingness to adapt his game."
-  ]
+  ],
+  "handicapChanged": true,
+  "handicapChangedFrom": 6
 }

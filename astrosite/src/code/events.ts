@@ -1,7 +1,8 @@
 import { type Event, genericEventSchema as EventSchema, type MatchplayEvent, type MatchplayResults, type HectorEvent, type FinnkampenEvent, EventFormat, hectorEventSchema } from '../schemas/events';
 import { type Course, schema as CourseSchema } from '../schemas/courses';
 import { parseEventDateRange, isoDate, isoDateToday, compareDateStrings } from './dates';
-import { eventsData, coursesData } from './data';
+import { eventsData, coursesData, isPastEvent } from './data';
+import { getPlayerHandicapById } from './players';
 
 
 export const linkToEvent = (event: Event|string): string => {
@@ -108,14 +109,30 @@ const populateMissingParticipants = (event: Event): Event => {
     return event
 }
 
+function isHectorEvent(event: Event): event is HectorEvent {
+    return event.format === EventFormat.Hector
+}
+
+const populateUpdatedHandicaps = (event: Event): Event => {
+    if (isHectorEvent(event) && !isPastEvent(event)) {
+        function updateHcp(id: string, handicap: number|undefined) {
+            return { id, handicap: getPlayerHandicapById(id) }
+        }
+        event.buckets = event.buckets?.map(bucket => bucket.map(p => updateHcp(p.id, p.handicap)))
+    }
+    return event
+}
+
 export function getEventById(id: string): Event|undefined {
     let _event = eventsData.find((event) => event.id === id && !event.ignore)
     if (!_event) {
         return undefined
     }
     try {
-        const event = EventSchema.parse(_event);
-        return populateMissingParticipants(event)
+        let event = EventSchema.parse(_event);
+        event = populateMissingParticipants(event)
+        event = populateUpdatedHandicaps(event)
+        return event
     } catch (err) {
         console.error(`getEventById(${JSON.stringify(id)}) failed to parse event data: ${JSON.stringify(_event, null, 2)}`, err)
         return undefined;

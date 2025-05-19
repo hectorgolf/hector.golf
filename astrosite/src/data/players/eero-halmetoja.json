@@ -9,7 +9,7 @@
     "phone": "+358408456410"
   },
   "club": "VGH",
-  "handicap": 8.1,
+  "handicap": 8.4,
   "misc": [
     "Pasi's little brother",
     "Has been working on his mental game a lot"
@@ -17,5 +17,7 @@
   "biography": [
     "Eero, the pride of Vuosaari Golf Helsinki and younger brother of Pasi, is a familiar face at the Hector Trophée. Known for his thoughtful demeanor on the course, Eero possesses a strategic mind and a never-say-die attitude, making him a formidable competitor in both individual and pair formats. While the coveted Hector Trophée has eluded him thus far, Eero has tasted individual glory in the past by claiming the Victor Trophy, a testament to his skills and dedication.",
     "Having participated in 7 previous Hector Trophée tournaments, Eero is gearing up for his eighth appearance in 2025. Over the past year, Eero has been focusing on improving his mental game, hoping to bring a new level of composure and focus to the greens. Paired with his natural talent and experience, this newfound mental fortitude may be just what he needs to finally capture the elusive Hector Trophée."
-  ]
+  ],
+  "handicapChanged": true,
+  "handicapChangedFrom": 8.1
 }

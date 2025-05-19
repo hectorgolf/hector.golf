@@ -9,7 +9,7 @@
     "phone": "+358408459339"
   },
   "club": "LGV",
-  "handicap": 7.4,
+  "handicap": 8.1,
   "misc": [
     "Has planted his seeds in four different women in four different decades."
   ],
@@ -17,5 +17,7 @@
     "Mikko, a seasoned competitor from Lakeside Golf Vammala, brings a wealth of experience to the greens of the Hector Trophée. Known for his meticulous approach to the game and an almost uncanny ability to read the course, Mikko has been a consistent presence in the tournament, marked by an unwavering pursuit of excellence.",
     "Beyond the fairways, Mikko is known for his charismatic personality and his... colorful personal life, having allegedly planted his seeds in four different women in four different decades. This is a testament to his ability to connect with people from all walks of life, and makes him a beloved figure among both players and fans.",
     "With 10 past appearances in the Hector Trophée, Mikko is eagerly awaiting his 11th appearance in 2025. Although the coveted Hector Trophée and the Victor Trophy have eluded him thus far, Mikko's determination remains unshaken. His focus is now set on mastering the course and forming an unyielding alliance with his partner to achieve victory in the upcoming tournament. He is still actively participating in Hector events."
-  ]
+  ],
+  "handicapChanged": true,
+  "handicapChangedFrom": 7.4
 }

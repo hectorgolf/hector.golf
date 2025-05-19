@@ -9,7 +9,7 @@ import { createWisegolfSession } from '../code/handicaps/wisegolf-api.ts'
 import { isoDateToday } from '../code/dates.ts'
 
 import { playersData, hectorEvents, hasParticipants, isUpcomingEvent, pathToEventJson } from '../code/data.ts'
-import { getPlayerName } from '../code/players.ts'
+import { getPlayerName, updatePlayerData } from '../code/players.ts'
 
 
 const getPlayerById = (id: string, handicapHistory: Array<HandicapHistoryEntry>): Player|undefined => {
@@ -70,7 +70,7 @@ type HandicapHistoryEntry = {
     handicap: number,
 }
 
-const persistHandicapHistoryToDisk = (players: Player[], handicapHistory: Array<HandicapHistoryEntry>) => {
+const persistHandicapHistoryToDisk = async (players: Player[], handicapHistory: Array<HandicapHistoryEntry>) => {
     const newHandicapChanges: Array<HandicapHistoryEntry> = []
     const date = isoDateToday()
 
@@ -80,7 +80,7 @@ const persistHandicapHistoryToDisk = (players: Player[], handicapHistory: Array<
 
     const commitMessage: string[] = []
 
-    playersWithNewHandicap.forEach((player) => {
+    for (const player of playersWithNewHandicap) {
         const duplicate = handicapHistory.find((entry) => entry.player === player.id && entry.date === date)
         if (duplicate) {
             // If our data already contains a handicap entry for this player on this date, let's update
@@ -99,7 +99,9 @@ const persistHandicapHistoryToDisk = (players: Player[], handicapHistory: Array<
         })
 
         commitMessage.push(`- ${player.name.first} ${player.name.last}: ${JSON.stringify(player.handicapChangedFrom)} -> ${JSON.stringify(player.handicap)}`)
-    })
+
+        await updatePlayerData(player)
+    }
 
     if (newHandicapChanges.length > 0) {
         console.log(`Updated ${newHandicapChanges.length} players' handicap:`)
@@ -170,7 +172,7 @@ const updateHandicapsForAllPlayers = async () => {
     }
     const handicapHistory: Array<HandicapHistoryEntry> = readJsonFile(pathToHandicapHistoryJson, [])
     const updatedPlayers = await fetchUpdatedPlayerRecords(playersData, handicapHistory, availableSources)
-    persistHandicapHistoryToDisk(updatedPlayers, handicapHistory)
+    await persistHandicapHistoryToDisk(updatedPlayers, handicapHistory)
 }
 
 type HectorEvent = {

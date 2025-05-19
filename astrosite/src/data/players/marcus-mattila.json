@@ -9,7 +9,7 @@
     "phone": "+358400645949"
   },
   "club": "Kurk",
-  "handicap": 11.1,
+  "handicap": 11.8,
   "misc": [
     "Struggles with his gender identity, occasionally participating in events under his female alter-ego, \"Eva\"."
   ],
@@ -17,5 +17,7 @@
     "Marcus, a familiar face at Kurk Golf, brings a unique dimension to the Hector Trophée. Known for his meticulous approach to the game, Marcus has an impressive record of participation, marking Hector Trophée 2025 as his 12th appearance.",
     "Off the course, Marcus is known for his introspective nature and his courage to embrace his true self. On occasion, Marcus has even participated in tournaments under the guise of his female alter-ego, \"Eva\". While the rules of the competition committee are very clear on this subject, the audience has always been supportive of Marcus's participation, regardless of presentation.",
     "Despite his popularity amongst fans, Marcus has yet to capture the coveted Hector Trophée, and he has yet to win an individual Victor trophy. However, his consistent presence and dedication to the sport make him a respected figure among his peers. His participation in the upcoming Hector Trophée 2025 is eagerly anticipated, as always."
-  ]
+  ],
+  "handicapChanged": true,
+  "handicapChangedFrom": 11.1
 }

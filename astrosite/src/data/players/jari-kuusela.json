@@ -9,7 +9,7 @@
     "phone": "+358504669916"
   },
   "club": "ArGC",
-  "handicap": 1.7,
+  "handicap": 3.3,
   "misc": [
     "Originally known to many Hector players from his past appearances in Finnkampen events"
   ],
@@ -17,5 +17,7 @@
     "Jari, a new face at the Hector Trophée, is set to represent the Archipelagia Golf Club in the upcoming tournament. While this marks Jari's inaugural appearance at the Hector Trophée, he is by no means a stranger to competitive golf.",
     "Many players may recognize Jari from his past performances at the Finnkampen events, where his strategic play and calm demeanor under pressure have earned him considerable respect. Though considered by many to be retired from Hector events, Jari is looking forward to the challenge of competing for the Hector Trophée.",
     "Off the course, Jari is known for his meticulous preparation and dedication to improving his game. He spends countless hours analyzing course layouts and refining his technique. This commitment, combined with his experience in high-stakes competitions, makes Jari a formidable competitor to watch as he embarks on his Hector Trophée journey."
-  ]
+  ],
+  "handicapChanged": true,
+  "handicapChangedFrom": 1.7
 }

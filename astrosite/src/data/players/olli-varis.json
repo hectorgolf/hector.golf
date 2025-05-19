@@ -9,7 +9,7 @@
     "phone": "+358445455556"
   },
   "club": "HirG",
-  "handicap": 8.2,
+  "handicap": 7,
   "misc": [
     "Die hard Bryson Dechambeau fan"
   ],
@@ -17,5 +17,7 @@
     "Olli is a seasoned competitor in the Hector Trophée, representing Hirsala Golf with distinction. A true veteran of this competition, Olli is known for his meticulous approach to the game and his unwavering focus on the course. Competitors know that Olli's exceptional putting skills and strategic course management make him a formidable opponent.",
     "Beyond his technical skills, Olli brings a unique intensity to the tournament, which has seen him compete in 8 previous editions. While his demeanor might suggest otherwise, Olli is known to be a die hard Bryson Dechambeau fan, and he has one Hector Trophée win and one Victor Trophy to his name.",
     "As he prepares for his ninth appearance in Hector Trophée 2025, Olli remains a player to watch. His experience, combined with his dedication to improvement, ensures that he will be a strong contender for both the Victor Trophy and the Hector Trophée."
-  ]
+  ],
+  "handicapChanged": true,
+  "handicapChangedFrom": 8.2
 }

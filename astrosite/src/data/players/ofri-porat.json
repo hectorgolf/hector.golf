@@ -9,7 +9,7 @@
     "phone": "+358504873415"
   },
   "club": "GPi",
-  "handicap": 5.3,
+  "handicap": 4.6,
   "misc": [
     "Lives in Tampere, Finland",
     "Appreciates the thoughtful course designs of Kosti Kuronen who passed away in 2024"
@@ -18,5 +18,7 @@
     "Hailing from Tampere, Finland, Ofri is a golfer known for his strategic approach to the game. Representing Golf Pirkkala, Ofri brings a measured and thoughtful presence to the course. He admires the course designs of the late Kosti Kuronen, appreciating the intricate challenges they present.",
     "With two past appearances at the Hector Trophée, Ofri is looking forward to participating again in the Hector Trophée 2025. While he has not yet claimed either the Hector Trophée or the Victor Trophy, his consistent performance and dedication suggest that he remains a strong contender.",
     "Those who have the pleasure of knowing Ofri often commend him for his level-headedness and composure. In the pressure cooker that is championship golf, these qualities are sure to serve him well."
-  ]
+  ],
+  "handicapChanged": true,
+  "handicapChangedFrom": 5.3
 }

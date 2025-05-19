@@ -9,7 +9,7 @@
     "phone": "+358407505539"
   },
   "club": "HyG",
-  "handicap": 5.5,
+  "handicap": 3.5,
   "misc": [
     "Runs his mouth all the time",
     "Constantly sees birds and other wildlife on the course",
@@ -19,5 +19,7 @@
     "Juuso, a familiar face from Hyvinkään Golf, is a constant presence in the Hector Trophée, marked by his distinctive, talkative approach to the game. While his performance on the course is always a subject of keen interest, his boisterous commentary and unwavering optimism are always a welcome addition to any event.",
     "Over the years, Juuso has developed a reputation for his unique connection with nature, often pausing to observe the avian life that graces the fairways. One can often find him admiring the local wildlife, if one is patient enough to wait for him to take his stance at the tee.",
     "Despite his dedication to the game, victory in the Hector Trophée has eluded Juuso. With eight prior appearances, Juuso remains a formidable competitor, one who consistently aims to improve his showing. Although he is not currently slated to participate in the upcoming Hector Trophée 2025, his fans are well-aware that a last-minute change of heart is not out of the question. His presence on the course is always anticipated, even if he does sometimes have a rather long pre-shot routine."
-  ]
+  ],
+  "handicapChanged": true,
+  "handicapChangedFrom": 5.5
 }

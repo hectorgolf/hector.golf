@@ -5,7 +5,7 @@ import AppearanceCard from '../../components/players/AppearanceCard.astro';
 import HandicapHistoryChart from '../../components/players/HandicapHistoryChart.astro';
 import { type Player } from '../../schemas/players';
 import { type HandicapHistoryEntry } from '../../schemas/handicaps';
-import { getEventsOfPlayer, getAllPlayerIds, getPlayerById, getPlayerName, getPlayerHandicapHistoryById } from '../../code/players';
+import { getEventsOfPlayer, getAllPlayerIds, getPlayerById, getPlayerName, getPlayerHandicapHistoryById, getPlayerHandicapById } from '../../code/players';
 
 
 export function getStaticPaths() {
@@ -23,7 +23,8 @@ player = player!
 
 const relatedEvents = getEventsOfPlayer(player.id);
 
-const handicapHistory: Array<HandicapHistoryEntry>|null = player.handicap ? getPlayerHandicapHistoryById(player.id) : null;
+const playerHandicap = getPlayerHandicapById(player.id);
+const handicapHistory: Array<HandicapHistoryEntry>|null = playerHandicap ? getPlayerHandicapHistoryById(player.id) : null;
 
 const biography = player.biography && player.biography.length > 0 ? player.biography : null;
 
@@ -37,11 +38,11 @@ const biography = player.biography && player.biography.length > 0 ? player.biogr
         </div>
         <h1><span class="text-gradient">{getPlayerName(player)}</span></h1>
 
-        {player.biography && player.biography.length > 0 ? player.biography.map(paragraph => (
+        {biography && biography.map(paragraph => (
             <div class="biography">
                 <p>{paragraph}</p>
             </div>
-        )) : null}
+        ))}
 
         {player.image ? (
             <div class="hero">
@@ -50,10 +51,10 @@ const biography = player.biography && player.biography.length > 0 ? player.biogr
             ) : null
         }
 
-        {player.handicap ? (
+        {handicapHistory ? (
             <div class="handicap">
                 <h2>Handicap</h2>
-                {handicapHistory ? (<HandicapHistoryChart history={handicapHistory} current={player.handicap}/>) : null}
+                {handicapHistory ? (<HandicapHistoryChart history={handicapHistory} current={playerHandicap}/>) : null}
             </div>
             ): null
         }

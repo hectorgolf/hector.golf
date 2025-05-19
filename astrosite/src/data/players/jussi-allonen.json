@@ -9,7 +9,7 @@
     "phone": "+358406803204"
   },
   "club": "StLG",
-  "handicap": 10.6,
+  "handicap": 10.4,
   "misc": [
     "His usual shot shape could be described as a \"power draw\"."
   ],
@@ -17,5 +17,7 @@
     "Jussi, a familiar face at the Hector Trophée, brings a unique blend of power and strategy to the course. Representing St. Laurence Golf, Jussi is known for his booming drives and the ability to shape the ball with a pronounced power draw.",
     "While the coveted Hector Trophée and the Victor Trophy have eluded him, Jussi's consistent presence in the tournament demonstrates his commitment to the sport and the camaraderie it fosters. With four past appearances, Jussi has been a stalwart competitor, always ready to challenge his opponents and showcase his skills.",
     "Off the course, Jussi is known for his jovial nature and his willingness to offer advice to younger players. Although he is not participating in the upcoming Hector Trophée 2025, his contributions to past events are fondly remembered."
-  ]
+  ],
+  "handicapChanged": true,
+  "handicapChangedFrom": 10.6
 }

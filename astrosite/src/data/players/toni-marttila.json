@@ -9,7 +9,7 @@
     "phone": "+358504418241"
   },
   "club": "HirG",
-  "handicap": 11,
+  "handicap": 11.3,
   "misc": [
     "Primary organizer of the Hector Trophée event."
   ],
@@ -17,5 +17,7 @@
     "A pillar of the Hector Trophée, Toni of Hirsala Golf is a central figure in the tournament's history, having participated in all 11 editions since its inception. Beyond merely competing, Toni is the primary organizer of the event, dedicating countless hours to ensure its smooth operation and continued success.",
     "A formidable player with a penchant for strategy, Toni has secured the coveted Hector Trophée on three occasions, showcasing his exceptional teamwork and competitive spirit. Further solidifying his reputation as one of the tournament's greats, Toni has also claimed the Victor Trophy twice, awarded to the best individual player.",
     "Known for his calm demeanor on the course and unwavering commitment to the sport, Toni is a respected figure among his peers. As he prepares for his 12th appearance at the Hector Trophée in 2025, all eyes will be on Toni as he undoubtedly brings his expertise and passion to the tournament once again."
-  ]
+  ],
+  "handicapChanged": true,
+  "handicapChangedFrom": 11
 }

@@ -9,7 +9,7 @@
     "phone": "+358505790324"
   },
   "club": "StLG",
-  "handicap": 10.4,
+  "handicap": 11,
   "misc": [
     "Rarely seen on the course without a drink in his hand"
   ],
@@ -17,5 +17,7 @@
     "Martin, a charismatic figure hailing from the esteemed St. Laurence Golf club, is a familiar face at the Hector Trophée. Known for his relaxed demeanor and the ever-present beverage in hand, Martin brings a unique blend of skill and levity to the competition.",
     "With nine past appearances, Martin is set to mark his tenth showing at the upcoming Hector Trophée 2025. A formidable player, Martin has secured one coveted Hector Trophée victory in his career and was also awarded the Victor Trophy, awarded to the best individual player in the competition, on one occasion.",
     "Despite his easy-going nature, Martin is a fierce competitor. His deep understanding of the game and strategic prowess make him a force to be reckoned with. The other players always enjoy sharing a drink with Martin after a long day on the course."
-  ]
+  ],
+  "handicapChanged": true,
+  "handicapChangedFrom": 10.4
 }

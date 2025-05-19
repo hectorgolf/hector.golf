@@ -9,7 +9,7 @@
     "phone": "+358504860406"
   },
   "club": "HirG",
-  "handicap": 14.5,
+  "handicap": 14,
   "misc": [
     "Nick name \"Bailando\"."
   ],
@@ -17,5 +17,7 @@
     "Jarkko, affectionately known as \"Bailando\" among his peers, is a familiar face at the Hector Trophée, representing Hirsala Golf. His presence is always felt, not only for his competitive spirit but also for his engaging personality.",
     "With eight past appearances, Jarkko approaches Hector Trophée 2025 with a wealth of experience. His ninth appearance at the event speaks volumes of his dedication and passion for the game.",
     "Jarkko's record includes one victory in the Hector Trophée and one individual Victor Trophy, achievements that underscore his skill and determination on the course. He remains an active and respected competitor in the Hector Trophée."
-  ]
+  ],
+  "handicapChanged": true,
+  "handicapChangedFrom": 14.5
 }
