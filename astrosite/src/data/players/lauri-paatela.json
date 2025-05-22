@@ -9,10 +9,12 @@
     "phone": "+358407700612"
   },
   "club": "PGC",
-  "handicap": 12.3,
+  "handicap": 13,
   "biography": [
     "Lauri, a familiar face from Pickala Golf Club, brings a quiet intensity to the greens. Known for his meticulous approach and unwavering focus, Lauri has become a respected figure within the Hector Trophée circuit. While victory has remained elusive, his dedication and sportsmanship have earned him the admiration of fellow competitors and spectators alike.",
     "With four past appearances at the Hector Trophée, Lauri's experience is undeniable. Though neither the Hector Trophée nor the Victor Trophy have found their way into his hands just yet, Lauri's consistent presence underscores his commitment to the sport and the unique challenges presented by this esteemed tournament. His participation in the upcoming Hector Trophée 2025 marks his fifth appearance, an opportunity for Lauri to further refine his game and perhaps finally capture the coveted title.",
     "Off the course, Lauri is known for his thoughtful demeanor and analytical mind, often engaging in lively discussions about golf strategy and technique. His insights are valued by his peers, and his presence enriches the overall camaraderie of the event. As he prepares for his next outing, Lauri remains a compelling figure to watch, embodying the spirit of perseverance and the pursuit of excellence that defines the Hector Trophée."
-  ]
+  ],
+  "handicapChanged": true,
+  "handicapChangedFrom": 12.3
 }
