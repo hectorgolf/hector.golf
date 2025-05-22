@@ -217,20 +217,20 @@
         "handicap": 11.3
       },
       {
-        "id": "toni-m",
-        "handicap": 11.7
-      },
-      {
         "id": "marcus-m",
         "handicap": 11.9
       },
       {
-        "id": "lauri-p",
-        "handicap": 12.3
+        "id": "toni-m",
+        "handicap": 12.2
       },
       {
         "id": "olli-a",
         "handicap": 12.4
+      },
+      {
+        "id": "lauri-p",
+        "handicap": 13
       },
       {
         "id": "okko-p",
