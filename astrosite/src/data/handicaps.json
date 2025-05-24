@@ -3368,5 +3368,30 @@
     "date": "2025-05-22",
     "player": "lauri-p",
     "handicap": 13
+  },
+  {
+    "date": "2025-05-24",
+    "player": "toni-m",
+    "handicap": 12.8
+  },
+  {
+    "date": "2025-05-24",
+    "player": "simo-l",
+    "handicap": 6.6
+  },
+  {
+    "date": "2025-05-24",
+    "player": "olli-v",
+    "handicap": 6.8
+  },
+  {
+    "date": "2025-05-24",
+    "player": "mikko-o",
+    "handicap": 8.4
+  },
+  {
+    "date": "2025-05-24",
+    "player": "lassi-k",
+    "handicap": 11.5
   }
 ]

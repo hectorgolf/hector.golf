@@ -9,7 +9,7 @@
     "phone": "+358408459339"
   },
   "club": "LGV",
-  "handicap": 8.1,
+  "handicap": 8.4,
   "misc": [
     "Has planted his seeds in four different women in four different decades."
   ],
@@ -17,5 +17,7 @@
     "Mikko, a familiar face at the Hector Trophée, brings a wealth of experience to the greens. Representing Lakeside Golf Vammala, Mikko's journey through the tournament's history is a testament to his dedication and passion for the sport.",
     "With ten past appearances, Mikko is a well-known presence within the tournament. While the coveted Hector Trophée and the individual Victor Trophy have eluded him so far, his commitment remains unwavering.",
     "Beyond the golf course, Mikko is a man of diverse experiences, having, as he puts it, planted his seeds in four different women across four different decades. His upcoming appearance at Hector Trophée 2025 marks his eleventh showing in the tournament. Spectators are eager to see how his seasoned perspective will influence his performance this year."
-  ]
+  ],
+  "handicapChanged": true,
+  "handicapChangedFrom": 8.1
 }
