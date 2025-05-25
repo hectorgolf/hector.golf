@@ -9,7 +9,7 @@
     "phone": "+358408423660"
   },
   "club": "VGH",
-  "handicap": 8.3,
+  "handicap": 8.5,
   "misc": [
     "Known as \"Susi-Pasi\"",
     "Loves basketball even more than Marcus, making some fans wonder if he's a real golfer"
@@ -18,5 +18,7 @@
     "Pasi, affectionately known as \"Susi-Pasi\", is a familiar face at the Hector Trophée. Representing Vuosaari Golf Helsinki, Pasi's passion for the sport is evident to all who have the pleasure of watching him play.",
     "While Pasi's dedication to golf is undeniable, rumours have circulated that his true love lies with basketball. Some observers have noted that Pasi's enthusiasm for basketball even eclipses that of Marcus, leading some to jokingly question whether Pasi is a true golfer at all.",
     "Pasi has participated in the Hector Trophée three times and is looking forward to his fourth appearance in 2025. He has won the Hector Trophée once. Although the coveted Victor Trophy has eluded him thus far, his determination remains unwavering. He will certainly be a player to watch in the upcoming Hector Trophée 2025."
-  ]
+  ],
+  "handicapChanged": true,
+  "handicapChangedFrom": 8.3
 }

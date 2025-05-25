@@ -3393,5 +3393,55 @@
     "date": "2025-05-24",
     "player": "lassi-k",
     "handicap": 11.5
+  },
+  {
+    "date": "2025-05-25",
+    "player": "toni-m",
+    "handicap": 13
+  },
+  {
+    "date": "2025-05-25",
+    "player": "simo-l",
+    "handicap": 6.7
+  },
+  {
+    "date": "2025-05-25",
+    "player": "pasi-h",
+    "handicap": 8.5
+  },
+  {
+    "date": "2025-05-25",
+    "player": "olli-v",
+    "handicap": 6.7
+  },
+  {
+    "date": "2025-05-25",
+    "player": "marcus-m",
+    "handicap": 11.3
+  },
+  {
+    "date": "2025-05-25",
+    "player": "lassi-k",
+    "handicap": 12
+  },
+  {
+    "date": "2025-05-25",
+    "player": "kristian-h",
+    "handicap": 11.6
+  },
+  {
+    "date": "2025-05-25",
+    "player": "jussi-a",
+    "handicap": 10.6
+  },
+  {
+    "date": "2025-05-25",
+    "player": "janne-v",
+    "handicap": 19
+  },
+  {
+    "date": "2025-05-25",
+    "player": "harri-v",
+    "handicap": 10.8
   }
 ]

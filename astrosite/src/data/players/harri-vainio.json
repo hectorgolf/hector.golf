@@ -9,7 +9,7 @@
     "phone": "+358505980893"
   },
   "club": "HaG",
-  "handicap": 11.2,
+  "handicap": 10.8,
   "misc": [
     "Is known as \"the doctor\".",
     "Known for bomb drives despite his advanced age."
@@ -19,5 +19,7 @@
     "Despite his advanced age, Harri is renowned for his bomb drives, often surprising younger competitors with the distance he achieves off the tee. This combination of experience and power makes him a challenging opponent in both the individual and pair formats of the competition.",
     "Harri has participated in 5 previous Hector Trophée tournaments and will be making his sixth appearance in the 2025 edition. He has secured the coveted Hector Trophée on two occasions, demonstrating his ability to perform under pressure and excel in team play. While the Victor Trophy has eluded him thus far, Harri's consistent performance suggests that an individual title may well be within his reach.",
     "Off the course, Harri is respected for his sportsmanship and camaraderie, embodying the spirit of the Hector Trophée. His presence enriches the tournament, and his ongoing participation is a testament to his enduring passion for the sport."
-  ]
+  ],
+  "handicapChanged": true,
+  "handicapChangedFrom": 11.2
 }
