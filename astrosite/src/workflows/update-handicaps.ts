@@ -10,6 +10,7 @@ import { isoDateToday } from '../code/dates.ts'
 
 import { playersData, hectorEvents, hasParticipants, isUpcomingEvent, pathToEventJson } from '../code/data.ts'
 import { getPlayerName, updatePlayerData } from '../code/players.ts'
+import type { Player } from '../schemas/players.ts'
 
 
 const getPlayerById = (id: string, handicapHistory: Array<HandicapHistoryEntry>): Player|undefined => {
@@ -48,18 +49,7 @@ if (existsSync(pathToHandicapUpdateCommitMessage)) {
 }
 writeFileSync(pathToHandicapUpdateCommitMessage, '')
 
-type Player = {
-    id: string,
-    name: {
-        first: string,
-        last: string
-    },
-    contact: {
-        phone: string
-    },
-    image?: string,
-    club?: string,
-    handicap?: number,
+type PlayerWithHandicapChanges = Player & {
     handicapChanged?: boolean,
     handicapChangedFrom?: number,
 }
@@ -70,7 +60,7 @@ type HandicapHistoryEntry = {
     handicap: number,
 }
 
-const persistHandicapHistoryToDisk = async (players: Player[], handicapHistory: Array<HandicapHistoryEntry>) => {
+const persistHandicapHistoryToDisk = async (players: PlayerWithHandicapChanges[], handicapHistory: Array<HandicapHistoryEntry>) => {
     const newHandicapChanges: Array<HandicapHistoryEntry> = []
     const date = isoDateToday()
 
@@ -100,7 +90,8 @@ const persistHandicapHistoryToDisk = async (players: Player[], handicapHistory: 
 
         commitMessage.push(`- ${getPlayerName(player)}: ${JSON.stringify(player.handicapChangedFrom)} -> ${JSON.stringify(player.handicap)}`)
 
-        await updatePlayerData(player)
+        const { handicapChanged, handicapChangedFrom, ...playerWithoutChangeFields } = player
+        await updatePlayerData(playerWithoutChangeFields)
     }
 
     if (newHandicapChanges.length > 0) {
@@ -112,7 +103,7 @@ const persistHandicapHistoryToDisk = async (players: Player[], handicapHistory: 
     }
 }
 
-const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Array<HandicapHistoryEntry>, handicapSources: Array<HandicapSource>): Promise<Player[]> => {
+const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Array<HandicapHistoryEntry>, handicapSources: Array<HandicapSource>): Promise<PlayerWithHandicapChanges[]> => {
     const playerListPromises = players.map((player: any) => {
         const playerObject = getPlayerById(player.id, handicapHistory)
         if (playerObject && playerObject.club) {
@@ -145,15 +136,16 @@ const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Arr
 
             const sources = handicapSources.toReversed()
             return fetchFromSources(sources).then(newHandicap => {
+                let updatedPlayer: PlayerWithHandicapChanges = { ...playerObject }
                 if (newHandicap !== undefined && newHandicap !== oldHandicap) {
-                    playerObject.handicap = newHandicap
-                    playerObject.handicapChanged = true
-                    playerObject.handicapChangedFrom = oldHandicap
-                    console.log(`Handicap for ${playerObject.name.first} ${playerObject.name.last} changed from ${oldHandicap} to ${newHandicap}`)
+                    updatedPlayer.handicap = newHandicap
+                    updatedPlayer.handicapChanged = true
+                    updatedPlayer.handicapChangedFrom = oldHandicap
+                    console.log(`Handicap for ${getPlayerName(updatedPlayer)} changed from ${oldHandicap} to ${newHandicap}`)
                 }
-                return Promise.resolve(playerObject)
+                return Promise.resolve(updatedPlayer)
             }).catch((_: Error) => {
-                console.error(`Failed to fetch handicap for ${playerObject.name.first} ${playerObject.name.last} from any of our sources`)
+                console.error(`Failed to fetch handicap for ${getPlayerName(playerObject)} from any of our sources`)
                 return Promise.resolve(playerObject)
             })
         } else {
@@ -190,17 +182,31 @@ const updateBucketsForUpcomingEvents = async () => {
     console.log(`Updating buckets for upcoming events...`)
     const eventsToUpdate = hectorEvents.filter(hasParticipants).filter(isUpcomingEvent) as HectorEvent[]
 
-    eventsToUpdate.forEach((event) => {
+    for (const event of eventsToUpdate) {
+        console.log(`Updating buckets for ${event.name} on ${event.date}...`)
         // Split participants to two buckets
-        const participants: Array<Player>|undefined = event.participants
-            ?.map(id => getPlayerById(id, handicapHistory))
-            ?.filter(p => !!p)
-            ?.sort((p1, p2) => p1!.handicap! - p2!.handicap!)
-        const trimPlayer = (player: Player): { id: string, handicap: number|undefined } => {
+        const trimPlayer = (player: Player): { id: string, handicap: number } => {
             return { id: player.id, handicap: player.handicap || 0 }
         }
-        const bucket1 = participants?.slice(0, Math.ceil(participants.length / 2))?.map(trimPlayer)
-        const bucket2 = participants?.slice(bucket1!.length)?.map(trimPlayer)
+        const participants: Array<{id:string, handicap:number}>|undefined = event.participants
+            ?.map(id => getPlayerById(id, handicapHistory))
+            ?.filter(p => !!p)
+            ?.map(trimPlayer)
+            ?.sort((p1, p2) => p1.handicap! - p2.handicap!)
+        for (const participant of participants) {
+            console.log(`- ${participant.id} ${participant.handicap}`)
+        }
+        const bucket1 = participants?.slice(0, Math.ceil(participants.length / 2))
+        const bucket2 = participants?.slice(bucket1!.length)
+
+        console.log(`Bucket 1:`)
+        bucket1.forEach((participant, index) => {
+            console.log(`${(index + 1).toString().padStart(2, ' ')}.  ${participant.id} ${participant.handicap}`)
+        })
+        console.log(`Bucket 2:`)
+        bucket2.forEach((participant, index) => {
+            console.log(`${(index + 1 + bucket1.length).toString().padStart(2, ' ')}.  ${participant.id} ${participant.handicap}`)
+        })
 
         // Add the updated buckets to the event object
         const eventObject = hectorEvents.find((e: any) => e.id === event.id)
@@ -216,7 +222,7 @@ const updateBucketsForUpcomingEvents = async () => {
                 console.log(`No changes to buckets for event ${event.id} (${event.name} on ${event.date})`)
             }
         }
-    })
+    }
     console.log(`Done updating buckets.`)
 }
 
