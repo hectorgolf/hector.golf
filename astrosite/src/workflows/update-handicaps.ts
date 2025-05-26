@@ -89,7 +89,7 @@ const persistHandicapHistoryToDisk = async (players: Player[], handicapHistory: 
             // mistakenly grabbed "today's" handicap from the API, and later in the afternoon data update
             // we get the "correct" handicap because the Golf Association has re-run their failed batch job.
             handicapHistory = handicapHistory.filter(entry => !(entry.player === player.id && entry.date === date))
-            console.warn(`Updating older entry for ${player.name.first} ${player.name.last} on ${duplicate.date}. Replacing ${JSON.stringify(duplicate.handicap)} with ${JSON.stringify(player.handicap)}`)
+            console.warn(`Updating older entry for ${getPlayerName(player)} on ${duplicate.date}. Replacing ${JSON.stringify(duplicate.handicap)} with ${JSON.stringify(player.handicap)}`)
         }
         // If there's no entry for this player on this date, we'll just push a new entry to the list
         newHandicapChanges.push({
@@ -98,7 +98,7 @@ const persistHandicapHistoryToDisk = async (players: Player[], handicapHistory: 
             handicap: player.handicap as number,
         })
 
-        commitMessage.push(`- ${player.name.first} ${player.name.last}: ${JSON.stringify(player.handicapChangedFrom)} -> ${JSON.stringify(player.handicap)}`)
+        commitMessage.push(`- ${getPlayerName(player)}: ${JSON.stringify(player.handicapChangedFrom)} -> ${JSON.stringify(player.handicap)}`)
 
         await updatePlayerData(player)
     }

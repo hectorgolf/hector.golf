@@ -114,7 +114,7 @@ function describeEvent(event: { name: string; date: string }): string {
 }
 
 function describePlayer(player: Player): string {
-    return `${player.name.first} ${player.name.last}`;
+    return getPlayerName(player);
 }
 
 function playerParticipatedInEvent(player: Player, event: HectorEvent): boolean {

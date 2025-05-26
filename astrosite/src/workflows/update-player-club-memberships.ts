@@ -52,7 +52,7 @@ const persistPlayersToDisk = (players: Player[]) => {
     }
 
     const commitMessage: string[] = players.map((player: any) => {
-        return `  - ${player.name.first} ${player.name.last} was only found from ${player.club}`;
+        return `  - ${getPlayerName(player)} was only found from ${player.club}`;
     });
 
     console.log(`Updating ${players.length} players' club membership:`);
