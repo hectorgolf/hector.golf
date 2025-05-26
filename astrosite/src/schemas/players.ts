@@ -1,4 +1,3 @@
-//import { z } from 'astro:content';
 import { z } from 'zod';
 
 export const schema = z.object({
