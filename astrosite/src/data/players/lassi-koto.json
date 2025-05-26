@@ -9,7 +9,7 @@
     "phone": "+358505435610"
   },
   "club": "LGV",
-  "handicap": 12,
+  "handicap": 12.3,
   "misc": [
     "Lawyer by profession",
     "If not on the course, he is probably billing clients"
@@ -20,5 +20,5 @@
     "Off the course, Lassi practices law. If he is not competing in the Hector Trophée, he is probably billing clients. He brings a unique blend of analytical thinking and competitive spirit to the game, making him a player to watch closely."
   ],
   "handicapChanged": true,
-  "handicapChangedFrom": 11.5
+  "handicapChangedFrom": 12
 }

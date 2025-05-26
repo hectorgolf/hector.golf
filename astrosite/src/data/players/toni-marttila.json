@@ -9,7 +9,7 @@
     "phone": "+358504418241"
   },
   "club": "HirG",
-  "handicap": 13,
+  "handicap": 13.2,
   "misc": [
     "Primary organizer of the Hector Trophée event."
   ],
@@ -19,5 +19,5 @@
     "As he prepares for his 12th appearance in Hector Trophée 2025, Toni remains a player to watch. His commitment to the sport and his intimate knowledge of the tournament make him a perennial contender, admired both on and off the course."
   ],
   "handicapChanged": true,
-  "handicapChangedFrom": 12.8
+  "handicapChangedFrom": 13
 }
