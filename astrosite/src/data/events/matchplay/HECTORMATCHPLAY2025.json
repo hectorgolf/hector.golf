@@ -1,0 +1,187 @@
+{
+    "id": "HECTORMATCHPLAY2025",
+    "name": "Hector Matchplay 2025",
+    "format": "matchplay",
+    "location": "Finland",
+    "date": "May 27 - September 1, 2025",
+    "description": "Sixteen passionate amateur golfers go head-to-head in a series of competitive matchplay duels, where every putt counts — even the ones that just miss. The single-elimination format means there’s no room for error, as each match decides who advances and who goes home.",
+    "participants": [
+        "jarkko-k",
+        "janne-v",
+        "toni-m",
+        "harri-v",
+        "mikko-o",
+        "simo-l",
+        "martin-s",
+        "juuso-p",
+        "sami-h",
+        "ossi-l",
+        "eero-h",
+        "miso-l",
+        "olli-a",
+        "kristian-h",
+        "jaakko-s",
+        "marcus-m"
+    ],
+    "results": {
+        "winners": {
+        },
+        "bracket": [
+            {
+                "round": 1,
+                "matches": [
+                    {
+                        "id": "M01",
+                        "leftSource": null,
+                        "rightSource": null,
+                        "left": "juuso-p",
+                        "right": "janne-v",
+                        "score": null,
+                        "winner": null
+                    },
+                    {
+                        "id": "M02",
+                        "leftSource": null,
+                        "rightSource": null,
+                        "left": "martin-s",
+                        "right": "harri-v",
+                        "score": null,
+                        "winner": null
+                    },
+                    {
+                        "id": "M03",
+                        "leftSource": null,
+                        "rightSource": null,
+                        "left": "toni-m",
+                        "right": "mikko-o",
+                        "score": null,
+                        "winner": null
+                    },
+                    {
+                        "id": "M04",
+                        "leftSource": null,
+                        "rightSource": null,
+                        "left": "jarkko-k",
+                        "right": "simo-l",
+                        "score": null,
+                        "winner": null
+                    },
+                    {
+                        "id": "M05",
+                        "leftSource": null,
+                        "rightSource": null,
+                        "left": "sami-h",
+                        "right": "jaakko-s",
+                        "score": null,
+                        "winner": null
+                    },
+                    {
+                        "id": "M06",
+                        "leftSource": null,
+                        "rightSource": null,
+                        "left": "miso-l",
+                        "right": "marcus-m",
+                        "score": null,
+                        "winner": null
+                    },
+                    {
+                        "id": "M07",
+                        "leftSource": null,
+                        "rightSource": null,
+                        "left": "kristian-h",
+                        "right": "eero-h",
+                        "score": null,
+                        "winner": null
+                    },
+                    {
+                        "id": "M08",
+                        "leftSource": null,
+                        "rightSource": null,
+                        "left": "olli-a",
+                        "right": "ossi-l",
+                        "score": null,
+                        "winner": null
+                    }
+                ]
+            },
+            {
+                "round": 2,
+                "matches": [
+                    {
+                        "id": "M09",
+                        "leftSource": "M01",
+                        "rightSource": "M02",
+                        "left": null,
+                        "right": null,
+                        "score": null,
+                        "winner": null
+                    },
+                    {
+                        "id": "M10",
+                        "leftSource": "M03",
+                        "rightSource": "M04",
+                        "left": null,
+                        "right": null,
+                        "score": null,
+                        "winner": null
+                    },
+                    {
+                        "id": "M11",
+                        "leftSource": "M05",
+                        "rightSource": "M06",
+                        "left": null,
+                        "right": null,
+                        "score": null,
+                        "winner": null
+                    },
+                    {
+                        "id": "M12",
+                        "leftSource": "M07",
+                        "rightSource": "M08",
+                        "left": null,
+                        "right": null,
+                        "score": null,
+                        "winner": null
+                    }
+                ]
+            },
+            {
+                "round": 3,
+                "matches": [
+                    {
+                        "id": "M13",
+                        "leftSource": "M09",
+                        "rightSource": "M10",
+                        "left": null,
+                        "right": null,
+                        "score": null,
+                        "winner": null
+                    },
+                    {
+                        "id": "M14",
+                        "leftSource": "M11",
+                        "rightSource": "M12",
+                        "left": null,
+                        "right": null,
+                        "score": null,
+                        "winner": null
+                    }
+                ]
+            },
+            {
+                "round": 4,
+                "matches": [
+                    {
+                        "id": "M15",
+                        "leftSource": "M13",
+                        "rightSource": "M14",
+                        "left": null,
+                        "right": null,
+                        "score": null,
+                        "winner": null
+                    }
+                ]
+            }
+        ]
+    }
+}
