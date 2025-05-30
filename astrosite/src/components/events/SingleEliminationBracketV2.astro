@@ -1,5 +1,5 @@
 ---
-import { getPlayerName } from '../../code/players';
+import { getPlayerHandicapById, getPlayerName } from '../../code/players';
 import { type MatchplayEvent } from '../../schemas/events';
 
 interface Props {
@@ -38,9 +38,11 @@ rounds.forEach(round => {
                     }
                     const matchLabelClasses = `match-score ${match.score ? (match.winner ? 'finished' : 'scheduled') : 'pending'}`
                     const matchLeftLabel = (match.left && isPlayerId(match.left)) ? createPlayerLinkElement(match.left) : `Winner of ${match.leftSource}`;
+                    const matchRightLabel = (match.right && isPlayerId(match.right)) ? createPlayerLinkElement(match.right) : `Winner of ${match.rightSource}`;
                     const stateClassLeft = (match.left && isPlayerId(match.left)) ? (match.left === match.winner ? 'winner' : (match.score ? 'loser' : 'pending')) : `undetermined`;
                     const stateClassRight = (match.right && isPlayerId(match.right)) ? (match.right === match.winner ? 'winner' : (match.score ? 'loser' : 'pending')) : `undetermined`;
-                    const matchRightLabel = (match.right && isPlayerId(match.right)) ? createPlayerLinkElement(match.right) : `Winner of ${match.rightSource}`;
+                    const hcpLeft = (match.left && isPlayerId(match.left)) ? getPlayerHandicapById(match.left) : 0;
+                    const hcpRight = (match.right && isPlayerId(match.right)) ? getPlayerHandicapById(match.right) : 0;
                     const gameTopClasses = `game-top ${stateClassLeft}`
                     const gameBottomClasses = `game-bottom ${stateClassRight}`
                     const matchIsReadyToPlay = stateClassLeft === 'pending' && stateClassRight === 'pending';
@@ -49,12 +51,18 @@ rounds.forEach(round => {
                         <>
                             {index > 0 && (<div class="round-inner-spacer">&nbsp;</div>)}
                             <div class={gameClasses} id={`match-${match.id}`}>
-                                <div class={gameTopClasses}>{matchLeftLabel}</div>
+                                <div class={gameTopClasses}>
+                                    <span class="hcp">{!match.score ? `(${hcpLeft})` : ''}</span>
+                                    <span class="player">{matchLeftLabel}</span>
+                                </div>
                                 <div class="match-inner-spacer">
                                     <span class={matchLabelClasses}>{match.score ? match.score : ''}</span>
                                     <span class="match-id">{match.id}</span>
                                 </div>
-                                <div class={gameBottomClasses}>{matchRightLabel}</div>
+                                <div class={gameBottomClasses}>
+                                    <span class="hcp">{!match.score ? `(${hcpRight})` : ''}</span>
+                                    <span class="player">{matchRightLabel}</span>
+                                </div>
                             </div>
                             <script is:inline define:vars={{ connectorsFromFrontMatter: connectors }}>
                                 addEventListener("DOMContentLoaded", (_event) => {
@@ -186,6 +194,12 @@ rounds.forEach(round => {
     .tournament-bracket .game.ready-to-play .game-bottom,
     .tournament-bracket .game.ready-to-play .game-bottom a {
         color: #ff8888;
+    }
+    .tournament-bracket .game.ready-to-play .game-top .hcp,
+    .tournament-bracket .game.ready-to-play .game-bottom .hcp {
+        color: #ccaabb;
+        font-size: 0.75em;
+        margin-top: 4px;
     }
 
 
