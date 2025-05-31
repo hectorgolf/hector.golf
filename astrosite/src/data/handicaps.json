@@ -3553,5 +3553,25 @@
     "date": "2025-05-30",
     "player": "juuso-p",
     "handicap": 3.3
+  },
+  {
+    "date": "2025-05-31",
+    "player": "toni-m",
+    "handicap": 14
+  },
+  {
+    "date": "2025-05-31",
+    "player": "tommy-g",
+    "handicap": -1.5
+  },
+  {
+    "date": "2025-05-31",
+    "player": "mikko-o",
+    "handicap": 9
+  },
+  {
+    "date": "2025-05-31",
+    "player": "juuso-p",
+    "handicap": 3.5
   }
 ]
