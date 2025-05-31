@@ -160,7 +160,7 @@
     [
       {
         "id": "tommy-g",
-        "handicap": -1.1
+        "handicap": -1.5
       },
       {
         "id": "jari-k",
@@ -195,12 +195,12 @@
         "handicap": 8.9
       },
       {
-        "id": "miso-l",
-        "handicap": 9.3
+        "id": "mikko-o",
+        "handicap": 9
       },
       {
-        "id": "mikko-o",
-        "handicap": 9.4
+        "id": "miso-l",
+        "handicap": 9.3
       },
       {
         "id": "martin-s",
@@ -234,7 +234,7 @@
       },
       {
         "id": "toni-m",
-        "handicap": 13.5
+        "handicap": 14
       },
       {
         "id": "jarkko-k",
