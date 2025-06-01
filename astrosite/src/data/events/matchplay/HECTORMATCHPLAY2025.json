@@ -81,8 +81,8 @@
                         "rightSource": null,
                         "left": "miso-l",
                         "right": "marcus-m",
-                        "score": null,
-                        "winner": null
+                        "score": "2&1",
+                        "winner": "marcus-m"
                     },
                     {
                         "id": "M07",
@@ -130,7 +130,7 @@
                         "leftSource": "M05",
                         "rightSource": "M06",
                         "left": null,
-                        "right": null,
+                        "right": "marcus-m",
                         "score": null,
                         "winner": null
                     },
