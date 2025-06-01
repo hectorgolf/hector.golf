@@ -209,12 +209,12 @@
     ],
     [
       {
-        "id": "harri-v",
-        "handicap": 10.7
-      },
-      {
         "id": "marcus-m",
         "handicap": 10.8
+      },
+      {
+        "id": "harri-v",
+        "handicap": 11
       },
       {
         "id": "lassi-k",
