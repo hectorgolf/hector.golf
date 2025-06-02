@@ -3578,5 +3578,25 @@
     "date": "2025-06-01",
     "player": "harri-v",
     "handicap": 11
+  },
+  {
+    "date": "2025-06-02",
+    "player": "toni-m",
+    "handicap": 14.4
+  },
+  {
+    "date": "2025-06-02",
+    "player": "timo-l",
+    "handicap": 11.1
+  },
+  {
+    "date": "2025-06-02",
+    "player": "panu-l",
+    "handicap": 19.2
+  },
+  {
+    "date": "2025-06-02",
+    "player": "jarkko-k",
+    "handicap": 13.8
   }
 ]
