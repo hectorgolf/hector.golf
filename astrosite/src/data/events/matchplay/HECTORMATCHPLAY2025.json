@@ -99,8 +99,8 @@
                         "rightSource": null,
                         "left": "olli-a",
                         "right": "ossi-l",
-                        "score": null,
-                        "winner": null
+                        "score": "2&1",
+                        "winner": "ossi-l"
                     }
                 ]
             },
@@ -139,7 +139,7 @@
                         "leftSource": "M07",
                         "rightSource": "M08",
                         "left": null,
-                        "right": null,
+                        "right": "ossi-l",
                         "score": null,
                         "winner": null
                     }
