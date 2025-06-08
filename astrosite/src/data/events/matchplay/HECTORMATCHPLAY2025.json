@@ -72,8 +72,8 @@
                         "rightSource": null,
                         "left": "sami-h",
                         "right": "jaakko-s",
-                        "score": null,
-                        "winner": null
+                        "score": "5&4",
+                        "winner": "sami-h"
                     },
                     {
                         "id": "M06",
@@ -129,7 +129,7 @@
                         "id": "M11",
                         "leftSource": "M05",
                         "rightSource": "M06",
-                        "left": null,
+                        "left": "sami-h",
                         "right": "marcus-m",
                         "score": null,
                         "winner": null
