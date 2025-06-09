@@ -3658,5 +3658,25 @@
     "date": "2025-06-08",
     "player": "ossi-l",
     "handicap": 8.5
+  },
+  {
+    "date": "2025-06-09",
+    "player": "olli-a",
+    "handicap": 10.9
+  },
+  {
+    "date": "2025-06-09",
+    "player": "okko-p",
+    "handicap": 12.2
+  },
+  {
+    "date": "2025-06-09",
+    "player": "mikko-o",
+    "handicap": 9.4
+  },
+  {
+    "date": "2025-06-09",
+    "player": "daniel-h",
+    "handicap": 13
   }
 ]
