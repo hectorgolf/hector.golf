@@ -45,8 +45,8 @@
                         "rightSource": null,
                         "left": "martin-s",
                         "right": "harri-v",
-                        "score": null,
-                        "winner": null
+                        "score": "1&0",
+                        "winner": "martin-s"
                     },
                     {
                         "id": "M03",
@@ -112,7 +112,7 @@
                         "leftSource": "M01",
                         "rightSource": "M02",
                         "left": null,
-                        "right": null,
+                        "right": "martin-s",
                         "score": null,
                         "winner": null
                     },
