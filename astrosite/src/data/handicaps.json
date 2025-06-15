@@ -3718,5 +3718,25 @@
     "date": "2025-06-13",
     "player": "lassi-k",
     "handicap": 14
+  },
+  {
+    "date": "2025-06-15",
+    "player": "olli-v",
+    "handicap": 6.5
+  },
+  {
+    "date": "2025-06-15",
+    "player": "martin-s",
+    "handicap": 11.5
+  },
+  {
+    "date": "2025-06-15",
+    "player": "lassi-k",
+    "handicap": 14.1
+  },
+  {
+    "date": "2025-06-15",
+    "player": "jari-k",
+    "handicap": 3
   }
 ]
