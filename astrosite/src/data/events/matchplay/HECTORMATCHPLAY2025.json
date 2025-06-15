@@ -36,8 +36,8 @@
                         "rightSource": null,
                         "left": "juuso-p",
                         "right": "janne-v",
-                        "score": null,
-                        "winner": null
+                        "score": "5&4",
+                        "winner": "juuso-p"
                     },
                     {
                         "id": "M02",
@@ -111,7 +111,7 @@
                         "id": "M09",
                         "leftSource": "M01",
                         "rightSource": "M02",
-                        "left": null,
+                        "left": "juuso-p",
                         "right": "martin-s",
                         "score": null,
                         "winner": null
