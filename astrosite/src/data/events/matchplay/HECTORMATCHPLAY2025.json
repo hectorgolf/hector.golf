@@ -90,8 +90,8 @@
                         "rightSource": null,
                         "left": "kristian-h",
                         "right": "eero-h",
-                        "score": null,
-                        "winner": null
+                        "score": "8&7",
+                        "winner": "eero-h"
                     },
                     {
                         "id": "M08",
@@ -138,7 +138,7 @@
                         "id": "M12",
                         "leftSource": "M07",
                         "rightSource": "M08",
-                        "left": null,
+                        "left": "eero-h",
                         "right": "ossi-l",
                         "score": null,
                         "winner": null
