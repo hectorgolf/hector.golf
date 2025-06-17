@@ -63,8 +63,8 @@
                         "rightSource": null,
                         "left": "jarkko-k",
                         "right": "simo-l",
-                        "score": null,
-                        "winner": null
+                        "score": "6&4",
+                        "winner": "simo-l"
                     },
                     {
                         "id": "M05",
@@ -121,7 +121,7 @@
                         "leftSource": "M03",
                         "rightSource": "M04",
                         "left": null,
-                        "right": null,
+                        "right": "simo-l",
                         "score": null,
                         "winner": null
                     },
