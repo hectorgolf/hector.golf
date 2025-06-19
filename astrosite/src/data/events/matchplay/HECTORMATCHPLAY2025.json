@@ -54,8 +54,8 @@
                         "rightSource": null,
                         "left": "toni-m",
                         "right": "mikko-o",
-                        "score": null,
-                        "winner": null
+                        "score": "7&6",
+                        "winner": "mikko-o"
                     },
                     {
                         "id": "M04",
@@ -120,7 +120,7 @@
                         "id": "M10",
                         "leftSource": "M03",
                         "rightSource": "M04",
-                        "left": null,
+                        "left": "mikko-o",
                         "right": "simo-l",
                         "score": null,
                         "winner": null
