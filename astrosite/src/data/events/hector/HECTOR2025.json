@@ -176,7 +176,7 @@
       },
       {
         "id": "simo-l",
-        "handicap": 6.3
+        "handicap": 6.4
       },
       {
         "id": "olli-v",
@@ -192,11 +192,7 @@
       },
       {
         "id": "miso-l",
-        "handicap": 9.3
-      },
-      {
-        "id": "eero-h",
-        "handicap": 10.4
+        "handicap": 9
       },
       {
         "id": "olli-a",
@@ -205,6 +201,10 @@
       {
         "id": "mikko-o",
         "handicap": 10.5
+      },
+      {
+        "id": "eero-h",
+        "handicap": 10.7
       }
     ],
     [
