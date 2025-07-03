@@ -140,8 +140,8 @@
                         "rightSource": "M08",
                         "left": "eero-h",
                         "right": "ossi-l",
-                        "score": null,
-                        "winner": null
+                        "score": "4&3",
+                        "winner": "ossi-l"
                     }
                 ]
             },
@@ -162,7 +162,7 @@
                         "leftSource": "M11",
                         "rightSource": "M12",
                         "left": null,
-                        "right": null,
+                        "right": "ossi-l",
                         "score": null,
                         "winner": null
                     }
