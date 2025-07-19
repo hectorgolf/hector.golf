@@ -4113,5 +4113,40 @@
     "date": "2025-07-18",
     "player": "eero-h",
     "handicap": 11
+  },
+  {
+    "date": "2025-07-19",
+    "player": "simo-l",
+    "handicap": 6.8
+  },
+  {
+    "date": "2025-07-19",
+    "player": "lasse-k",
+    "handicap": 8.2
+  },
+  {
+    "date": "2025-07-19",
+    "player": "juuso-p",
+    "handicap": 5.6
+  },
+  {
+    "date": "2025-07-19",
+    "player": "jarkko-k",
+    "handicap": 14.1
+  },
+  {
+    "date": "2025-07-19",
+    "player": "jari-k",
+    "handicap": 2.2
+  },
+  {
+    "date": "2025-07-19",
+    "player": "jaakko-s",
+    "handicap": 11
+  },
+  {
+    "date": "2025-07-19",
+    "player": "eero-h",
+    "handicap": 10.9
   }
 ]
