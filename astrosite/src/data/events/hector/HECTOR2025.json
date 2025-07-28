@@ -175,12 +175,12 @@
         "handicap": 5.1
       },
       {
-        "id": "simo-l",
+        "id": "olli-v",
         "handicap": 6.3
       },
       {
-        "id": "olli-v",
-        "handicap": 6.3
+        "id": "simo-l",
+        "handicap": 6.4
       },
       {
         "id": "ossi-l",
@@ -195,12 +195,12 @@
         "handicap": 9.4
       },
       {
-        "id": "mikko-o",
-        "handicap": 10.3
+        "id": "eero-h",
+        "handicap": 10.1
       },
       {
-        "id": "eero-h",
-        "handicap": 10.7
+        "id": "mikko-o",
+        "handicap": 10.3
       },
       {
         "id": "olli-a",
