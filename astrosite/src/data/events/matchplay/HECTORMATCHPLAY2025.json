@@ -154,8 +154,8 @@
                         "rightSource": "M10",
                         "left": "martin-s",
                         "right": "simo-l",
-                        "score": null,
-                        "winner": null
+                        "score": "2&1",
+                        "winner": "simo-l"
                     },
                     {
                         "id": "M14",
@@ -175,7 +175,7 @@
                         "id": "M15",
                         "leftSource": "M13",
                         "rightSource": "M14",
-                        "left": null,
+                        "left": "simo-l",
                         "right": null,
                         "score": null,
                         "winner": null
