@@ -4398,5 +4398,35 @@
     "date": "2025-07-31",
     "player": "mikko-o",
     "handicap": 9.9
+  },
+  {
+    "date": "2025-08-01",
+    "player": "sami-h",
+    "handicap": 4.4
+  },
+  {
+    "date": "2025-08-01",
+    "player": "pekka-s",
+    "handicap": 17.5
+  },
+  {
+    "date": "2025-08-01",
+    "player": "mikko-l",
+    "handicap": 21.3
+  },
+  {
+    "date": "2025-08-01",
+    "player": "marcus-m",
+    "handicap": 11.5
+  },
+  {
+    "date": "2025-08-01",
+    "player": "lauri-p",
+    "handicap": 13.5
+  },
+  {
+    "date": "2025-08-01",
+    "player": "juuso-p",
+    "handicap": 6.8
   }
 ]
