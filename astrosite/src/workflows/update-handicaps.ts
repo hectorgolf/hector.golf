@@ -22,7 +22,7 @@ const getPlayerById = (id: string, handicapHistory: Array<HandicapHistoryEntry>)
         .filter(entry => entry.player === id)
         .sort((a,b) => a.date.localeCompare(b.date))
         .map(entry => entry.handicap).pop()
-    return { ...record, handicap: record.handicap || handicap }
+    return { ...record, handicap: handicap ?? record.handicap }
 }
 
 const readJsonFile = (pathToJsonFile: string, defaultValue: any = []): any => {
