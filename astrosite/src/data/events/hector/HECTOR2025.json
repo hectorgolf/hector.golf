@@ -164,11 +164,11 @@
       },
       {
         "id": "jari-k",
-        "handicap": 2.7
+        "handicap": 2.8
       },
       {
         "id": "ofri-p",
-        "handicap": 3.3
+        "handicap": 3.2
       },
       {
         "id": "sami-h",
@@ -196,7 +196,7 @@
       },
       {
         "id": "eero-h",
-        "handicap": 10.1
+        "handicap": 9.7
       },
       {
         "id": "mikko-o",
@@ -221,12 +221,12 @@
         "handicap": 11.9
       },
       {
-        "id": "toni-m",
-        "handicap": 12.4
-      },
-      {
         "id": "okko-p",
         "handicap": 12.6
+      },
+      {
+        "id": "toni-m",
+        "handicap": 12.7
       },
       {
         "id": "lauri-p",
@@ -234,7 +234,7 @@
       },
       {
         "id": "jarkko-k",
-        "handicap": 13.7
+        "handicap": 13.8
       },
       {
         "id": "lassi-k",
