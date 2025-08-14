@@ -4603,5 +4603,25 @@
     "date": "2025-08-12",
     "player": "harri-v",
     "handicap": 12
+  },
+  {
+    "date": "2025-08-14",
+    "player": "olli-v",
+    "handicap": 6.5
+  },
+  {
+    "date": "2025-08-14",
+    "player": "mikko-o",
+    "handicap": 10.4
+  },
+  {
+    "date": "2025-08-14",
+    "player": "martin-s",
+    "handicap": 11.1
+  },
+  {
+    "date": "2025-08-14",
+    "player": "marcus-m",
+    "handicap": 10.7
   }
 ]
