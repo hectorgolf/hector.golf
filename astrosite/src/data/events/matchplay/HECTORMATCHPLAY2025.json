@@ -163,8 +163,8 @@
                         "rightSource": "M12",
                         "left": "marcus-m",
                         "right": "ossi-l",
-                        "score": null,
-                        "winner": null
+                        "score": "2UP",
+                        "winner": "ossi-l"
                     }
                 ]
             },
@@ -176,7 +176,7 @@
                         "leftSource": "M13",
                         "rightSource": "M14",
                         "left": "simo-l",
-                        "right": null,
+                        "right": "ossi-l",
                         "score": null,
                         "winner": null
                     }
