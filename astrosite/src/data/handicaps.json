@@ -4838,5 +4838,25 @@
     "date": "2025-08-29",
     "player": "timo-l",
     "handicap": 12.2
+  },
+  {
+    "date": "2025-08-31",
+    "player": "sami-h",
+    "handicap": 4.5
+  },
+  {
+    "date": "2025-08-31",
+    "player": "ofri-p",
+    "handicap": 3
+  },
+  {
+    "date": "2025-08-31",
+    "player": "jarkko-k",
+    "handicap": 14
+  },
+  {
+    "date": "2025-08-31",
+    "player": "jari-k",
+    "handicap": 3
   }
 ]
