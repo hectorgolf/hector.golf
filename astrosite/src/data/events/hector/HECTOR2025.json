@@ -163,12 +163,12 @@
         "handicap": -2.8
       },
       {
-        "id": "ofri-p",
-        "handicap": 2.7
-      },
-      {
         "id": "jari-k",
         "handicap": 2.9
+      },
+      {
+        "id": "ofri-p",
+        "handicap": 3.3
       },
       {
         "id": "sami-h",
@@ -242,7 +242,7 @@
       },
       {
         "id": "lasse-k",
-        "handicap": 16.2
+        "handicap": 15.8
       },
       {
         "id": "pekka-s",
