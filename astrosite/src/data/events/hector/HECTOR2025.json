@@ -168,7 +168,7 @@
       },
       {
         "id": "ofri-p",
-        "handicap": 3.3
+        "handicap": 3.8
       },
       {
         "id": "sami-h",
@@ -222,23 +222,23 @@
       },
       {
         "id": "okko-p",
-        "handicap": 12.3
+        "handicap": 12.7
       },
       {
         "id": "lauri-p",
         "handicap": 13.5
       },
       {
-        "id": "toni-m",
-        "handicap": 13.7
-      },
-      {
         "id": "lassi-k",
-        "handicap": 14
+        "handicap": 13.9
       },
       {
         "id": "jarkko-k",
-        "handicap": 14
+        "handicap": 14.2
+      },
+      {
+        "id": "toni-m",
+        "handicap": 14.4
       },
       {
         "id": "lasse-k",
