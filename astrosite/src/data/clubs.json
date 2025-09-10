@@ -804,20 +804,6 @@
     ]
   },
   {
-    "name": "Kotojärven Kartanogolf",
-    "abbreviation": "KJKG",
-    "sources": [
-      {
-        "name": "WiseGolf",
-        "id": "137"
-      },
-      {
-        "name": "Teetime",
-        "id": "0137"
-      }
-    ]
-  },
-  {
     "name": "Katinkulta Golf",
     "abbreviation": "KkG",
     "sources": [
@@ -880,6 +866,20 @@
       {
         "name": "Teetime",
         "id": "0032"
+      }
+    ]
+  },
+  {
+    "name": "Koto Golf",
+    "abbreviation": "Koto",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "137"
+      },
+      {
+        "name": "Teetime",
+        "id": "0137"
       }
     ]
   },
@@ -1171,7 +1171,7 @@
   },
   {
     "name": "Meri-Teijo Golf",
-    "abbreviation": "MTG ry",
+    "abbreviation": "MTG",
     "sources": [
       {
         "name": "WiseGolf",
