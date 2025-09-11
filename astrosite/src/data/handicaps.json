@@ -4953,5 +4953,25 @@
     "date": "2025-09-10",
     "player": "ofri-p",
     "handicap": 3.9
+  },
+  {
+    "date": "2025-09-11",
+    "player": "toni-m",
+    "handicap": 14.7
+  },
+  {
+    "date": "2025-09-11",
+    "player": "sami-h",
+    "handicap": 4.6
+  },
+  {
+    "date": "2025-09-11",
+    "player": "olli-v",
+    "handicap": 8.6
+  },
+  {
+    "date": "2025-09-11",
+    "player": "martin-s",
+    "handicap": 10.3
   }
 ]
