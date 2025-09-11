@@ -12,16 +12,40 @@ import { playersData, hectorEvents, hasParticipants, isUpcomingEvent, pathToEven
 import { getPlayerName, updatePlayerData } from '../code/players.ts'
 import type { Player } from '../schemas/players.ts'
 
+/**
+ * Get the player's handicap from their history.
+ *
+ * @param playerId The ID of the player.
+ * @param handicapHistory The history of handicap entries.
+ * @param offsetFromEnd (Optional) The offset from the end of the history to
+ *                      retrieve. Defaults to 0 (the latest entry). Use -1 for
+ *                      the second latest, -2 for the third latest, etc.
+ * @returns The player's handicap at the specified offset, or undefined if not found.
+ */
+export function getPlayerHandicapFromHistory(
+    playerId: string,
+    handicapHistory: Array<HandicapHistoryEntry>,
+    offsetFromEnd: number = 0
+): number|undefined {
+    if (handicapHistory.length === 0) {
+        return undefined
+    }
+    const absoluteOffset = -Math.abs(offsetFromEnd) - 1
+    const maximumOffset = -(handicapHistory.length - 1)
+    const offset = Math.max(maximumOffset, absoluteOffset)
+    return handicapHistory
+        .filter(entry => entry.player === playerId)
+        .sort((a,b) => a.date.localeCompare(b.date))
+        .map(entry => entry.handicap)
+        .at(offset)
+}
 
 const getPlayerById = (id: string, handicapHistory: Array<HandicapHistoryEntry>): Player|undefined => {
     let record = playersData.find((record) => record.id === id) as Player
     if (!record) {
         return undefined
     }
-    const handicap = handicapHistory
-        .filter(entry => entry.player === id)
-        .sort((a,b) => a.date.localeCompare(b.date))
-        .map(entry => entry.handicap).pop()
+    const handicap = getPlayerHandicapFromHistory(id, handicapHistory)
     return { ...record, handicap: handicap ?? record.handicap }
 }
 
@@ -176,6 +200,26 @@ type HectorEvent = {
     buckets: undefined|Array<Array<{ id: string, handicap: number }>>,
 }
 
+export function sortPlayersForBucketing(handicapHistory: Array<HandicapHistoryEntry>, p1: Player, p2: Player): number {
+    // First, sort by current handicap (lowest first)
+    const player1Handicap = getPlayerHandicapFromHistory(p1.id, handicapHistory)
+    const player2Handicap = getPlayerHandicapFromHistory(p2.id, handicapHistory)
+    const hcpDifference = (player1Handicap ?? 0) - (player2Handicap ?? 0)
+    if (hcpDifference !== 0) {
+        return hcpDifference
+    }
+    // If the current handicaps are equal, place the faster "rising" player first
+    const player1PreviousHcp = getPlayerHandicapFromHistory(p1.id, handicapHistory, -1)
+    const player2PreviousHcp = getPlayerHandicapFromHistory(p2.id, handicapHistory, -1)
+    const previousHcpDifference = (player1PreviousHcp ?? 0) - (player2PreviousHcp ?? 0)
+    if (previousHcpDifference !== 0) {
+        return -1 * previousHcpDifference
+    }
+
+    // If still equal, sort by player name
+    return getPlayerName(p1).localeCompare(getPlayerName(p2))
+}
+
 const updateBucketsForUpcomingEvents = async () => {
     const handicapHistory: Array<HandicapHistoryEntry> = readJsonFile(pathToHandicapHistoryJson, [])
 
@@ -191,8 +235,8 @@ const updateBucketsForUpcomingEvents = async () => {
         const participants: Array<{id:string, handicap:number}>|undefined = event.participants
             ?.map(id => getPlayerById(id, handicapHistory))
             ?.filter(p => !!p)
+            ?.sort((p1, p2) => sortPlayersForBucketing(handicapHistory, p1, p2))
             ?.map(trimPlayer)
-            ?.sort((p1, p2) => p1.handicap! - p2.handicap!)
         for (const participant of participants) {
             console.log(`- ${participant.id} ${participant.handicap}`)
         }
