@@ -3,8 +3,6 @@ import { getPlayerHandicapFromHistory, sortPlayersForBucketing } from "../../src
 import type { HandicapHistoryEntry } from "../../src/schemas/handicaps";
 import type { Player } from "../../src/schemas/players";
 
-// sortPlayersForBucketing(handicapHistory: Array<HandicapHistoryEntry>, p1: Player, p2: Player)
-
 const history: Array<HandicapHistoryEntry> = [
     // Adam's HCP has been fluctuating back and forth
     { player: "adam", date: "2025-08-01", handicap: 10.0 },
