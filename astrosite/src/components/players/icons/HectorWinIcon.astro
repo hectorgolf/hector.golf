@@ -1,0 +1,18 @@
+---
+
+interface Props {
+	year: number;
+}
+
+const { year } = Astro.props;
+
+---
+
+<img src="/images/hector-trophy-32.png" title={`Hector winner ${year}`} alt={`Hector winner ${year}`} />
+
+<style>
+	img {
+		width: 16px;
+		height: 25px;
+	}
+</style>

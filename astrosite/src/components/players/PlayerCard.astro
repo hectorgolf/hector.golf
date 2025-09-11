@@ -1,6 +1,9 @@
 ---
 
 import { getPlayerName } from '../../code/players';
+import HectorWinIcon from './icons/HectorWinIcon.astro'
+import VictorWinIcon from './icons/VictorWinIcon.astro'
+import MatchplayWinIcon from './icons/MatchplayWinIcon.astro'
 
 interface Props {
 	id: string;
@@ -9,10 +12,13 @@ interface Props {
 	href: string;
 	starts: number;
 	wins: number[];
+	hectorWins: number[];
+	victorWins: number[];
+	matchplayWins: number[];
 	handicap: number|undefined;
 }
 
-const { id, name, image, href, starts, wins, handicap } = Astro.props;
+const { id, image, href, starts, wins, hectorWins, victorWins, matchplayWins, handicap } = Astro.props;
 
 const fullname = getPlayerName(id)
 
@@ -33,6 +39,11 @@ const startsText = starts === 1 ? "1 start" : `${starts} starts`;
 			{handicap ? (<span class="handicap">(HCP {Number(handicap).toFixed(1)})</span>) : ""}
 		</span>
 		<span class="starts">{startsText}</span>, <span class="wins">{winsText}</span>
+		<div class="wins-icons">
+			{hectorWins.length > 0 ? hectorWins.map(year => <HectorWinIcon year={year} />) : null}
+			{victorWins.length > 0 ? victorWins.map(year => <VictorWinIcon year={year} />) : null}
+			{matchplayWins.length > 0 ? matchplayWins.map(year => <MatchplayWinIcon year={year} />) : null}
+		</div>
 	</a>
 </li>
 
@@ -97,4 +108,9 @@ const startsText = starts === 1 ? "1 start" : `${starts} starts`;
 	.link-player:is(:hover, :focus-within) h2 {
 		color: rgb(var(--accent-light));
 	}
+
+	.wins-icons {
+		margin-top: 0.5em;
+	}
+
 </style>

@@ -12,13 +12,45 @@ function linkToPlayer(player: any): string {
 }
 
 function yearsOfWins(player: any): number[] {
-	return getEventsWonByPlayer(player)
-		.map((event) => event.date)
-		.map(date => date.match(/\d{4}$/)?.[0] || '')
-		.map(s => parseInt(s))
+	return getEventsWonByPlayer(player).map(yearOfEvent)
 }
 
-function starts(player: any): number {
+function isHectorEvent(event: any): event is HectorEvent {
+	return event.format === 'hector'
+}
+
+function isMatchPlayEvent(event: any): event is MatchplayEvent {
+	return event.format === 'matchplay'
+}
+
+function yearOfEvent(event: HectorEvent|MatchplayEvent|FinnkampenEvent): number {
+	return parseYearFromDate(event.date)
+}
+
+function parseYearFromDate(date: string): number {
+	return parseInt(date.match(/\d{4}$/)?.[0] || '0')
+}
+
+function yearsOfHectorWins(player: any): number[] {
+	return getEventsWonByPlayer(player)
+		.filter(isHectorEvent)
+		.map(yearOfEvent)
+}
+
+function yearsOfVictorWins(player: any): number[] {
+	return starts(player)
+		.filter(isHectorEvent)
+		.filter((event) => event.results?.winners?.victor?.includes(player.id))
+		.map(yearOfEvent)
+}
+
+function yearsOfMatchplayWins(player: any): number[] {
+	return getEventsWonByPlayer(player)
+		.filter(isMatchPlayEvent)
+		.map(yearOfEvent)
+}
+
+function starts(player: any): Array<any> {
 	const hasWinner = (event: any): boolean => {
 		if (event.format === 'hector') {
 			return !!(event as HectorEvent).results?.winners?.hector
@@ -29,7 +61,11 @@ function starts(player: any): number {
 		}
 		return false
 	}
-	return getEventsOfPlayer(player.id).filter(hasWinner).length
+	return getEventsOfPlayer(player.id).filter(hasWinner)
+}
+
+function startsCount(player: any): number {
+	return starts(player).length
 }
 
 const players = getAllPlayers().sort((a, b) => getTotalWinsByPlayer(b) - getTotalWinsByPlayer(a))
@@ -46,7 +82,7 @@ const players = getAllPlayers().sort((a, b) => getTotalWinsByPlayer(b) - getTota
         <ul role="list" class="link-card-grid">
             {players.map((player) => {
 				const hcp = getPlayerHandicapById(player.id)
-                return <PlayerCard id={player.id} name={player.name} image={player.image} href={linkToPlayer(player)} starts={starts(player)} wins={yearsOfWins(player)} handicap={hcp} />
+                return <PlayerCard id={player.id} name={player.name} image={player.image} href={linkToPlayer(player)} starts={startsCount(player)} wins={yearsOfWins(player)} hectorWins={yearsOfHectorWins(player)} victorWins={yearsOfVictorWins(player)} matchplayWins={yearsOfMatchplayWins(player)} handicap={hcp} />
             })}
         </ul>
     </main>

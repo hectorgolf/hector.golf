@@ -1,0 +1,18 @@
+---
+
+interface Props {
+	year: number;
+}
+
+const { year } = Astro.props;
+
+---
+
+<img src="/images/matchplay-trophy-32.png" title={`Matchplay champion ${year}`} alt={`Matchplay champion ${year}`} />
+
+<style>
+	img {
+		width: 12px;
+		height: 19px;
+	}
+</style>
