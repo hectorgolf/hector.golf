@@ -14,11 +14,14 @@ const columnNames = (() => {
     return alphabet.concat(alphabet.flatMap(firstChar => alphabet.map(secondChar => `${firstChar}${secondChar}`)))
 })()
 
-const googleCredentials = JSON.parse(process.env.GOOGLE_CREDENTIALS || '{}')
+const googleCredentials = process.env.GOOGLE_CREDENTIALS ? JSON.parse(process.env.GOOGLE_CREDENTIALS) : undefined
 
 const columnName = (index: number): string => columnNames[index] || `${index}?`
 
 const authenticate = async (): Promise<sheets_v4.Sheets> => {
+    if (!googleCredentials) {
+        throw new Error('GOOGLE_CREDENTIALS missing - cannot authenticate')
+    }
     const client = <JWT> auth.fromJSON(googleCredentials)
     client.scopes = ["https://www.googleapis.com/auth/spreadsheets"]
     return google.sheets({ version: 'v4', auth: client })
