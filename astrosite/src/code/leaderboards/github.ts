@@ -49,7 +49,7 @@ const createOrReplaceHectorLeaderboardDataFile = async (githubToken: string, eve
     const fileContents = JSON.stringify(payload, null, 2)
     const fileContentsBase64 = Buffer.from(fileContents).toString('base64')
     const octokit = await authenticate(githubToken)
-    await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', {
+    const response = await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', {
         ...standardOptions,
         path: `astrosite/src/data/leaderboards/${eventId}.json`,
         message: `Automated leaderboard update for ${eventId} at ${payload.updatedAt}`,
@@ -60,6 +60,7 @@ const createOrReplaceHectorLeaderboardDataFile = async (githubToken: string, eve
         sha: existingSHA,
         content: fileContentsBase64
     })
+    console.log(`Created or updated leaderboard data file for event ${eventId} at ${response.data.content?.url}`)
 }
 
 export const updateHectorEventLeaderboard = async (githubToken: string, eventId: string, hector: GoogleSheetTeamLeaderboard, victor: GoogleSheetIndividualLeaderboard) => {
