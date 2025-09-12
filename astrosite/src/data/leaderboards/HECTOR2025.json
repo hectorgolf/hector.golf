@@ -6,223 +6,223 @@
   },
   "hector": [
     {
-      "points": "24.3",
-      "team": "Tommy Gulin + Toni Marttila",
+      "points": "0.0",
+      "team": "",
       "diff": "",
-      "through": "3/6"
+      "through": ""
     },
     {
-      "points": "24.3",
-      "team": "Olli Varis + Lassi Koto",
-      "diff": "+0",
-      "through": "3/6"
+      "points": "0.0",
+      "team": "",
+      "diff": "",
+      "through": ""
     },
     {
-      "points": "24.7",
-      "team": "Ofri Porat + Marcus Mattila",
-      "diff": "+0.3",
-      "through": "1/6"
+      "points": "0.0",
+      "team": "",
+      "diff": "",
+      "through": ""
     },
     {
-      "points": "24.7",
-      "team": "Eero Halmetoja + Lasse Koskela",
-      "diff": "+0.3",
-      "through": "1/6"
+      "points": "0.0",
+      "team": "",
+      "diff": "",
+      "through": ""
     },
     {
-      "points": "25.0",
-      "team": "Sami Heikkinen + Jarkko Kailanto",
-      "diff": "+0.7",
-      "through": "1/6"
+      "points": "0.0",
+      "team": "",
+      "diff": "",
+      "through": ""
     },
     {
-      "points": "25.0",
-      "team": "Simo Liukkonen + Janne Valtakari",
-      "diff": "+0.7",
-      "through": "1/6"
+      "points": "0.0",
+      "team": "",
+      "diff": "",
+      "through": ""
     },
     {
-      "points": "25.3",
-      "team": "Jari Kuusela + Lauri Paatela",
-      "diff": "+1",
-      "through": "1/6"
+      "points": "0.0",
+      "team": "",
+      "diff": "",
+      "through": ""
     },
     {
-      "points": "25.3",
-      "team": "Ossi Laukkanen + Olli Andersson",
-      "diff": "+1",
-      "through": "1/6"
+      "points": "0.0",
+      "team": "",
+      "diff": "",
+      "through": ""
     },
     {
-      "points": "26.0",
-      "team": "Mikko Oesch + Jaakko Saarinen",
-      "diff": "+1.7",
-      "through": "1/6"
+      "points": "0.0",
+      "team": "",
+      "diff": "",
+      "through": ""
     },
     {
-      "points": "26.3",
-      "team": "Miso Korkiakoski + Pekka Saijonmaa",
-      "diff": "+2",
-      "through": "1/6"
+      "points": "0.0",
+      "team": "",
+      "diff": "",
+      "through": ""
     },
     {
-      "points": "130.7",
-      "team": "Okko Pykäläinen + Martin Svedholm",
-      "diff": "+106.3",
-      "through": "1/6"
+      "points": "0.0",
+      "team": "",
+      "diff": "",
+      "through": ""
     },
     {
-      "points": "132.0",
-      "team": "Harri Vainio + Pasi Halmetoja",
-      "diff": "+107.7",
-      "through": "1/6"
+      "points": "0.0",
+      "team": "",
+      "diff": "",
+      "through": ""
     }
   ],
   "victor": [
     {
-      "player": "Okko Pykäläinen",
-      "points": "37.0",
-      "diff": "",
-      "through": "1/4"
-    },
-    {
-      "player": "Martin Svedholm",
-      "points": "36.0",
-      "diff": "-1.0",
-      "through": "1/4"
-    },
-    {
-      "player": "Harri Vainio",
-      "points": "36.0",
-      "diff": "-1.0",
-      "through": "1/4"
-    },
-    {
       "player": "Tommy Gulin",
-      "points": "35.0",
-      "diff": "-2.0",
-      "through": "1/4"
-    },
-    {
-      "player": "Olli Varis",
-      "points": "35.0",
-      "diff": "-2.0",
-      "through": "1/4"
-    },
-    {
-      "player": "Lassi Koto",
-      "points": "35.0",
-      "diff": "-2.0",
-      "through": "1/4"
-    },
-    {
-      "player": "Ofri Porat",
-      "points": "34.0",
-      "diff": "-3.0",
-      "through": "1/4"
-    },
-    {
-      "player": "Pasi Halmetoja",
-      "points": "34.0",
-      "diff": "-3.0",
-      "through": "1/4"
-    },
-    {
-      "player": "Eero Halmetoja",
-      "points": "34.0",
-      "diff": "-3.0",
-      "through": "1/4"
-    },
-    {
-      "player": "Marcus Mattila",
-      "points": "34.0",
-      "diff": "-3.0",
-      "through": "1/4"
+      "points": "0.0",
+      "diff": "",
+      "through": "0/4"
     },
     {
       "player": "Sami Heikkinen",
-      "points": "33.0",
-      "diff": "-4.0",
-      "through": "1/4"
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
     },
     {
-      "player": "Simo Liukkonen",
-      "points": "33.0",
-      "diff": "-4.0",
-      "through": "1/4"
-    },
-    {
-      "player": "Jarkko Kailanto",
-      "points": "33.0",
-      "diff": "-4.0",
-      "through": "1/4"
-    },
-    {
-      "player": "Lasse Koskela",
-      "points": "33.0",
-      "diff": "-4.0",
-      "through": "1/4"
+      "player": "Ofri Porat",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
     },
     {
       "player": "Jari Kuusela",
-      "points": "32.0",
-      "diff": "-5.0",
-      "through": "1/4"
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Simo Liukkonen",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
     },
     {
       "player": "Ossi Laukkanen",
-      "points": "32.0",
-      "diff": "-5.0",
-      "through": "1/4"
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
     },
     {
-      "player": "Toni Marttila",
-      "points": "32.0",
-      "diff": "-5.0",
-      "through": "1/4"
-    },
-    {
-      "player": "Olli Andersson",
-      "points": "31.0",
-      "diff": "-6.0",
-      "through": "1/4"
-    },
-    {
-      "player": "Mikko Oesch",
-      "points": "30.0",
-      "diff": "-7.0",
-      "through": "1/4"
-    },
-    {
-      "player": "Lauri Paatela",
-      "points": "30.0",
-      "diff": "-7.0",
-      "through": "1/4"
+      "player": "Pasi Halmetoja",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
     },
     {
       "player": "Miso Korkiakoski",
-      "points": "29.0",
-      "diff": "-8.0",
-      "through": "1/4"
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
     },
     {
-      "player": "Pekka Saijonmaa",
-      "points": "29.0",
-      "diff": "-8.0",
-      "through": "1/4"
+      "player": "Eero Halmetoja",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
     },
     {
-      "player": "Janne Valtakari",
-      "points": "28.0",
-      "diff": "-9.0",
-      "through": "1/4"
+      "player": "Olli Varis",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Mikko Oesch",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Okko Pykäläinen",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Martin Svedholm",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Harri Vainio",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Marcus Mattila",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Toni Marttila",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Olli Andersson",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Lassi Koto",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
     },
     {
       "player": "Jaakko Saarinen",
-      "points": "27.0",
-      "diff": "-10.0",
-      "through": "1/4"
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Lauri Paatela",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Jarkko Kailanto",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Lasse Koskela",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Janne Valtakari",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
+    },
+    {
+      "player": "Pekka Saijonmaa",
+      "points": "0.0",
+      "diff": "0.0",
+      "through": "0/4"
     }
   ],
-  "updatedAt": "2025-09-12T15:59:20.927Z"
+  "updatedAt": "2025-09-12T16:10:03.673Z"
 }
