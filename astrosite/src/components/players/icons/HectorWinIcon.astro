@@ -8,9 +8,26 @@ const { year } = Astro.props;
 
 ---
 
-<img src="/images/hector-trophy-32.png" title={`Hector winner ${year}`} alt={`Hector winner ${year}`} />
+<div class="badge">
+	<img src="/images/hector-trophy-32.png" title={`Hector winner ${year}`} alt={`Hector winner ${year}`} />
+	<span class="year">{year}</span>
+</div>
 
 <style>
+	.badge {
+		display: inline-flex;
+		flex-direction: column;
+		align-items: center;
+		position: relative;
+		width: 35px;
+		height: 40px;
+	}
+	.badge .year {
+		font-size: 8pt;
+		color: white;
+		padding: 0 2px;
+		border-radius: 3px;
+	}
 	img {
 		width: 16px;
 		height: 25px;

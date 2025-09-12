@@ -22,11 +22,7 @@ const { id, image, href, starts, wins, hectorWins, victorWins, matchplayWins, ha
 
 const fullname = getPlayerName(id)
 
-let winsText = wins.length === 1 ? "1 win" : `${wins.length} wins`;
-if (wins.length > 0) {
-	winsText = `${winsText}: ${wins.sort().join(", ")}`;
-}
-
+const winsText = wins.length === 1 ? "1 win" : `${wins.length} wins`;
 const startsText = starts === 1 ? "1 start" : `${starts} starts`;
 
 ---
@@ -38,11 +34,16 @@ const startsText = starts === 1 ? "1 start" : `${starts} starts`;
 			{fullname}
 			{handicap ? (<span class="handicap">(HCP {Number(handicap).toFixed(1)})</span>) : ""}
 		</span>
-		<span class="starts">{startsText}</span>, <span class="wins">{winsText}</span>
-		<div class="wins-icons">
-			{hectorWins.length > 0 ? hectorWins.map(year => <HectorWinIcon year={year} />) : null}
-			{victorWins.length > 0 ? victorWins.map(year => <VictorWinIcon year={year} />) : null}
-			{matchplayWins.length > 0 ? matchplayWins.map(year => <MatchplayWinIcon year={year} />) : null}
+		<div class="track-record">
+			<div class="participation-container">
+				<div class="starts">{startsText}</div>
+				<div class="wins">{winsText}</div>
+			</div>
+			<div class="wins-icons">
+				{hectorWins.length > 0 ? hectorWins.map(year => <HectorWinIcon year={year} />) : null}
+				{victorWins.length > 0 ? victorWins.map(year => <VictorWinIcon year={year} />) : null}
+				{matchplayWins.length > 0 ? matchplayWins.map(year => <MatchplayWinIcon year={year} />) : null}
+			</div>
 		</div>
 	</a>
 </li>
@@ -92,6 +93,20 @@ const startsText = starts === 1 ? "1 start" : `${starts} starts`;
 		display: inline;
 		font-size: 1.0rem;
 	}
+	.track-record {
+		display: flex;
+		flex-direction: row;
+	}
+	.participation-container {
+		display: flex;
+		flex-grow: 1;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+	.wins-icons {
+		margin-top: 0.5em;
+		padding-bottom: 2px;
+	}
 	h2 {
 		margin: 0;
 		font-size: 1.25rem;
@@ -107,10 +122,6 @@ const startsText = starts === 1 ? "1 start" : `${starts} starts`;
 	}
 	.link-player:is(:hover, :focus-within) h2 {
 		color: rgb(var(--accent-light));
-	}
-
-	.wins-icons {
-		margin-top: 0.5em;
 	}
 
 </style>
