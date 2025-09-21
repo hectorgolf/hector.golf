@@ -5023,5 +5023,25 @@
     "date": "2025-09-20",
     "player": "okko-p",
     "handicap": 12.5
+  },
+  {
+    "date": "2025-09-21",
+    "player": "mikko-l",
+    "handicap": 19
+  },
+  {
+    "date": "2025-09-21",
+    "player": "martin-s",
+    "handicap": 10.6
+  },
+  {
+    "date": "2025-09-21",
+    "player": "marcus-m",
+    "handicap": 11.1
+  },
+  {
+    "date": "2025-09-21",
+    "player": "juuso-p",
+    "handicap": 6.9
   }
 ]
