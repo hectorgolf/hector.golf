@@ -11,18 +11,18 @@ interface Props {
 	image?: string;
 	href: string;
 	starts: number;
-	wins: number[];
 	hectorWins: number[];
 	victorWins: number[];
 	matchplayWins: number[];
 	handicap: number|undefined;
 }
 
-const { id, image, href, starts, wins, hectorWins, victorWins, matchplayWins, handicap } = Astro.props;
+const { id, image, href, starts, hectorWins, victorWins, matchplayWins, handicap } = Astro.props;
 
 const fullname = getPlayerName(id)
 
-const winsText = wins.length === 1 ? "1 win" : `${wins.length} wins`;
+const wins = hectorWins.length + victorWins.length + matchplayWins.length;
+const winsText = wins === 1 ? "1 win" : `${wins} wins`;
 const startsText = starts === 1 ? "1 start" : `${starts} starts`;
 
 ---

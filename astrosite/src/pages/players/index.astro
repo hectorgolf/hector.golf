@@ -11,10 +11,6 @@ function linkToPlayer(player: any): string {
     return `/players/${player.id}`;
 }
 
-function yearsOfWins(player: any): number[] {
-	return getEventsWonByPlayer(player).map(yearOfEvent)
-}
-
 function isHectorEvent(event: any): event is HectorEvent {
 	return event.format === 'hector'
 }
@@ -82,7 +78,7 @@ const players = getAllPlayers().sort((a, b) => getTotalWinsByPlayer(b) - getTota
         <ul role="list" class="link-card-grid">
             {players.map((player) => {
 				const hcp = getPlayerHandicapById(player.id)
-                return <PlayerCard id={player.id} name={player.name} image={player.image} href={linkToPlayer(player)} starts={startsCount(player)} wins={yearsOfWins(player)} hectorWins={yearsOfHectorWins(player)} victorWins={yearsOfVictorWins(player)} matchplayWins={yearsOfMatchplayWins(player)} handicap={hcp} />
+                return <PlayerCard id={player.id} name={player.name} image={player.image} href={linkToPlayer(player)} starts={startsCount(player)} hectorWins={yearsOfHectorWins(player)} victorWins={yearsOfVictorWins(player)} matchplayWins={yearsOfMatchplayWins(player)} handicap={hcp} />
             })}
         </ul>
     </main>
