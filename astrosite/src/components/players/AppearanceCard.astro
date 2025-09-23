@@ -13,14 +13,16 @@ const { player, event } = Astro.props;
 
 const wonHector = event.format === 'hector' && !!(event as HectorEvent).results?.winners?.hector?.includes(player.id)
 const wonVictor = event.format === 'hector' && !!(event as HectorEvent).results?.winners?.victor?.includes(player.id)
+const wonMatchplay = event.format === 'matchplay' && event.results?.winners?.matchplay?.includes(player.id);
 
 ---
 
 <div class="appearance">
 	<a href={linkToEvent(event)}>
 		<span class="event-name">{event.name}</span>
-		{wonHector ? (<img class="win hector" src="/images/hector-trophy-32.png" alt="Hector Trophy" />) : null}
-		{wonVictor ? (<img class="win victor" src="/images/victor-trophy-32.png" alt="Victor Trophy" />) : null}
+		{wonHector ? (<img class="win hector" src="/images/trophy/hector-gold.svg" alt="Hector Trophé" />) : null}
+		{wonVictor ? (<img class="win victor" src="/images/trophy/victor-gold.svg" alt="Victor Trophé" />) : null}
+		{wonMatchplay ? (<img class="win matchplay" src="/images/trophy/matchplay-gold.svg" alt="Matchplay victory" />) : null}
 		<span class="date">{event.date}</span>
 		<span class="location">{event.location}</span>
 	</a>
@@ -53,13 +55,20 @@ const wonVictor = event.format === 'hector' && !!(event as HectorEvent).results?
 	.appearance .event-name {
 		margin-right: 10px;
 	}
+	.appearance img.win {
+		margin-bottom: -5px;
+	}
 	.appearance img.win.hector {
 		width: 16px;
 		height: 25px;
 	}
 	.appearance img.win.victor {
-		width: 12px;
-		height: 19px;
+		width: 16px;
+		height: 25px;
+	}
+	.appearance img.win.matchplay {
+		width: 16px;
+		height: 25px;
 	}
 	.appearance .date {
 		display: block;

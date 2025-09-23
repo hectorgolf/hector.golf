@@ -15,17 +15,23 @@ const lastTwenty = fullHistory.slice(-20)
 ---
 
 <div class="handicap-history-chart-container">
-	<canvas id="handicap-history-chart-canvas" data-handicap-history={JSON.stringify(lastTwenty)} data-current-handicap={current}></canvas>
+	<canvas id="handicap-history-chart-canvas"
+	        data-handicap-history={JSON.stringify(lastTwenty)}
+			data-current-handicap={current}></canvas>
 </div>
 <script src="./HandicapHistoryChart.ts"></script>
 
 <style>
+	.handicap-history-chart-container {
+		padding-right: 15px;
+	}
 	.handicap-history-chart {
 		background-color: #red;
 		border-radius: 7px;
 		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 	}
-	.handicap-history-chart-canvas {
+	#handicap-history-chart-canvas {
+		width: 90%;
 		aspect-ratio: auto 900/600;
 	}
 </style>
