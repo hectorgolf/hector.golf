@@ -18,8 +18,18 @@ const linkToCourse = (course: Course): string => {
 function isGroupFormat(format: string): boolean {
     const lowercase = format.toLowerCase()
     if (lowercase.includes('stableford')) return false
-    if (lowercase.includes('stroke play')) return false
+    if (lowercase.includes('stroke play') && !lowercase.includes('scramble')) return false
     return true
+}
+
+function scoreSource(teamContribution: 'both'|'better'|'team'|undefined): string {
+    if (!teamContribution) return 'each'
+    switch (teamContribution) {
+        case 'both': return `both individuals'`
+        case 'better': return 'the better individual\'s'
+        case 'team': return 'the team\'s'
+        default: return 'each'
+    }
 }
 
 function pluralize(points: number, unit: string): string {
@@ -73,18 +83,18 @@ function pluralize(points: number, unit: string): string {
                                                             {hectorContribution && (
                                                                 <li class="score-contribution long">{
                                                                     isGroupFormat(gf.format)
-                                                                    ? `Team score contributes ${Math.round(hectorContribution * 100)}% to the team's Hector score`
-                                                                    : `Each score contributes ${Math.round(hectorContribution * 100)}% to the team's Hector score`
+                                                                    ? `Hector points: ${Math.round(hectorContribution * 100)}% of the team's score`
+                                                                    : `Hector points: ${Math.round(hectorContribution * 100)}% of ${scoreSource(gf.teamContribution)} score`
                                                                 }</li>
                                                                 <li class="score-contribution short">{
                                                                     isGroupFormat(gf.format)
-                                                                    ? `Score contributes ${Math.round(hectorContribution * 100)}% to Hector`
-                                                                    : `Each score contributes ${Math.round(hectorContribution * 100)}% to Hector`
+                                                                    ? `Hector: ${Math.round(hectorContribution * 100)}% of the team's score`
+                                                                    : `Hector: ${Math.round(hectorContribution * 100)}% of ${scoreSource(gf.teamContribution)} score`
                                                                 }</li>
                                                             )}
                                                             {victorContribution && (
-                                                                <li class="score-contribution long">{`Score contributes ${Math.round(victorContribution * 100)}% to the individual's Victor points`}</li>
-                                                                <li class="score-contribution short">{`Contributes ${Math.round(victorContribution * 100)}% to Victor points`}</li>
+                                                                <li class="score-contribution long">{`Victor points: Contributes ${Math.round(victorContribution * 100)}% to the individual's Victor points`}</li>
+                                                                <li class="score-contribution short">{`Victor: ${Math.round(victorContribution * 100)}% of individual's score`}</li>
                                                             )}
                                                         </ul>
                                                     )}
@@ -197,16 +207,16 @@ function pluralize(points: number, unit: string): string {
             font-size: 16px;
         }
 
-        .rounds .handicap-allowance.short { display: inline; }
+        .rounds .handicap-allowance.short { display: block; }
         .rounds .handicap-allowance.long { display: none; }
-        .rounds .score-contribution.short { display: inline; }
+        .rounds .score-contribution.short { display: block; }
         .rounds .score-contribution.long { display: none; }
     }
 
     @media only screen and (min-width: 501px) {
         .rounds .handicap-allowance.short { display: none; }
-        .rounds .handicap-allowance.long { display: inline; }
+        .rounds .handicap-allowance.long { display: block; }
         .rounds .score-contribution.short { display: none; }
-        .rounds .score-contribution.long { display: inline; }
+        .rounds .score-contribution.long { display: block; }
     }
 </style>

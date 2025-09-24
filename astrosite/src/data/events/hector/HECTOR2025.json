@@ -53,7 +53,8 @@
           "contribution": {
             "hector": 0.33,
             "victor": 1
-          }
+          },
+          "teamContribution": "better"
         },
         {
           "format": "Stroke Play SCR",
@@ -73,7 +74,8 @@
             "hector"
           ],
           "handicapAllowance": 1,
-          "contribution": { "hector": 0.5 }
+          "contribution": { "hector": 0.5 },
+          "teamContribution": "team"
         },
         {
           "format": "Stableford NET",
@@ -97,7 +99,10 @@
             "hector"
           ],
           "handicapAllowance": 1,
-          "contribution": { "hector": 0.25 }
+          "contribution": {
+            "hector": 0.25
+          },
+          "teamContribution": "both"
         },
         {
           "format": "Stableford NET",
@@ -121,7 +126,8 @@
             "hector"
           ],
           "handicapAllowance": 0.2,
-          "contribution": { "hector": 0.5 }
+          "contribution": { "hector": 0.5 },
+          "teamContribution": "team"
         }
       ]
     },
@@ -137,7 +143,8 @@
             "hector"
           ],
           "handicapAllowance": 1,
-          "contribution": { "hector": 0.5 }
+          "contribution": { "hector": 0.5 },
+          "teamContribution": "team"
         },
         {
           "format": "Stableford NET",
@@ -162,6 +169,7 @@
           ],
           "handicapAllowance": 0.2,
           "contribution": { "hector": 1 },
+          "teamContribution": "team",
           "birdieBonus": 0.5,
           "eagleBonus": 1
         }
