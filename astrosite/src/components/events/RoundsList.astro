@@ -15,6 +15,17 @@ const linkToCourse = (course: Course): string => {
     return `/courses/${course.id}`
 }
 
+function isGroupFormat(format: string): boolean {
+    const lowercase = format.toLowerCase()
+    if (lowercase.includes('stableford')) return false
+    if (lowercase.includes('stroke play')) return false
+    return true
+}
+
+function pluralize(points: number, unit: string): string {
+    return points === 1 ? `${points} ${unit}` : `${points} ${unit}s`
+}
+
 ---
 <>
     {(event.rounds && event.rounds.length > 0) && (
@@ -44,17 +55,46 @@ const linkToCourse = (course: Course): string => {
                             </div>
                             <div class="game-formats">
                                 {round.gameFormats.map(gf => {
+                                    console.log(`GF: ${JSON.stringify(gf)}`)
                                     const allowance = gf.handicapAllowance ? `${Math.round(gf.handicapAllowance * 100)}%` : ''
+                                    const hectorContribution = gf.contribution?.hector
+                                    const victorContribution = gf.contribution?.victor
                                     return (
                                         <div class="game-format">
                                             <ul class="game-format-specification">
                                                 <li>
                                                     <span class="name">{gf.format}</span>
-                                                    {allowance && (<span class="handicap-allowance short">({allowance} HCP)</span>)}
-                                                    {allowance && (<span class="handicap-allowance long">({allowance} handicap allowance)</span>)}
+                                                    {allowance && (<ul class="handicap-allowances">
+                                                        <li class="handicap-allowance short">{allowance} HCP</li>
+                                                        <li class="handicap-allowance long">{allowance} handicap allowance</li>
+                                                    </ul>)}
+                                                    {(hectorContribution || victorContribution) && (
+                                                        <ul class="contribution">
+                                                            {hectorContribution && (
+                                                                <li class="score-contribution long">{
+                                                                    isGroupFormat(gf.format)
+                                                                    ? `Team score contributes ${Math.round(hectorContribution * 100)}% to the team's Hector score`
+                                                                    : `Each score contributes ${Math.round(hectorContribution * 100)}% to the team's Hector score`
+                                                                }</li>
+                                                                <li class="score-contribution short">{
+                                                                    isGroupFormat(gf.format)
+                                                                    ? `Score contributes ${Math.round(hectorContribution * 100)}% to Hector`
+                                                                    : `Each score contributes ${Math.round(hectorContribution * 100)}% to Hector`
+                                                                }</li>
+                                                            )}
+                                                            {victorContribution && (
+                                                                <li class="score-contribution long">{`Score contributes ${Math.round(victorContribution * 100)}% to the individual's Victor points`}</li>
+                                                                <li class="score-contribution short">{`Contributes ${Math.round(victorContribution * 100)}% to Victor points`}</li>
+                                                            )}
+                                                        </ul>
+                                                    )}
                                                 </li>
-                                                {gf.birdieBonus && (<li class="bonus birdie">{gf.birdieBonus} points for each Birdie</li>)}
-                                                {gf.eagleBonus && (<li class="bonus eagle">{gf.eagleBonus} points for each Eagle</li>)}
+                                                {(gf.birdieBonus || gf.eagleBonus) && (
+                                                    <ul class="score-bonuses">
+                                                        {gf.birdieBonus && (<li class="bonus birdie">{pluralize(gf.birdieBonus, 'point') + ' for each Birdie'}</li>)}
+                                                        {gf.eagleBonus && (<li class="bonus eagle">{pluralize(gf.eagleBonus, 'point') + ' for each Eagle'}</li>)}
+                                                    </ul>
+                                                )}
                                             </ul>
                                         </div>
                                     )
@@ -143,9 +183,13 @@ const linkToCourse = (course: Course): string => {
     }
 
     .round .game-format { font-size: 0.9em; }
-    .round .game-format .handicap-allowance {
-        opacity: 0.6;
-        margin-left: 8px;
+
+    .rounds .game-format ul.contribution,
+    .rounds .game-format ul.score-bonuses,
+    .rounds .game-format ul.handicap-allowances {
+        padding-inline-start: 0px;
+        font-size: 0.8em;
+        opacity: 0.7;
     }
 
     @media only screen and (max-width: 500px) {
@@ -155,10 +199,14 @@ const linkToCourse = (course: Course): string => {
 
         .rounds .handicap-allowance.short { display: inline; }
         .rounds .handicap-allowance.long { display: none; }
+        .rounds .score-contribution.short { display: inline; }
+        .rounds .score-contribution.long { display: none; }
     }
 
     @media only screen and (min-width: 501px) {
         .rounds .handicap-allowance.short { display: none; }
         .rounds .handicap-allowance.long { display: inline; }
+        .rounds .score-contribution.short { display: none; }
+        .rounds .score-contribution.long { display: inline; }
     }
 </style>

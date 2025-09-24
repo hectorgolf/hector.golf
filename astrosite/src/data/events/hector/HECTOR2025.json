@@ -49,7 +49,11 @@
             "hector",
             "victor"
           ],
-          "handicapAllowance": 1
+          "handicapAllowance": 1,
+          "contribution": {
+            "hector": 0.33,
+            "victor": 1
+          }
         },
         {
           "format": "Stroke Play SCR",
@@ -68,14 +72,16 @@
           "competition": [
             "hector"
           ],
-          "handicapAllowance": 1
+          "handicapAllowance": 1,
+          "contribution": { "hector": 0.5 }
         },
         {
           "format": "Stableford NET",
           "competition": [
             "victor"
           ],
-          "handicapAllowance": 1
+          "handicapAllowance": 1,
+          "contribution": { "victor": 1 }
         }
       ]
     },
@@ -90,14 +96,16 @@
           "competition": [
             "hector"
           ],
-          "handicapAllowance": 1
+          "handicapAllowance": 1,
+          "contribution": { "hector": 0.25 }
         },
         {
           "format": "Stableford NET",
           "competition": [
             "victor"
           ],
-          "handicapAllowance": 1
+          "handicapAllowance": 1,
+          "contribution": { "victor": 1 }
         }
       ]
     },
@@ -112,7 +120,8 @@
           "competition": [
             "hector"
           ],
-          "handicapAllowance": 0.2
+          "handicapAllowance": 0.2,
+          "contribution": { "hector": 0.5 }
         }
       ]
     },
@@ -127,14 +136,16 @@
           "competition": [
             "hector"
           ],
-          "handicapAllowance": 1
+          "handicapAllowance": 1,
+          "contribution": { "hector": 0.5 }
         },
         {
           "format": "Stableford NET",
           "competition": [
             "victor"
           ],
-          "handicapAllowance": 1
+          "handicapAllowance": 1,
+          "contribution": { "victor": 1 }
         }
       ]
     },
@@ -150,6 +161,7 @@
             "hector"
           ],
           "handicapAllowance": 0.2,
+          "contribution": { "hector": 1 },
           "birdieBonus": 0.5,
           "eagleBonus": 1
         }

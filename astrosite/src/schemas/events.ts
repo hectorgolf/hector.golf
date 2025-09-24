@@ -46,6 +46,10 @@ const gameFormatSchema = z.object({
     ]),
     competition: z.array(z.enum(['hector', 'victor'])).optional(),
     handicapAllowance: z.number().optional(),
+    contribution: z.object({
+        hector: z.number().optional(),
+        victor: z.number().optional()
+    }).optional(),
     birdieBonus: z.number().optional(),
     eagleBonus: z.number().optional(),
 })
