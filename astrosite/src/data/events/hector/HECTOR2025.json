@@ -4,7 +4,7 @@
     "name": "Hector Trophée 2025",
     "location": "Emporda Golf, Spain",
     "date": "September 25-28, 2025",
-    "description": "The world’s best amateur golfers are set to compete once again in Hector Trophée 2025, this time at the stunning Empordà Golf, where the Forest and Links courses will provide a challenging yet breathtaking backdrop for the battle. Following last year’s classic format, the tournament will span four days and six rounds of intense stroke play, culminating in the crowning of this year’s champions.\n\nHowever, unlike in previous years, the players won’t be rushing to the airport after the final putt drops—fueling speculation that the 2025 edition will go down as the most legendary (and most boozy) finale in Hector Trophée history. Expect fierce competition, unforgettable moments, and a celebration worthy of the sport’s finest amateur talents.",
+    "description": "The world’s best amateur golfers are set to compete once again in Hector Trophée 2025, this time at the stunning Empordà Golf, where the Forest and Dunes courses will provide a challenging yet breathtaking backdrop for the battle. Following last year’s classic format, the tournament will span four days and six rounds of intense stroke play, culminating in the crowning of this year’s champions.\n\nHowever, unlike in previous years, the players won’t be rushing to the airport after the final putt drops—fueling speculation that the 2025 edition will go down as the most legendary (and most boozy) finale in Hector Trophée history. Expect fierce competition, unforgettable moments, and a celebration worthy of the sport’s finest amateur talents.",
     "participants": [
         "tommy-g",
         "simo-l",
@@ -34,7 +34,7 @@
     "format": "hector",
     "courses": [
         "emporda-forest",
-        "emporda-links"
+        "emporda-dunes"
     ],
     "rounds": [
         {
@@ -94,7 +94,7 @@
         {
             "day": 2,
             "round": 2,
-            "course": "emporda-links",
+            "course": "emporda-dunes",
             "tee": "Yellow",
             "gameFormats": [
                 {
@@ -142,7 +142,7 @@
         {
             "day": 3,
             "round": 2,
-            "course": "emporda-links",
+            "course": "emporda-dunes",
             "tee": "Blue",
             "gameFormats": [
                 {
@@ -171,7 +171,7 @@
         {
             "day": 4,
             "round": 1,
-            "course": "emporda-links",
+            "course": "emporda-dunes",
             "tee": "White",
             "gameFormats": [
                 {
