@@ -1,283 +1,388 @@
 {
-  "id": "HECTOR2025",
-  "ignore": false,
-  "name": "Hector Trophée 2025",
-  "location": "Emporda Golf, Spain",
-  "date": "September 25-28, 2025",
-  "description": "The world’s best amateur golfers are set to compete once again in Hector Trophée 2025, this time at the stunning Empordà Golf, where the Forest and Links courses will provide a challenging yet breathtaking backdrop for the battle. Following last year’s classic format, the tournament will span four days and six rounds of intense stroke play, culminating in the crowning of this year’s champions.\n\nHowever, unlike in previous years, the players won’t be rushing to the airport after the final putt drops—fueling speculation that the 2025 edition will go down as the most legendary (and most boozy) finale in Hector Trophée history. Expect fierce competition, unforgettable moments, and a celebration worthy of the sport’s finest amateur talents.",
-  "participants": [
-    "tommy-g",
-    "simo-l",
-    "ofri-p",
-    "sami-h",
-    "ossi-l",
-    "pasi-h",
-    "martin-s",
-    "miso-l",
-    "mikko-o",
-    "olli-v",
-    "eero-h",
-    "toni-m",
-    "jaakko-s",
-    "marcus-m",
-    "harri-v",
-    "olli-a",
-    "lassi-k",
-    "jarkko-k",
-    "lauri-p",
-    "lasse-k",
-    "pekka-s",
-    "janne-v",
-    "jari-k",
-    "okko-p"
-  ],
-  "format": "hector",
-  "courses": [
-    "emporda-forest",
-    "emporda-links"
-  ],
-  "rounds": [
-    {
-      "day": 1,
-      "round": 1,
-      "course": "emporda-forest",
-      "tee": "Yellow",
-      "gameFormats": [
-        {
-          "format": "Stableford NET",
-          "competition": [
-            "hector",
-            "victor"
-          ],
-          "handicapAllowance": 1,
-          "contribution": {
-            "hector": 0.33,
-            "victor": 1
-          },
-          "teamContribution": "better"
-        },
-        {
-          "format": "Stroke Play SCR",
-          "handicapAllowance": 0
-        }
-      ]
-    },
-    {
-      "day": 2,
-      "round": 1,
-      "course": "emporda-forest",
-      "tee": "Blue",
-      "gameFormats": [
-        {
-          "format": "Better Ball Stroke Play NET",
-          "competition": [
-            "hector"
-          ],
-          "handicapAllowance": 1,
-          "contribution": { "hector": 0.5 },
-          "teamContribution": "team"
-        },
-        {
-          "format": "Stableford NET",
-          "competition": [
-            "victor"
-          ],
-          "handicapAllowance": 1,
-          "contribution": { "victor": 1 }
-        }
-      ]
-    },
-    {
-      "day": 2,
-      "round": 2,
-      "course": "emporda-links",
-      "tee": "Yellow",
-      "gameFormats": [
-        {
-          "format": "Stroke Play NET",
-          "competition": [
-            "hector"
-          ],
-          "handicapAllowance": 1,
-          "contribution": {
-            "hector": 0.25
-          },
-          "teamContribution": "both"
-        },
-        {
-          "format": "Stableford NET",
-          "competition": [
-            "victor"
-          ],
-          "handicapAllowance": 1,
-          "contribution": { "victor": 1 }
-        }
-      ]
-    },
-    {
-      "day": 3,
-      "round": 1,
-      "course": "emporda-forest",
-      "tee": "White",
-      "gameFormats": [
-        {
-          "format": "Scramble Stroke Play NET",
-          "competition": [
-            "hector"
-          ],
-          "handicapAllowance": 0.2,
-          "contribution": { "hector": 0.5 },
-          "teamContribution": "team"
-        }
-      ]
-    },
-    {
-      "day": 3,
-      "round": 2,
-      "course": "emporda-links",
-      "tee": "Blue",
-      "gameFormats": [
-        {
-          "format": "Better Ball Stroke Play NET",
-          "competition": [
-            "hector"
-          ],
-          "handicapAllowance": 1,
-          "contribution": { "hector": 0.5 },
-          "teamContribution": "team"
-        },
-        {
-          "format": "Stableford NET",
-          "competition": [
-            "victor"
-          ],
-          "handicapAllowance": 1,
-          "contribution": { "victor": 1 }
-        }
-      ]
-    },
-    {
-      "day": 4,
-      "round": 1,
-      "course": "emporda-links",
-      "tee": "White",
-      "gameFormats": [
-        {
-          "format": "Scramble Stroke Play NET",
-          "competition": [
-            "hector"
-          ],
-          "handicapAllowance": 0.2,
-          "contribution": { "hector": 1 },
-          "teamContribution": "team",
-          "birdieBonus": 0.5,
-          "eagleBonus": 1
-        }
-      ]
-    }
-  ],
-  "buckets": [
-    [
-      {
-        "id": "tommy-g",
-        "handicap": -2.8
-      },
-      {
-        "id": "jari-k",
-        "handicap": 2.3
-      },
-      {
-        "id": "ofri-p",
-        "handicap": 3.7
-      },
-      {
-        "id": "sami-h",
-        "handicap": 4.6
-      },
-      {
-        "id": "simo-l",
-        "handicap": 5.5
-      },
-      {
-        "id": "ossi-l",
-        "handicap": 8
-      },
-      {
-        "id": "olli-v",
-        "handicap": 8.1
-      },
-      {
-        "id": "pasi-h",
-        "handicap": 8.6
-      },
-      {
-        "id": "miso-l",
-        "handicap": 9.3
-      },
-      {
-        "id": "eero-h",
-        "handicap": 9.8
-      },
-      {
-        "id": "mikko-o",
-        "handicap": 10.3
-      },
-      {
-        "id": "martin-s",
-        "handicap": 10.6
-      }
+    "id": "HECTOR2025",
+    "ignore": false,
+    "name": "Hector Trophée 2025",
+    "location": "Emporda Golf, Spain",
+    "date": "September 25-28, 2025",
+    "description": "The world’s best amateur golfers are set to compete once again in Hector Trophée 2025, this time at the stunning Empordà Golf, where the Forest and Links courses will provide a challenging yet breathtaking backdrop for the battle. Following last year’s classic format, the tournament will span four days and six rounds of intense stroke play, culminating in the crowning of this year’s champions.\n\nHowever, unlike in previous years, the players won’t be rushing to the airport after the final putt drops—fueling speculation that the 2025 edition will go down as the most legendary (and most boozy) finale in Hector Trophée history. Expect fierce competition, unforgettable moments, and a celebration worthy of the sport’s finest amateur talents.",
+    "participants": [
+        "tommy-g",
+        "simo-l",
+        "ofri-p",
+        "sami-h",
+        "ossi-l",
+        "pasi-h",
+        "martin-s",
+        "miso-l",
+        "mikko-o",
+        "olli-v",
+        "eero-h",
+        "toni-m",
+        "jaakko-s",
+        "marcus-m",
+        "harri-v",
+        "olli-a",
+        "lassi-k",
+        "jarkko-k",
+        "lauri-p",
+        "lasse-k",
+        "pekka-s",
+        "janne-v",
+        "jari-k",
+        "okko-p"
     ],
-    [
-      {
-        "id": "olli-a",
-        "handicap": 11.1
-      },
-      {
-        "id": "marcus-m",
-        "handicap": 11.1
-      },
-      {
-        "id": "harri-v",
-        "handicap": 11.2
-      },
-      {
-        "id": "okko-p",
-        "handicap": 13.4
-      },
-      {
-        "id": "lauri-p",
-        "handicap": 13.5
-      },
-      {
-        "id": "jarkko-k",
-        "handicap": 13.6
-      },
-      {
-        "id": "lassi-k",
-        "handicap": 13.9
-      },
-      {
-        "id": "toni-m",
-        "handicap": 14.6
-      },
-      {
-        "id": "lasse-k",
-        "handicap": 16.5
-      },
-      {
-        "id": "pekka-s",
-        "handicap": 17.5
-      },
-      {
-        "id": "jaakko-s",
-        "handicap": 18.1
-      },
-      {
-        "id": "janne-v",
-        "handicap": 18.4
-      }
-    ]
-  ],
-  "results": {},
-  "leaderboardSheet": "https://docs.google.com/spreadsheets/d/1QBmokR7_ir0l36B1hLZCYIPTeUbLG2V4RiLSL2QVOts/edit"
+    "format": "hector",
+    "courses": [
+        "emporda-forest",
+        "emporda-links"
+    ],
+    "rounds": [
+        {
+            "day": 1,
+            "round": 1,
+            "course": "emporda-forest",
+            "tee": "Yellow",
+            "gameFormats": [
+                {
+                    "format": "Stableford NET",
+                    "competition": [
+                        "hector",
+                        "victor"
+                    ],
+                    "handicapAllowance": 1,
+                    "contribution": {
+                        "hector": 0.33,
+                        "victor": 1
+                    },
+                    "teamContribution": "better"
+                },
+                {
+                    "format": "Stroke Play SCR",
+                    "handicapAllowance": 0
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "round": 1,
+            "course": "emporda-forest",
+            "tee": "Blue",
+            "gameFormats": [
+                {
+                    "format": "Better Ball Stroke Play NET",
+                    "competition": [
+                        "hector"
+                    ],
+                    "handicapAllowance": 1,
+                    "contribution": {
+                        "hector": 0.5
+                    },
+                    "teamContribution": "team"
+                },
+                {
+                    "format": "Stableford NET",
+                    "competition": [
+                        "victor"
+                    ],
+                    "handicapAllowance": 1,
+                    "contribution": {
+                        "victor": 1
+                    }
+                }
+            ]
+        },
+        {
+            "day": 2,
+            "round": 2,
+            "course": "emporda-links",
+            "tee": "Yellow",
+            "gameFormats": [
+                {
+                    "format": "Stroke Play NET",
+                    "competition": [
+                        "hector"
+                    ],
+                    "handicapAllowance": 1,
+                    "contribution": {
+                        "hector": 0.25
+                    },
+                    "teamContribution": "both"
+                },
+                {
+                    "format": "Stableford NET",
+                    "competition": [
+                        "victor"
+                    ],
+                    "handicapAllowance": 1,
+                    "contribution": {
+                        "victor": 1
+                    }
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "round": 1,
+            "course": "emporda-forest",
+            "tee": "White",
+            "gameFormats": [
+                {
+                    "format": "Scramble Stroke Play NET",
+                    "competition": [
+                        "hector"
+                    ],
+                    "handicapAllowance": 0.2,
+                    "contribution": {
+                        "hector": 0.5
+                    },
+                    "teamContribution": "team"
+                }
+            ]
+        },
+        {
+            "day": 3,
+            "round": 2,
+            "course": "emporda-links",
+            "tee": "Blue",
+            "gameFormats": [
+                {
+                    "format": "Better Ball Stroke Play NET",
+                    "competition": [
+                        "hector"
+                    ],
+                    "handicapAllowance": 1,
+                    "contribution": {
+                        "hector": 0.5
+                    },
+                    "teamContribution": "team"
+                },
+                {
+                    "format": "Stableford NET",
+                    "competition": [
+                        "victor"
+                    ],
+                    "handicapAllowance": 1,
+                    "contribution": {
+                        "victor": 1
+                    }
+                }
+            ]
+        },
+        {
+            "day": 4,
+            "round": 1,
+            "course": "emporda-links",
+            "tee": "White",
+            "gameFormats": [
+                {
+                    "format": "Scramble Stroke Play NET",
+                    "competition": [
+                        "hector"
+                    ],
+                    "handicapAllowance": 0.2,
+                    "contribution": {
+                        "hector": 1
+                    },
+                    "teamContribution": "team",
+                    "birdieBonus": 0.5,
+                    "eagleBonus": 1
+                }
+            ]
+        }
+    ],
+    "buckets": [
+        [
+            {
+                "id": "tommy-g",
+                "handicap": -2.8
+            },
+            {
+                "id": "jari-k",
+                "handicap": 2.3
+            },
+            {
+                "id": "ofri-p",
+                "handicap": 3.7
+            },
+            {
+                "id": "sami-h",
+                "handicap": 4.6
+            },
+            {
+                "id": "simo-l",
+                "handicap": 5.5
+            },
+            {
+                "id": "ossi-l",
+                "handicap": 8
+            },
+            {
+                "id": "olli-v",
+                "handicap": 8.1
+            },
+            {
+                "id": "pasi-h",
+                "handicap": 8.6
+            },
+            {
+                "id": "miso-l",
+                "handicap": 9.3
+            },
+            {
+                "id": "eero-h",
+                "handicap": 9.8
+            },
+            {
+                "id": "mikko-o",
+                "handicap": 10.3
+            },
+            {
+                "id": "martin-s",
+                "handicap": 10.6
+            }
+        ],
+        [
+            {
+                "id": "olli-a",
+                "handicap": 11.1
+            },
+            {
+                "id": "marcus-m",
+                "handicap": 11.1
+            },
+            {
+                "id": "harri-v",
+                "handicap": 11.2
+            },
+            {
+                "id": "okko-p",
+                "handicap": 13.4
+            },
+            {
+                "id": "lauri-p",
+                "handicap": 13.5
+            },
+            {
+                "id": "jarkko-k",
+                "handicap": 13.6
+            },
+            {
+                "id": "lassi-k",
+                "handicap": 13.9
+            },
+            {
+                "id": "toni-m",
+                "handicap": 14.6
+            },
+            {
+                "id": "lasse-k",
+                "handicap": 16.5
+            },
+            {
+                "id": "pekka-s",
+                "handicap": 17.5
+            },
+            {
+                "id": "jaakko-s",
+                "handicap": 18.1
+            },
+            {
+                "id": "janne-v",
+                "handicap": 18.4
+            }
+        ]
+    ],
+    "results": {
+        "teams": [
+            {
+                "name": "Lasse Koskela + Jari Kuusela",
+                "players": [
+                    "lasse-k",
+                    "jari-k"
+                ]
+            },
+            {
+                "name": "Toni Marttila + Simo Liukkonen",
+                "players": [
+                    "toni-m",
+                    "simo-l"
+                ]
+            },
+            {
+                "name": "Eero Halmetoja + Jarkko Kailanto",
+                "players": [
+                    "eero-h",
+                    "jarkko-k"
+                ]
+            },
+            {
+                "name": "Marcus Mattila + Olli Varis",
+                "players": [
+                    "marcus-m",
+                    "olli-v"
+                ]
+            },
+            {
+                "name": "Lassi Koto + Mikko Oesch",
+                "players": [
+                    "lassi-k",
+                    "mikko-o"
+                ]
+            },
+            {
+                "name": "Tommy Gulin + Jaakko Saarinen",
+                "players": [
+                    "tommy-g",
+                    "jaakko-s"
+                ]
+            },
+            {
+                "name": "Olli Andersson + Ossi Laukkanen",
+                "players": [
+                    "olli-a",
+                    "ossi-l"
+                ]
+            },
+            {
+                "name": "Harri Vainio + Pasi Halmetoja",
+                "players": [
+                    "harri-v",
+                    "pasi-h"
+                ]
+            },
+            {
+                "name": "Lauri Paatela + Sami Heikkinen",
+                "players": [
+                    "lauri-p",
+                    "sami-h"
+                ]
+            },
+            {
+                "name": "Miso Korkiakoski + Okko Pykäläinen",
+                "players": [
+                    "miso-l",
+                    "okko-p"
+                ]
+            },
+            {
+                "name": "Martin Svedholm + Pekka Saijonmaa",
+                "players": [
+                    "martin-s",
+                    "pekka-s"
+                ]
+            },
+            {
+                "name": "Ofri Porat + Janne Valtakari",
+                "players": [
+                    "ofri-p",
+                    "janne-v"
+                ]
+            }
+        ],
+        "winners": {
+            "hector": [],
+            "victor": []
+        }
+    },
+    "leaderboardSheet": "https://docs.google.com/spreadsheets/d/1QBmokR7_ir0l36B1hLZCYIPTeUbLG2V4RiLSL2QVOts/edit"
 }
