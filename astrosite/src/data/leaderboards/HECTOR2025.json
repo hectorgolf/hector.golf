@@ -6,76 +6,76 @@
   },
   "hector": [
     {
-      "points": "89.5",
+      "points": "122.0",
       "team": "Lasse Koskela + Jari Kuusela",
       "diff": "",
-      "through": "3/6"
+      "through": "4/6"
     },
     {
-      "points": "91.4",
+      "points": "126.4",
       "team": "Toni Marttila + Simo Liukkonen",
-      "diff": "+1.9",
-      "through": "3/6"
+      "diff": "+4.4",
+      "through": "4/6"
     },
     {
-      "points": "95.3",
-      "team": "Olli Andersson + Ossi Laukkanen",
-      "diff": "+5.8",
-      "through": "3/6"
-    },
-    {
-      "points": "96.3",
+      "points": "129.3",
       "team": "Marcus Mattila + Olli Varis",
-      "diff": "+6.8",
-      "through": "3/6"
+      "diff": "+7.3",
+      "through": "4/6"
     },
     {
-      "points": "96.7",
-      "team": "Tommy Gulin + Jaakko Saarinen",
-      "diff": "+7.2",
-      "through": "3/6"
+      "points": "130.3",
+      "team": "Olli Andersson + Ossi Laukkanen",
+      "diff": "+8.3",
+      "through": "4/6"
     },
     {
-      "points": "97.3",
-      "team": "Eero Halmetoja + Jarkko Kailanto",
-      "diff": "+7.8",
-      "through": "3/6"
-    },
-    {
-      "points": "97.6",
-      "team": "Harri Vainio + Pasi Halmetoja",
-      "diff": "+8.1",
-      "through": "3/6"
-    },
-    {
-      "points": "98.1",
+      "points": "131.1",
       "team": "Lassi Koto + Mikko Oesch",
-      "diff": "+8.6",
-      "through": "3/6"
+      "diff": "+9.1",
+      "through": "4/6"
     },
     {
-      "points": "99.3",
-      "team": "Miso Korkiakoski + Okko Pykäläinen",
-      "diff": "+9.8",
-      "through": "3/6"
+      "points": "131.6",
+      "team": "Harri Vainio + Pasi Halmetoja",
+      "diff": "+9.6",
+      "through": "4/6"
     },
     {
-      "points": "101.2",
-      "team": "Ofri Porat + Janne Valtakari",
-      "diff": "+11.7",
-      "through": "3/6"
+      "points": "133.3",
+      "team": "Eero Halmetoja + Jarkko Kailanto",
+      "diff": "+11.3",
+      "through": "4/6"
     },
     {
-      "points": "103.1",
-      "team": "Martin Svedholm + Pekka Saijonmaa",
-      "diff": "+13.6",
-      "through": "3/6"
+      "points": "134.7",
+      "team": "Tommy Gulin + Jaakko Saarinen",
+      "diff": "+12.7",
+      "through": "4/6"
     },
     {
-      "points": "105.0",
+      "points": "135.5",
       "team": "Lauri Paatela + Sami Heikkinen",
-      "diff": "+15.5",
-      "through": "3/6"
+      "diff": "+13.5",
+      "through": "4/6"
+    },
+    {
+      "points": "135.7",
+      "team": "Ofri Porat + Janne Valtakari",
+      "diff": "+13.7",
+      "through": "4/6"
+    },
+    {
+      "points": "135.8",
+      "team": "Miso Korkiakoski + Okko Pykäläinen",
+      "diff": "+13.8",
+      "through": "4/6"
+    },
+    {
+      "points": "138.6",
+      "team": "Martin Svedholm + Pekka Saijonmaa",
+      "diff": "+16.6",
+      "through": "4/6"
     }
   ],
   "victor": [
@@ -224,5 +224,5 @@
       "through": "3/4"
     }
   ],
-  "updatedAt": "2025-09-26T17:58:25.968Z"
+  "updatedAt": "2025-09-27T11:53:04.488Z"
 }
