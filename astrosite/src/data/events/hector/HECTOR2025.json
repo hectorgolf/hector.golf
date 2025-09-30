@@ -380,8 +380,13 @@
             }
         ],
         "winners": {
-            "hector": [],
-            "victor": []
+            "hector": [
+                "lasse-k",
+                "jari-k"
+            ],
+            "victor": [
+                "lasse-k"
+            ]
         }
     },
     "leaderboardSheet": "https://docs.google.com/spreadsheets/d/1QBmokR7_ir0l36B1hLZCYIPTeUbLG2V4RiLSL2QVOts/edit"
