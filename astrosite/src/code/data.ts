@@ -92,8 +92,20 @@ export function isPastEvent(event: Event | undefined): boolean {
     return isoDate(parseEventDateRange(event.date)?.endDate) < isoDateToday();
 }
 
+export function hasRecentlyEnded(event: Event): boolean {
+    const endDate = parseEventDateRange(event.date)?.endDate;
+    if (!endDate) return false;
+    const today = new Date();
+    const daysSinceEnd = (today.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24);
+    return daysSinceEnd >= 0 && daysSinceEnd <= 21; // within three weeks
+}
+
 export function yearOfEvent(event: HectorEvent|MatchplayEvent|FinnkampenEvent): number {
 	return parseYearFromDate(event.date)
+}
+
+export function endDateOfEvent(event: Event): Date {
+    return new Date(parseEventDateRange(event.date)?.endDate || '1970-01-01')
 }
 
 function parseYearFromDate(date: string): number {

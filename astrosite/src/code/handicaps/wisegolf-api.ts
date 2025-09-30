@@ -131,7 +131,7 @@ export const createWisegolfSession = async (): Promise<WisegolfSession> => {
     }
 }
 
-const findWisegolfPlayerClubs = async (firstName: string, lastName: string, token: string): Promise<GolfClub[]> => {
+const findWisegolfPlayerClubs = moize.maxAge(ms('1 hour'))(async (firstName: string, lastName: string, token: string): Promise<GolfClub[]> => {
     const clubs = await fetchClubs(token)
     const clubAbbreviations: GolfClub[] = []
     for (let club of clubs) {
@@ -141,7 +141,7 @@ const findWisegolfPlayerClubs = async (firstName: string, lastName: string, toke
         }
     }
     return Promise.resolve(clubAbbreviations)
-}
+})
 
 
 const sanitizePassword = (obj: any): any => {
@@ -151,7 +151,7 @@ const sanitizePassword = (obj: any): any => {
     return obj
 }
 
-const login = async (username: string, password: string): Promise<string> => {
+const login = moize.maxAge(ms('15 minutes'))(async (username: string, password: string): Promise<string> => {
     const payload = {
         username: username,
         password: password,
@@ -167,7 +167,7 @@ const login = async (username: string, password: string): Promise<string> => {
     })
     const data = await response.json()
     return data.access_token
-}
+})
 
 const roundToTenths = (num: number): number => Math.round(num * 10) / 10
 
@@ -229,12 +229,12 @@ const fetchHandicap = async (token: string, clubNumber: string, firstName: strin
 }
 
 
-const resolveClubNumber = async (clubNameOrNumber: string, token: string): Promise<string|undefined> => {
+const resolveClubNumber = moize.maxAge(ms('1 hour'))(async (clubNameOrNumber: string, token: string): Promise<string|undefined> => {
     const club = await fetchClub(clubNameOrNumber, token)
     return club?.number
-}
+})
 
-const fetchClub = async (clubNameOrNumber: string, token: string): Promise<WisegolfClub|undefined> => {
+const fetchClub = moize.maxAge(ms('1 hour'))(async (clubNameOrNumber: string, token: string): Promise<WisegolfClub|undefined> => {
     if (!clubNameOrNumber) {
         console.warn(`No club name or number provided - cannot fetch club`)
         return undefined
@@ -251,7 +251,7 @@ const fetchClub = async (clubNameOrNumber: string, token: string): Promise<Wiseg
         return club
     }
     return undefined
-}
+})
 
 // export const withLogin = async (callback: (token: string) => Promise<void>): Promise<void> => {
 //     return new Promise((resolve, reject) => {
@@ -261,9 +261,10 @@ const fetchClub = async (clubNameOrNumber: string, token: string): Promise<Wiseg
 //     })
 // }
 
-const getWisegolfPlayerHandicap = async (firstName: string, lastName: string, clubNameOrAbbreviation: string, providedToken?: string): Promise<number|undefined> => {
+const getWisegolfPlayerHandicap = moize.maxAge(ms('1 hour'))(async (firstName: string, lastName: string, clubNameOrAbbreviation: string, providedToken?: string): Promise<number|undefined> => {
     if (clubNameOrAbbreviation) {
         if (!!wisegolfUsername && !!wisegolfPassword) {
+            console.log(`Fetching handicap for ${firstName} ${lastName} at ${clubNameOrAbbreviation} from ${SOURCE_NAME}`)
             const token = providedToken || await login(wisegolfUsername, wisegolfPassword)
             const clubNumber = await resolveClubNumber(clubNameOrAbbreviation, token)
             if (clubNumber) {
@@ -272,4 +273,4 @@ const getWisegolfPlayerHandicap = async (firstName: string, lastName: string, cl
         }
     }
     return undefined
-}
+})

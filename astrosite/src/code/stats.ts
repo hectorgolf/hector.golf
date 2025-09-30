@@ -33,13 +33,13 @@ const didWinMatchplay = (event: MatchplayEvent, player: Player): boolean => {
 
 const trophiesFromEvent = (event: Event, player: Player): number => {
     if (isHectorEvent(event)) {
-        const hector = (event.results?.winners?.hector?.includes(player.id)) ? 1 : 0
-        const victor = (event.results?.winners?.victor?.includes(player.id)) ? 1 : 0
+        const hector = didWinHector(event, player) ? 1 : 0
+        const victor = didWinVictor(event, player) ? 1 : 0
         return hector + victor
     } else if (isFinnkampenEvent(event)) {
-        return (event.results?.winners?.finnkampen?.includes(player.id)) ? 1 : 0
+        return didWinFinnkampen(event, player) ? 1 : 0
     } else if (isMatchplayEvent(event)) {
-        return (event.results?.winners?.matchplay === player.id) ? 1 : 0
+        return didWinMatchplay(event, player) ? 1 : 0
     }
     return 0
 }
@@ -56,6 +56,14 @@ export function getHectorWinsByPlayer(player: Player): HectorEvent[] {
 
 export function getVictorWinsByPlayer(player: Player): HectorEvent[] {
     return getEventsOfPlayer(player.id).filter(isHectorEvent).filter(e => didWinVictor(e, player))
+}
+
+export function getMatchplayWinsByPlayer(player: Player): MatchplayEvent[] {
+    return getEventsOfPlayer(player.id).filter(isMatchplayEvent).filter(e => didWinMatchplay(e, player))
+}
+
+export function getFinnkampenWinsByPlayer(player: Player): FinnkampenEvent[] {
+    return getEventsOfPlayer(player.id).filter(isFinnkampenEvent).filter(e => didWinFinnkampen(e, player))
 }
 
 export function getEventsWonByPlayer(player: Player): Event[] {

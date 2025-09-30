@@ -1,9 +1,9 @@
-import { type Event, type HectorEvent, type MatchplayEvent, type FinnkampenEvent } from '../schemas/events';
+import { type Event } from '../schemas/events';
 import { type Player, schema as PlayerSchema } from '../schemas/players';
 import { type HandicapHistoryEntry } from '../schemas/handicaps';
 import { getPlayerHandicapHistoryById as getPlayerHandicapHistoryByIdImplementation } from './handicaps';
 import { getAllEvents } from './events';
-import { playersData, playerDataPath } from './data';
+import { playersData, playerDataPath, endDateOfEvent, isHectorEvent, isMatchplayEvent, isFinnkampenEvent } from './data';
 import { writeFileSync } from 'fs';
 
 export async function updatePlayerData(player: Player): Promise<void> {
@@ -167,16 +167,16 @@ export function getPlayerAliases(player: Player|string, ignorePrivacy?: boolean)
     return [player.name, ...(player.aliases || [])].map(name => renderPlayerName(name, ignorePrivacy ? undefined : player.privacy));
 }
 
-export function getPlayersAtEvent(event: any): Array<Player> {
-    if (event.format === 'hector') {
-        const teams = (event as HectorEvent).results?.teams || []
+function getPlayersAtEvent(event: Event): Array<Player> {
+    if (isHectorEvent(event)) {
+        const teams = event.results?.teams || []
         const players = teams.flatMap(team => team.players.map(id => getPlayerById(id)))
         return players.filter(p => !!p) as Array<Player>;
-    } else if (event.format === 'matchplay') {
-        const players = (event as MatchplayEvent).participants?.map(id => getPlayerById(id)) || []
+    } else if (isMatchplayEvent(event)) {
+        const players = event.participants?.map(id => getPlayerById(id)) || []
         return players.filter(p => !!p) as Array<Player>;
-    } else if (event.format === 'finnkampen') {
-        const teams = (event as FinnkampenEvent).results?.teams || []
+    } else if (isFinnkampenEvent(event)) {
+        const teams = event.results?.teams || []
         const players = teams.flatMap(team => team.players.map(id => getPlayerById(id)))
         return players.filter(p => !!p) as Array<Player>;
     }
@@ -184,5 +184,7 @@ export function getPlayersAtEvent(event: any): Array<Player> {
 }
 
 export function getEventsOfPlayer(playerId: string): Array<Event> {
-    return getAllEvents().filter(event => getPlayersAtEvent(event).map(p => p.id).includes(playerId));
+    return getAllEvents()
+        .filter(event => getPlayersAtEvent(event).map(p => p.id).includes(playerId))
+        .sort((a, b) => endDateOfEvent(b).getTime() - endDateOfEvent(a).getTime());
 }

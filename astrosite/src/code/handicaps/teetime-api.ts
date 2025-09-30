@@ -100,7 +100,7 @@ const extractJsonFromResponse = async (response: Response): Promise<any> => {
     }
 };
 
-const login = async (clubNumberOrAbbreviation: string, username: string, password: string): Promise<string> => {
+const login = moize.maxAge(ms('15 minutes'))(async (clubNumberOrAbbreviation: string, username: string, password: string): Promise<string> => {
     const clubNumber = await resolveClubNumber(clubNumberOrAbbreviation);
     const payload = {
         clubNumber: clubNumber,
@@ -123,7 +123,7 @@ const login = async (clubNumberOrAbbreviation: string, username: string, passwor
     } catch (error) {
         return Promise.reject(error);
     }
-};
+});
 
 const roundToTenths = (num: number): number => Math.round(num * 10) / 10;
 
@@ -246,7 +246,7 @@ function convertTeetimeClubToGolfClub(club: TeetimeClub): GolfClub {
     }
 }
 
-const findTeetimePlayerClubs = async (firstName: string, lastName: string, token: string): Promise<GolfClub[]> => {
+const findTeetimePlayerClubs = moize.maxAge(ms('1 hour'))(async (firstName: string, lastName: string, token: string): Promise<GolfClub[]> => {
     const clubs = await fetchClubs();
     const clubAbbreviations: GolfClub[] = [];
     for (let club of clubs) {
@@ -256,9 +256,9 @@ const findTeetimePlayerClubs = async (firstName: string, lastName: string, token
         }
     }
     return Promise.resolve(clubAbbreviations);
-};
+});
 
-const getTeetimePlayerHandicap = async (
+const getTeetimePlayerHandicap = moize.maxAge(ms('1 hour'))(async (
     firstName: string,
     lastName: string,
     clubNameOrAbbreviation: string,
@@ -266,6 +266,7 @@ const getTeetimePlayerHandicap = async (
 ): Promise<number | undefined> => {
     if (clubNameOrAbbreviation) {
         if (!!teetimeClubNumber && !!teetimeUsername && !!teetimePassword) {
+            console.log(`Fetching handicap for ${firstName} ${lastName} at ${clubNameOrAbbreviation} from ${SOURCE_NAME}`)
             const clubNumber = await resolveClubNumber(clubNameOrAbbreviation);
             if (clubNumber) {
                 return await fetchHandicap(token, clubNumber, firstName, lastName);
@@ -273,14 +274,14 @@ const getTeetimePlayerHandicap = async (
         }
     }
     return undefined;
-};
+});
 
 const resolveClubNumber = async (clubNameOrNumber: string): Promise<string | undefined> => {
     const club = await fetchClub(clubNameOrNumber);
     return club?.number;
 };
 
-const fetchClub = async (clubNameOrNumber: string): Promise<TeetimeClub | undefined> => {
+const fetchClub = moize.maxAge(ms('1 hour'))(async (clubNameOrNumber: string): Promise<TeetimeClub | undefined> => {
     if (!clubNameOrNumber) {
         console.warn(`No club name or number provided - cannot fetch club`);
         return undefined;
@@ -297,4 +298,4 @@ const fetchClub = async (clubNameOrNumber: string): Promise<TeetimeClub | undefi
         return club;
     }
     return undefined;
-};
+});

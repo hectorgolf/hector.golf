@@ -3,8 +3,8 @@ import Layout from '../../layouts/Layout.astro';
 import PlayerCard from '../../components/players/PlayerCard.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import { getAllPlayers, getEventsOfPlayer, getPlayerHandicapById, getPlayerName } from '../../code/players';
-import { yearOfEvent, isHectorEvent, isMatchplayEvent } from '../../code/data';
-import { getTotalWinsByPlayer, getEventsWonByPlayer } from '../../code/stats';
+import { yearOfEvent } from '../../code/data';
+import { getTotalWinsByPlayer, getEventsWonByPlayer, getHectorWinsByPlayer, getVictorWinsByPlayer, getMatchplayWinsByPlayer } from '../../code/stats';
 import type { HectorEvent, MatchplayEvent, FinnkampenEvent } from '../../schemas/events';
 
 
@@ -13,22 +13,15 @@ function linkToPlayer(player: any): string {
 }
 
 function yearsOfHectorWins(player: any): number[] {
-	return getEventsWonByPlayer(player)
-		.filter(isHectorEvent)
-		.map(yearOfEvent)
+	return getHectorWinsByPlayer(player).map(yearOfEvent)
 }
 
 function yearsOfVictorWins(player: any): number[] {
-	return starts(player)
-		.filter(isHectorEvent)
-		.filter((event) => event.results?.winners?.victor?.includes(player.id))
-		.map(yearOfEvent)
+	return getVictorWinsByPlayer(player).map(yearOfEvent)
 }
 
 function yearsOfMatchplayWins(player: any): number[] {
-	return getEventsWonByPlayer(player)
-		.filter(isMatchplayEvent)
-		.map(yearOfEvent)
+	return getMatchplayWinsByPlayer(player).map(yearOfEvent)
 }
 
 function starts(player: any): Array<any> {
