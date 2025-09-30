@@ -65,7 +65,6 @@ function pluralize(points: number, unit: string): string {
                             </div>
                             <div class="game-formats">
                                 {round.gameFormats.map(gf => {
-                                    console.log(`GF: ${JSON.stringify(gf)}`)
                                     const allowance = gf.handicapAllowance ? `${Math.round(gf.handicapAllowance * 100)}%` : ''
                                     const hectorContribution = gf.contribution?.hector
                                     const victorContribution = gf.contribution?.victor
