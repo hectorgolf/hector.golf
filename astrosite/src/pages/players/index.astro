@@ -2,29 +2,14 @@
 import Layout from '../../layouts/Layout.astro';
 import PlayerCard from '../../components/players/PlayerCard.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
-import { getAllPlayers, getEventsOfPlayer, getPlayerHandicapById } from '../../code/players';
+import { getAllPlayers, getEventsOfPlayer, getPlayerHandicapById, getPlayerName } from '../../code/players';
+import { yearOfEvent, isHectorEvent, isMatchplayEvent } from '../../code/data';
 import { getTotalWinsByPlayer, getEventsWonByPlayer } from '../../code/stats';
 import type { HectorEvent, MatchplayEvent, FinnkampenEvent } from '../../schemas/events';
 
 
 function linkToPlayer(player: any): string {
     return `/players/${player.id}`;
-}
-
-function isHectorEvent(event: any): event is HectorEvent {
-	return event.format === 'hector'
-}
-
-function isMatchPlayEvent(event: any): event is MatchplayEvent {
-	return event.format === 'matchplay'
-}
-
-function yearOfEvent(event: HectorEvent|MatchplayEvent|FinnkampenEvent): number {
-	return parseYearFromDate(event.date)
-}
-
-function parseYearFromDate(date: string): number {
-	return parseInt(date.match(/\d{4}$/)?.[0] || '0')
 }
 
 function yearsOfHectorWins(player: any): number[] {
@@ -42,7 +27,7 @@ function yearsOfVictorWins(player: any): number[] {
 
 function yearsOfMatchplayWins(player: any): number[] {
 	return getEventsWonByPlayer(player)
-		.filter(isMatchPlayEvent)
+		.filter(isMatchplayEvent)
 		.map(yearOfEvent)
 }
 
@@ -64,7 +49,59 @@ function startsCount(player: any): number {
 	return starts(player).length
 }
 
-const players = getAllPlayers().sort((a, b) => getTotalWinsByPlayer(b) - getTotalWinsByPlayer(a))
+const players = getAllPlayers().sort((a, b) => {
+	// First, sort by number of all wins (hector + victor + matchplay)
+	const aWins = getTotalWinsByPlayer(a);
+	const bWins = getTotalWinsByPlayer(b);
+	if (aWins !== bWins) {
+		return bWins - aWins; // Sort by number of wins descending
+	}
+
+	// Second, sort by number of Hector wins
+	const aHectorsWon = yearsOfHectorWins(a);
+	const bHectorsWon = yearsOfHectorWins(b);
+	if (aHectorsWon.length !== bHectorsWon.length) {
+		return bHectorsWon.length - aHectorsWon.length;
+	}
+
+	// Second, sort by number of Victor wins
+	const aVictorsWon = yearsOfVictorWins(a);
+	const bVictorsWon = yearsOfVictorWins(b);
+	if (aVictorsWon.length !== bVictorsWon.length) {
+		return bVictorsWon.length - aVictorsWon.length;
+	}
+
+	// Third, sort by number of Matchplay wins
+	const aMatchplaysWon = yearsOfMatchplayWins(a);
+	const bMatchplaysWon = yearsOfMatchplayWins(b);
+	if (aMatchplaysWon.length !== bMatchplaysWon.length) {
+		return bMatchplaysWon.length - aMatchplaysWon.length;
+	}
+
+	// Then, sort by most recent win
+	const aMostRecentWin = Math.max(0, ...getEventsWonByPlayer(a).map(yearOfEvent));
+	const bMostRecentWin = Math.max(0, ...getEventsWonByPlayer(b).map(yearOfEvent));
+	if (aMostRecentWin !== bMostRecentWin) {
+		return bMostRecentWin - aMostRecentWin;
+	}
+
+	// Then, sort by most recent start
+	const aMostRecentStart = Math.max(0, ...starts(a).map(yearOfEvent));
+	const bMostRecentStart = Math.max(0, ...starts(b).map(yearOfEvent));
+	if (aMostRecentStart !== bMostRecentStart) {
+		return bMostRecentStart - aMostRecentStart;
+	}
+
+	// Then, sort by number of starts
+	const aNumberOfStarts = starts(a).length;
+	const bNumberOfStarts = starts(b).length;
+	if (aNumberOfStarts !== bNumberOfStarts) {
+		return bNumberOfStarts - aNumberOfStarts;
+	}
+
+	// As the last resort, sort alphabetically by name
+	return getPlayerName(a).localeCompare(getPlayerName(b));
+})
 
 
 ---

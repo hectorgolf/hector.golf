@@ -47,6 +47,30 @@ export function isHectorEvent(
 }
 
 /**
+ * Filter function for dropping non-`MatchplayEvent` values.
+ *
+ * @param event `Event` object to evaluate the predicate against.
+ * @returns true if the `Event` is a `MatchplayEvent`.
+ */
+export function isMatchplayEvent(
+    event: Event | HectorEvent | MatchplayEvent | FinnkampenEvent | undefined
+): event is MatchplayEvent {
+    return event?.format === "matchplay";
+}
+
+/**
+ * Filter function for dropping non-`MatchplayEvent` values.
+ *
+ * @param event `Event` object to evaluate the predicate against.
+ * @returns true if the `Event` is a `MatchplayEvent`.
+ */
+export function isFinnkampenEvent(
+    event: Event | HectorEvent | MatchplayEvent | FinnkampenEvent | undefined
+): event is FinnkampenEvent {
+    return event?.format === "finnkampen";
+}
+
+/**
  * Filter function for selecting future events.
  *
  * @param event `Event` object to evaluate the predicate against.
@@ -66,6 +90,14 @@ export function isUpcomingEvent(event: Event | undefined): boolean {
 export function isPastEvent(event: Event | undefined): boolean {
     if (!event) return false;
     return isoDate(parseEventDateRange(event.date)?.endDate) < isoDateToday();
+}
+
+export function yearOfEvent(event: HectorEvent|MatchplayEvent|FinnkampenEvent): number {
+	return parseYearFromDate(event.date)
+}
+
+function parseYearFromDate(date: string): number {
+	return parseInt(date.match(/\d{4}$/)?.[0] || '0')
 }
 
 /**
