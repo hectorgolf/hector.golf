@@ -9,7 +9,8 @@ on:
   push:
     branches: ["main"]      # Only run when the push is to the "main" branch
     paths:
-      - 'astrosite/**/*'    # Only run when the push includes changes to the Astro website
+      - 'astrosite/**/*'          # Only run when the push includes changes to the Astro website
+      - '.github/workflows/**/*'  # ...or on Github Actions workflows
 
   # Runs at 3:30am and 12:30 (UTC) every day, hopefully after
   # the 3:00/12:00 data update has been triggered and finished:
