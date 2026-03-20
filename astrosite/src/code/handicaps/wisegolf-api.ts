@@ -1,42 +1,40 @@
-import { fetch } from 'fetch-h2'
-import moize from 'moize'
-import { ms } from 'itty-time'
-import { pRateLimit } from 'p-ratelimit'
+import { fetch } from "fetch-h2";
+import { memoize } from "micro-memoize";
+import { ms } from "itty-time";
+import { pRateLimit } from "p-ratelimit";
 
-import { NullHandicapSource, type GolfClub, type HandicapSource } from './handicap-source-api'
+import { NullHandicapSource, type GolfClub, type HandicapSource } from "./handicap-source-api";
 
-export type WisegolfSession = HandicapSource
+export type WisegolfSession = HandicapSource;
 
 export type WisegolfClub = {
-    name: string,
-    number: string,
-    abbreviation: string,
-    softwareVendorName?: string,
-}
+    name: string;
+    number: string;
+    abbreviation: string;
+    softwareVendorName?: string;
+};
 
 export type WisegolfPlayer = {
-    clubMemberId: string,  // "memberNO" in Wisegolf JSON
-    firstName: string,
-    lastName: string,      // "familyName" in Wisegolf JSON
-    club: WisegolfClub,    // "clubId" in Wisegolf JSON
-    handicap: number       // "handicapActive" in Wisegolf JSON
-}
+    clubMemberId: string; // "memberNO" in Wisegolf JSON
+    firstName: string;
+    lastName: string; // "familyName" in Wisegolf JSON
+    club: WisegolfClub; // "clubId" in Wisegolf JSON
+    handicap: number; // "handicapActive" in Wisegolf JSON
+};
 
-
-const ENV = import.meta.env || process.env || {}
-const wisegolfUsername = ENV.WISEGOLF_USERNAME
-const wisegolfPassword = ENV.WISEGOLF_PASSWORD
+const ENV = import.meta.env || process.env || {};
+const wisegolfUsername = ENV.WISEGOLF_USERNAME;
+const wisegolfPassword = ENV.WISEGOLF_PASSWORD;
 
 if (!wisegolfUsername || !wisegolfPassword) {
-    console.error(`Missing wisegolfclub.fi credentials:`)
-    console.error(`WISEGOLF_USERNAME:   ${wisegolfUsername ? wisegolfUsername : '<MISSING>'}`)
-    console.error(`WISEGOLF_PASSWORD:   ${wisegolfPassword ? wisegolfPassword.replace(/./g, '*') : '<MISSING>'}`)
-    console.error(`Please try again and provide the missing environment variables.`)
-    process.exit(1)
+    console.error(`Missing wisegolfclub.fi credentials:`);
+    console.error(`WISEGOLF_USERNAME:   ${wisegolfUsername ? wisegolfUsername : "<MISSING>"}`);
+    console.error(`WISEGOLF_PASSWORD:   ${wisegolfPassword ? wisegolfPassword.replace(/./g, "*") : "<MISSING>"}`);
+    console.error(`Please try again and provide the missing environment variables.`);
+    process.exit(1);
 }
-console.log(`wisegolfUsername:   ${wisegolfUsername}`)
-console.log(`wisegolfPassword:   ${wisegolfPassword?.replace(/./g, '*')}`)
-
+console.log(`wisegolfUsername:   ${wisegolfUsername}`);
+console.log(`wisegolfPassword:   ${wisegolfPassword?.replace(/./g, "*")}`);
 
 /*
     curl 'https://api.wisegolfclub.fi/api/1.0/auth' \
@@ -60,217 +58,271 @@ console.log(`wisegolfPassword:   ${wisegolfPassword?.replace(/./g, '*')}`)
 */
 
 const standardRequestHeaders = {
-    'Accept': 'application/json',
-    'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
-    'Cache-Control': 'no-cache',
-    'Content-Type': 'application/json',
-    'Origin': 'https://app.wisegolf.fi',
-    'Pragma': 'no-cache',
-    'Referer': 'https://app.wisegolf.fi/',
-    'Sec-Fetch-Dest': 'empty',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'cross-site',
-    'x-session-type': 'wisegolf',
-}
+    Accept: "application/json",
+    "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8",
+    "Cache-Control": "no-cache",
+    "Content-Type": "application/json",
+    Origin: "https://app.wisegolf.fi",
+    Pragma: "no-cache",
+    Referer: "https://app.wisegolf.fi/",
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "cross-site",
+    "x-session-type": "wisegolf",
+};
 
-const SOURCE_NAME = 'WiseGolf'
+const SOURCE_NAME = "WiseGolf";
 
-const fetchClubs = moize.maxAge(ms('1 hour'))(async (token: string): Promise<Array<WisegolfClub>> => {
-    const url = 'https://api.wisegolfclub.fi/api/1.0/golf/club/'
-    const response = await fetch(url, {
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json, text/plain, */*',
-            'Authorization': `token ${token}`
+const fetchClubs = memoize(
+    async (token: string): Promise<Array<WisegolfClub>> => {
+        const url = "https://api.wisegolfclub.fi/api/1.0/golf/club/";
+        const response = await fetch(url, {
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json, text/plain, */*",
+                Authorization: `token ${token}`,
+            },
+        });
+        if (response.ok) {
+            const data = await response.json();
+            const clubs = (data.rows || [])
+                .map(
+                    (club: any) =>
+                        ({
+                            name: club.name,
+                            number: club.clubId,
+                            abbreviation: club.abbreviation,
+                            softwareVendorName: club.softwareVendorName,
+                        } as WisegolfClub),
+                )
+                .sort((a: WisegolfClub, b: WisegolfClub) => a.name.localeCompare(b.name));
+            console.log(`Got ${clubs.length} clubs from ${SOURCE_NAME}`);
+            return clubs;
+        } else {
+            return Promise.reject(`Failed to fetch clubs from ${url} (HTTP ${response.status})`);
         }
-    })
-    if (response.ok) {
-        const data = await response.json()
-        const clubs =  (data.rows || [])
-            .map((club:any) => ({
-                    name: club.name,
-                    number: club.clubId,
-                    abbreviation: club.abbreviation,
-                    softwareVendorName: club.softwareVendorName
-                }) as WisegolfClub
-            ).sort((a: WisegolfClub, b: WisegolfClub) => a.name.localeCompare(b.name))
-        console.log(`Got ${clubs.length} clubs from ${SOURCE_NAME}`)
-        return clubs
-    } else {
-        return Promise.reject(`Failed to fetch clubs from ${url} (HTTP ${response.status})`)
-    }
-})
+    },
+    { expires: ms("1 hour") },
+);
 
 function convertWisegolfClubToGolfClub(club: WisegolfClub): GolfClub {
     return {
         name: club.name,
         abbreviation: club.abbreviation,
         sources: [{ name: SOURCE_NAME, id: club.number }],
-    }
+    };
 }
 
 export const createWisegolfSession = async (): Promise<WisegolfSession> => {
     try {
-        const token = await login(wisegolfUsername, wisegolfPassword)
-        const _ = await fetchClubs(token) // pre-fetch clubs
+        const token = await login(wisegolfUsername, wisegolfPassword);
+        const _ = await fetchClubs(token); // pre-fetch clubs
         return {
             name: SOURCE_NAME,
-            getPlayerHandicap: async (firstName: string, lastName: string, clubNameOrAbbreviation: string): Promise<number|undefined> => {
-                return await getWisegolfPlayerHandicap(firstName, lastName, clubNameOrAbbreviation, token)
+            getPlayerHandicap: async (
+                firstName: string,
+                lastName: string,
+                clubNameOrAbbreviation: string,
+            ): Promise<number | undefined> => {
+                return await getWisegolfPlayerHandicap(firstName, lastName, clubNameOrAbbreviation, token);
             },
             resolveClubMembership: async (firstName: string, lastName: string): Promise<GolfClub[]> => {
-                return await findWisegolfPlayerClubs(firstName, lastName, token)
+                return await findWisegolfPlayerClubs(firstName, lastName, token);
             },
             getClubs: async (): Promise<GolfClub[]> => {
                 return (await fetchClubs(token)).map(convertWisegolfClubToGolfClub);
             },
-        }
+        };
     } catch (error: any) {
-        console.error(`Failed to create a Wisegolf session (${error.message || error}) so returning a null handicap source for ${SOURCE_NAME}.`)
+        console.error(
+            `Failed to create a Wisegolf session (${
+                error.message || error
+            }) so returning a null handicap source for ${SOURCE_NAME}.`,
+        );
         return new NullHandicapSource(SOURCE_NAME);
     }
-}
+};
 
-const findWisegolfPlayerClubs = moize.maxAge(ms('1 hour'))(async (firstName: string, lastName: string, token: string): Promise<GolfClub[]> => {
-    const clubs = await fetchClubs(token)
-    const clubAbbreviations: GolfClub[] = []
-    for (let club of clubs) {
-        const player = await fetchPlayer(token, club.number, firstName, lastName)
-        if (player) {
-            clubAbbreviations.push(convertWisegolfClubToGolfClub(club));
+const findWisegolfPlayerClubs = memoize(
+    async (firstName: string, lastName: string, token: string): Promise<GolfClub[]> => {
+        const clubs = await fetchClubs(token);
+        const clubAbbreviations: GolfClub[] = [];
+        for (let club of clubs) {
+            const player = await fetchPlayer(token, club.number, firstName, lastName);
+            if (player) {
+                clubAbbreviations.push(convertWisegolfClubToGolfClub(club));
+            }
         }
-    }
-    return Promise.resolve(clubAbbreviations)
-})
-
+        return Promise.resolve(clubAbbreviations);
+    },
+    { expires: ms("1 hour") },
+);
 
 const sanitizePassword = (obj: any): any => {
-    if ('password' in obj) {
-        return { ...obj, password: '**********' }
+    if ("password" in obj) {
+        return { ...obj, password: "**********" };
     }
-    return obj
-}
+    return obj;
+};
 
-const login = moize.maxAge(ms('15 minutes'))(async (username: string, password: string): Promise<string> => {
-    const payload = {
-        username: username,
-        password: password,
-        appId: "affbfa03",
-        version: "2.7.0"
-    }
-    console.log(`Logging in to WiseGolf with ${JSON.stringify(sanitizePassword(payload))}`)
-    const response = await fetch('https://api.wisegolfclub.fi/api/1.0/auth', {
-        method: 'POST',
-        headers: standardRequestHeaders,
-        allowForbiddenHeaders: true,
-        body: JSON.stringify(payload)
-    })
-    const data = await response.json()
-    return data.access_token
-})
+const login = memoize(
+    async (username: string, password: string): Promise<string> => {
+        const payload = {
+            username: username,
+            password: password,
+            appId: "affbfa03",
+            version: "2.7.0",
+        };
+        console.log(`Logging in to WiseGolf with ${JSON.stringify(sanitizePassword(payload))}`);
+        const response = await fetch("https://api.wisegolfclub.fi/api/1.0/auth", {
+            method: "POST",
+            headers: standardRequestHeaders,
+            allowForbiddenHeaders: true,
+            body: JSON.stringify(payload),
+        });
+        const data = await response.json();
+        return data.access_token;
+    },
+    { expires: ms("15 minutes") },
+);
 
-const roundToTenths = (num: number): number => Math.round(num * 10) / 10
-
+const roundToTenths = (num: number): number => Math.round(num * 10) / 10;
 
 const fetchPlayerRateLimiter = pRateLimit({
     interval: 1000,
     rate: 5,
-    concurrency: 1
-})
+    concurrency: 1,
+});
 
-const fetchPlayer = moize.maxAge(ms('10 minutes'))(async (token: string, clubNumber: string, firstName: string, lastName: string): Promise<WisegolfPlayer|undefined> => {
-    const url = ((): string => {
-        const obj = new URL(`https://api.ringsidegolf.fi/api/1.0/golf/player/`)
-        obj.searchParams.append('firstname', firstName)
-        obj.searchParams.append('familyname', lastName)
-        obj.searchParams.append('clubid', clubNumber)
-        obj.searchParams.append('memberno', '')
-        return obj.href
-    })()
-    const response = await fetchPlayerRateLimiter(() => fetch(url, {
-        headers: { ...standardRequestHeaders, authorization: `token ${token}` },
-        allowForbiddenHeaders: true
-    }))
-    if (response.ok) {
-        try {
-            const data = await response.json()
-            if (data?.rows?.length === 0) {
-                return undefined
+const fetchPlayer = memoize(
+    async (
+        token: string,
+        clubNumber: string,
+        firstName: string,
+        lastName: string,
+    ): Promise<WisegolfPlayer | undefined> => {
+        const url = ((): string => {
+            const obj = new URL(`https://api.ringsidegolf.fi/api/1.0/golf/player/`);
+            obj.searchParams.append("firstname", firstName);
+            obj.searchParams.append("familyname", lastName);
+            obj.searchParams.append("clubid", clubNumber);
+            obj.searchParams.append("memberno", "");
+            return obj.href;
+        })();
+        const response = await fetchPlayerRateLimiter(() =>
+            fetch(url, {
+                headers: { ...standardRequestHeaders, authorization: `token ${token}` },
+                allowForbiddenHeaders: true,
+            }),
+        );
+        if (response.ok) {
+            try {
+                const data = await response.json();
+                if (data?.rows?.length === 0) {
+                    return undefined;
+                }
+                if (data.rows.length > 1) {
+                    console.warn(
+                        `Expected exactly one player, but found ${
+                            data.length
+                        } players in ${clubNumber} by name of ${firstName} ${lastName}: ${JSON.stringify(
+                            data,
+                            null,
+                            2,
+                        )}`,
+                    );
+                }
+                const player = data.rows[0];
+                const club = await fetchClub(player.clubId, token);
+                return {
+                    firstName: player.firstName,
+                    lastName: player.familyName,
+                    club: club,
+                    clubMemberId: player.memberNO,
+                    handicap: roundToTenths(player.handicapActive) || 0,
+                } as WisegolfPlayer;
+            } catch (err: any) {
+                console.error(
+                    `Failed to fetch player ${firstName} ${lastName} from ${JSON.stringify(clubNumber)} at ${url}: ${
+                        err.message || err
+                    }`,
+                    err,
+                );
+                return undefined;
             }
-            if (data.rows.length > 1) {
-                console.warn(`Expected exactly one player, but found ${data.length} players in ${clubNumber} by name of ${firstName} ${lastName}: ${JSON.stringify(data, null, 2)}`)
-            }
-            const player = data.rows[0]
-            const club = await fetchClub(player.clubId, token)
-            return {
-                firstName: player.firstName,
-                lastName: player.familyName,
-                club: club,
-                clubMemberId: player.memberNO,
-                handicap: roundToTenths(player.handicapActive) || 0
-            } as WisegolfPlayer
-        } catch (err: any) {
-            console.error(`Failed to fetch player ${firstName} ${lastName} from ${JSON.stringify(clubNumber)} at ${url}: ${err.message || err}`, err)
-            return undefined
+        } else {
+            const statusText =
+                response.statusText && response.statusText !== `${response.status}` ? ` ${response.statusText}` : "";
+            console.warn(`Failed to fetch player at ${url} (HTTP ${response.status + statusText})`);
+            return undefined;
         }
-    } else {
-        const statusText = (response.statusText && response.statusText !== `${response.status}`) ? ` ${response.statusText}` : ''
-        console.warn(`Failed to fetch player at ${url} (HTTP ${response.status + statusText})`)
-        return undefined
-    }
-})
+    },
+    { expires: ms("10 minutes") },
+);
 
-const fetchHandicap = async (token: string, clubNumber: string, firstName: string, lastName: string): Promise<number|undefined> => {
-    const player = await fetchPlayer(token, clubNumber, firstName, lastName)
+const fetchHandicap = async (
+    token: string,
+    clubNumber: string,
+    firstName: string,
+    lastName: string,
+): Promise<number | undefined> => {
+    const player = await fetchPlayer(token, clubNumber, firstName, lastName);
     if (player) {
-        return player.handicap
+        return player.handicap;
     }
-    return undefined
-}
+    return undefined;
+};
 
+const resolveClubNumber = memoize(
+    async (clubNameOrNumber: string, token: string): Promise<string | undefined> => {
+        const club = await fetchClub(clubNameOrNumber, token);
+        return club?.number;
+    },
+    { expires: ms("1 hour") },
+);
 
-const resolveClubNumber = moize.maxAge(ms('1 hour'))(async (clubNameOrNumber: string, token: string): Promise<string|undefined> => {
-    const club = await fetchClub(clubNameOrNumber, token)
-    return club?.number
-})
+const fetchClub = memoize(
+    async (clubNameOrNumber: string, token: string): Promise<WisegolfClub | undefined> => {
+        if (!clubNameOrNumber) {
+            console.warn(`No club name or number provided - cannot fetch club`);
+            return undefined;
+        }
+        const clubs = await fetchClubs(token);
+        const club = clubs.find((club) => {
+            if (club.number && club.number === clubNameOrNumber) return true;
+            if (club.number && club.number.replace(/^0+/, "") === clubNameOrNumber.replace(/^0+/, "")) return true;
+            if (club.name && club.name.toLowerCase() === clubNameOrNumber.toLowerCase()) return true;
+            if (club.abbreviation && club.abbreviation.toLowerCase() === clubNameOrNumber.toLowerCase()) return true;
+            return false;
+        });
+        if (club) {
+            return club;
+        }
+        return undefined;
+    },
+    { expires: ms("1 hour") },
+);
 
-const fetchClub = moize.maxAge(ms('1 hour'))(async (clubNameOrNumber: string, token: string): Promise<WisegolfClub|undefined> => {
-    if (!clubNameOrNumber) {
-        console.warn(`No club name or number provided - cannot fetch club`)
-        return undefined
-    }
-    const clubs = await fetchClubs(token)
-    const club = clubs.find(club => {
-        if (club.number && club.number === clubNameOrNumber) return true
-        if (club.number && club.number.replace(/^0+/, '') === clubNameOrNumber.replace(/^0+/, '')) return true
-        if (club.name && club.name.toLowerCase() === clubNameOrNumber.toLowerCase()) return true
-        if (club.abbreviation && club.abbreviation.toLowerCase() === clubNameOrNumber.toLowerCase()) return true
-        return false
-    })
-    if (club) {
-        return club
-    }
-    return undefined
-})
-
-// export const withLogin = async (callback: (token: string) => Promise<void>): Promise<void> => {
-//     return new Promise((resolve, reject) => {
-//         login(wisegolfUsername, wisegolfPassword).then(token => {
-//             callback(token).then(resolve).catch(reject)
-//         })
-//     })
-// }
-
-const getWisegolfPlayerHandicap = moize.maxAge(ms('1 hour'))(async (firstName: string, lastName: string, clubNameOrAbbreviation: string, providedToken?: string): Promise<number|undefined> => {
-    if (clubNameOrAbbreviation) {
-        if (!!wisegolfUsername && !!wisegolfPassword) {
-            console.log(`Fetching handicap for ${firstName} ${lastName} at ${clubNameOrAbbreviation} from ${SOURCE_NAME}`)
-            const token = providedToken || await login(wisegolfUsername, wisegolfPassword)
-            const clubNumber = await resolveClubNumber(clubNameOrAbbreviation, token)
-            if (clubNumber) {
-                return await fetchHandicap(token, clubNumber, firstName, lastName)
+const getWisegolfPlayerHandicap = memoize(
+    async (
+        firstName: string,
+        lastName: string,
+        clubNameOrAbbreviation: string,
+        providedToken?: string,
+    ): Promise<number | undefined> => {
+        if (clubNameOrAbbreviation) {
+            if (!!wisegolfUsername && !!wisegolfPassword) {
+                console.log(
+                    `Fetching handicap for ${firstName} ${lastName} at ${clubNameOrAbbreviation} from ${SOURCE_NAME}`,
+                );
+                const token = providedToken || (await login(wisegolfUsername, wisegolfPassword));
+                const clubNumber = await resolveClubNumber(clubNameOrAbbreviation, token);
+                if (clubNumber) {
+                    return await fetchHandicap(token, clubNumber, firstName, lastName);
+                }
             }
         }
-    }
-    return undefined
-})
+        return undefined;
+    },
+    { expires: ms("1 hour") },
+);
