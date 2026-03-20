@@ -13,9 +13,12 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# environment variables
+# environment variables in "dotenv" files (the order of these is important - .env* is ignored but .env.sample is not)
 .env
-.env.production
+.env.*
+.env-*
+.env_*
+!.env.sample
 
 # macOS-specific files
 .DS_Store
