@@ -7,7 +7,6 @@ import { getAllPlayers, getPlayerName, updatePlayerData } from "../code/players.
 import { type Player } from "../schemas/players.ts";
 import { type HectorEvent } from "../schemas/events.ts";
 
-import { createTeetimeSession } from "../code/handicaps/teetime-api";
 import { createWisegolfSession } from "../code/handicaps/wisegolf-api";
 import { type GolfClub, type HandicapSource } from "../code/handicaps/handicap-source-api";
 import { parseEventDateRange } from "../code/dates.ts";
@@ -23,7 +22,7 @@ const __filename = fileURLToPath(import.meta.url);
 const pathToCommitMessage = join(dirname(__filename), "../../.update-player-biographies-commit");
 
 function createHandicapSources(): Promise<HandicapSource[]> {
-    return Promise.all([createWisegolfSession(), createTeetimeSession()]);
+    return Promise.all([createWisegolfSession()]);
 }
 
 function mergeClubs(instances: GolfClub[]): GolfClub {

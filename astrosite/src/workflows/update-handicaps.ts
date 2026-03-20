@@ -3,7 +3,6 @@ import { join, dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
 
 import type { HandicapSource } from '../code/handicaps/handicap-source-api.ts'
-import { createTeetimeSession } from '../code/handicaps/teetime-api.ts'
 import { createWisegolfSession } from '../code/handicaps/wisegolf-api.ts'
 
 import { isoDateToday } from '../code/dates.ts'
@@ -181,7 +180,7 @@ const fetchUpdatedPlayerRecords = async (players: Player[], handicapHistory: Arr
 
 const updateHandicapsForAllPlayers = async () => {
     console.log(`Attempting to update handicap data for ${playersData.length} players...`)
-    const sourcePromises = await Promise.allSettled([createTeetimeSession(), createWisegolfSession()])
+    const sourcePromises = await Promise.allSettled([createWisegolfSession()])
     const availableSources = sourcePromises.filter(r => r.status === 'fulfilled').map(r => r.value)
     if (availableSources.length < sourcePromises.length) {
         console.error(`Failed to access all handicap sources. Only ${availableSources.length} out of ${sourcePromises.length} API connections were successfully established.`)

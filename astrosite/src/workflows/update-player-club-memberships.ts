@@ -3,7 +3,6 @@ import { join, dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 
 import type { GolfClub, HandicapSource } from "../code/handicaps/handicap-source-api.ts";
-import { createTeetimeSession } from "../code/handicaps/teetime-api.ts";
 import { createWisegolfSession } from "../code/handicaps/wisegolf-api.ts";
 
 import { pathToPlayerJson, playersData } from "../code/data.ts";
@@ -121,7 +120,7 @@ const updateClubMemberships = async () => {
     const playersWithoutClub = oldPlayers.filter((player: any) => !player.club);
     if (playersWithoutClub.length > 0) {
         console.log(`Attempting to identify club for ${playersWithoutClub.length} players: ${playersWithoutClub.map(p => getPlayerName(p)).join(", ")}`);
-        const sources = await Promise.all([createTeetimeSession(), createWisegolfSession()]);
+        const sources = await Promise.all([createWisegolfSession()]);
         const attemptedPlayers = await updatePlayerRecords(playersWithoutClub, sources);
         const updatedPlayers = attemptedPlayers.filter((player: any) => !!player.club);
         if (updatedPlayers.length > 0) {
