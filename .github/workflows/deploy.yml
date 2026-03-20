@@ -1,7 +1,19 @@
 name: Deploy hector.golf
 
 on:
-  # Allows you to run this workflow manually from the Actions tab on GitHub.
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["main"]      # Only run when the push is to the "main" branch
+    paths:
+      - 'astrosite/**/*'          # Only run when the push includes changes to the Astro website
+      - '.github/workflows/**/*'  # ...or on Github Actions workflows
+
+  # Runs at 3:30am and 12:30 (UTC) every day, hopefully after
+  # the 3:00/12:00 data update has been triggered and finished:
+  schedule:
+    - cron: "30 3,12 * * *"
+
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 # Allow this job to clone the repo and create a page deployment
@@ -10,8 +22,12 @@ permissions:
   pages: write
   id-token: write
 
-env:
-  BUILD_PATH: ./astrosite
+# Allow only one concurrent deployment, skipping runs queued between the run
+# in-progress and latest queued. However, do NOT cancel in-progress runs as we
+# want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
 
