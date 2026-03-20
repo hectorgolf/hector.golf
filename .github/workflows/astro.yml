@@ -84,9 +84,6 @@ jobs:
             --base "${{ steps.pages.outputs.base_path }}"
         working-directory: ${{ env.BUILD_PATH }}
         env:
-          TEETIME_CLUB_NUMBER: 0134   # Tapiola Golf
-          TEETIME_USERNAME: 2762
-          TEETIME_PASSWORD: ${{ secrets.TEETIME_PASSWORD }}
           WISEGOLF_USERNAME: lasse.koskela@gmail.com
           WISEGOLF_PASSWORD: ${{ secrets.WISEGOLF_PASSWORD }}
       - name: Upload artifact
