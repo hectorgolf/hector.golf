@@ -19,7 +19,7 @@
   "license": "MIT",
   "description": "GCP Cloud Functions for Hector.golf",
   "devDependencies": {
-    "glob": "^11.1.0",
+    "glob": "^13.0.6",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.0",
     "typescript": "^5.5.4"
