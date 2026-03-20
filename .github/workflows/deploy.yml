@@ -1,0 +1,62 @@
+name: Deploy hector.golf
+
+on:
+  # Allows you to run this workflow manually from the Actions tab on GitHub.
+  workflow_dispatch:
+
+# Allow this job to clone the repo and create a page deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+env:
+  BUILD_PATH: ./astrosite
+
+jobs:
+
+  # Build the Astro site and prepare it for deployment to GitHub Pages.
+  # This job will run the build command and upload the built site as an artifact
+  # that can be used in the deployment step.
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repository so we can access the Astro project files and
+      # build the site.
+      - name: Checkout your repository using git
+        uses: actions/checkout@v6
+
+      # Set up Github Pages, which will give us the correct base path and
+      # origin to use when building the site with `withastro/action`.
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      # Use `withastro/action` to build the site and upload it as an artifact
+      # that can be deployed to GitHub Pages.
+      - name: Install, build, and upload your site
+        uses: withastro/action@v6
+        with:
+          path: astrosite  # The root location of your Astro project inside the repository. (optional)
+          node-version: 24 # The specific version of Node that should be used to build your site. (optional)
+          build-cmd: |
+            npx --no-install astro build \
+              --site "${{ steps.pages.outputs.origin }}" \
+              --base "${{ steps.pages.outputs.base_path }}"
+        env:
+          WISEGOLF_USERNAME: lasse.koskela@gmail.com
+          WISEGOLF_PASSWORD: ${{ secrets.WISEGOLF_PASSWORD }}
+
+  # This is the deployment step that takes the built site artifact from the
+  # previous step and deploys it to GitHub Pages. This step will only run after
+  # the build step has completed successfully.
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
