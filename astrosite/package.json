@@ -33,7 +33,7 @@
     "luxon": "^3.7.2",
     "mime": "^4.1.0",
     "moize": "^6.1.7",
-    "octokit": "^4.1.2",
+    "octokit": "^4.1.4",
     "p-ratelimit": "^1.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
