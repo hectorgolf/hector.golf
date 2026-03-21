@@ -35,11 +35,35 @@ export const GeneratePlayerBiography: HttpFunction = async (request: Request, re
             typeof request.body === "string" ? JSON.parse(request.body) : request.body;
 
         if (!payload?.name) {
+            const samplePayload: PlayerBiographyInput = {
+                name: "John",
+                gender: "male",
+                homeClub: "Hector Golf Club",
+                previousAppearances: [
+                    { name: "Hector Open 2022", year: 2022 },
+                    { name: "Hector Invitational 2023", year: 2023 },
+                ],
+                hectorWins: [{ name: "Hector Open 2022", year: 2022 }],
+                victorWins: [{ name: "Hector Invitational 2023", year: 2023 }],
+                miscellaneousDetails: ["Enjoys long walks on the beach", "Has a pet parrot named Polly"],
+                allPastEvents: [
+                    { name: "Hector Open 2021", year: 2021 },
+                    { name: "Hector Open 2022", year: 2022 },
+                    { name: "Hector Invitational 2023", year: 2023 },
+                ],
+                nextEvent: {
+                    name: "Hector Championship 2024",
+                    year: 2024,
+                    participates: true,
+                },
+                retired: false,
+            };
+            console.warn(`Invalid payload for generating player biography: ${JSON.stringify(payload)}.`);
             response.status(400).send(
                 JSON.stringify({
                     error: "Invalid payload",
-                    message: "expected a PlayerBiographyInput object",
-                })
+                    message: `Expected a PlayerBiographyInput object. Expected a PlayerBiographyInput object like this sample: ${JSON.stringify(samplePayload)}`,
+                }),
             );
             return;
         }
@@ -48,12 +72,12 @@ export const GeneratePlayerBiography: HttpFunction = async (request: Request, re
 
         response.status(200).send(biography);
     } catch (error) {
-        console.error('Error generating player biography:', error);
+        console.error("Error generating player biography:", error);
         response.status(500).send(
             JSON.stringify({
                 error: "Internal server error",
                 message: error instanceof Error ? error.message : "Unknown error occurred",
-            })
+            }),
         );
     }
 };
