@@ -14,7 +14,22 @@ const columnNames = (() => {
     return alphabet.concat(alphabet.flatMap(firstChar => alphabet.map(secondChar => `${firstChar}${secondChar}`)))
 })()
 
-const googleCredentials = process.env.GOOGLE_CREDENTIALS ? JSON.parse(process.env.GOOGLE_CREDENTIALS) : undefined
+function acquireGoogleCredentials() {
+    try {
+        const value = process.env.GOOGLE_CREDENTIALS
+        if (!value) {
+            console.warn('GOOGLE_CREDENTIALS environment variable is not set - Google Sheets authentication will not work')
+            return undefined
+        }
+        const normalizedValue = value.replace(/\n/g, '\\n')
+        return JSON.parse(normalizedValue)
+    } catch (error) {
+        console.error('Error parsing GOOGLE_CREDENTIALS: ' + process.env.GOOGLE_CREDENTIALS, error)
+        return undefined
+    }
+}
+
+const googleCredentials = acquireGoogleCredentials()
 
 const columnName = (index: number): string => columnNames[index] || `${index}?`
 
