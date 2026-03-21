@@ -135,7 +135,7 @@ const description = event.description ? event.description.split(/\n+/) : []
             </div>
         )}
 
-        {event.results?.teams && (
+        {(event.results?.teams?.length ?? 0) > 0 && (
             <div class="teams">
                 <h2>Teams</h2>
                 <ul>
