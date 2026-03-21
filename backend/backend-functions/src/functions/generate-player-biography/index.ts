@@ -15,7 +15,12 @@ export const GeneratePlayerBiography: HttpFunction = async (request: Request, re
     response.set("content-type", "application/json");
 
     if (typeof process.env.GOOGLE_GEMINI_API_KEY === "undefined") {
-        response.status(500).send("Internal server error: Missing API key");
+        response.status(500).send("Internal server error: Missing API key (1)");
+        return;
+    }
+
+    if (typeof process.env.ASTROSITE_API_KEY === "undefined") {
+        response.status(500).send("Internal server error: Missing API key (2)");
         return;
     }
 
@@ -29,7 +34,7 @@ export const GeneratePlayerBiography: HttpFunction = async (request: Request, re
         const payload: PlayerBiographyInput =
             typeof request.body === "string" ? JSON.parse(request.body) : request.body;
 
-        if (!payload.name) {
+        if (!payload?.name) {
             response.status(400).send(
                 JSON.stringify({
                     error: "Invalid payload",
@@ -43,6 +48,7 @@ export const GeneratePlayerBiography: HttpFunction = async (request: Request, re
 
         response.status(200).send(biography);
     } catch (error) {
+        console.error('Error generating player biography:', error);
         response.status(500).send(
             JSON.stringify({
                 error: "Internal server error",

@@ -47,9 +47,11 @@ async function uploadImage(imageFile: string): Promise<FileDataPart> {
 // Converts local file information to a GoogleGenerativeAI.Part object.
 function convertLocalImageFileToGenerativePart(filePath: string, mimeType?: string): InlineDataPart {
     mimeType = mimeType || getMimeType(filePath)
+    let buf = readFileSync(filePath)
+    buf = Buffer.isBuffer(buf) ? buf : Buffer.from(buf);
     return {
         inlineData: {
-            data: Buffer.from(readFileSync(filePath)).toString("base64"),
+            data: buf.toString("base64"),
             mimeType
         }
     };
