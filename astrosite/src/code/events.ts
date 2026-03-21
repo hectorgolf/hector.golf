@@ -116,6 +116,7 @@ function isHectorEvent(event: Event): event is HectorEvent {
 const populateUpdatedHandicaps = (event: Event): Event => {
     if (isHectorEvent(event) && !isPastEvent(event)) {
         function updateHcp(id: string, handicap: number|undefined) {
+            // TODO: should we add a `?? handicap` here - we're not using the provided handicap at all?
             return { id, handicap: getPlayerHandicapById(id) }
         }
         event.buckets = event.buckets?.map(bucket => bucket.map(p => updateHcp(p.id, p.handicap)))
