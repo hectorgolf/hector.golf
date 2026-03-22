@@ -30,13 +30,6 @@
     "konopiste-radecky",
     "konopiste-deste"
   ],
-  "results": {
-    "teams": [],
-    "winners": {
-      "hector": [],
-      "victor": []
-    }
-  },
   "buckets": [
     [
       {
@@ -87,7 +80,7 @@
       },
       {
         "id": "timo-l",
-        "handicap": 12.1
+        "handicap": 12.3
       },
       {
         "id": "lauri-p",
@@ -115,5 +108,12 @@
       }
     ]
   ],
+  "results": {
+    "teams": [],
+    "winners": {
+      "hector": [],
+      "victor": []
+    }
+  },
   "leaderboardSheet": "https://docs.google.com/spreadsheets/d/1GwdeBzITBXqCA1114vgkqfHPfqKe1bxSFpsDZdj-Ado/edit"
 }
