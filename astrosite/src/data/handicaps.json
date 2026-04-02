@@ -5313,5 +5313,15 @@
     "date": "2026-04-01",
     "player": "marcus-m",
     "handicap": 11.1
+  },
+  {
+    "date": "2026-04-02",
+    "player": "toni-m",
+    "handicap": 14
+  },
+  {
+    "date": "2026-04-02",
+    "player": "okko-p",
+    "handicap": 14.9
   }
 ]
