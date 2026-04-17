@@ -61,21 +61,21 @@
         "handicap": 10.5
       },
       {
-        "id": "martin-s",
-        "handicap": 10.7
-      },
-      {
         "id": "marcus-m",
         "handicap": 11
+      },
+      {
+        "id": "harri-v",
+        "handicap": 11.1
       }
     ],
     [
       {
-        "id": "harri-v",
-        "handicap": 11.1
+        "id": "timo-l",
+        "handicap": 11.2
       },
       {
-        "id": "timo-l",
+        "id": "martin-s",
         "handicap": 11.2
       },
       {
