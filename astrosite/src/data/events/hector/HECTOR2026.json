@@ -1,118 +1,129 @@
 {
-    "id": "HECTOR2026",
-    "ignore": false,
-    "name": "Hector Trophée 2026",
-    "location": "Golf & Spa Resort Konopiště, Czechia",
-    "date": "September 24-27, 2026",
-    "description": "Hector Trophee returns to Golf & Spa Resort Konopiste in 2026, where the iconic Radecky and d'Este courses will once again decide who earns the season's biggest bragging rights. Over four days of pressure-packed competition, players will take on Radecky's full championship challenge through dense forest corridors, expansive bunkering, and demanding greens that reward precise iron play and steady putting nerves.\n\nThe test only tightens on d'Este, where narrower fairways, punishing rough, and a strategy-first layout force disciplined choices from the first tee to the final putt. With momentum swinging between two very different par-72 tracks and every shot counting, Hector Trophee 2026 is set up for another classic week in Konopiste.",
-    "participants": [
-        "lasse-k",
-        "toni-m",
-        "marcus-m",
-        "eero-h",
-        "harri-v",
-        "jari-k",
-        "jarkko-k",
-        "juuso-p",
-        "kristian-h",
-        "lassi-k",
-        "lauri-p",
-        "martin-s",
-        "ofri-p",
-        "olli-a",
-        "olli-v",
-        "ossi-l",
-        "pekka-s",
-        "sami-h",
-        "simo-l",
-        "timo-l"
+  "id": "HECTOR2026",
+  "ignore": false,
+  "name": "Hector Trophée 2026",
+  "location": "Golf & Spa Resort Konopiště, Czechia",
+  "date": "September 24-27, 2026",
+  "description": "Hector Trophee returns to Golf & Spa Resort Konopiste in 2026, where the iconic Radecky and d'Este courses will once again decide who earns the season's biggest bragging rights. Over four days of pressure-packed competition, players will take on Radecky's full championship challenge through dense forest corridors, expansive bunkering, and demanding greens that reward precise iron play and steady putting nerves.\n\nThe test only tightens on d'Este, where narrower fairways, punishing rough, and a strategy-first layout force disciplined choices from the first tee to the final putt. With momentum swinging between two very different par-72 tracks and every shot counting, Hector Trophee 2026 is set up for another classic week in Konopiste.",
+  "participants": [
+    "lasse-k",
+    "toni-m",
+    "marcus-m",
+    "eero-h",
+    "harri-v",
+    "jari-k",
+    "jarkko-k",
+    "juuso-p",
+    "kristian-h",
+    "lassi-k",
+    "lauri-p",
+    "martin-s",
+    "ofri-p",
+    "olli-a",
+    "olli-v",
+    "ossi-l",
+    "pekka-s",
+    "sami-h",
+    "simo-l",
+    "timo-l"
+  ],
+  "format": "hector",
+  "courses": [
+    "konopiste-radecky",
+    "konopiste-deste"
+  ],
+  "buckets": [
+    [
+      {
+        "id": "jari-k",
+        "handicap": 2
+      },
+      {
+        "id": "sami-h",
+        "handicap": 4.5
+      },
+      {
+        "id": "ofri-p",
+        "handicap": 4.8
+      },
+      {
+        "id": "simo-l",
+        "handicap": 5.7
+      },
+      {
+        "id": "juuso-p",
+        "handicap": 6.8
+      },
+      {
+        "id": "ossi-l",
+        "handicap": 8
+      },
+      {
+        "id": "olli-v",
+        "handicap": 8.5
+      },
+      {
+        "id": "eero-h",
+        "handicap": 9.2
+      },
+      {
+        "id": "olli-a",
+        "handicap": 10.5
+      },
+      {
+        "id": "marcus-m",
+        "handicap": 11
+      }
     ],
-    "format": "hector",
-    "courses": ["konopiste-radecky", "konopiste-deste"],
-    "buckets": [
-        [
-            {
-                "id": "jari-k",
-                "handicap": 2
-            },
-            {
-                "id": "sami-h",
-                "handicap": 4.5
-            },
-            {
-                "id": "ofri-p",
-                "handicap": 4.8
-            },
-            {
-                "id": "simo-l",
-                "handicap": 5.7
-            },
-            {
-                "id": "juuso-p",
-                "handicap": 6.8
-            },
-            {
-                "id": "ossi-l",
-                "handicap": 8
-            },
-            {
-                "id": "olli-a",
-                "handicap": 10.5
-            },
-            {
-                "id": "marcus-m",
-                "handicap": 11
-            },
-            {
-                "id": "harri-v",
-                "handicap": 11.1
-            }
-        ],
-        [
-            {
-                "id": "timo-l",
-                "handicap": 11.2
-            },
-            {
-                "id": "martin-s",
-                "handicap": 11.2
-            },
-            {
-                "id": "kristian-h",
-                "handicap": 12.6
-            },
-            {
-                "id": "toni-m",
-                "handicap": 13.3
-            },
-            {
-                "id": "lauri-p",
-                "handicap": 13.6
-            },
-            {
-                "id": "jarkko-k",
-                "handicap": 13.7
-            },
-            {
-                "id": "lasse-k",
-                "handicap": 15.4
-            },
-            {
-                "id": "pekka-s",
-                "handicap": 17.5
-            },
-            {
-                "id": "janne-v",
-                "handicap": 18.4
-            }
-        ]
-    ],
-    "results": {
-        "teams": [],
-        "winners": {
-            "hector": [],
-            "victor": []
-        }
-    },
-    "leaderboardSheet": "https://docs.google.com/spreadsheets/d/1GwdeBzITBXqCA1114vgkqfHPfqKe1bxSFpsDZdj-Ado/edit"
+    [
+      {
+        "id": "harri-v",
+        "handicap": 11.1
+      },
+      {
+        "id": "timo-l",
+        "handicap": 11.2
+      },
+      {
+        "id": "martin-s",
+        "handicap": 11.2
+      },
+      {
+        "id": "lassi-k",
+        "handicap": 12
+      },
+      {
+        "id": "kristian-h",
+        "handicap": 12.6
+      },
+      {
+        "id": "toni-m",
+        "handicap": 13.3
+      },
+      {
+        "id": "lauri-p",
+        "handicap": 13.6
+      },
+      {
+        "id": "jarkko-k",
+        "handicap": 13.7
+      },
+      {
+        "id": "lasse-k",
+        "handicap": 15.4
+      },
+      {
+        "id": "pekka-s",
+        "handicap": 17.5
+      }
+    ]
+  ],
+  "results": {
+    "teams": [],
+    "winners": {
+      "hector": [],
+      "victor": []
+    }
+  },
+  "leaderboardSheet": "https://docs.google.com/spreadsheets/d/1GwdeBzITBXqCA1114vgkqfHPfqKe1bxSFpsDZdj-Ado/edit"
 }
