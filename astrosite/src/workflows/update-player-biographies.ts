@@ -98,6 +98,7 @@ type PlayerBiographyInput = {
     allPastEvents: EventNameAndYear[];
     nextEvent: NextEvent | undefined;
     retired: boolean;
+    otherGeneratedBiographies: string[];
 };
 
 function EventNameAndYearFrom(event: { name: string; date: string }): EventNameAndYear {
@@ -125,7 +126,7 @@ function playerParticipatedInEvent(player: Player, event: HectorEvent): boolean 
     );
 }
 
-async function extractPlayerBiographyInput(player: Player): Promise<PlayerBiographyInput> {
+async function extractPlayerBiographyInput(player: Player, otherGeneratedBiographies: string[]): Promise<PlayerBiographyInput> {
     const allPastEvents = hectorEvents.filter(isPastEvent);
     const pastAppearances = allPastEvents.filter((e) => playerParticipatedInEvent(player, e));
     const lastAppearance = pastAppearances[0];
@@ -169,6 +170,7 @@ async function extractPlayerBiographyInput(player: Player): Promise<PlayerBiogra
               }
             : undefined,
         retired: eventsSinceLastAppearance > 7,
+        otherGeneratedBiographies,
     };
 }
 
@@ -207,13 +209,15 @@ async function generateBiography(input: PlayerBiographyInput): Promise<string[]>
 async function updateBiographiesForEvent(event: HectorEvent) {
     getAllPlayers();
     const commitMessage: string[] = [];
+    const generatedBiographies: string[] = [];
     for (const player of getAllPlayers()) {
-        const input = await extractPlayerBiographyInput(player);
+        const input = await extractPlayerBiographyInput(player, generatedBiographies);
         const biography = await generateBiography(input);
         const playerName = getPlayerName(player);
         commitMessage.push(playerName);
         console.log(`- Updated biography for ${playerName}`);
         await updatePlayerData({ ...player, biography });
+        generatedBiographies.push(...biography);
     }
     if (commitMessage.length > 0) {
         writeFileSync(

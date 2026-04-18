@@ -57,6 +57,10 @@ export const GeneratePlayerBiography: HttpFunction = async (request: Request, re
                     participates: true,
                 },
                 retired: false,
+                otherGeneratedBiographies: [
+                    "Alex is a passionate golfer with a strong track record. He has participated in multiple events, showcasing his skills and determination on the course. With a victory at Hector Open 2022 and an individual title at the Hector Invitational 2023, Alex has established himself as a formidable competitor.",
+                    "Bob is a dedicated golfer known for his strategic approach and consistent performance. He has competed in numerous tournaments, earning accolades and respect from his peers. Bob's achievements include a notable win at Hector Open 2020 and a strong showing at the Hector Invitational 2023."
+                ]
             };
             console.warn(`Invalid payload for generating player biography: ${JSON.stringify(payload)}.`);
             response.status(400).send(

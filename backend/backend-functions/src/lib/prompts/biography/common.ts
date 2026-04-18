@@ -18,6 +18,7 @@ export type PlayerBiographyInput = {
     allPastEvents: EventNameAndYear[];
     nextEvent: NextEvent | undefined;
     retired: boolean;
+    otherGeneratedBiographies: string[];
 };
 
 export function describeEvent(event: EventNameAndYear): string {
