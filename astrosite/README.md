@@ -135,3 +135,8 @@ Build target is GitHub Pages.
 2. If leaderboards fail, validate that `GOOGLE_CREDENTIALS` is valid JSON on one line.
 3. If biography generation fails with 401, verify `ASTROSITE_API_KEY` matches the deployed backend setting.
 4. If deploy did not run, check that changes landed on `main` and include files under `astrosite/`.
+
+## Related docs
+
+- Operations cheat sheet: `../docs/OPERATIONS.md`
+- Environment variable reference: `../docs/ENVIRONMENT.md`

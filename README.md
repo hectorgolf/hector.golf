@@ -63,6 +63,10 @@ npm run dev:generate-player-biography
   - See `astrosite/README.md`
 - Backend cloud function local run/deploy playbooks:
   - See `backend/README.md`
+- Quick command cheat sheet:
+  - See `docs/OPERATIONS.md`
+- Environment variables reference:
+  - See `docs/ENVIRONMENT.md`
 
 ## CI/CD overview
 

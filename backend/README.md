@@ -113,3 +113,8 @@ These scripts:
 1. `gcloud` deploy failures: run `gcloud auth login` and `gcloud auth application-default login`.
 2. `401 Valid API key required` from biography function: check `Authorization: Bearer ...` header and `ASTROSITE_API_KEY` alignment.
 3. Missing API key runtime errors: verify `.env` values and shell export behavior.
+
+## Related docs
+
+- Operations cheat sheet: `../docs/OPERATIONS.md`
+- Environment variable reference: `../docs/ENVIRONMENT.md`
