@@ -46,7 +46,7 @@ jobs:
       # origin to use when building the site with `withastro/action`.
       - name: Setup Pages
         id: pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       # Use `withastro/action` to build the site and upload it as an artifact
       # that can be deployed to GitHub Pages.
