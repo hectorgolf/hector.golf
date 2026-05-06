@@ -1,4 +1,5 @@
-import ExtractScorecardInformation from './scorecard-detection';
-import GeneratePlayerBiography from './generate-player-biography';
+import ExtractScorecardInformation from "./scorecard-detection";
+import GeneratePlayerBiography from "./generate-player-biography";
+import GeneratePlayerAvatar from "./generate-player-avatar";
 
-export { ExtractScorecardInformation, GeneratePlayerBiography };
+export { ExtractScorecardInformation, GeneratePlayerBiography, GeneratePlayerAvatar };
