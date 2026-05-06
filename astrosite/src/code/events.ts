@@ -1,4 +1,4 @@
-import { type Event, genericEventSchema as EventSchema, type MatchplayEvent, type MatchplayResults, type HectorEvent, type FinnkampenEvent, EventFormat, hectorEventSchema } from '../schemas/events';
+import { type Event, genericEventSchema as EventSchema, type MatchplayEvent, type MatchplayResults, type HectorEvent, type FinnkampenEvent, EventFormat } from '../schemas/events';
 import { type Course, schema as CourseSchema } from '../schemas/courses';
 import { parseEventDateRange, isoDate, isoDateToday, compareDateStrings } from './dates';
 import { eventsData, coursesData, isPastEvent } from './data';
