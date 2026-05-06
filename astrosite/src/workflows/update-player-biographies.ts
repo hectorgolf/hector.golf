@@ -206,7 +206,7 @@ async function generateBiography(input: PlayerBiographyInput): Promise<string[]>
     }
 }
 
-async function updateBiographiesForEvent(event: HectorEvent) {
+async function updateBiographiesForEvent(_: HectorEvent) {
     getAllPlayers();
     const commitMessage: string[] = [];
     const generatedBiographies: string[] = [];
