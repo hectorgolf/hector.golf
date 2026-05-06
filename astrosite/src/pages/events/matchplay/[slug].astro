@@ -1,4 +1,5 @@
 ---
+import markdownit from 'markdown-it';
 import Layout from '../../../layouts/Layout.astro';
 import Breadcrumb from '../../../components/Breadcrumb.astro';
 import SingleEliminationBracketV2 from '../../../components/events/SingleEliminationBracketV2.astro';
@@ -26,6 +27,8 @@ const field: Array<Player> = event.participants
     .filter(p => !!p)
     .sort((p1, p2) => p1!.name.last.localeCompare(p2!.name.last)) as Array<Player> || []
 
+const md = markdownit()
+const eventDescriptionHtml = event.description ? md.render(event.description) : '';
 ---
 <Layout title={event.name}>
     <main>
@@ -40,7 +43,7 @@ const field: Array<Player> = event.participants
             <div class="event-date">{event.date}</div>
         </div>
         {event.hero_image ? <img src={event.hero_image} title={event.name}/><br/> : ""}
-        {event.description ? (<p>{event.description}</p>) : ""}
+        <div class="description" set:html={eventDescriptionHtml}></div>
 
         {(event.results?.winners?.matchplay && getPlayerById(event.results!.winners?.matchplay)) && (
             <div class="results">

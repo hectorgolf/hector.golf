@@ -31,6 +31,7 @@
     "itty-time": "^2.0.2",
     "js-md5": "^0.8.3",
     "luxon": "^3.7.2",
+    "markdown-it": "^14.1.1",
     "micro-memoize": "^5.1.1",
     "mime": "^4.1.0",
     "octokit": "^5.0.5",
@@ -41,6 +42,7 @@
   },
   "devDependencies": {
     "@types/crypto-js": "^4.2.2",
+    "@types/markdown-it": "^14.1.2",
     "@types/node": "^25.5.0",
     "@types/react": "^18.3.7",
     "@types/react-dom": "^18.3.0",

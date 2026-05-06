@@ -37,8 +37,8 @@ rounds.forEach(round => {
                         return (<a href={playerUrl}>{getPlayerName(playerId)}</a>)
                     }
                     const matchLabelClasses = `match-score ${match.score ? (match.winner ? 'finished' : 'scheduled') : 'pending'}`
-                    const matchLeftLabel = (match.left && isPlayerId(match.left)) ? createPlayerLinkElement(match.left) : `Winner of ${match.leftSource}`;
-                    const matchRightLabel = (match.right && isPlayerId(match.right)) ? createPlayerLinkElement(match.right) : `Winner of ${match.rightSource}`;
+                    const matchLeftLabel = (match.left && isPlayerId(match.left)) ? createPlayerLinkElement(match.left) : (match.leftSource ? `Winner of ${match.leftSource}` : '(blank)');
+                    const matchRightLabel = (match.right && isPlayerId(match.right)) ? createPlayerLinkElement(match.right) : (match.rightSource ? `Winner of ${match.rightSource}` : '(blank)');
                     const stateClassLeft = (match.left && isPlayerId(match.left)) ? (match.left === match.winner ? 'winner' : (match.score ? 'loser' : 'pending')) : `undetermined`;
                     const stateClassRight = (match.right && isPlayerId(match.right)) ? (match.right === match.winner ? 'winner' : (match.score ? 'loser' : 'pending')) : `undetermined`;
                     const hcpLeft = (match.left && isPlayerId(match.left)) ? getPlayerHandicapById(match.left) : 0;
