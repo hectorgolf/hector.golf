@@ -93,7 +93,7 @@ const fetchClubs = memoize(
                             number: club.clubId,
                             abbreviation: club.abbreviation,
                             softwareVendorName: club.softwareVendorName,
-                        } as WisegolfClub),
+                        }) as WisegolfClub,
                 )
                 .sort((a: WisegolfClub, b: WisegolfClub) => a.name.localeCompare(b.name));
             console.log(`Got ${clubs.length} clubs from ${SOURCE_NAME}`);
@@ -116,7 +116,7 @@ function convertWisegolfClubToGolfClub(club: WisegolfClub): GolfClub {
 export const createWisegolfSession = async (): Promise<WisegolfSession> => {
     try {
         const token = await login(wisegolfUsername, wisegolfPassword);
-        const _ = await fetchClubs(token); // pre-fetch clubs
+        await fetchClubs(token); // pre-fetch clubs
         return {
             name: SOURCE_NAME,
             getPlayerHandicap: async (
