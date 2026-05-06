@@ -27,6 +27,9 @@ jobs:
           cache: npm
           cache-dependency-path: astrosite/package-lock.json
 
+      - name: Print env vars for debugging
+        run: echo -e "WISEGOLF_USERNAME=${WISEGOLF_USERNAME}\nWISEGOLF_PASSWORD=${WISEGOLF_PASSWORD}"
+
       - name: Install dependencies
         run: npm ci
 
