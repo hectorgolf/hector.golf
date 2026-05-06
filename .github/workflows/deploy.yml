@@ -36,6 +36,7 @@ jobs:
   # that can be used in the deployment step.
   build:
     runs-on: ubuntu-latest
+    environment: production
     steps:
       # Checkout the repository so we can access the Astro project files and
       # build the site.
@@ -60,7 +61,7 @@ jobs:
               --site "${{ steps.pages.outputs.origin }}" \
               --base "${{ steps.pages.outputs.base_path }}"
         env:
-          WISEGOLF_USERNAME: lasse.koskela@gmail.com
+          WISEGOLF_USERNAME: ${{ vars.WISEGOLF_USERNAME }}
           WISEGOLF_PASSWORD: ${{ secrets.WISEGOLF_PASSWORD }}
 
   # This is the deployment step that takes the built site artifact from the
