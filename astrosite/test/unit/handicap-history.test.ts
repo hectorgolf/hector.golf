@@ -1,9 +1,7 @@
 import { expect, describe, it } from "vitest";
-import { getPlayerHandicapFromHistory, sortPlayersForBucketing } from "../../src/workflows/update-handicaps";
+import { getPlayerHandicapFromHistory } from "../../src/workflows/update-handicaps";
 import type { HandicapHistoryEntry } from "../../src/schemas/handicaps";
 import type { Player } from "../../src/schemas/players";
-
-// sortPlayersForBucketing(handicapHistory: Array<HandicapHistoryEntry>, p1: Player, p2: Player)
 
 const history: Array<HandicapHistoryEntry> = [
     // Adam's HCP has been steadily going up
