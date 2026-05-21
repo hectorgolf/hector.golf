@@ -5618,5 +5618,20 @@
     "date": "2026-05-20",
     "player": "martin-s",
     "handicap": 12.5
+  },
+  {
+    "date": "2026-05-21",
+    "player": "toni-m",
+    "handicap": 13.5
+  },
+  {
+    "date": "2026-05-21",
+    "player": "olli-a",
+    "handicap": 10.6
+  },
+  {
+    "date": "2026-05-21",
+    "player": "marcus-m",
+    "handicap": 10.4
   }
 ]
