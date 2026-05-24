@@ -48,11 +48,11 @@
       },
       {
         "id": "simo-l",
-        "handicap": 6.7
+        "handicap": 6.8
       },
       {
         "id": "juuso-p",
-        "handicap": 6.8
+        "handicap": 6.9
       },
       {
         "id": "olli-v",
@@ -64,14 +64,14 @@
       },
       {
         "id": "eero-h",
-        "handicap": 9.5
-      },
-      {
-        "id": "marcus-m",
-        "handicap": 10.4
+        "handicap": 9.8
       },
       {
         "id": "olli-a",
+        "handicap": 10.6
+      },
+      {
+        "id": "marcus-m",
         "handicap": 10.6
       }
     ],
@@ -86,19 +86,15 @@
       },
       {
         "id": "lassi-k",
-        "handicap": 11.9
+        "handicap": 12.2
       },
       {
         "id": "martin-s",
         "handicap": 12.5
       },
       {
-        "id": "kristian-h",
-        "handicap": 13.1
-      },
-      {
         "id": "toni-m",
-        "handicap": 13.3
+        "handicap": 12.9
       },
       {
         "id": "jarkko-k",
@@ -107,6 +103,10 @@
       {
         "id": "lauri-p",
         "handicap": 13.7
+      },
+      {
+        "id": "kristian-h",
+        "handicap": 13.9
       },
       {
         "id": "lasse-k",

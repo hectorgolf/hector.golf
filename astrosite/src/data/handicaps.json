@@ -5648,5 +5648,40 @@
     "date": "2026-05-23",
     "player": "olli-v",
     "handicap": 8
+  },
+  {
+    "date": "2026-05-24",
+    "player": "toni-m",
+    "handicap": 12.9
+  },
+  {
+    "date": "2026-05-24",
+    "player": "simo-l",
+    "handicap": 6.8
+  },
+  {
+    "date": "2026-05-24",
+    "player": "marcus-m",
+    "handicap": 10.6
+  },
+  {
+    "date": "2026-05-24",
+    "player": "lassi-k",
+    "handicap": 12.2
+  },
+  {
+    "date": "2026-05-24",
+    "player": "kristian-h",
+    "handicap": 13.9
+  },
+  {
+    "date": "2026-05-24",
+    "player": "juuso-p",
+    "handicap": 6.9
+  },
+  {
+    "date": "2026-05-24",
+    "player": "eero-h",
+    "handicap": 9.8
   }
 ]
