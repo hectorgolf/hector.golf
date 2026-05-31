@@ -98,8 +98,8 @@
                         "rightSource": null,
                         "left": "jaakko-s",
                         "right": "juuso-p",
-                        "score": null,
-                        "winner": null
+                        "score": "5&4",
+                        "winner": "juuso-p"
                     }
                 ]
             },
@@ -138,7 +138,7 @@
                         "leftSource": "M07",
                         "rightSource": "M08",
                         "left": null,
-                        "right": null,
+                        "right": "juuso-p",
                         "score": null,
                         "winner": null
                     }
