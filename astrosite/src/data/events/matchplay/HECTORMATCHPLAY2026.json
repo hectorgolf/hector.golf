@@ -20,7 +20,8 @@
         "jarkko-k",
         "eero-h",
         "jaakko-s",
-        "juuso-p"
+        "juuso-p",
+        "pasi-h"
     ],
     "results": {
         "winners": {
@@ -42,10 +43,10 @@
                         "id": "M02",
                         "leftSource": null,
                         "rightSource": null,
-                        "left": null,
+                        "left": "pasi-h",
                         "right": "olli-a",
-                        "score": "default",
-                        "winner": "olli-a"
+                        "score": null,
+                        "winner": null
                     },
                     {
                         "id": "M03",
@@ -111,7 +112,7 @@
                         "leftSource": "M01",
                         "rightSource": "M02",
                         "left": null,
-                        "right": "olli-a",
+                        "right": null,
                         "score": null,
                         "winner": null
                     },
