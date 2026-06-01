@@ -81,8 +81,8 @@
                         "rightSource": null,
                         "left": "marcus-m",
                         "right": "toni-m",
-                        "score": null,
-                        "winner": null
+                        "score": "7&6",
+                        "winner": "marcus-m"
                     },
                     {
                         "id": "M07",
@@ -130,7 +130,7 @@
                         "leftSource": "M05",
                         "rightSource": "M06",
                         "left": null,
-                        "right": null,
+                        "right": "marcus-m",
                         "score": null,
                         "winner": null
                     },
