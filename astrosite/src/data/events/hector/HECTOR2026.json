@@ -60,29 +60,29 @@
       },
       {
         "id": "olli-v",
-        "handicap": 8.2
+        "handicap": 8.3
       },
       {
         "id": "eero-h",
         "handicap": 9.8
       },
       {
-        "id": "marcus-m",
-        "handicap": 11
-      },
-      {
         "id": "timo-l",
         "handicap": 11.1
+      },
+      {
+        "id": "olli-a",
+        "handicap": 11.2
       }
     ],
     [
       {
-        "id": "olli-a",
-        "handicap": 11.2
-      },
-      {
         "id": "harri-v",
         "handicap": 11.3
+      },
+      {
+        "id": "marcus-m",
+        "handicap": 11.4
       },
       {
         "id": "lassi-k",

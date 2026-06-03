@@ -5758,5 +5758,15 @@
     "date": "2026-06-01",
     "player": "sami-h",
     "handicap": 4.5
+  },
+  {
+    "date": "2026-06-03",
+    "player": "olli-v",
+    "handicap": 8.3
+  },
+  {
+    "date": "2026-06-03",
+    "player": "marcus-m",
+    "handicap": 11.4
   }
 ]
