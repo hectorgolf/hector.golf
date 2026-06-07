@@ -36,8 +36,8 @@
                         "rightSource": null,
                         "left": "simo-l",
                         "right": "lasse-k",
-                        "score": null,
-                        "winner": null
+                        "score": "4&3",
+                        "winner": "simo-l"
                     },
                     {
                         "id": "M02",
@@ -111,7 +111,7 @@
                         "id": "M09",
                         "leftSource": "M01",
                         "rightSource": "M02",
-                        "left": null,
+                        "left": "simo-l",
                         "right": null,
                         "score": null,
                         "winner": null
