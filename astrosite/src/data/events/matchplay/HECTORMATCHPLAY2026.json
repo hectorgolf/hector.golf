@@ -45,8 +45,8 @@
                         "rightSource": null,
                         "left": "pasi-h",
                         "right": "olli-a",
-                        "score": null,
-                        "winner": null
+                        "score": "2UP",
+                        "winner": "pasi-h"
                     },
                     {
                         "id": "M03",
@@ -63,8 +63,8 @@
                         "rightSource": null,
                         "left": "martin-s",
                         "right": "ossi-l",
-                        "score": null,
-                        "winner": null
+                        "score": "5&3",
+                        "winner": "ossi-l"
                     },
                     {
                         "id": "M05",
@@ -112,7 +112,7 @@
                         "leftSource": "M01",
                         "rightSource": "M02",
                         "left": "simo-l",
-                        "right": null,
+                        "right": "pasi-h",
                         "score": null,
                         "winner": null
                     },
@@ -121,7 +121,7 @@
                         "leftSource": "M03",
                         "rightSource": "M04",
                         "left": null,
-                        "right": null,
+                        "right": "ossi-l",
                         "score": null,
                         "winner": null
                     },
