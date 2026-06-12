@@ -54,8 +54,8 @@
                         "rightSource": null,
                         "left": "harri-v",
                         "right": "miso-l",
-                        "score": null,
-                        "winner": null
+                        "score": "5&3",
+                        "winner": "harri-v"
                     },
                     {
                         "id": "M04",
@@ -120,7 +120,7 @@
                         "id": "M10",
                         "leftSource": "M03",
                         "rightSource": "M04",
-                        "left": null,
+                        "left": "harri-v",
                         "right": "ossi-l",
                         "score": null,
                         "winner": null
