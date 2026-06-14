@@ -81,12 +81,12 @@
         "handicap": 11.5
       },
       {
-        "id": "olli-a",
-        "handicap": 11.6
-      },
-      {
         "id": "harri-v",
         "handicap": 11.9
+      },
+      {
+        "id": "olli-a",
+        "handicap": 12
       },
       {
         "id": "lassi-k",
@@ -94,7 +94,7 @@
       },
       {
         "id": "toni-m",
-        "handicap": 13.1
+        "handicap": 13.3
       },
       {
         "id": "jarkko-k",
@@ -110,7 +110,7 @@
       },
       {
         "id": "lasse-k",
-        "handicap": 15.5
+        "handicap": 16
       },
       {
         "id": "pekka-s",
