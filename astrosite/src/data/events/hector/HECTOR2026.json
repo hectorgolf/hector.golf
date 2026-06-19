@@ -52,7 +52,7 @@
       },
       {
         "id": "simo-l",
-        "handicap": 7.4
+        "handicap": 7.2
       },
       {
         "id": "ossi-l",
@@ -72,13 +72,13 @@
       },
       {
         "id": "marcus-m",
-        "handicap": 11.4
+        "handicap": 11.2
       }
     ],
     [
       {
         "id": "martin-s",
-        "handicap": 11.5
+        "handicap": 11.4
       },
       {
         "id": "harri-v",
@@ -114,7 +114,7 @@
       },
       {
         "id": "pekka-s",
-        "handicap": 17.1
+        "handicap": 16.7
       }
     ]
   ],
