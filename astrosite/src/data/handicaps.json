@@ -5948,5 +5948,25 @@
     "date": "2026-06-22",
     "player": "marcus-m",
     "handicap": 11.5
+  },
+  {
+    "date": "2026-06-24",
+    "player": "mikko-o",
+    "handicap": 10.2
+  },
+  {
+    "date": "2026-06-24",
+    "player": "martin-s",
+    "handicap": 10.1
+  },
+  {
+    "date": "2026-06-24",
+    "player": "lassi-k",
+    "handicap": 12.1
+  },
+  {
+    "date": "2026-06-24",
+    "player": "lasse-k",
+    "handicap": 16.1
   }
 ]
