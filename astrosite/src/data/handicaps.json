@@ -5988,5 +5988,30 @@
     "date": "2026-06-26",
     "player": "jari-k",
     "handicap": 0.9
+  },
+  {
+    "date": "2026-06-27",
+    "player": "toni-m",
+    "handicap": 12.4
+  },
+  {
+    "date": "2026-06-27",
+    "player": "sami-h",
+    "handicap": 4.7
+  },
+  {
+    "date": "2026-06-27",
+    "player": "olli-v",
+    "handicap": 8.6
+  },
+  {
+    "date": "2026-06-27",
+    "player": "martin-s",
+    "handicap": 10.7
+  },
+  {
+    "date": "2026-06-27",
+    "player": "marcus-m",
+    "handicap": 11.2
   }
 ]
