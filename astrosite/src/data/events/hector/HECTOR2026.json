@@ -36,7 +36,7 @@
     [
       {
         "id": "jari-k",
-        "handicap": 0.9
+        "handicap": 0.6
       },
       {
         "id": "sami-h",
@@ -47,11 +47,11 @@
         "handicap": 5.6
       },
       {
-        "id": "juuso-p",
-        "handicap": 7
+        "id": "simo-l",
+        "handicap": 7.2
       },
       {
-        "id": "simo-l",
+        "id": "juuso-p",
         "handicap": 7.2
       },
       {
