@@ -140,8 +140,8 @@
                         "rightSource": "M08",
                         "left": "jarkko-k",
                         "right": "juuso-p",
-                        "score": null,
-                        "winner": null
+                        "score": "3&2",
+                        "winner": "juuso-p"
                     }
                 ]
             },
@@ -162,7 +162,7 @@
                         "leftSource": "M11",
                         "rightSource": "M12",
                         "left": "marcus-m",
-                        "right": null,
+                        "right": "juuso-p",
                         "score": null,
                         "winner": null
                     }
