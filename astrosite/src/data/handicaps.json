@@ -6033,5 +6033,30 @@
     "date": "2026-06-30",
     "player": "juuso-p",
     "handicap": 6.7
+  },
+  {
+    "date": "2026-07-01",
+    "player": "toni-m",
+    "handicap": 12.5
+  },
+  {
+    "date": "2026-07-01",
+    "player": "simo-l",
+    "handicap": 6.5
+  },
+  {
+    "date": "2026-07-01",
+    "player": "pekka-s",
+    "handicap": 17
+  },
+  {
+    "date": "2026-07-01",
+    "player": "ossi-l",
+    "handicap": 7.8
+  },
+  {
+    "date": "2026-07-01",
+    "player": "marcus-m",
+    "handicap": 10.7
   }
 ]
