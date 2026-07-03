@@ -9,7 +9,7 @@
     "lasse-k",
     "toni-m",
     "marcus-m",
-    "eero-h",
+    "jussi-a",
     "harri-v",
     "jari-k",
     "jarkko-k",
@@ -63,22 +63,22 @@
         "handicap": 8.6
       },
       {
-        "id": "eero-h",
-        "handicap": 9.8
-      },
-      {
         "id": "marcus-m",
         "handicap": 10.7
       },
       {
         "id": "martin-s",
         "handicap": 10.7
+      },
+      {
+        "id": "timo-l",
+        "handicap": 11.1
       }
     ],
     [
       {
-        "id": "timo-l",
-        "handicap": 11.1
+        "id": "jussi-a",
+        "handicap": 11.4
       },
       {
         "id": "olli-a",
