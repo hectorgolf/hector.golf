@@ -93,10 +93,6 @@
         "handicap": 11.9
       },
       {
-        "id": "jarkko-k",
-        "handicap": 13.6
-      },
-      {
         "id": "lauri-p",
         "handicap": 13.7
       },
@@ -107,6 +103,10 @@
       {
         "id": "kristian-h",
         "handicap": 13.9
+      },
+      {
+        "id": "jarkko-k",
+        "handicap": 14.1
       },
       {
         "id": "lasse-k",
