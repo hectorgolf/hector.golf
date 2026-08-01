@@ -1,16 +1,16 @@
 {
-    "id": "toni-k",
-    "name": {
-        "first": "Toni",
-        "last": "Karvonen"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": "+358401383215"
-    },
-    "club": "KGC",
-    "handicap": 6.2,
-    "biography": [
-        "Ossi's friend."
-    ]
+  "id": "toni-k",
+  "name": {
+    "first": "Toni",
+    "last": "Karvonen"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358401383215"
+  },
+  "club": "KGC",
+  "handicap": 6,
+  "biography": [
+    "Ossi's friend."
+  ]
 }
