@@ -6418,5 +6418,35 @@
     "date": "2026-08-02",
     "player": "jussi-a",
     "handicap": 10
+  },
+  {
+    "date": "2026-08-03",
+    "player": "miso-l",
+    "handicap": 11
+  },
+  {
+    "date": "2026-08-03",
+    "player": "mikko-o",
+    "handicap": 9
+  },
+  {
+    "date": "2026-08-03",
+    "player": "martin-s",
+    "handicap": 9.9
+  },
+  {
+    "date": "2026-08-03",
+    "player": "marcus-m",
+    "handicap": 9.2
+  },
+  {
+    "date": "2026-08-03",
+    "player": "lassi-k",
+    "handicap": 11.5
+  },
+  {
+    "date": "2026-08-03",
+    "player": "jarkko-k",
+    "handicap": 14.3
   }
 ]
