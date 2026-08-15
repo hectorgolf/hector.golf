@@ -6573,5 +6573,25 @@
     "date": "2026-08-14",
     "player": "olli-v",
     "handicap": 8.2
+  },
+  {
+    "date": "2026-08-15",
+    "player": "toni-m",
+    "handicap": 13.6
+  },
+  {
+    "date": "2026-08-15",
+    "player": "timo-l",
+    "handicap": 11.2
+  },
+  {
+    "date": "2026-08-15",
+    "player": "pekka-s",
+    "handicap": 17
+  },
+  {
+    "date": "2026-08-15",
+    "player": "ossi-l",
+    "handicap": 7.5
   }
 ]
