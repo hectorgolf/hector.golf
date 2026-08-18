@@ -163,8 +163,8 @@
                         "rightSource": "M12",
                         "left": "marcus-m",
                         "right": "juuso-p",
-                        "score": null,
-                        "winner": null
+                        "score": "1UP",
+                        "winner": "juuso-p"
                     }
                 ]
             },
@@ -176,7 +176,7 @@
                         "leftSource": "M13",
                         "rightSource": "M14",
                         "left": "simo-l",
-                        "right": null,
+                        "right": "juuso-p",
                         "score": null,
                         "winner": null
                     }
