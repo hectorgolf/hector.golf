@@ -36,15 +36,15 @@
     [
       {
         "id": "jari-k",
-        "handicap": 0.6
+        "handicap": 1.5
       },
       {
         "id": "sami-h",
-        "handicap": 4.9
+        "handicap": 5.3
       },
       {
         "id": "ofri-p",
-        "handicap": 5.5
+        "handicap": 5.7
       },
       {
         "id": "simo-l",
@@ -56,7 +56,7 @@
       },
       {
         "id": "ossi-l",
-        "handicap": 6.9
+        "handicap": 7
       },
       {
         "id": "olli-v",
@@ -114,7 +114,7 @@
       },
       {
         "id": "lasse-k",
-        "handicap": 15.3
+        "handicap": 15.4
       }
     ]
   ],
