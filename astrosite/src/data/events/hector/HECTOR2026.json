@@ -51,12 +51,12 @@
         "handicap": 6.1
       },
       {
-        "id": "toni-k",
-        "handicap": 6.4
-      },
-      {
         "id": "ossi-l",
         "handicap": 7
+      },
+      {
+        "id": "toni-k",
+        "handicap": 7.1
       },
       {
         "id": "olli-v",
@@ -101,12 +101,12 @@
         "handicap": 12.5
       },
       {
-        "id": "jarkko-k",
-        "handicap": 13.2
-      },
-      {
         "id": "toni-m",
         "handicap": 13.3
+      },
+      {
+        "id": "jarkko-k",
+        "handicap": 13.4
       },
       {
         "id": "kristian-h",
