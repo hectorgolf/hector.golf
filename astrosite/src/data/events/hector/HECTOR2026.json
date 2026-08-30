@@ -40,7 +40,7 @@
       },
       {
         "id": "sami-h",
-        "handicap": 5.3
+        "handicap": 5
       },
       {
         "id": "ofri-p",
@@ -78,11 +78,11 @@
     [
       {
         "id": "jussi-a",
-        "handicap": 10.1
+        "handicap": 10.3
       },
       {
         "id": "martin-s",
-        "handicap": 10.1
+        "handicap": 10.4
       },
       {
         "id": "timo-l",
@@ -106,7 +106,7 @@
       },
       {
         "id": "jarkko-k",
-        "handicap": 13.4
+        "handicap": 13.3
       },
       {
         "id": "kristian-h",
@@ -114,7 +114,7 @@
       },
       {
         "id": "lasse-k",
-        "handicap": 15.4
+        "handicap": 14.8
       }
     ]
   ],

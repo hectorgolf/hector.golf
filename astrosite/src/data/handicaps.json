@@ -6843,5 +6843,30 @@
     "date": "2026-08-29",
     "player": "toni-k",
     "handicap": 7.5
+  },
+  {
+    "date": "2026-08-30",
+    "player": "sami-h",
+    "handicap": 5
+  },
+  {
+    "date": "2026-08-30",
+    "player": "martin-s",
+    "handicap": 10.4
+  },
+  {
+    "date": "2026-08-30",
+    "player": "lasse-k",
+    "handicap": 14.8
+  },
+  {
+    "date": "2026-08-30",
+    "player": "jussi-a",
+    "handicap": 10.3
+  },
+  {
+    "date": "2026-08-30",
+    "player": "jarkko-k",
+    "handicap": 13.3
   }
 ]
