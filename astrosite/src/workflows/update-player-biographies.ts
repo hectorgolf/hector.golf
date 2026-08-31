@@ -2,7 +2,7 @@ import { writeFileSync, existsSync, rmSync } from "fs";
 import { join, dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 
-import { playersData, hectorEvents, hasParticipants, isUpcomingEvent, isPastEvent } from "../code/data.ts";
+import { hectorEvents, hasParticipants, isUpcomingEvent, isPastEvent } from "../code/data.ts";
 import { getAllPlayers, getPlayerName, updatePlayerData } from "../code/players.ts";
 import { type Player } from "../schemas/players.ts";
 import { type HectorEvent } from "../schemas/events.ts";
@@ -54,14 +54,6 @@ const golfClubs: Promise<GolfClub[]> = (async () => {
     return merged;
 })();
 
-const getPlayerById = (id: string): Player | undefined => {
-    let record = playersData.find((record) => record.id === id) as Player;
-    if (!record) {
-        return undefined;
-    }
-    return record;
-};
-
 async function getClubName(clubAbbreviation: string | undefined): Promise<string> {
     if (!clubAbbreviation) {
         return "unknown";
@@ -102,7 +94,7 @@ type PlayerBiographyInput = {
 };
 
 function EventNameAndYearFrom(event: { name: string; date: string }): EventNameAndYear {
-    const range = parseEventDateRange(event.date)
+    const range = parseEventDateRange(event.date);
     return {
         name: event.name,
         year: range?.endDate.getFullYear() || range?.startDate.getFullYear() || 0,
@@ -126,7 +118,10 @@ function playerParticipatedInEvent(player: Player, event: HectorEvent): boolean 
     );
 }
 
-async function extractPlayerBiographyInput(player: Player, otherGeneratedBiographies: string[]): Promise<PlayerBiographyInput> {
+async function extractPlayerBiographyInput(
+    player: Player,
+    otherGeneratedBiographies: string[],
+): Promise<PlayerBiographyInput> {
     const allPastEvents = hectorEvents.filter(isPastEvent);
     const pastAppearances = allPastEvents.filter((e) => playerParticipatedInEvent(player, e));
     const lastAppearance = pastAppearances[0];
@@ -134,7 +129,7 @@ async function extractPlayerBiographyInput(player: Player, otherGeneratedBiograp
 
     if (DEBUG_GENAI_BIOGRAPHY) {
         console.log(`${describePlayer(player)}: ${eventsSinceLastAppearance} events since last appearance in Hector.`);
-    
+
         console.log(`${allPastEvents.length} past events in total:`);
         for (const event of allPastEvents) {
             console.log(`- ${describeEvent(event)}`);
@@ -144,7 +139,7 @@ async function extractPlayerBiographyInput(player: Player, otherGeneratedBiograp
             console.log(`- ${describeEvent(event)}`);
         }
         console.log(
-            `Last appearances for ${describePlayer(player)} was ${lastAppearance ? describeEvent(lastAppearance) : "(none)"}`
+            `Last appearances for ${describePlayer(player)} was ${lastAppearance ? describeEvent(lastAppearance) : "(none)"}`,
         );
     }
 
@@ -184,7 +179,7 @@ async function generateBiography(input: PlayerBiographyInput): Promise<string[]>
                 Authorization: `Bearer ${apiKeyForBackendFunctions}`,
             },
             body: JSON.stringify(input),
-        }
+        },
     );
 
     if (!response.ok) {
@@ -193,7 +188,7 @@ async function generateBiography(input: PlayerBiographyInput): Promise<string[]>
 
     const data = await response.json();
     if (Array.isArray(data.biography)) {
-        console.log(`\n<<<<<\nGot biography for ${input.name}:`)
+        console.log(`\n<<<<<\nGot biography for ${input.name}:`);
         if (DEBUG_GENAI_BIOGRAPHY) {
             console.log(`\n${JSON.stringify(input, null, 2)}`);
         }
@@ -201,7 +196,7 @@ async function generateBiography(input: PlayerBiographyInput): Promise<string[]>
         return data.biography as string[];
     } else {
         return Promise.reject(
-            `Failed to generate biography due to unexpected response from API: ${JSON.stringify(data, null, 2)}`
+            `Failed to generate biography due to unexpected response from API: ${JSON.stringify(data, null, 2)}`,
         );
     }
 }
@@ -222,7 +217,7 @@ async function updateBiographiesForEvent(_: HectorEvent) {
     if (commitMessage.length > 0) {
         writeFileSync(
             pathToCommitMessage,
-            `Updated biographies for ${commitMessage.length} players:\n${commitMessage.map((m) => `- ${m}`).join("\n")}`
+            `Updated biographies for ${commitMessage.length} players:\n${commitMessage.map((m) => `- ${m}`).join("\n")}`,
         );
     }
 }
