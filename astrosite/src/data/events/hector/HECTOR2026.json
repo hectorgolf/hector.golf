@@ -32,6 +32,160 @@
     "konopiste-radecky",
     "konopiste-deste"
   ],
+  "rounds": [
+    {
+      "day": 1,
+      "round": 1,
+      "course": "konopiste-radecky",
+      "tee": "Yellow",
+      "gameFormats": [
+          {
+              "format": "Stableford NET",
+              "competition": [
+                  "hector",
+                  "victor"
+              ],
+              "handicapAllowance": 1,
+              "contribution": {
+                  "hector": 0.33,
+                  "victor": 1
+              },
+              "teamContribution": "better"
+          },
+          {
+              "format": "Stroke Play SCR",
+              "handicapAllowance": 0
+          }
+      ]
+    },
+    {
+      "day": 2,
+      "round": 1,
+      "course": "konopiste-deste",
+      "tee": "Blue",
+      "gameFormats": [
+        {
+          "format": "Better Ball Stroke Play NET",
+          "competition": [
+            "hector"
+          ],
+          "handicapAllowance": 1,
+          "contribution": {
+            "hector": 0.5
+          },
+          "teamContribution": "team"
+        },
+        {
+          "format": "Stableford NET",
+          "competition": [
+            "victor"
+          ],
+          "handicapAllowance": 1,
+          "contribution": {
+            "victor": 1
+          }
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "round": 2,
+      "course": "konopiste-radecky",
+      "tee": "White",
+      "gameFormats": [
+        {
+          "format": "Stroke Play NET",
+          "competition": [
+            "hector"
+          ],
+          "handicapAllowance": 1,
+          "contribution": {
+            "hector": 0.25
+          },
+          "teamContribution": "both"
+        },
+        {
+          "format": "Stableford NET",
+          "competition": [
+            "victor"
+          ],
+          "handicapAllowance": 1,
+          "contribution": {
+            "victor": 1
+          }
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "round": 1,
+      "course": "konopiste-deste",
+      "tee": "White",
+      "gameFormats": [
+        {
+          "format": "Scramble Stroke Play NET",
+          "competition": [
+            "hector"
+          ],
+          "handicapAllowance": 0.2,
+          "contribution": {
+            "hector": 0.5
+          },
+          "teamContribution": "team"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "round": 2,
+      "course": "konopiste-radecky",
+      "tee": "Blue",
+      "gameFormats": [
+        {
+          "format": "Better Ball Stroke Play NET",
+          "competition": [
+            "hector"
+          ],
+          "handicapAllowance": 1,
+          "contribution": {
+            "hector": 0.5
+          },
+          "teamContribution": "team"
+        },
+        {
+          "format": "Stableford NET",
+          "competition": [
+            "victor"
+          ],
+          "handicapAllowance": 1,
+          "contribution": {
+            "victor": 1
+          }
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "round": 1,
+      "course": "konopiste-deste",
+      "tee": "Yellow",
+      "gameFormats": [
+        {
+          "format": "Scramble Stroke Play NET",
+          "competition": [
+            "hector"
+          ],
+          "handicapAllowance": 0.2,
+          "contribution": {
+            "hector": 1
+          },
+          "teamContribution": "team",
+          "birdieBonus": 0.5,
+          "eagleBonus": 1
+        }
+      ]
+    }
+  ],
   "buckets": [
     [
       {
