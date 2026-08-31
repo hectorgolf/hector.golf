@@ -1,6 +1,4 @@
-import { google, sheets_v4 } from 'googleapis'
-import { JWT, auth } from 'google-auth-library'
-import type { BodyResponseCallback } from '@googleapis/sheets'
+import { google, sheets_v4, Common } from 'googleapis'
 import type { GoogleSheetIndividualLeaderboard, GoogleSheetTeamLeaderboard } from './types'
 
 type Rows = Array<Row>
@@ -37,8 +35,10 @@ const authenticate = async (): Promise<sheets_v4.Sheets> => {
     if (!googleCredentials) {
         throw new Error('GOOGLE_CREDENTIALS missing - cannot authenticate')
     }
-    const client = <JWT> auth.fromJSON(googleCredentials)
-    client.scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+    const client = new google.auth.GoogleAuth({
+        credentials: googleCredentials,
+        scopes: ["https://www.googleapis.com/auth/spreadsheets"]
+    })
     return google.sheets({ version: 'v4', auth: client })
 }
 
@@ -217,7 +217,7 @@ const processRangeInSheet = async (spreadsheetId: string, range: string, operati
     return new Promise(async (resolve, reject) => {
         try {
             const sheets = await authenticate()
-            const callback: BodyResponseCallback<sheets_v4.Schema$ValueRange> = (err: any, res: any) => {
+            const callback: Common.BodyResponseCallback<sheets_v4.Schema$ValueRange> = (err: any, res: any) => {
                 if (err) {
                     if (err.response?.status === 403) {
                         let msg = `Access to ${spreadsheetId} denied - check that you've shared the Google Sheet with the service account email address`
