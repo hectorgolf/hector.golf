@@ -27,7 +27,7 @@
     "fetch-h2": "^3.0.2",
     "glob": "^13.0.6",
     "google-auth-library": "^10.7.0",
-    "googleapis": "^173.0.0",
+    "googleapis": "^176.0.0",
     "itty-time": "^2.0.2",
     "js-md5": "^0.9.2",
     "luxon": "^3.7.2",
