@@ -19,7 +19,10 @@ const getPlayerById = (id: string): Player | undefined => {
 // Get the resolved path to this file and determine the directory from that
 // (__dirname is not available in ES6 modules)
 const __filename = fileURLToPath(import.meta.url);
-const pathToClubMembershipUpdateCommitMessage = join(dirname(__filename), "../../.update-player-club-memberships-commit");
+const pathToClubMembershipUpdateCommitMessage = join(
+    dirname(__filename),
+    "../../.update-player-club-memberships-commit",
+);
 
 if (existsSync(pathToClubMembershipUpdateCommitMessage)) {
     console.log(`Deleting pre-existing commit message file: ${resolve(pathToClubMembershipUpdateCommitMessage)}`);
@@ -61,13 +64,13 @@ const persistPlayersToDisk = (players: Player[]) => {
     });
     writeFileSync(
         pathToClubMembershipUpdateCommitMessage,
-        `Updated ${players.length} players' club membership:\n${commitMessage.join("\n")}`
+        `Updated ${players.length} players' club membership:\n${commitMessage.join("\n")}`,
     );
     console.log(`Done updating club memberships.`);
 };
 
 const updatePlayerRecords = async (players: Player[], handicapSources: Array<HandicapSource>): Promise<Player[]> => {
-    const playerListPromises = players.map((player: any) => {
+    const playerListPromises = players.map(async (player: any) => {
         const playerObject = getPlayerById(player.id);
         if (playerObject && !playerObject.club) {
             // Ok. The player does not have a club on record - let's try to find them from all of our sources.
@@ -78,12 +81,12 @@ const updatePlayerRecords = async (players: Player[], handicapSources: Array<Han
                 const foundInClubs = source.resolveClubMembership(playerObject.name.first, playerObject.name.last);
                 foundInClubs.then((clubs) =>
                     console.log(
-                        `${getPlayerName(playerObject)} found at ${clubs.length} clubs via ${source.name}: ${JSON.stringify(clubs.sort())}`
-                    )
+                        `${getPlayerName(playerObject)} found at ${clubs.length} clubs via ${source.name}: ${JSON.stringify(clubs.sort())}`,
+                    ),
                 );
                 promises.push(foundInClubs);
             }
-            return Promise.all(promises)
+            return await Promise.all(promises)
                 .then((clubs) => clubs.flat())
                 .then((clubs) => [...new Set(clubs)].sort((a, b) => a.name.localeCompare(b.name)))
                 .then((clubs) => {
@@ -97,14 +100,14 @@ const updatePlayerRecords = async (players: Player[], handicapSources: Array<Han
                     if (club) {
                         playerObject.club = club.abbreviation;
                         console.log(
-                            `Club found for ${playerObject.name.first} ${playerObject.name.last}: ${playerObject.club} (${club.name})`
+                            `Club found for ${playerObject.name.first} ${playerObject.name.last}: ${playerObject.club} (${club.name})`,
                         );
                     }
                     return Promise.resolve(playerObject);
                 })
                 .catch((_: Error) => {
                     console.error(
-                        `Failed to find club for ${playerObject.name.first} ${playerObject.name.last} from any of our sources`
+                        `Failed to find club for ${playerObject.name.first} ${playerObject.name.last} from any of our sources`,
                     );
                     return Promise.resolve(playerObject);
                 });
@@ -119,7 +122,9 @@ const updateClubMemberships = async () => {
     const oldPlayers = playersData;
     const playersWithoutClub = oldPlayers.filter((player: any) => !player.club);
     if (playersWithoutClub.length > 0) {
-        console.log(`Attempting to identify club for ${playersWithoutClub.length} players: ${playersWithoutClub.map(p => getPlayerName(p)).join(", ")}`);
+        console.log(
+            `Attempting to identify club for ${playersWithoutClub.length} players: ${playersWithoutClub.map((p) => getPlayerName(p)).join(", ")}`,
+        );
         const sources = await Promise.all([createWisegolfSession()]);
         const attemptedPlayers = await updatePlayerRecords(playersWithoutClub, sources);
         const updatedPlayers = attemptedPlayers.filter((player: any) => !!player.club);
