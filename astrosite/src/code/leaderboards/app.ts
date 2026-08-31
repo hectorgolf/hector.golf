@@ -19,7 +19,7 @@ function acquireApiKey() {
 
 const apiKey = acquireApiKey();
 
-export const fetchHectorLeaderboardDataFromApp = async (url: string): Promise<GoogleSheetTeamLeaderboard> => {
+const fetchTournamentDataFromApp = async (url: string): Promise<any> => {
     const data = await fetch(url, {
         method: "GET",
         headers: {
@@ -31,11 +31,11 @@ export const fetchHectorLeaderboardDataFromApp = async (url: string): Promise<Go
         console.error(`Failed to fetch Hector leaderboard data from ${url}: ${data.status} ${data.statusText}`);
         return [];
     }
-    const json = await data.json();
-    if (!json) {
-        console.error(`Invalid response from Hector API: ${JSON.stringify(json)}`);
-        return [];
-    }
+    return await data.json();
+};
+
+export const fetchHectorLeaderboardDataFromApp = async (url: string): Promise<GoogleSheetTeamLeaderboard> => {
+    const json = await fetchTournamentDataFromApp(url);
     const result = AppHectorGolfResponseSchema.safeParse(json);
     if (result.error || !result.success) {
         console.error(`Invalid response from Hector API. Error: ${result.error} Payload: ${JSON.stringify(json)}`);
@@ -45,22 +45,7 @@ export const fetchHectorLeaderboardDataFromApp = async (url: string): Promise<Go
 };
 
 export const fetchVictorLeaderboardDataFromApp = async (url: string): Promise<GoogleSheetIndividualLeaderboard> => {
-    const data = await fetch(url, {
-        method: "GET",
-        headers: {
-            "x-api-key": String(apiKey),
-            "Content-Type": "application/json",
-        },
-    });
-    if (!data.ok) {
-        console.error(`Failed to fetch Victor leaderboard data from ${url}: ${data.status} ${data.statusText}`);
-        return [];
-    }
-    const json = await data.json();
-    if (!json) {
-        console.error(`Invalid response from Hector API: ${JSON.stringify(json)}`);
-        return [];
-    }
+    const json = await fetchTournamentDataFromApp(url);
     const result = AppHectorGolfResponseSchema.safeParse(json);
     if (result.error || !result.success) {
         console.error(`Invalid response from Hector API. Error: ${result.error} Payload: ${JSON.stringify(json)}`);
