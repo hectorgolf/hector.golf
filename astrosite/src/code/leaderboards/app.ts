@@ -19,19 +19,41 @@ function acquireApiKey() {
 
 const apiKey = acquireApiKey();
 
+const CACHE_TTL_MS = 10_000;
+
+type CacheEntry = { expiresAt: number; payload: Promise<any> };
+
+const cache = new Map<string, CacheEntry>();
+
 const fetchTournamentDataFromApp = async (url: string): Promise<any> => {
-    const data = await fetch(url, {
-        method: "GET",
-        headers: {
-            "x-api-key": String(apiKey),
-            "Content-Type": "application/json",
-        },
-    });
-    if (!data.ok) {
-        console.error(`Failed to fetch Hector leaderboard data from ${url}: ${data.status} ${data.statusText}`);
-        return [];
+    const now = Date.now();
+    const cached = cache.get(url);
+    if (cached && cached.expiresAt > now) {
+        return await cached.payload;
     }
-    return await data.json();
+
+    const payload = (async () => {
+        const data = await fetch(url, {
+            method: "GET",
+            headers: {
+                "x-api-key": String(apiKey),
+                "Content-Type": "application/json",
+            },
+        });
+        if (!data.ok) {
+            console.error(`Failed to fetch Hector leaderboard data from ${url}: ${data.status} ${data.statusText}`);
+            return [];
+        }
+        return await data.json();
+    })();
+
+    const entry: CacheEntry = { expiresAt: now + CACHE_TTL_MS, payload };
+    cache.set(url, entry);
+    // Don't let a failed request poison the cache for the whole TTL.
+    payload.catch(() => {
+        if (cache.get(url) === entry) cache.delete(url);
+    });
+    return await payload;
 };
 
 export const fetchHectorLeaderboardDataFromApp = async (url: string): Promise<GoogleSheetTeamLeaderboard> => {
