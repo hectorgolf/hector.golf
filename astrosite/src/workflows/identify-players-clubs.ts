@@ -67,7 +67,7 @@ const persistPlayersToDisk = (players: Player[]) => {
 };
 
 const updatePlayerRecords = async (players: Player[], handicapSources: Array<HandicapSource>): Promise<Player[]> => {
-    const playerListPromises = players.map((player: any) => {
+    const playerListPromises = players.map(async (player: any) => {
         const playerObject = getPlayerById(player.id);
         if (playerObject && !playerObject.club) {
             // Ok. The player does not have a club on record - let's try to find them from all of our sources.
@@ -87,7 +87,7 @@ const updatePlayerRecords = async (players: Player[], handicapSources: Array<Han
                 );
                 promises.push(foundInClubs);
             }
-            return Promise.all(promises)
+            return await Promise.all(promises)
                 .then((clubs) => clubs.flat())
                 .then((clubs) => [...new Set(clubs)].sort())
                 .then((clubs) => {
