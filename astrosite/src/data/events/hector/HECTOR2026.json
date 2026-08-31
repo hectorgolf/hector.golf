@@ -125,5 +125,6 @@
       "victor": []
     }
   },
-  "leaderboardSheet": "https://docs.google.com/spreadsheets/d/1GwdeBzITBXqCA1114vgkqfHPfqKe1bxSFpsDZdj-Ado/edit"
+  "leaderboardSheet": "https://app.hector.golf/api/tournament?event=HECTOR2026",
+  "_leaderboardSheet": "https://docs.google.com/spreadsheets/d/1GwdeBzITBXqCA1114vgkqfHPfqKe1bxSFpsDZdj-Ado/edit"
 }
