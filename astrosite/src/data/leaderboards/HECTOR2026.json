@@ -1,0 +1,131 @@
+{
+  "event": "HECTOR2026",
+  "scoring": {
+    "hector": "ascending",
+    "victor": "descending"
+  },
+  "hector": [],
+  "victor": [
+    {
+      "player": "Simo L",
+      "points": 42,
+      "diff": "",
+      "through": "2/6"
+    },
+    {
+      "player": "Martin S",
+      "points": 38,
+      "diff": "-4",
+      "through": "1/6"
+    },
+    {
+      "player": "Lauri P",
+      "points": 38,
+      "diff": "-4",
+      "through": "2/6"
+    },
+    {
+      "player": "Kristian H",
+      "points": 38,
+      "diff": "-4",
+      "through": "1/6"
+    },
+    {
+      "player": "Ossi L",
+      "points": 37,
+      "diff": "-5",
+      "through": "1/6"
+    },
+    {
+      "player": "Toni K",
+      "points": 36,
+      "diff": "-6",
+      "through": "1/6"
+    },
+    {
+      "player": "Jarkko K",
+      "points": 36,
+      "diff": "-6",
+      "through": "2/6"
+    },
+    {
+      "player": "Olli V",
+      "points": 35,
+      "diff": "-7",
+      "through": "1/6"
+    },
+    {
+      "player": "Olli A",
+      "points": 35,
+      "diff": "-7",
+      "through": "1/6"
+    },
+    {
+      "player": "Toni M",
+      "points": 35,
+      "diff": "-7",
+      "through": "1/6"
+    },
+    {
+      "player": "Ofri P",
+      "points": 34,
+      "diff": "-8",
+      "through": "1/6"
+    },
+    {
+      "player": "Juuso P",
+      "points": 34,
+      "diff": "-8",
+      "through": "2/6"
+    },
+    {
+      "player": "Jari K",
+      "points": 31,
+      "diff": "-11",
+      "through": "1/6"
+    },
+    {
+      "player": "Sami H",
+      "points": 30,
+      "diff": "-12",
+      "through": "1/6"
+    },
+    {
+      "player": "Marcus M",
+      "points": 30,
+      "diff": "-12",
+      "through": "1/6"
+    },
+    {
+      "player": "Lasse K",
+      "points": 29,
+      "diff": "-13",
+      "through": "1/6"
+    },
+    {
+      "player": "Timo L",
+      "points": 28,
+      "diff": "-14",
+      "through": "1/6"
+    },
+    {
+      "player": "Harri V",
+      "points": 26,
+      "diff": "-16",
+      "through": "1/6"
+    },
+    {
+      "player": "Jussi A",
+      "points": 24,
+      "diff": "-18",
+      "through": "1/6"
+    },
+    {
+      "player": "Lassi K",
+      "points": 24,
+      "diff": "-18",
+      "through": "1/6"
+    }
+  ],
+  "updatedAt": "2026-08-31T20:26:45.023Z"
+}
