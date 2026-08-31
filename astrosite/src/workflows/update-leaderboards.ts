@@ -5,7 +5,7 @@ import { parseEventDateRange, isoDate, isoDateToday } from "../code/dates.ts";
 import { playersData, eventsData, pathToEventJson, isHectorEvent } from "../code/data.ts";
 import { fetchHectorLeaderboardData, fetchVictorLeaderboardData } from "../code/leaderboards/google-sheets.ts";
 import { updateHectorEventLeaderboard } from "../code/leaderboards/github.ts";
-import { fetchHectorLeaderboardDataFromApp, fetchVictorLeaderboardDataFromApp } from "../code/leaderboards/app.ts";
+import { fetchHectorLeaderboardDataFromApp } from "../code/leaderboards/app.ts";
 import type { GoogleSheetTeamLeaderboard, GoogleSheetIndividualLeaderboard } from "../code/leaderboards/types.ts";
 
 // This workflow updates the leaderboards for all ongoing Hector events that
@@ -120,27 +120,25 @@ async function updateLeaderboardsForAllOngoingTournaments(): Promise<void> {
 
         if (event.leaderboardSheet?.match(/^https:\/\/app.hector.golf\//)) {
             console.log(`${event.name} seems to be managed on app.hector.golf`);
-
-            console.log(`Fetching Hector leaderboard data for ${event.name} from the app`);
-            hectorLeaderboard = await fetchHectorLeaderboardDataFromApp(event.leaderboardSheet);
-
-            console.log(`Fetching Victor leaderboard data for ${event.name} from the app`);
-            victorLeaderboard = await fetchVictorLeaderboardDataFromApp(event.leaderboardSheet);
+            const { hector, victor } = await fetchHectorLeaderboardDataFromApp(event.leaderboardSheet);
+            hectorLeaderboard = hector;
+            victorLeaderboard = victor;
         } else if (event.leaderboardSheet?.match(/https?:\/\/docs\.google\.com\/spreadsheets/)) {
             console.log(`${event.name} seems to be managed on Google Sheets`);
-
             const leaderboardSheetId = event.leaderboardSheet
                 ?.replace(/https?:\/\/docs\.google\.com\/spreadsheets\/d\//, "")
                 .replace(/\/.*$/, "");
             console.log(`Leaderboard sheet URL: ${event.leaderboardSheet}`);
             console.log(`Leaderboard sheet ID:  ${leaderboardSheetId}`);
             if (leaderboardSheetId) {
-                console.log(`Fetching Hector leaderboard data for ${event.name} from the Google Sheet`);
+                console.log(`Fetching leaderboard data for ${event.name} from the Google Sheet`);
                 hectorLeaderboard = await fetchHectorLeaderboardData(leaderboardSheetId);
-
-                console.log(`Fetching Victor leaderboard data for ${event.name} from the Google Sheet`);
                 victorLeaderboard = await fetchVictorLeaderboardData(leaderboardSheetId);
             }
+        } else if (event.leaderboardSheet) {
+            // If the URL is defined but doesn't match any of the known patterns,
+            // log an error so that we'll see what URL is causing problems.
+            console.error(`Don't know how to fetch leaderboard data for ${event.name} from ${event.leaderboardSheet}`);
         }
 
         if (hectorLeaderboard && victorLeaderboard) {

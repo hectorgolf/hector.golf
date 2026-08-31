@@ -19,61 +19,36 @@ function acquireApiKey() {
 
 const apiKey = acquireApiKey();
 
-const CACHE_TTL_MS = 10_000;
-
-type CacheEntry = { expiresAt: number; payload: Promise<any> };
-
-const cache = new Map<string, CacheEntry>();
-
 const fetchTournamentDataFromApp = async (url: string): Promise<any> => {
-    const now = Date.now();
-    const cached = cache.get(url);
-    if (cached && cached.expiresAt > now) {
-        return await cached.payload;
-    }
-
-    const payload = (async () => {
-        const data = await fetch(url, {
-            method: "GET",
-            headers: {
-                "x-api-key": String(apiKey),
-                "Content-Type": "application/json",
-            },
-        });
-        if (!data.ok) {
-            console.error(`Failed to fetch Hector leaderboard data from ${url}: ${data.status} ${data.statusText}`);
-            return [];
-        }
-        return await data.json();
-    })();
-
-    const entry: CacheEntry = { expiresAt: now + CACHE_TTL_MS, payload };
-    cache.set(url, entry);
-    // Don't let a failed request poison the cache for the whole TTL.
-    payload.catch(() => {
-        if (cache.get(url) === entry) cache.delete(url);
+    const data = await fetch(url, {
+        method: "GET",
+        headers: {
+            "x-api-key": String(apiKey),
+            "Content-Type": "application/json",
+        },
     });
-    return await payload;
+    if (!data.ok) {
+        console.error(`Failed to fetch Hector leaderboard data from ${url}: ${data.status} ${data.statusText}`);
+        return [];
+    }
+    return await data.json();
 };
 
-export const fetchHectorLeaderboardDataFromApp = async (url: string): Promise<GoogleSheetTeamLeaderboard> => {
+export type LeaderboardData = {
+    hector: GoogleSheetTeamLeaderboard;
+    victor: GoogleSheetIndividualLeaderboard;
+};
+
+export const fetchHectorLeaderboardDataFromApp = async (url: string): Promise<LeaderboardData> => {
     const json = await fetchTournamentDataFromApp(url);
     const result = AppHectorGolfResponseSchema.safeParse(json);
     if (result.error || !result.success) {
         console.error(`Invalid response from Hector API. Error: ${result.error} Payload: ${JSON.stringify(json)}`);
-        return [];
+        return { hector: [], victor: [] };
     }
-    return extractHectorResults(result.data);
-};
-
-export const fetchVictorLeaderboardDataFromApp = async (url: string): Promise<GoogleSheetIndividualLeaderboard> => {
-    const json = await fetchTournamentDataFromApp(url);
-    const result = AppHectorGolfResponseSchema.safeParse(json);
-    if (result.error || !result.success) {
-        console.error(`Invalid response from Hector API. Error: ${result.error} Payload: ${JSON.stringify(json)}`);
-        return [];
-    }
-    return extractVictorResults(result.data);
+    const hector = extractHectorResults(result.data);
+    const victor = extractVictorResults(result.data);
+    return { hector, victor };
 };
 
 function extractHectorResults(data: AppHectorGolfResponse): GoogleSheetTeamLeaderboard {
