@@ -65,28 +65,33 @@ async function updateLeaderboardsWithData(
 
     const githubToken = process.env.GITHUB_ACCESS_TOKEN as string;
     console.log(`Updating leaderboard data for ${event.name} on Github with token ${githubToken.replace(/./g, "*")}`);
-    await updateHectorEventLeaderboard(githubToken, event.id, hectorLeaderboard, victorLeaderboard);
-    console.log(`Updated leaderboard data for ${event.name}`);
+    const updated = await updateHectorEventLeaderboard(githubToken, event.id, hectorLeaderboard, victorLeaderboard);
+    if (updated) {
+        console.log(`Updated leaderboard data for ${event.name}`);
+    } else {
+        console.log(`Did NOT update leaderboard data for ${event.name}`);
+    }
 
-    const teams = event.results?.teams || [];
-    if (teams.length === 0) {
+    const eventTeams = event.results?.teams || [];
+    if (eventTeams.length === 0) {
         // src/data/events/{format}/{id}.json does not yet have teams for this event
         const leaderboardHasPairings = hectorLeaderboard.every((team) => team.team && team.team.trim().length > 0);
         if (leaderboardHasPairings) {
             console.log(
                 `The Hector leaderboard for ${event.name} has pairings, so we'll use them to generate the teams`,
             );
-            const teams = hectorLeaderboard.map((team) => {
+            const leaderboardTeams = hectorLeaderboard.map((team) => {
                 return {
                     name: team.team,
                     players: team.team.split("+").map((name) => getPlayerByName(name.trim())),
                 };
             });
-            if (teams.every((team) => team.players.every((p) => !!p))) {
-                const rawEvent = eventsData.find((e) => e.id === event.id);
-                if (rawEvent) {
-                    rawEvent.results = { teams: teams as Array<HectorTeam>, winners: { hector: [], victor: [] } };
-                    console.log(`Added ${teams.length} teams for ${event.name} from live leaderboard data`);
+            const rawEvent = eventsData.find((e) => e.id === event.id);
+            if (rawEvent && isHectorEvent(rawEvent)) {
+                if (leaderboardTeams.every((team) => team.players.every((p) => !!p))) {
+                    const winners = rawEvent.results?.winners || { hector: [], victor: [] };
+                    rawEvent.results = { teams: leaderboardTeams as Array<HectorTeam>, winners };
+                    console.log(`Added ${leaderboardTeams.length} teams for ${event.name} from live leaderboard data`);
                     const filePath = pathToEventJson(rawEvent);
                     writeFileSync(filePath, JSON.stringify(rawEvent, null, 4));
                     console.log(`Updated team pairings in ${filePath}`);
@@ -100,7 +105,7 @@ async function updateLeaderboardsWithData(
         }
     } else {
         console.log(
-            `The event ${event.name} already has ${teams.length} teams, so we won't generate them from the leaderboard`,
+            `The event ${event.name} already has ${eventTeams.length} teams, so we won't generate them from the leaderboard`,
         );
     }
     return false;

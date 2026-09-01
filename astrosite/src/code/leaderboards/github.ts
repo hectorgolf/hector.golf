@@ -50,7 +50,7 @@ const createOrReplaceHectorLeaderboardDataFile = async (
     existingSHA: string | undefined,
     hector: GoogleSheetTeamLeaderboard,
     victor: GoogleSheetIndividualLeaderboard,
-) => {
+): Promise<boolean> => {
     const payload = {
         event: eventId,
         scoring: {
@@ -76,6 +76,7 @@ const createOrReplaceHectorLeaderboardDataFile = async (
         content: fileContentsBase64,
     });
     console.log(`Created or updated leaderboard data file for event ${eventId} at ${response.data.content?.url}`);
+    return true;
 };
 
 export const updateHectorEventLeaderboard = async (
@@ -83,17 +84,18 @@ export const updateHectorEventLeaderboard = async (
     eventId: string,
     hector: GoogleSheetTeamLeaderboard,
     victor: GoogleSheetIndividualLeaderboard,
-) => {
+): Promise<boolean> => {
     const existingFile = await fetchExistingHectorLeaderboardDataFile(githubToken, eventId);
     const sha = existingFile?.sha;
     if (sha === undefined) {
         console.log(`Creating a new leaderboard data file for event ${eventId}`);
-        await createOrReplaceHectorLeaderboardDataFile(githubToken, eventId, undefined, hector, victor);
+        return await createOrReplaceHectorLeaderboardDataFile(githubToken, eventId, undefined, hector, victor);
     } else if (areDeeplyEqual(existingFile?.json.hector, hector) && areDeeplyEqual(existingFile?.json.victor, victor)) {
         console.log(`Leaderboard data for event ${eventId} hasn't changed; skipping the update for event ${eventId}`);
+        return false;
     } else {
         console.log(`Leaderboard data for event ${eventId} has changed; doing the update for event ${eventId}`);
-        await createOrReplaceHectorLeaderboardDataFile(githubToken, eventId, sha, hector, victor);
+        return await createOrReplaceHectorLeaderboardDataFile(githubToken, eventId, sha, hector, victor);
     }
 };
 
