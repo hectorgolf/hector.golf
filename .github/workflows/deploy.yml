@@ -41,7 +41,7 @@ jobs:
       # Checkout the repository so we can access the Astro project files and
       # build the site.
       - name: Checkout your repository using git
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Set up Github Pages, which will give us the correct base path and
       # origin to use when building the site with `withastro/action`.
