@@ -13,16 +13,17 @@ const columnNames = (() => {
 })()
 
 function acquireGoogleCredentials() {
+    let normalizedValue: string|undefined = undefined
     try {
         const value = process.env.GOOGLE_CREDENTIALS
         if (!value) {
             console.warn('GOOGLE_CREDENTIALS environment variable is not set - Google Sheets authentication will not work')
             return undefined
         }
-        const normalizedValue = value.replace(/\n/g, '\\n')
+        normalizedValue = value.replace(/\n/g, '\\n')
         return JSON.parse(normalizedValue)
     } catch (error) {
-        console.error('Error parsing GOOGLE_CREDENTIALS: ' + process.env.GOOGLE_CREDENTIALS, error)
+        console.error(`Error parsing GOOGLE_CREDENTIALS: ${JSON.stringify(normalizedValue)}`, error)
         return undefined
     }
 }
