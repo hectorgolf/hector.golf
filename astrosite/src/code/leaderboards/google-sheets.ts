@@ -20,7 +20,7 @@ function acquireGoogleCredentials() {
             console.warn('GOOGLE_CREDENTIALS environment variable is not set - Google Sheets authentication will not work')
             return undefined
         }
-        normalizedValue = value.trim().replace(/\n/g, '')
+        normalizedValue = value.replace(/\n/g, '\\n')
         return JSON.parse(normalizedValue)
     } catch (error) {
         console.error(`Error parsing GOOGLE_CREDENTIALS: ${JSON.stringify(normalizedValue)}`, error)
