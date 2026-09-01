@@ -86,17 +86,13 @@ export const updateHectorEventLeaderboard = async (
 ) => {
     const existingFile = await fetchExistingHectorLeaderboardDataFile(githubToken, eventId);
     const sha = existingFile?.sha;
-    if (areDeeplyEqual(existingFile?.json.hector, hector) && areDeeplyEqual(existingFile?.json.victor, victor)) {
-        console.log(`Leaderboard data for event ${eventId} hasn't changed; skipping the update for event ${eventId}`);
-        console.log(`Hector: ${JSON.stringify(hector, null, 2)}`);
-        console.log(`Victor: ${JSON.stringify(victor, null, 2)}`);
-    } else if (sha === undefined) {
+    if (sha === undefined) {
         console.log(`Creating a new leaderboard data file for event ${eventId}`);
         await createOrReplaceHectorLeaderboardDataFile(githubToken, eventId, undefined, hector, victor);
+    } else if (areDeeplyEqual(existingFile?.json.hector, hector) && areDeeplyEqual(existingFile?.json.victor, victor)) {
+        console.log(`Leaderboard data for event ${eventId} hasn't changed; skipping the update for event ${eventId}`);
     } else {
-        console.log(
-            `Leaderboard data for event ${eventId} has changed; updating leaderboard data for event ${eventId}`,
-        );
+        console.log(`Leaderboard data for event ${eventId} has changed; doing the update for event ${eventId}`);
         await createOrReplaceHectorLeaderboardDataFile(githubToken, eventId, sha, hector, victor);
     }
 };
