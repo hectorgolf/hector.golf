@@ -39,23 +39,23 @@
       "course": "konopiste-radecky",
       "tee": "Yellow",
       "gameFormats": [
-          {
-              "format": "Stableford NET",
-              "competition": [
-                  "hector",
-                  "victor"
-              ],
-              "handicapAllowance": 1,
-              "contribution": {
-                  "hector": 0.33,
-                  "victor": 1
-              },
-              "teamContribution": "better"
+        {
+          "format": "Stableford NET",
+          "competition": [
+            "hector",
+            "victor"
+          ],
+          "handicapAllowance": 1,
+          "contribution": {
+            "hector": 0.33,
+            "victor": 1
           },
-          {
-              "format": "Stroke Play SCR",
-              "handicapAllowance": 0
-          }
+          "teamContribution": "better"
+        },
+        {
+          "format": "Stroke Play SCR",
+          "handicapAllowance": 0
+        }
       ]
     },
     {
@@ -210,7 +210,7 @@
       },
       {
         "id": "toni-k",
-        "handicap": 7.5
+        "handicap": 7.9
       },
       {
         "id": "olli-v",
@@ -236,7 +236,7 @@
       },
       {
         "id": "martin-s",
-        "handicap": 10.4
+        "handicap": 10.5
       },
       {
         "id": "timo-l",
@@ -279,6 +279,5 @@
       "victor": []
     }
   },
-  "leaderboardSheet": "https://app.hector.golf/api/tournament?event=HECTOR2026",
-  "_leaderboardSheet": "https://docs.google.com/spreadsheets/d/1GwdeBzITBXqCA1114vgkqfHPfqKe1bxSFpsDZdj-Ado/edit"
+  "leaderboardSheet": "https://app.hector.golf/api/tournament?event=HECTOR2026"
 }
