@@ -36,27 +36,6 @@ if (!wisegolfUsername || !wisegolfPassword) {
 console.log(`wisegolfUsername:   ${wisegolfUsername}`);
 console.log(`wisegolfPassword:   ${wisegolfPassword?.replace(/./g, "*")}`);
 
-/*
-    curl 'https://api.wisegolfclub.fi/api/1.0/auth' \
-        -X 'POST' \
-        -H 'Content-Type: application/json' \
-        -H 'Pragma: no-cache' \
-        -H 'Accept: application/json' \
-        -H 'Accept-Language: en-GB,en;q=0.9' \
-        -H 'Sec-Fetch-Dest: empty' \
-        -H 'Sec-Fetch-Mode: cors' \
-        -H 'Sec-Fetch-Site: cross-site' \
-        -H 'Origin: https://app.wisegolf.fi' \
-        -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15' \
-        -H 'Referer: https://app.wisegolf.fi/' \
-        -H 'Cache-Control: no-cache' \
-        -H 'Connection: keep-alive' \
-        -H 'Host: api.wisegolfclub.fi' \
-        -H 'x-session-type: wisegolf' \
-        -H 'Content-Length: 98' \
-        --data-binary '{"username":"lasse.koskela@gmail.com","password":"VMpaskaa!","appId":"affbfa03","version":"2.7.0"}'
-*/
-
 const standardRequestHeaders = {
     Accept: "application/json",
     "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8",
