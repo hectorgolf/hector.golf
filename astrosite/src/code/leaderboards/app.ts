@@ -19,7 +19,7 @@ function acquireApiKey() {
 
 const apiKey = acquireApiKey();
 
-const fetchTournamentDataFromApp = async (url: string): Promise<any> => {
+const fetchTournamentDataFromApp = async (url: string): Promise<any | undefined> => {
     const data = await fetch(url, {
         method: "GET",
         headers: {
@@ -29,7 +29,7 @@ const fetchTournamentDataFromApp = async (url: string): Promise<any> => {
     });
     if (!data.ok) {
         console.error(`Failed to fetch Hector leaderboard data from ${url}: ${data.status} ${data.statusText}`);
-        return [];
+        return undefined;
     }
     return await data.json();
 };
@@ -39,12 +39,20 @@ export type LeaderboardData = {
     victor: GoogleSheetIndividualLeaderboard;
 };
 
-export const fetchHectorLeaderboardDataFromApp = async (url: string): Promise<LeaderboardData> => {
+/**
+ * Fetches the tournament standings, or `undefined` if they could not be read.
+ *
+ * The distinction matters: an event that has not started yet legitimately has
+ * empty leaderboards, so callers must not treat a failure as "no results" —
+ * publishing that would wipe whatever standings are already live.
+ */
+export const fetchHectorLeaderboardDataFromApp = async (url: string): Promise<LeaderboardData | undefined> => {
     const json = await fetchTournamentDataFromApp(url);
+    if (json === undefined) return undefined;
     const result = AppHectorGolfResponseSchema.safeParse(json);
-    if (result.error || !result.success) {
+    if (!result.success) {
         console.error(`Invalid response from Hector API. Error: ${result.error} Payload: ${JSON.stringify(json)}`);
-        return { hector: [], victor: [] };
+        return undefined;
     }
     const hector = extractHectorResults(result.data);
     const victor = extractVictorResults(result.data);
@@ -77,7 +85,7 @@ const AppHectorGolfResponseSchema = z.object({
         venue: z.string(),
         dates: z.string(),
     }),
-    status: z.enum(["live"]),
+    status: z.enum(["upcoming", "live", "final"]),
     levelPar: z.number(),
     players: z.array(
         z.object({
@@ -106,7 +114,8 @@ const AppHectorGolfResponseSchema = z.object({
     ),
     hector: z.array(
         z.object({
-            position: z.number(),
+            // null until the event is under way and there is something to rank.
+            position: z.number().nullable(),
             positionLabel: z.string(),
             pairId: z.string(),
             players: z.string(),
@@ -119,7 +128,8 @@ const AppHectorGolfResponseSchema = z.object({
     ),
     victor: z.array(
         z.object({
-            position: z.number(),
+            // null until the event is under way and there is something to rank.
+            position: z.number().nullable(),
             positionLabel: z.string(),
             playerId: z.string(),
             player: z.string(),

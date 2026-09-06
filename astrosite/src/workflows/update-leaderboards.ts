@@ -125,9 +125,14 @@ async function updateLeaderboardsForAllOngoingTournaments(): Promise<void> {
 
         if (event.leaderboardSheet?.match(/^https:\/\/app.hector.golf\//)) {
             console.log(`${event.name} seems to be managed on app.hector.golf`);
-            const { hector, victor } = await fetchHectorLeaderboardDataFromApp(event.leaderboardSheet);
-            hectorLeaderboard = hector;
-            victorLeaderboard = victor;
+            const data = await fetchHectorLeaderboardDataFromApp(event.leaderboardSheet);
+            if (!data) {
+                // Leave both undefined so the update is skipped rather than
+                // overwriting the published leaderboard with nothing.
+                console.error(`Could not read leaderboard data for ${event.name}; skipping this event.`);
+            }
+            hectorLeaderboard = data?.hector;
+            victorLeaderboard = data?.victor;
         } else if (event.leaderboardSheet?.match(/https?:\/\/docs\.google\.com\/spreadsheets/)) {
             console.log(`${event.name} seems to be managed on Google Sheets`);
             const leaderboardSheetId = event.leaderboardSheet
