@@ -1,6 +1,14 @@
 import { Octokit, RequestError } from "octokit";
 import type { GoogleSheetIndividualLeaderboard, GoogleSheetTeamLeaderboard } from "./types";
 
+const getEnvironmentVariable = (name: string): string => {
+    const value = process.env[name];
+    if (!value) {
+        throw new Error(`Environment variable ${name} is not set`);
+    }
+    return value;
+};
+
 const standardOptions = {
     owner: "hectorgolf",
     repo: "hector.golf",
@@ -70,7 +78,7 @@ const createOrReplaceHectorLeaderboardDataFile = async (
         message: `Automated leaderboard update for ${eventId} at ${payload.updatedAt}`,
         committer: {
             name: "UpdateHectorLeaderboard",
-            email: "lasse.koskela@gmail.com",
+            email: getEnvironmentVariable("GIT_COMMITTER_EMAIL"),
         },
         sha: existingSHA,
         content: fileContentsBase64,
