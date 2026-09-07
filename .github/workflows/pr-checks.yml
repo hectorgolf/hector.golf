@@ -17,7 +17,7 @@ jobs:
         working-directory: astrosite
 
     env:
-      WISEGOLF_USERNAME: ${{ vars.WISEGOLF_USERNAME }}
+      WISEGOLF_USERNAME: ${{ secrets.WISEGOLF_USERNAME }}
       WISEGOLF_PASSWORD: ${{ secrets.WISEGOLF_PASSWORD }}
 
     steps:

@@ -61,7 +61,7 @@ jobs:
               --site "${{ steps.pages.outputs.origin }}" \
               --base "${{ steps.pages.outputs.base_path }}"
         env:
-          WISEGOLF_USERNAME: ${{ vars.WISEGOLF_USERNAME }}
+          WISEGOLF_USERNAME: ${{ secrets.WISEGOLF_USERNAME }}
           WISEGOLF_PASSWORD: ${{ secrets.WISEGOLF_PASSWORD }}
 
   # This is the deployment step that takes the built site artifact from the
