@@ -22,6 +22,26 @@ function isGroupFormat(format: string): boolean {
     return true
 }
 
+function isScrambleFormat(format: string): boolean {
+    return format.toLowerCase().includes('scramble')
+}
+
+function openingShotsTextLong(requirement: { minimumPerPlayer?: number; penaltyPerMissingStroke?: number } | undefined): string {
+    const minimum = requirement?.minimumPerPlayer ?? 0
+    const penalty = requirement?.penaltyPerMissingStroke ?? 0
+    if (!minimum) return 'No minimum opening shots per player'
+    if (!penalty) return `Minimum ${minimum} opening shots per player`
+    return `Minimum ${minimum} opening shots per player. ${penalty} penalty strokes awarded for each missing shot.`
+}
+
+function openingShotsTextShort(requirement: { minimumPerPlayer?: number; penaltyPerMissingStroke?: number } | undefined): string {
+    const minimum = requirement?.minimumPerPlayer ?? 0
+    const penalty = requirement?.penaltyPerMissingStroke ?? 0
+    if (!minimum) return 'No minimum opening shots'
+    if (!penalty) return `${minimum} opening shots per player`
+    return `${minimum} opening shots per player. ${penalty} penalty strokes per missing shot.`
+}
+
 function scoreSource(teamContribution: 'both'|'better'|'team'|undefined): string {
     if (!teamContribution) return 'each'
     switch (teamContribution) {
@@ -95,6 +115,12 @@ function pluralize(points: number, unit: string): string {
                                                                 <li class="score-contribution long">{`Victor points: Contributes ${Math.round(victorContribution * 100)}% to the individual's Victor points`}</li>
                                                                 <li class="score-contribution short">{`Victor: ${Math.round(victorContribution * 100)}% of individual's score`}</li>
                                                             )}
+                                                        </ul>
+                                                    )}
+                                                    {isScrambleFormat(gf.format) && (
+                                                        <ul class="opening-shots">
+                                                            <li class="opening-shot-rules long">{openingShotsTextLong(gf.openingShotsRequirement)}</li>
+                                                            <li class="opening-shot-rules short">{openingShotsTextShort(gf.openingShotsRequirement)}</li>
                                                         </ul>
                                                     )}
                                                 </li>
@@ -194,6 +220,7 @@ function pluralize(points: number, unit: string): string {
     .round .game-format { font-size: 0.9em; }
 
     .rounds .game-format ul.contribution,
+    .rounds .game-format ul.opening-shots,
     .rounds .game-format ul.score-bonuses,
     .rounds .game-format ul.handicap-allowances {
         padding-inline-start: 0px;
@@ -210,6 +237,8 @@ function pluralize(points: number, unit: string): string {
         .rounds .handicap-allowance.long { display: none; }
         .rounds .score-contribution.short { display: block; }
         .rounds .score-contribution.long { display: none; }
+        .rounds .opening-shot-rules.short { display: block; }
+        .rounds .opening-shot-rules.long { display: none; }
     }
 
     @media only screen and (min-width: 501px) {
@@ -217,5 +246,7 @@ function pluralize(points: number, unit: string): string {
         .rounds .handicap-allowance.long { display: block; }
         .rounds .score-contribution.short { display: none; }
         .rounds .score-contribution.long { display: block; }
+        .rounds .opening-shot-rules.short { display: none; }
+        .rounds .opening-shot-rules.long { display: block; }
     }
 </style>

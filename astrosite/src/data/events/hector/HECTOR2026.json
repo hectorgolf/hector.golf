@@ -102,7 +102,11 @@
           "contribution": {
             "hector": 0.5
           },
-          "teamContribution": "team"
+          "teamContribution": "team",
+          "openingShotsRequirement": {
+            "minimumPerPlayer": 6,
+            "penaltyPerMissingStroke": 2
+          }
         }
       ]
     },
@@ -178,6 +182,10 @@
           "handicapAllowance": 0.2,
           "contribution": {
             "hector": 1
+          },
+          "openingShotsRequirement": {
+            "minimumPerPlayer": 6,
+            "penaltyPerMissingStroke": 2
           },
           "teamContribution": "team",
           "birdieBonus": 0.5,

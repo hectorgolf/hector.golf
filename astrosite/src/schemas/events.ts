@@ -31,6 +31,14 @@ const hectorResultsSchema = z.object({
     }).optional()
 }).optional()
 
+const openingShotsRequirementSchema = z.object({
+    minimumPerPlayer: z.number().min(0).max(9).optional(),
+    penaltyPerMissingStroke: z.number().min(0).max(5).optional(),
+}).refine(
+    (data) => (data.minimumPerPlayer ?? 0) > 0 || !(data.penaltyPerMissingStroke ?? 0),
+    { message: 'penaltyPerMissingStroke requires a minimumPerPlayer greater than 0' }
+)
+
 const gameFormatSchema = z.object({
     format: z.enum([
         'Stableford NET',
@@ -53,7 +61,11 @@ const gameFormatSchema = z.object({
     teamContribution: z.enum(['both', 'better', 'team']).optional(),
     birdieBonus: z.number().optional(),
     eagleBonus: z.number().optional(),
-})
+    openingShotsRequirement: openingShotsRequirementSchema.optional(),
+}).refine(
+    (data) => !data.openingShotsRequirement || data.format.toLowerCase().includes('scramble'),
+    { message: 'openingShotsRequirement is only valid for Scramble game formats', path: ['openingShotsRequirement'] }
+)
 
 const hectorRoundSchema = z.object({
     day: z.number(),

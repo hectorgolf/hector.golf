@@ -132,6 +132,9 @@
                         "hector"
                     ],
                     "handicapAllowance": 0.2,
+                    "openingShotsRequirement": {
+                        "minimumPerPlayer": 6
+                    },
                     "contribution": {
                         "hector": 0.5
                     },
@@ -182,6 +185,9 @@
                     "handicapAllowance": 0.2,
                     "contribution": {
                         "hector": 1
+                    },
+                    "openingShotsRequirement": {
+                        "minimumPerPlayer": 6
                     },
                     "teamContribution": "team",
                     "birdieBonus": 0.5,

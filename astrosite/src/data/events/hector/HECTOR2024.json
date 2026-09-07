@@ -131,6 +131,9 @@
                 {
                     "format": "Scramble Stroke Play NET",
                     "handicapAllowance": 0.2,
+                    "openingShotsRequirement": {
+                        "minimumPerPlayer": 6
+                    },
                     "competition": [
                         "hector"
                     ]
@@ -146,6 +149,9 @@
                 {
                     "format": "Scramble Stroke Play NET",
                     "handicapAllowance": 0.2,
+                    "openingShotsRequirement": {
+                        "minimumPerPlayer": 6
+                    },
                     "competition": [
                         "hector"
                     ],
