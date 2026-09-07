@@ -53,7 +53,7 @@ function pluralize(points: number, unit: string): string {
                         <div class="highlight"></div>
                         <div class="padding"></div>
                         <div class="content">
-                            <h3>Day {round.day}, Round {round.round}</h3>
+                            <h3>R{index + 1}: Day {round.day}, Round {round.round}</h3>
                             <div class="course">
                                 <a href={linkToCourse(course)}>{course.name}</a>
                                 {tee && (
