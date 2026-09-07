@@ -3,6 +3,7 @@ import { writeFileSync } from "fs";
 import { type HectorEvent } from "../schemas/events.ts";
 import { parseEventDateRange, isoDate, isoDateToday } from "../code/dates.ts";
 import { playersData, eventsData, pathToEventJson, isHectorEvent } from "../code/data.ts";
+import { redact } from "../code/strings.ts";
 import { fetchHectorLeaderboardData, fetchVictorLeaderboardData } from "../code/leaderboards/google-sheets.ts";
 import { updateHectorEventLeaderboard } from "../code/leaderboards/github.ts";
 import { fetchHectorLeaderboardDataFromApp } from "../code/leaderboards/app.ts";
@@ -64,7 +65,7 @@ async function updateLeaderboardsWithData(
     // TODO: check if the leaderboards have changed (compared to the file on disk right now) before making a commit
 
     const githubToken = process.env.GITHUB_ACCESS_TOKEN as string;
-    console.log(`Updating leaderboard data for ${event.name} on Github with token ${githubToken.replace(/./g, "*")}`);
+    console.log(`Updating leaderboard data for ${event.name} on Github with token ${redact(githubToken}`);
     const updated = await updateHectorEventLeaderboard(githubToken, event.id, hectorLeaderboard, victorLeaderboard);
     if (updated) {
         console.log(`Updated leaderboard data for ${event.name}`);

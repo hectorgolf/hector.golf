@@ -2,6 +2,7 @@ import { fetch } from "fetch-h2";
 import { memoize } from "micro-memoize";
 import { ms } from "itty-time";
 import { pRateLimit } from "p-ratelimit";
+import { redact } from "../strings";
 
 import { NullHandicapSource, type GolfClub, type HandicapSource } from "./handicap-source-api";
 
@@ -28,13 +29,13 @@ const wisegolfPassword = ENV.WISEGOLF_PASSWORD;
 
 if (!wisegolfUsername || !wisegolfPassword) {
     console.error(`Missing wisegolfclub.fi credentials:`);
-    console.error(`WISEGOLF_USERNAME:   ${wisegolfUsername ? wisegolfUsername : "<MISSING>"}`);
-    console.error(`WISEGOLF_PASSWORD:   ${wisegolfPassword ? wisegolfPassword.replace(/./g, "*") : "<MISSING>"}`);
+    console.error(`WISEGOLF_USERNAME:   ${redact(wisegolfUsername)}`);
+    console.error(`WISEGOLF_PASSWORD:   ${redact(wisegolfPassword)}`);
     console.error(`Please try again and provide the missing environment variables.`);
     process.exit(1);
 }
-console.log(`wisegolfUsername:   ${wisegolfUsername}`);
-console.log(`wisegolfPassword:   ${wisegolfPassword?.replace(/./g, "*")}`);
+console.log(`wisegolfUsername:   ${redact(wisegolfUsername)}`);
+console.log(`wisegolfPassword:   ${redact(wisegolfPassword)}`);
 
 const standardRequestHeaders = {
     Accept: "application/json",
@@ -152,7 +153,7 @@ const login = memoize(
             appId: "affbfa03",
             version: "2.7.0",
         };
-        console.log(`Logging in to WiseGolf with ${JSON.stringify(sanitizePassword(payload))}`);
+        console.log(`Logging in to WiseGolf with ${JSON.stringify({ ...payload, password: redact(password) })}`);
         const response = await fetch("https://api.wisegolfclub.fi/api/1.0/auth", {
             method: "POST",
             headers: standardRequestHeaders,
