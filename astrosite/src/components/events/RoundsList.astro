@@ -1,6 +1,7 @@
 ---
 import { type HectorEvent } from '../../schemas/events'
 import { getCourseById } from '../../code/courses'
+import { hasMaximumScorePerHole, maxStrokesOverParFor } from '../../code/scoring'
 import type { Course } from '../../schemas/courses'
 
 interface Props {
@@ -40,6 +41,21 @@ function openingShotsTextShort(requirement: { minimumPerPlayer?: number; penalty
     if (!minimum) return 'No minimum opening shots'
     if (!penalty) return `${minimum} opening shots per player`
     return `${minimum} opening shots per player. ${penalty} penalty strokes per missing shot.`
+}
+
+/**
+ * The maximum score per hole, as it reads on a scorecard.
+ *
+ * A detail of the game format, because whether the rule applies at all depends on
+ * it: a round can pair a Stableford format with a Stroke Play one, and only the
+ * latter needs a cap. The number comes from the event unless the round overrides it.
+ */
+function maxScoreTextLong(maxStrokesOverPar: number): string {
+    return `Maximum score per hole: par + ${maxStrokesOverPar}`
+}
+
+function maxScoreTextShort(maxStrokesOverPar: number): string {
+    return `Max par + ${maxStrokesOverPar}`
 }
 
 function scoreSource(teamContribution: 'both'|'better'|'team'|undefined): string {
@@ -115,6 +131,12 @@ function pluralize(points: number, unit: string): string {
                                                                 <li class="score-contribution long">{`Victor points: Contributes ${Math.round(victorContribution * 100)}% to the individual's Victor points`}</li>
                                                                 <li class="score-contribution short">{`Victor: ${Math.round(victorContribution * 100)}% of individual's score`}</li>
                                                             )}
+                                                        </ul>
+                                                    )}
+                                                    {hasMaximumScorePerHole(gf.format) && (
+                                                        <ul class="maximum-scores">
+                                                            <li class="maximum-score long">{maxScoreTextLong(maxStrokesOverParFor(event, round))}</li>
+                                                            <li class="maximum-score short">{maxScoreTextShort(maxStrokesOverParFor(event, round))}</li>
                                                         </ul>
                                                     )}
                                                     {isScrambleFormat(gf.format) && (
@@ -220,6 +242,7 @@ function pluralize(points: number, unit: string): string {
     .round .game-format { font-size: 0.9em; }
 
     .rounds .game-format ul.contribution,
+    .rounds .game-format ul.maximum-scores,
     .rounds .game-format ul.opening-shots,
     .rounds .game-format ul.score-bonuses,
     .rounds .game-format ul.handicap-allowances {
@@ -239,6 +262,8 @@ function pluralize(points: number, unit: string): string {
         .rounds .score-contribution.long { display: none; }
         .rounds .opening-shot-rules.short { display: block; }
         .rounds .opening-shot-rules.long { display: none; }
+        .rounds .maximum-score.short { display: block; }
+        .rounds .maximum-score.long { display: none; }
     }
 
     @media only screen and (min-width: 501px) {
@@ -248,5 +273,7 @@ function pluralize(points: number, unit: string): string {
         .rounds .score-contribution.long { display: block; }
         .rounds .opening-shot-rules.short { display: none; }
         .rounds .opening-shot-rules.long { display: block; }
+        .rounds .maximum-score.short { display: none; }
+        .rounds .maximum-score.long { display: block; }
     }
 </style>
