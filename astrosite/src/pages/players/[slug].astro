@@ -59,16 +59,18 @@ const biography = player.biography && player.biography.length > 0 ? player.biogr
             ): null
         }
 
-        <div class="related-events">
-            <h2>Appearances</h2>
-            <ul role="list" class="link-card-grid">
-                {relatedEvents.map((event) => {
-                    return (
-                        <AppearanceCard player={player} event={event} />
-                    );
-                })}
-            </ul>
-        </div>
+        {relatedEvents.length > 0 ? (
+            <div class="related-events">
+                <h2>Appearances</h2>
+                <ul role="list" class="link-card-grid">
+                    {relatedEvents.map((event) => {
+                        return (
+                            <AppearanceCard player={player} event={event} />
+                        );
+                    })}
+                </ul>
+            </div>
+        ) : null}
 
     </main>
 </Layout>
