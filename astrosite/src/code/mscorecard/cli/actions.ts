@@ -63,24 +63,27 @@ export async function offerRoundActions(
     prompt: Prompter,
     round: MScorecardRound,
 ): Promise<void> {
-    let current = round;
     for (;;) {
-        const actions = availableActions(current);
+        const actions = availableActions(round);
         if (actions.length === 0) {
             console.log("\n  Nothing further can be done to this round from here.");
             return;
         }
 
         const action = await prompt.choose("What now", [...actions, "nothing" as const], describe);
-        if (action === "nothing") return;
+        if (action === "nothing") {
+            return;
+        }
 
         if (action === "add-player") {
             // Adding re-reads the round, so the object the menu works on is replaced.
-            const added = await addPlayer(client, prompt, current);
-            if (added) current = added;
+            const added = await addPlayer(client, prompt, round);
+            if (added) round = added;
             continue;
         }
-        if (await perform(client, prompt, current, action)) return;
+        if (await perform(client, prompt, round, action)) {
+            return;
+        }
     }
 }
 
@@ -90,6 +93,9 @@ export async function offerRoundActions(
  * Anyone can be picked from the roster. Someone who is not on it yet is searched for
  * by name and sent a friend request first, because a round can only reference a
  * player the account already knows about.
+ *
+ * @returns The updated round if a player was added, or `undefined` if the
+ *          operation was cancelled.
  */
 async function addPlayer(
     client: MScorecardClient,
@@ -99,12 +105,15 @@ async function addPlayer(
     const already = new Set(round.players.map((slot) => slot.playerID));
     const roster = (await client.listRoster()).filter((player) => !already.has(player.playerID));
 
-    const source = await prompt.choose("Who", ["roster", "search", "cancel"] as const, (choice) =>
-        ({
-            roster: `Someone already in the player list (${roster.length})`,
-            search: "Search mScorecard for someone new",
-            cancel: "Cancel",
-        })[choice],
+    const source = await prompt.choose(
+        "Who",
+        ["roster", "search", "cancel"] as const,
+        (choice) =>
+            ({
+                roster: `Someone already in the player list (${roster.length})`,
+                search: "Search mScorecard for someone new",
+                cancel: "Cancel",
+            })[choice],
     );
     if (source === "cancel") return undefined;
 
@@ -196,7 +205,7 @@ async function findAndAdd(
 
 /** Carries out one action. Returns true when the round's life is over. */
 async function perform(
-    client: MScorecardClient,
+    _: MScorecardClient,
     prompt: Prompter,
     round: MScorecardRound,
     action: RoundAction,
@@ -276,7 +285,10 @@ async function perform(
 /** Asks when the round was played, re-asking until it reads as a date. */
 async function askWhen(prompt: Prompter, current: Date): Promise<Date | undefined> {
     for (;;) {
-        const answer = await prompt.ask('When was it played ("YYYY-MM-DD HH:MM", or just "HH:MM")', formatWhen(current));
+        const answer = await prompt.ask(
+            'When was it played ("YYYY-MM-DD HH:MM", or just "HH:MM")',
+            formatWhen(current),
+        );
         const when = parseWhen(answer, current);
         if (when) return when;
         console.log(`"${answer}" is not a date and time I can read.`);

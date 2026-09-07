@@ -13,7 +13,7 @@ import { playingHandicapFor } from "../scoring.ts";
 import { HOLES_PER_NINE, holeTableOf, type NineConfiguration } from "./nines.ts";
 import { showStoredRound, reportScorecard } from "./report.ts";
 import type { Prompter } from "./prompts.ts";
-import { sameNumbers, sum } from "./util.ts";
+import { sameNumbers } from "./util.ts";
 
 export type SelfTestSetup = {
     course: Course;
@@ -42,11 +42,7 @@ type Check = { label: string; ok: boolean; detail?: string };
  * `-1`, and `openRound()` read the wrong field names entirely, because creating a
  * round and reading one back do not agree on what a score row is called.
  */
-export async function runSelfTest(
-    client: MScorecardClient,
-    prompt: Prompter,
-    setup: SelfTestSetup,
-): Promise<void> {
+export async function runSelfTest(client: MScorecardClient, prompt: Prompter, setup: SelfTestSetup): Promise<void> {
     const { course, summary, config, tee, player, courseHcp, verbose } = setup;
     const expected = selfTestCard(config);
 
@@ -243,7 +239,6 @@ function selfTestCard(config: NineConfiguration): number[] {
     });
 }
 
-
 function report(checks: readonly Check[], verbose: boolean): void {
     const failed = checks.filter((c) => !c.ok);
     console.log("\n--- RESULTS ---");
@@ -254,5 +249,3 @@ function report(checks: readonly Check[], verbose: boolean): void {
     console.log(`\n${checks.length - failed.length}/${checks.length} checks passed.`);
     if (failed.length > 0) process.exitCode = 1;
 }
-
-

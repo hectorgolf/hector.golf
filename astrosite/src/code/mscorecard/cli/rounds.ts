@@ -9,7 +9,7 @@
 import { writeFileSync } from "node:fs";
 
 import { MScorecardClient, MScorecardTransport } from "../index.ts";
-import type { Course, RoundSummary } from "../types.ts";
+import type { RoundSummary } from "../types.ts";
 import { offerRoundActions } from "./actions.ts";
 import { configurationOf, printCard } from "./card.ts";
 import type { Prompter } from "./prompts.ts";

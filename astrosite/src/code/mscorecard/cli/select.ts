@@ -5,10 +5,10 @@
  * `run.ts` acts on what comes back.
  */
 
-import { courseForNines, MScorecardClient, roundReferenceFor, type CourseFacility } from "../index.ts";
+import { courseForNines, MScorecardClient, type CourseFacility } from "../index.ts";
 import type { Course, CourseSummary, RosterPlayer, Tee } from "../types.ts";
 import { courseHandicap } from "./handicap.ts";
-import { lengthOf, nineName, playableConfigurations, ratingsFor, type NineConfiguration } from "./nines.ts";
+import { lengthOf, playableConfigurations, ratingsFor, type NineConfiguration } from "./nines.ts";
 import type { Prompter } from "./prompts.ts";
 import { byPreferredFirst } from "./scorecard.ts";
 import { sum } from "./util.ts";
