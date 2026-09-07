@@ -6918,5 +6918,30 @@
     "date": "2026-09-06",
     "player": "lasse-k",
     "handicap": 14.1
+  },
+  {
+    "date": "2026-09-07",
+    "player": "tommy-g",
+    "handicap": -3
+  },
+  {
+    "date": "2026-09-07",
+    "player": "olli-v",
+    "handicap": 8.4
+  },
+  {
+    "date": "2026-09-07",
+    "player": "martin-s",
+    "handicap": 11.1
+  },
+  {
+    "date": "2026-09-07",
+    "player": "marcus-m",
+    "handicap": 9.1
+  },
+  {
+    "date": "2026-09-07",
+    "player": "lassi-k",
+    "handicap": 12.4
   }
 ]
