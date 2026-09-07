@@ -94,6 +94,25 @@
       "tee": "White",
       "gameFormats": [
         {
+          "format": "Scramble Stroke Play NET",
+          "competition": [
+            "hector"
+          ],
+          "handicapAllowance": 0.2,
+          "contribution": {
+            "hector": 0.5
+          },
+          "teamContribution": "team"
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "round": 1,
+      "course": "konopiste-deste",
+      "tee": "White",
+      "gameFormats": [
+        {
           "format": "Stroke Play NET",
           "competition": [
             "hector"
@@ -113,25 +132,6 @@
           "contribution": {
             "victor": 1
           }
-        }
-      ]
-    },
-    {
-      "day": 3,
-      "round": 1,
-      "course": "konopiste-deste",
-      "tee": "White",
-      "gameFormats": [
-        {
-          "format": "Scramble Stroke Play NET",
-          "competition": [
-            "hector"
-          ],
-          "handicapAllowance": 0.2,
-          "contribution": {
-            "hector": 0.5
-          },
-          "teamContribution": "team"
         }
       ]
     },
