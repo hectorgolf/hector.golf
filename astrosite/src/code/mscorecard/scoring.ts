@@ -24,6 +24,8 @@
  * because strokes are handed out hardest hole first and only the ranking matters.
  */
 
+import { countedCard } from "../scoring.ts";
+
 /** `-1` is how mScorecard spells "not entered". */
 const NOT_PLAYED = -1;
 
@@ -84,9 +86,18 @@ export function stablefordPoints(
     pars: readonly number[],
     strokeIndexes: readonly number[],
     playingHandicap: number,
+    /**
+     * A maximum score per hole, as strokes over par, applied before anything else.
+     *
+     * Hector events play one; a casual round does not, so it is left out by default
+     * and the card is taken as marked. See `code/scoring.ts` for the rule itself.
+     */
+    maxStrokesOverPar?: number,
 ): number[] {
     const received = strokesReceived(strokeIndexes, playingHandicap);
-    return gross.map((strokes, hole) => {
+    const counted =
+        maxStrokesOverPar === undefined ? gross : countedCard(gross, pars, maxStrokesOverPar);
+    return counted.map((strokes, hole) => {
         if (strokes === NOT_PLAYED || strokes <= 0) return 0;
         const net = strokes - (received[hole] ?? 0);
         return Math.max(0, 2 + (pars[hole] ?? 0) - net);
@@ -98,6 +109,10 @@ export function totalStableford(
     pars: readonly number[],
     strokeIndexes: readonly number[],
     playingHandicap: number,
+    maxStrokesOverPar?: number,
 ): number {
-    return stablefordPoints(gross, pars, strokeIndexes, playingHandicap).reduce((sum, points) => sum + points, 0);
+    return stablefordPoints(gross, pars, strokeIndexes, playingHandicap, maxStrokesOverPar).reduce(
+        (sum, points) => sum + points,
+        0,
+    );
 }

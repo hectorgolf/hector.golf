@@ -28,6 +28,7 @@
     "timo-l"
   ],
   "format": "hector",
+  "maxStrokesOverPar": 4,
   "courses": [
     "konopiste-radecky",
     "konopiste-deste"
@@ -173,6 +174,7 @@
       "round": 1,
       "course": "konopiste-deste",
       "tee": "Yellow",
+      "maxStrokesOverPar": 5,
       "gameFormats": [
         {
           "format": "Scramble Stroke Play NET",
