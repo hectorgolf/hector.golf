@@ -65,7 +65,7 @@ async function updateLeaderboardsWithData(
     // TODO: check if the leaderboards have changed (compared to the file on disk right now) before making a commit
 
     const githubToken = process.env.GITHUB_ACCESS_TOKEN as string;
-    console.log(`Updating leaderboard data for ${event.name} on Github with token ${redact(githubToken}`);
+    console.log(`Updating leaderboard data for ${event.name} on Github with token ${redact(githubToken)}`);
     const updated = await updateHectorEventLeaderboard(githubToken, event.id, hectorLeaderboard, victorLeaderboard);
     if (updated) {
         console.log(`Updated leaderboard data for ${event.name}`);
