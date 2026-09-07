@@ -1,0 +1,123 @@
+---
+import { getPlayerName } from '../../code/players'
+import { leaderboardPosition, type EnrichedLeaderboard } from '../../code/leaderboards/leaderboards'
+
+interface Props {
+	entries: EnrichedLeaderboard
+	/** Column heading for the competitor column: "Team" or "Player". */
+	competitorLabel: string
+	ascending: boolean
+}
+
+const { entries, competitorLabel, ascending } = Astro.props
+
+const normalizeDiff = (diff: string): string => {
+	if (diff === '') return diff
+	if (diff === '0.0') return ''
+	return diff.includes('.') ? diff : `${diff}.0`
+}
+---
+
+<div class="table-scroll">
+	<table class="data leaderboard">
+		<thead>
+			<tr>
+				<th class="place">#</th>
+				<th>{competitorLabel}</th>
+				<th class="numeric">Score</th>
+				<th class="numeric">Diff</th>
+				<th class="thru">Thru</th>
+			</tr>
+		</thead>
+		<tbody>
+			{
+				entries.map(({ players, points, diff, through, description }) => {
+					const position = leaderboardPosition(entries, points, ascending)
+					// A shared lead ('T1') is still a lead, and gets the gold chip.
+					const leading = position === '1' || position === 'T1'
+					return (
+						<tr>
+							<td class="place">
+								<span class={leading ? 'badge num is-leader' : 'badge num'}>{position}</span>
+							</td>
+							<td class="competitor">
+								{players.length > 0 ? (
+									players.map((player, index) => (
+										<>
+											{index ? <span class="plus"> + </span> : null}
+											<a href={`/players/${player.id}`}>{getPlayerName(player)}</a>
+										</>
+									))
+								) : (
+									<span>{description}</span>
+								)}
+							</td>
+							<td class="numeric points">
+								<span class="score">{points}</span>
+							</td>
+							<td class="numeric diff">{normalizeDiff(diff)}</td>
+							<td class="thru num">{through}</td>
+						</tr>
+					)
+				})
+			}
+		</tbody>
+	</table>
+</div>
+
+<style>
+	table.leaderboard {
+		min-width: 420px;
+	}
+
+	.place {
+		width: 2.75rem;
+	}
+
+	/* Position chip, gold for the leader — as on the app's leaderboard. */
+	.badge {
+		display: inline-grid;
+		place-items: center;
+		min-width: 1.55rem;
+		padding: 0.1rem 0.3rem;
+		border-radius: 0.4rem;
+		background: var(--surface-raised);
+		color: var(--text-muted);
+		font-size: 11px;
+		font-weight: 700;
+	}
+
+	.badge.is-leader {
+		background: var(--gold-400);
+		color: var(--ink-950);
+	}
+
+	.competitor a {
+		color: var(--ink-50);
+		font-weight: 600;
+	}
+
+	.competitor a:hover {
+		color: var(--violet-200);
+	}
+
+	.plus {
+		color: var(--text-faint);
+	}
+
+	.points .score {
+		font-size: 1.05rem;
+		color: var(--ink-50);
+	}
+
+	.diff {
+		color: var(--text-dim);
+		font-size: 12px;
+	}
+
+	.thru {
+		text-align: center;
+		color: var(--text-dim);
+		font-size: 12px;
+	}
+</style>

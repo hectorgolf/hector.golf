@@ -1,76 +1,19 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import Breadcrumb from '../../components/Breadcrumb.astro';
-import EventCard from '../../components/events/EventCard.astro';
-import MatchplayEventCard from '../../components/events/MatchplayEventCard.astro';
-import Highlight from '../../components/Highlight.astro';
-import { getAllEventsGroupedByChronology, linkToEvent } from '../../code/events';
-
-
-const { past, ongoing, upcoming } = getAllEventsGroupedByChronology()
-
+import Layout from '../../layouts/Layout.astro'
+import Breadcrumb from '../../components/Breadcrumb.astro'
+import EventList from '../../components/events/EventList.astro'
 ---
 
-<Layout title="Hector official events">
-	<main>
+<Layout title="Hector official events" section="events">
+	<main class="page">
 		<div class="breadcrumbs">
 			<Breadcrumb title="Home" href="/" />
 		</div>
-		<h1><span class="text-gradient">Events</span></h1>
-		{ongoing.length > 0 ? (
-				<Highlight>
-					<h2>NOW</h2>
-					<ul role="list" class="link-card-grid">
-						{ongoing.map((event) => {
-							if (event.format === 'matchplay') {
-								return <MatchplayEventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
-							} else {
-								return <EventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
-							}
-						})}
-					</ul>
-				</Highlight>
-			) : null
-		}
-		{upcoming.length > 0 ? (
-				<h2>Coming up</h2>
-				<ul role="list" class="link-card-grid">
-					{upcoming.map((event) => {
-						if (event.format === 'matchplay') {
-							return <MatchplayEventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
-						} else {
-							return <EventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
-						}
-					})}
-				</ul>
-			) : null
-		}
-		{past.length > 0 ? (
-				<h2>Past events</h2>
-				<ul role="list" class="link-card-grid">
-					{past.map((event) => {
-						if (event.format === 'matchplay') {
-							return <MatchplayEventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
-						} else {
-							return <EventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
-						}
-					})}
-				</ul>
-			) : null
-		}
+		<EventList
+			title="Events"
+			eyebrow="Official calendar"
+			lede="Every Hector and Matchplay event, past and pending."
+			formats={undefined}
+		/>
 	</main>
 </Layout>
-
-<style>
-
-	h1 {
-		text-align: center;
-	}
-
-	.link-card-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
-		gap: 2rem;
-		padding: 0;
-	}
-</style>

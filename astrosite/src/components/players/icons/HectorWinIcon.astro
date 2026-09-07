@@ -1,35 +1,35 @@
 ---
-
 interface Props {
-	year: number;
+	year: number
 }
 
-const { year } = Astro.props;
-
+const { year } = Astro.props
+const label = `Hector winner ${year}`
 ---
 
-<div class="badge">
-	<img src="/images/trophy/hector-gold.svg" title={`Hector winner ${year}`} alt={`Hector winner ${year}`} />
-	<span class="year">{year}</span>
-</div>
+<span class="badge" title={label}>
+	<img src="/images/trophy/hector-gold.svg" alt={label} />
+	<span class="year num">{year}</span>
+</span>
 
 <style>
 	.badge {
 		display: inline-flex;
-		flex-direction: column;
 		align-items: center;
-		position: relative;
-		width: 35px;
-		height: 40px;
+		gap: 0.2rem;
+		padding: 0.1rem 0.35rem 0.1rem 0.25rem;
+		border-radius: 9999px;
+		background: rgb(69 26 3 / 0.5);
 	}
-	.badge .year {
-		font-size: 8pt;
-		color: white;
-		padding: 0 2px;
-		border-radius: 3px;
+
+	.badge img {
+		width: 9px;
+		height: 14px;
 	}
-	img {
-		width: 16px;
-		height: 25px;
+
+	.year {
+		font-size: 10px;
+		font-weight: 600;
+		color: var(--gold-300);
 	}
 </style>

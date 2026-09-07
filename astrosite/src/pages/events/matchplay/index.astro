@@ -1,17 +1,21 @@
 ---
-import Layout from '../../../layouts/Layout.astro';
-import Breadcrumb from '../../../components/Breadcrumb.astro';
-import EventList from '../../../components/events/EventList.astro';
-import { EventFormat } from '../../../schemas/events';
-
+import Layout from '../../../layouts/Layout.astro'
+import Breadcrumb from '../../../components/Breadcrumb.astro'
+import EventList from '../../../components/events/EventList.astro'
+import { EventFormat } from '../../../schemas/events'
 ---
 
-<Layout title="Hector Matchplay events">
-	<main>
+<Layout title="Hector Matchplay events" section="events">
+	<main class="page">
 		<div class="breadcrumbs">
 			<Breadcrumb title="Home" href="/" />
 			<Breadcrumb title="Events" href="/events" />
 		</div>
-		<EventList title="Matchplay Events" formats={[EventFormat.Matchplay]} />
+		<EventList
+			title="Matchplay Events"
+			eyebrow="Match play"
+			lede="Head to head, hole by hole, until only one is left."
+			formats={[EventFormat.Matchplay]}
+		/>
 	</main>
 </Layout>

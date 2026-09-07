@@ -1,83 +1,72 @@
 ---
-import EventCard from '../../components/events/EventCard.astro';
-import MatchplayEventCard from '../../components/events/MatchplayEventCard.astro';
-import Highlight from '../../components/Highlight.astro';
-import { getAllEventsGroupedByChronology, linkToEvent } from '../../code/events';
-import { EventFormat } from '../../schemas/events';
+import EventCard from '../../components/events/EventCard.astro'
+import MatchplayEventCard from '../../components/events/MatchplayEventCard.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import { getAllEventsGroupedByChronology, linkToEvent } from '../../code/events'
+import { EventFormat, type Event } from '../../schemas/events'
 
 interface Props {
 	title: string
-	formats: EventFormat[]|undefined
+	eyebrow?: string
+	lede?: string
+	formats: EventFormat[] | undefined
 }
 
-const { title, formats } = Astro.props
+const { title, eyebrow = 'Hector', lede, formats } = Astro.props
 const allFormats = Object.values(EventFormat) as EventFormat[]
 const includedFormats = formats || allFormats
 
-const { past, ongoing, upcoming } = getAllEventsGroupedByChronology(e => includedFormats.includes(e.format))
+const { past, ongoing, upcoming } = getAllEventsGroupedByChronology((e) =>
+	includedFormats.includes(e.format)
+)
 
+const groups = [
+	{ key: 'now', heading: 'Happening now', events: ongoing, status: 'Live', live: true },
+	{ key: 'upcoming', heading: 'Coming up', events: upcoming, status: 'Upcoming', live: false },
+	{ key: 'past', heading: 'Past events', events: past, status: 'Final', live: false },
+].filter((group) => group.events.length > 0)
+
+const cardFor = (event: Event, status: string, live: boolean) => ({
+	title: event.name,
+	location: event.location,
+	date: event.date,
+	href: linkToEvent(event),
+	status,
+	live,
+})
 ---
 
-<>
-    <h1><span class="text-gradient">{title}</span></h1>
-    {ongoing.length > 0 ? (
-            <Highlight>
-                <h2>NOW</h2>
-                <ul role="list" class="link-card-grid">
-                    {ongoing.map((event) => {
-                        if (event.format === EventFormat.Matchplay) {
-                            return <MatchplayEventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
-                        } else if (event.format === EventFormat.Hector) {
-                            return <EventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
-                        } else {
-                            console.warn(`<EventList/> not rendering a card for event ${event.name} because it has an unsupported format: ${event.format}`)
-                        }
-                    })}
-                </ul>
-            </Highlight>
-        ) : null
-    }
-    {upcoming.length > 0 ? (
-            <h2>Coming up</h2>
-            <ul role="list" class="link-card-grid">
-                {upcoming.map((event) => {
-                    if (event.format === EventFormat.Matchplay) {
-                        return <MatchplayEventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
-                    } else if (event.format === EventFormat.Hector) {
-                        return <EventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
-                    } else {
-                            console.warn(`<EventList/> not rendering a card for event ${event.name} because it has an unsupported format: ${event.format}`)
-                    }
-                })}
-            </ul>
-        ) : null
-    }
-    {past.length > 0 ? (
-            <h2>Past events</h2>
-            <ul role="list" class="link-card-grid">
-                {past.map((event) => {
-                    if (event.format === EventFormat.Matchplay) {
-                        return <MatchplayEventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
-                    } else if (event.format === EventFormat.Hector) {
-                        return <EventCard title={event.name} location={event.location} date={event.date} href={linkToEvent(event)}/>
-                    } else {
-                            console.warn(`<EventList/> not rendering a card for event ${event.name} because it has an unsupported format: ${event.format}`)
-                    }
-                })}
-            </ul>
-        ) : null
-    }
-</>
+<PageHeader title={title} eyebrow={eyebrow} lede={lede} />
 
-<style>
-	h1 {
-		text-align: center;
-	}
-
-	.link-card-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
-		gap: 2rem;
-		padding: 0;
-	}
-</style>
+{
+	groups.map((group) => (
+		<section class="section">
+			<div class="section-head">
+				<h2>{group.heading}</h2>
+				{group.live ? (
+					<span class="pill pill-live">
+						<span class="live-dot" aria-hidden="true" />
+						Live
+					</span>
+				) : (
+					<span class="meta">
+						{group.events.length} {group.events.length === 1 ? 'event' : 'events'}
+					</span>
+				)}
+			</div>
+			<ul role="list" class="grid grid-wide">
+				{group.events.map((event) => {
+					if (event.format === EventFormat.Matchplay) {
+						return <MatchplayEventCard {...cardFor(event, group.status, group.live)} />
+					} else if (event.format === EventFormat.Hector) {
+						return <EventCard {...cardFor(event, group.status, group.live)} />
+					}
+					console.warn(
+						`<EventList/> not rendering a card for event ${event.name} because it has an unsupported format: ${event.format}`
+					)
+					return null
+				})}
+			</ul>
+		</section>
+	))
+}

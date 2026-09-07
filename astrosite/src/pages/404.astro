@@ -1,41 +1,44 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import Breadcrumb from '../components/Breadcrumb.astro';
+import Layout from '../layouts/Layout.astro'
+import Breadcrumb from '../components/Breadcrumb.astro'
 ---
 
 <Layout title="Lost ball">
-	<main>
+	<main class="page">
 		<div class="breadcrumbs">
 			<Breadcrumb title="Back" href="javascript: history.go(-1);" />
 		</div>
-		<h1>That was a mighty power draw...</h1>
-		<p>...and a lost ball because we can't the ball you're looking for.</p>
-		<div>
-			<img src="/images/eagle-barf.png"/>
+		<div class="not-found">
+			<span class="eyebrow">404 · Out of bounds</span>
+			<h1>That was a mighty power draw&hellip;</h1>
+			<p class="lede">&hellip;and a lost ball, because we can't find the page you're looking for.</p>
+			<img src="/images/eagle-barf.png" alt="" />
+			<p><a class="btn btn-ghost" href="/">Back to the clubhouse</a></p>
 		</div>
 	</main>
 </Layout>
 
 <style>
-
-	main p {
+	.not-found {
+		padding: 3rem 0;
 		text-align: center;
 	}
 
-	main div img {
-		width: calc(80%);
-		max-width: 300px;
+	.eyebrow {
+		display: block;
+		margin-bottom: 0.75rem;
 	}
 
-	main div {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-around;
+	.lede {
+		margin: 1rem auto 0;
+		color: var(--text-muted);
+		font-size: 1.05rem;
 	}
 
-	main .breadcrumbs {
-		display: flex;
-		flex-direction: row;
-		justify-content: flex-start;
+	img {
+		width: 80%;
+		max-width: 280px;
+		margin: 2rem auto 1.5rem;
+		opacity: 0.9;
 	}
 </style>

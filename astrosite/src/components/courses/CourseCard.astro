@@ -1,74 +1,85 @@
 ---
 interface Props {
-	name: string;
-	href: string;
-	location: string;
-	image?: string;
+	name: string
+	href: string
+	location: string
+	image?: string
 }
 
-const { name, image, href, location } = Astro.props;
+const { name, image, href, location } = Astro.props
 ---
 
-<li class="link-course">
-	<a href={href}>
-		{image ? <img src={image} title={name}/><br/> : ""}
-		<span class="title">{name}</span>
-		<span class="location">{location}</span>
+<li class="course-card">
+	<a href={href} class="card-link">
+		{
+			image && (
+				<span class="thumb">
+					<img src={image} alt="" loading="lazy" />
+				</span>
+			)
+		}
+		<span class="body">
+			<span class="title">{name}</span>
+			<span class="location">{location}</span>
+		</span>
 	</a>
 </li>
 
 <style>
-	.link-course {
+	.course-card {
 		list-style: none;
 		display: flex;
-		padding: 1px;
-		max-width: 600px;
-		background-color: #23262d;
-		background-image: none;
-		background-size: 400%;
-		border-radius: 7px;
-		background-position: 100%;
-		transition: background-position 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 	}
-	.link-course > a {
+
+	.card-link {
+		display: flex;
+		flex-direction: column;
 		width: 100%;
-		text-decoration: none;
-		line-height: 1.4;
-		padding: calc(1.5rem - 1px);
-		border-radius: 8px;
-		color: white;
-		background-color: #23262d;
-		opacity: 0.8;
 	}
-	.link-course img {
-		width: calc(100% - 0rem);
-		border-radius: 2px;
-        aspect-ratio: 16/9;
-        object-fit: cover;
-	}
-	.link-course .title {
+
+	.thumb {
 		display: block;
-		font-size: 1.25rem;
+		position: relative;
+		aspect-ratio: 16 / 9;
+		overflow: hidden;
 	}
-	.link-course .location {
-		display: block;
-		font-size: 0.85rem;
+
+	.thumb img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		filter: brightness(0.88) saturate(0.9);
+		transition: transform 0.4s var(--ease);
 	}
-	h2 {
-		margin: 0;
-		font-size: 1.25rem;
-		transition: color 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+
+	.card-link:hover .thumb img {
+		transform: scale(1.03);
 	}
-	p {
-		margin-top: 0.5rem;
-		margin-bottom: 0;
+
+	.thumb::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(to top, var(--ink-900), rgb(19 18 21 / 0.05) 70%);
 	}
-	.link-course:is(:hover, :focus-within) {
-		background-position: 0;
-		background-image: var(--accent-gradient);
+
+	.body {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		padding: 0.9rem 1.1rem 1.05rem;
 	}
-	.link-course:is(:hover, :focus-within) h2 {
-		color: rgb(var(--accent-light));
+
+	.location {
+		font-size: 13px;
+		color: var(--text-dim);
+	}
+
+	.title {
+		font-family: var(--font-serif);
+		font-size: 1.05rem;
+		font-weight: 600;
+		line-height: 1.25;
+		color: var(--ink-50);
 	}
 </style>

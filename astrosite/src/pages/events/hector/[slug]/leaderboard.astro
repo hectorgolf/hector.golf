@@ -2,6 +2,8 @@
 import Layout from '../../../../layouts/Layout.astro'
 import Breadcrumb from '../../../../components/Breadcrumb.astro'
 import RoundsList from '../../../../components/events/RoundsList.astro'
+import LeaderboardTable from '../../../../components/events/LeaderboardTable.astro'
+import PageHeader from '../../../../components/PageHeader.astro'
 
 import { type Player } from '../../../../schemas/players'
 import { getAllPlayers, getPlayerName, getPlayerAliases } from '../../../../code/players'
@@ -9,7 +11,7 @@ import { getAllPlayers, getPlayerName, getPlayerAliases } from '../../../../code
 import { type HectorEvent } from '../../../../schemas/events'
 import { getAllEventIds, getEventById } from '../../../../code/events'
 
-import { getLeaderboardsByEventId, getEventsWithLeaderboards, leaderboardPosition } from '../../../../code/leaderboards/leaderboards'
+import { getLeaderboardsByEventId, getEventsWithLeaderboards } from '../../../../code/leaderboards/leaderboards'
 import { parseEventDateRange } from '../../../../code/dates'
 
 
@@ -48,123 +50,63 @@ const allThrough = Math.min(...(hectorLeaderboard || [])
     .map(entry => entry.through)
     .map(through => parseInt(through.split('/')[0] || '0')))
 
-const normalizeDiff = (diff: string, prefix?: string): string => {
-    let value = (diff !== '' && !diff.includes('.')) ? `${diff}.0` : diff
-    if (diff === '') return diff
-    if (diff === '0.0') return ''
-    return `${prefix || ''}${value}`.trim()
-}
 
 ---
-<Layout title={`${event.name} leaderboard`}>
-    <main>
-		<div class="breadcrumbs">
-			<Breadcrumb title="Home" href="/" />
-			<Breadcrumb title="Events" href="/events" />
-			<Breadcrumb title="Hectors" href="/events/hector" />
-			<Breadcrumb title={event.name} href={`/events/hector/${event.id}`} />
-		</div>
-        <h1><span class="text-gradient">{event.name}</span></h1>
-        <div class="event-details">
-            <div class="event-location">{event.location}</div>
-            <div class="event-date">{event.date}</div>
+<Layout title={`${event.name} leaderboard`} section="events">
+    <main class="page">
+        <div class="breadcrumbs">
+            <Breadcrumb title="Home" href="/" />
+            <Breadcrumb title="Events" href="/events" />
+            <Breadcrumb title="Hectors" href="/events/hector" />
+            <Breadcrumb title={event.name} href={`/events/hector/${event.id}`} />
         </div>
+        <PageHeader
+            title={event.name}
+            eyebrow="Leaderboard"
+            meta={[event.location, event.date]}
+        />
 
         {hectorLeaderboard && (
-            <div class="leaderboard hector">
-                <h2>Hector</h2>
-                {hectorLeaderboard.length === 0 && (
-                    <p class="pending">({resultsMissingLabel})</p>
+            <section class="section">
+                <div class="section-head">
+                    <h2>Hector</h2>
+                    <span class="meta">Pairs</span>
+                </div>
+                {hectorLeaderboard.length === 0 ? (
+                    <p class="pending meta">{resultsMissingLabel}</p>
+                ) : (
+                    <LeaderboardTable
+                        entries={hectorLeaderboard}
+                        competitorLabel="Team"
+                        ascending={hectorLeaderboardScoringDirection === 'ascending'}
+                    />
                 )}
-                {hectorLeaderboard.length > 0 && (
-                    <table>
-                        <thead>
-                            <tr>
-                                <th class="place">#</th>
-                                <th class="name">Team</th>
-                                <th class="points">Score</th>
-                                <th class="diff">Diff</th>
-                                <th class="thru">Thru</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {hectorLeaderboard.map(({ players, points, diff, through, description }, index) => {
-                            const firstClass = index === 0 ? 'first' : ''
-                            return (
-                                <tr class={`competitor ${firstClass}`.trim()}>
-                                    <td class="place">{leaderboardPosition(hectorLeaderboard, points, hectorLeaderboardScoringDirection === 'ascending')}</td>
-                                    <td class="name">
-                                        {(players.length > 0) ? players.map((player, index) => {
-                                            return (
-                                                <>
-                                                    {index ? (<span class="plus"> + </span>) : null}
-                                                    <a class="player" href={`/players/${player.id}`}>{getPlayerName(player)}</a>
-                                                </>
-                                            )}
-                                        ) : (
-                                            <span>{description}</span>
-                                        )}
-                                    </td>
-                                    <td class="points">{points}</td>
-                                    <td class="diff">{normalizeDiff(diff)}</td>
-                                    <td class="thru">{through}</td>
-                                </tr>
-                            )
-                        })}
-                        </tbody>
-                    </table>
-                )}
-            </div>
+            </section>
         )}
 
         {victorLeaderboard && (
-            <div class="leaderboard victor">
-                <h2>Victor</h2>
-                {victorLeaderboard.length === 0 && (
-                    <p class="pending">({resultsMissingLabel})</p>
+            <section class="section">
+                <div class="section-head">
+                    <h2>Victor</h2>
+                    <span class="meta">Individual</span>
+                </div>
+                {victorLeaderboard.length === 0 ? (
+                    <p class="pending meta">{resultsMissingLabel}</p>
+                ) : (
+                    <LeaderboardTable
+                        entries={victorLeaderboard}
+                        competitorLabel="Player"
+                        ascending={victorLeaderboardScoringDirection === 'ascending'}
+                    />
                 )}
-                {victorLeaderboard.length > 0 && (
-                    <table>
-                        <thead>
-                            <tr>
-                                <th class="place">#</th>
-                                <th class="name">Player</th>
-                                <th class="points">Score</th>
-                                <th class="diff">Diff</th>
-                                <th class="thru">Thru</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {victorLeaderboard.map(({ players, points, diff, through}, index) => {
-                            const firstClass = index === 0 ? 'first' : ''
-                            return (
-                                <tr class={`competitor ${firstClass}`.trim()}>
-                                    <td class="place">{leaderboardPosition(victorLeaderboard, points, victorLeaderboardScoringDirection === 'ascending')}</td>
-                                    <td class="name">
-                                        {players.map((player, index) => {
-                                            return (
-                                                <>
-                                                    {index ? (<span class="plus"> + </span>) : null}
-                                                    <a class="player" href={`/players/${player.id}`}>{getPlayerName(player)}</a>
-                                                </>
-                                            )}
-                                        )}
-                                    </td>
-                                    <td class="points">{points}</td>
-                                    <td class="diff">{normalizeDiff(diff, '')}</td>
-                                    <td class="thru">{through}</td>
-                                </tr>
-                            )
-                        })}
-                        </tbody>
-                    </table>
-                )}
-            </div>
+            </section>
         )}
 
         <RoundsList event={event} allThrough={allThrough} />
 
-        {updatedAt && (<div class="updated-at">Updated:&nbsp;&nbsp;{updatedAt?.toISOString()}</div>)}
+        {updatedAt && (
+            <p class="updated-at meta">Updated {updatedAt.toISOString()}</p>
+        )}
 
         <script is:inline>
             // Automatically refresh the page every 5 minutes
@@ -176,143 +118,12 @@ const normalizeDiff = (diff: string, prefix?: string): string => {
 </Layout>
 
 <style>
-    pre {
-        max-width: calc(100% - 2rem);
-        overflow: scroll;
-    }
-
-    main {
-		margin: auto;
-		width: 900px;
-		max-width: calc(100% - 2rem);
-		color: white;
-		font-size: 20px;
-		line-height: 1.6;
-	}
-
-    h1 {
-		text-transform: uppercase;
-		font-size: 3.07rem;
-		font-weight: 700;
-		line-height: 1;
-		text-align: left;
-		margin-bottom: 1em;
-	}
-
-    h2 {
-        margin-block-start: 1em;
-        margin-block-end: 0.5em;
-    }
-
-    .event-details {
-        font-weight: bold;
+    .pending {
+        color: var(--text-faint);
     }
 
     .updated-at {
-        font-size: 0.7em;
-        color: lightgray;
-        margin-top: 100px;
-        margin-bottom: 30px;
-    }
-
-    .leaderboard table {
-        border-collapse: collapse;
-        white-space: nowrap;
-    }
-
-    .leaderboard table thead {
-        background: linear-gradient(rgba(var(--accent-dark), 66%), rgba(var(--accent-dark), 33%));
-    }
-
-    .leaderboard table tr.first td {
-        padding-top: 12px;
-        padding-bottom: 4px;
-    }
-
-    .leaderboard table tr td {
-        padding-top: 4px;
-        padding-bottom: 4px;
-    }
-
-    .leaderboard table thead th.place,
-    .leaderboard table tbody td.place {
-        padding-left: 8px;
-    }
-
-    .leaderboard .pending {
-        color: lightgray;
-    }
-
-    .leaderboard .competitor .name .plus {
-        color: lightgray;
-    }
-
-    .leaderboard .competitor .points {
-        color: lightblue;
-    }
-
-    .leaderboard .competitor .diff {
-        color: lightcoral;
-    }
-
-    .leaderboard .points,
-    .leaderboard .diff {
-        text-align: right;
-    }
-
-    .leaderboard .thru {
-        text-align: center;
-    }
-
-    .leaderboard .competitor {
-        font-family: "Inconsolata", monospace;
-        font-optical-sizing: auto;
-        font-weight: 500;
-        font-style: normal;
-        font-variation-settings: "wdth" 87.5;
-    }
-
-    .leaderboard thead {
-        font-family: "Inconsolata", monospace;
-        font-optical-sizing: auto;
-        font-weight: 700;
-        font-style: normal;
-        font-variation-settings: "wdth" 87.5;
-    }
-
-    .leaderboard tbody {
-        vertical-align: top;
-    }
-
-    .leaderboard td, .leaderboard th {
-        text-align: left;
-    }
-
-    .leaderboard table { width: 100%; max-width: 560px !important; }
-    
-    .leaderboard table thead { font-size: 0.8em; }
-    .leaderboard table tbody { font-size: 0.8em; }
-
-    @media only screen and (min-width: 401px) {
-        .leaderboard table thead { font-size: 0.9em; }
-        .leaderboard table tbody { font-size: 0.85em; }
-    }
-
-    @media only screen and (min-width: 441px) {
-        .leaderboard table thead { font-size: 1.0em; }
-        .leaderboard table tbody { font-size: 0.95em; }
-    }
-
-    @media only screen and (min-width: 481px) {
-        .leaderboard { font-size: 1.0em; }
-        .leaderboard table thead { font-size: 1.1em; }
-        .leaderboard table tbody { font-size: 0.95em; }
-        .leaderboard td, .leaderboard th { padding-right: 10px; }
-        .leaderboard td.name, .leaderboard th.name { padding-right: 20px; }
-        .leaderboard th.place { min-width: 34px; }
-        .leaderboard th.name { min-width: 180px; max-width: 400px !important; }
-        .leaderboard th.points { min-width: 40px; }
-        .leaderboard th.diff { min-width: 40px; }
-        .leaderboard th.thru { min-width: 40px; }
+        margin-top: 3rem;
+        color: var(--text-faint);
     }
 </style>

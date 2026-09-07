@@ -23,15 +23,14 @@ const lastTwenty = fullHistory.slice(-20)
 
 <style>
 	.handicap-history-chart-container {
-		padding-right: 15px;
+		padding: 0.9rem 1rem;
+		border-radius: var(--radius-lg);
+		border: 1px solid var(--line);
+		background: var(--surface);
 	}
-	.handicap-history-chart {
-		background-color: #red;
-		border-radius: 7px;
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-	}
+
 	#handicap-history-chart-canvas {
-		width: 90%;
-		aspect-ratio: auto 900/600;
+		width: 100%;
+		aspect-ratio: auto 900/500;
 	}
 </style>

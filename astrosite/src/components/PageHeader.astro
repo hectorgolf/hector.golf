@@ -1,0 +1,35 @@
+---
+/**
+ * Standard page masthead: gold eyebrow, serif display title, mono metadata
+ * strip and an optional lede — the same stack the app uses on its info screens.
+ */
+interface Props {
+	title: string
+	eyebrow?: string
+	/** Metadata parts, joined with a middot: ["Konopiště, Czechia", "Sep 24–27"] */
+	meta?: (string | undefined | null)[]
+	lede?: string
+	align?: 'left' | 'center'
+}
+
+const { title, eyebrow, meta, lede, align = 'left' } = Astro.props
+const metaParts = (meta ?? []).filter((part): part is string => !!part)
+---
+
+<header class="page-header" data-align={align}>
+	{eyebrow && <span class="eyebrow">{eyebrow}</span>}
+	<h1>{title}</h1>
+	{metaParts.length > 0 && <span class="meta">{metaParts.join(' · ')}</span>}
+	{lede && <p class="lede">{lede}</p>}
+	<slot />
+</header>
+
+<style>
+	.page-header[data-align='center'] {
+		text-align: center;
+	}
+
+	.page-header[data-align='center'] .lede {
+		margin-inline: auto;
+	}
+</style>

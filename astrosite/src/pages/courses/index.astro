@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import CourseCard from '../../components/courses/CourseCard.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
+import PageHeader from '../../components/PageHeader.astro';
 import { getCollection } from 'astro:content';
 import { getEventsAtCourse } from '../../code/courses';
 import { compareDateStrings } from '../../code/dates';
@@ -43,43 +44,21 @@ const coursesSortedByDate = courses
 	.reverse();
 
 ---
-<Layout title="Courses">
-    <main>
-		<div class="breadcrumbs">
-			<Breadcrumb title="Home" href="/" />
-		</div>
-        <h1><span class="text-gradient">Courses</span></h1>
-        <ul role="list" class="link-card-grid">
-            {coursesSortedByDate.map((course) => {
-                return <CourseCard name={course.name} image={course.hero_image} location={course.contact.address} href={linkToCourse(course)}/>
-            })}
+<Layout title="Courses" section="courses">
+    <main class="page">
+        <div class="breadcrumbs">
+            <Breadcrumb title="Home" href="/" />
+        </div>
+        <PageHeader
+            title="Courses"
+            eyebrow="Where it happens"
+            meta={[`${coursesSortedByDate.length} courses`]}
+            lede="The layouts that have hosted a Hector, most recent first."
+        />
+        <ul role="list" class="grid grid-wide">
+            {coursesSortedByDate.map((course) => (
+                <CourseCard name={course.name} image={course.hero_image} location={course.contact.address} href={linkToCourse(course)}/>
+            ))}
         </ul>
     </main>
 </Layout>
-
-<style>
-	main {
-		margin: auto;
-		width: 900px;
-		max-width: calc(100% - 2rem);
-		color: white;
-		font-size: 20px;
-		line-height: 1.6;
-	}
-
-	h1 {
-		text-transform: uppercase;
-		font-size: 3.04rem;
-		font-weight: 700;
-		line-height: 1;
-		text-align: center;
-		margin-bottom: 1em;
-	}
-
-	.link-card-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
-		gap: 2rem;
-		padding: 0;
-	}
-</style>

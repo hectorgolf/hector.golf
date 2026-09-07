@@ -10,8 +10,12 @@ export function drawHandicapHistoryChart(elementId: string) {
     const data: Array<{x: string, y: number}> = JSON.parse(ctx.dataset.handicapHistory || '[]') as Array<{x: string, y: number}>
     const currentHandicap = ctx.dataset.currentHandicap ? parseFloat(ctx.dataset.currentHandicap) : undefined
 
-    const datasetLineColor = 'rgb(75, 192, 192)'
-    const datasetTickColor = 'rgb(175, 255, 255)'
+    // Match the app's palette: violet line, gold current-handicap badge, ink gridlines.
+    const datasetLineColor = '#8b79d8'
+    const datasetTickColor = '#cfc6f0'
+    const badgeColor = '#e3b341'
+    const gridColor = '#1d1c20'
+    const axisTextColor = '#7c7a86'
     const dataset: Point[] = data.map((entry) => ({ x: new Date(entry.x).getTime(), y: entry.y }))
     const linedata: ChartData<"line"> = {
         datasets: [
@@ -30,7 +34,7 @@ export function drawHandicapHistoryChart(elementId: string) {
             if (currentHandicap === undefined) { return; }
 
             const canvasSize = Math.max(chart?.canvas?.parentElement?.clientWidth || 0, chart?.canvas?.parentElement?.clientHeight || 0)
-            const font = canvasSize > 400 ? '24px sans-serif' : '16px sans-serif'
+            const font = canvasSize > 400 ? '700 24px "Barlow Semi Condensed", sans-serif' : '700 16px "Barlow Semi Condensed", sans-serif'
             const radius = canvasSize > 400 ? 36 : 22
             const centerX = canvasSize > 400 ? 90 : 70
             const centerY = canvasSize > 400 ? 50 : 30
@@ -40,14 +44,14 @@ export function drawHandicapHistoryChart(elementId: string) {
             ctx.save()
 
             ctx.beginPath();
-            ctx.fillStyle = datasetLineColor
+            ctx.fillStyle = badgeColor
             ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
             ctx.fill();
             ctx.restore();
 
             ctx.textAlign = 'center'
             ctx.font = font
-            ctx.fillStyle = 'white'
+            ctx.fillStyle = '#0a0a0c'
             ctx.fillText(Number(currentHandicap).toFixed(1), centerX, centerY + yDelta)
             ctx.restore()
         }
@@ -81,7 +85,15 @@ export function drawHandicapHistoryChart(elementId: string) {
                             month: 'y-MM',
                             day: 'y-MM-dd',
                         }
-                     }
+                     },
+                     grid: { color: gridColor },
+                     border: { color: gridColor },
+                     ticks: { color: axisTextColor, font: { family: 'Inconsolata, monospace', size: 10 } }
+                 },
+                 y: {
+                     grid: { color: gridColor },
+                     border: { color: gridColor },
+                     ticks: { color: axisTextColor, font: { family: 'Inconsolata, monospace', size: 10 } }
                  }
              }
          }

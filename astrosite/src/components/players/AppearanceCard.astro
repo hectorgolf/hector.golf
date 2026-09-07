@@ -1,97 +1,72 @@
 ---
-
-import { linkToEvent } from '../../code/events';
-import { type Player } from '../../schemas/players';
-import { type Event, type HectorEvent } from '../../schemas/events';
+import { linkToEvent } from '../../code/events'
+import { type Player } from '../../schemas/players'
+import { type Event, type HectorEvent } from '../../schemas/events'
 
 interface Props {
-	player: Player;
-	event: Event;
+	player: Player
+	event: Event
 }
 
-const { player, event } = Astro.props;
+const { player, event } = Astro.props
 
-const wonHector = event.format === 'hector' && !!(event as HectorEvent).results?.winners?.hector?.includes(player.id)
-const wonVictor = event.format === 'hector' && !!(event as HectorEvent).results?.winners?.victor?.includes(player.id)
-const wonMatchplay = event.format === 'matchplay' && event.results?.winners?.matchplay?.includes(player.id);
-
+const wonHector =
+	event.format === 'hector' &&
+	!!(event as HectorEvent).results?.winners?.hector?.includes(player.id)
+const wonVictor =
+	event.format === 'hector' && !!(event as HectorEvent).results?.winners?.victor?.includes(player.id)
+const wonMatchplay =
+	event.format === 'matchplay' && !!event.results?.winners?.matchplay?.includes(player.id)
 ---
 
-<div class="appearance">
-	<a href={linkToEvent(event)}>
-		<span class="event-name">{event.name}</span>
-		{wonHector ? (<img class="win hector" src="/images/trophy/hector-gold.svg" alt="Hector Trophé" />) : null}
-		{wonVictor ? (<img class="win victor" src="/images/trophy/victor-gold.svg" alt="Victor Trophé" />) : null}
-		{wonMatchplay ? (<img class="win matchplay" src="/images/trophy/matchplay-gold.svg" alt="Matchplay victory" />) : null}
-		<span class="date">{event.date}</span>
-		<span class="location">{event.location}</span>
+<li class="appearance">
+	<a href={linkToEvent(event)} class="card-link">
+		<span class="top">
+			<span class="event-name">{event.name}</span>
+			<span class="trophies">
+				{wonHector && <img src="/images/trophy/hector-gold.svg" alt="Won the Hector Trophée" />}
+				{wonVictor && <img src="/images/trophy/victor-gold.svg" alt="Won the Victor Trophée" />}
+				{wonMatchplay && <img src="/images/trophy/matchplay-gold.svg" alt="Won the Matchplay" />}
+			</span>
+		</span>
+		<span class="meta">{[event.date, event.location].filter(Boolean).join(' · ')}</span>
 	</a>
-</div>
+</li>
 
 <style>
 	.appearance {
 		list-style: none;
 		display: flex;
-		padding: 1px;
-		max-width: 600px;
-		background-color: #23262d;
-		background-image: none;
-		background-size: 400%;
-		border-radius: 7px;
-		background-position: 100%;
-		transition: background-position 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 	}
-	.appearance > a {
+
+	.card-link {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
 		width: 100%;
-		text-decoration: none;
-		line-height: 1.4;
-		padding: calc(1.5rem - 1px);
-		border-radius: 8px;
-		color: white;
-		background-color: #23262d;
-		opacity: 0.8;
+		padding: 0.8rem 1rem;
 	}
-	.appearance .event-name {
-		margin-right: 10px;
+
+	.top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.6rem;
 	}
-	.appearance img.win {
-		margin-bottom: -5px;
+
+	.event-name {
+		font-weight: 600;
+		color: var(--ink-50);
 	}
-	.appearance img.win.hector {
-		width: 16px;
-		height: 25px;
+
+	.trophies {
+		display: inline-flex;
+		gap: 0.3rem;
+		flex-shrink: 0;
 	}
-	.appearance img.win.victor {
-		width: 16px;
-		height: 25px;
-	}
-	.appearance img.win.matchplay {
-		width: 16px;
-		height: 25px;
-	}
-	.appearance .date {
-		display: block;
-		font-size: 0.8rem;
-	}
-	.appearance .location {
-		display: block;
-		font-size: 0.8rem;
-	}
-	h2 {
-		margin: 0;
-		font-size: 1.25rem;
-		transition: color 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-	}
-	p {
-		margin-top: 0.5rem;
-		margin-bottom: 0;
-	}
-	.appearance:is(:hover, :focus-within) {
-		background-position: 0;
-		background-image: var(--accent-gradient);
-	}
-	.appearance:is(:hover, :focus-within) h2 {
-		color: rgb(var(--accent-light));
+
+	.trophies img {
+		width: 14px;
+		height: 22px;
 	}
 </style>
