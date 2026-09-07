@@ -138,13 +138,6 @@ const findWisegolfPlayerClubs = memoize(
     { expires: ms("1 hour") },
 );
 
-const sanitizePassword = (obj: any): any => {
-    if ("password" in obj) {
-        return { ...obj, password: "**********" };
-    }
-    return obj;
-};
-
 const login = memoize(
     async (username: string, password: string): Promise<string> => {
         const payload = {
