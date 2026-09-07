@@ -153,7 +153,7 @@ const login = memoize(
             appId: "affbfa03",
             version: "2.7.0",
         };
-        console.log(`Logging in to WiseGolf with ${JSON.stringify({ ...payload, password: redact(password) })}`);
+        console.log("Logging in to WiseGolf");
         const response = await fetch("https://api.wisegolfclub.fi/api/1.0/auth", {
             method: "POST",
             headers: standardRequestHeaders,
