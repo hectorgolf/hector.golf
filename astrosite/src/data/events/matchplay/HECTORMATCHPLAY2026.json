@@ -25,6 +25,7 @@
     ],
     "results": {
         "winners": {
+            "matchplay": "juuso-p"
         },
         "bracket": [
             {
@@ -177,8 +178,8 @@
                         "rightSource": "M14",
                         "left": "simo-l",
                         "right": "juuso-p",
-                        "score": null,
-                        "winner": null
+                        "score": "3&1",
+                        "winner": "juuso-p"
                     }
                 ]
             }
