@@ -1,5 +1,6 @@
 import z from "zod";
 import type { GoogleSheetIndividualLeaderboard, GoogleSheetTeamLeaderboard } from "./types";
+import { redact } from "../strings";
 
 function acquireApiKey() {
     try {
@@ -12,7 +13,7 @@ function acquireApiKey() {
         }
         return value.trim();
     } catch (error) {
-        console.error("Error parsing HECTOR_APP_API_KEY: " + process.env.HECTOR_APP_API_KEY, error);
+        console.error(`Error parsing HECTOR_APP_API_KEY: ${redact(process.env.HECTOR_APP_API_KEY)}`, error);
         return undefined;
     }
 }

@@ -14,7 +14,7 @@ export function formatForPrinting(text: string | string[], formattingOptions?: F
     }
     if (!Array.isArray(text)) {
         throw new Error(
-            `formatForPrinting() was called with an invalid argument: expected a string or an array of strings, but got ${typeof text}`
+            `formatForPrinting() was called with an invalid argument: expected a string or an array of strings, but got ${typeof text}`,
         );
     }
     const linePrefix = " ".repeat(options.indent);
@@ -44,4 +44,20 @@ export function formatForPrinting(text: string | string[], formattingOptions?: F
         }
     }
     return lines.join("\n");
+}
+
+/**
+ * Redact the given secret string by replacing all characters with asterisks.
+ * If the secret is missing, returns the value of `ifMissing` if provided,
+ * otherwise "<MISSING>".
+ *
+ * @param secret The secret string to redact.
+ * @returns The redacted string, or the value of `ifMissing` if the secret is
+ *          not provided, otherwise "<MISSING>".
+ */
+export function redact(secret?: string | null | undefined, ifMissing?: string): string {
+    if (secret === "" && ifMissing === undefined) {
+        return "<EMPTY>";
+    }
+    return secret ? secret.replace(/./g, "*") : (ifMissing ?? "<MISSING>");
 }
