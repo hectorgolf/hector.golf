@@ -22,7 +22,7 @@ Three moving parts:
 | Part | Location | Role |
 | --- | --- | --- |
 | Astro site | `astrosite/` | Static site generator, domain logic, committed JSON data, and the workflow scripts |
-| Cloud Functions | `backend/backend-functions/` | Three HTTP-triggered GCP functions wrapping Google Gemini |
+| Cloud Functions | `backend/backend-functions/` | Four HTTP-triggered GCP functions: three Google Gemini wrappers plus the leaderboard proxy |
 | CI/CD | `.github/workflows/` | Six workflows: one deploy, one PR check, four scheduled data updates |
 
 ```mermaid
@@ -37,6 +37,7 @@ graph LR
 
     subgraph gcp["GCP (europe-north1)"]
         CF["Cloud Functions gen2<br/>biography / avatar / scorecard"]
+        LBP["TournamentLeaderboard<br/>app.hector.golf proxy"]
     end
 
     subgraph gha["GitHub Actions"]
@@ -49,6 +50,7 @@ graph LR
     end
 
     PAGES["GitHub Pages<br/>www.hector.golf"]
+    BROWSER["Visitor's browser"]
 
     WG --> WF
     RG --> WF
@@ -61,7 +63,14 @@ graph LR
     DATA --> BUILD
     WG -.->|"credentials required at import time"| BUILD
     BUILD --> PAGES
+    PAGES --> BROWSER
+    BROWSER -->|"polls every 30s, live events only"| LBP
+    LBP -->|"adds x-api-key"| APP
 ```
+
+Everything except the last two edges runs on a schedule: a data change is a commit, and a commit is a
+full rebuild. Those two edges are the exception — the live leaderboard reaches a visitor without
+waiting for a deploy.
 
 ## 2. Repository layout
 
@@ -81,7 +90,7 @@ graph LR
 │   ├── docs/mscorecard-api.md  # Reverse-engineered mScorecard protocol notes
 │   ├── scripts/commit-changes.sh
 │   └── test/{unit,astro}/
-├── backend/backend-functions/  # GCP Cloud Functions gen2 (Gemini wrappers)
+├── backend/backend-functions/  # GCP Cloud Functions gen2 (Gemini wrappers + leaderboard proxy)
 ├── .github/workflows/          # Six workflows
 └── docs/                       # This document
 ```
@@ -116,7 +125,7 @@ Every dynamic route implements `getStaticPaths()`. There are no API endpoints an
 | `events/index.astro` | `/events` | All formats, grouped ongoing / upcoming / past |
 | `events/hector/index.astro` | `/events/hector` | Hector events only |
 | `events/hector/[slug].astro` | `/events/hector/:id` | The richest page: field, buckets, rounds, winners |
-| `events/hector/[slug]/leaderboard.astro` | `/events/hector/:id/leaderboard` | Only generated for events with a leaderboard JSON |
+| `events/hector/[slug]/leaderboard.astro` | `/events/hector/:id/leaderboard` | Generated for events with a leaderboard JSON, or configured to poll app.hector.golf |
 | `events/matchplay/index.astro` | `/events/matchplay` | Matchplay events |
 | `events/matchplay/[slug].astro` | `/events/matchplay/:id` | Single-elimination bracket |
 | `players/index.astro` | `/players` | Grid, ranked by a seven-level win comparator |
@@ -224,8 +233,11 @@ search. Four pieces of client JS exist in total:
 2. **Bracket connectors** — [`SingleEliminationBracketV2.astro`](../astrosite/src/components/events/SingleEliminationBracketV2.astro)
    pulls `leader-line` from cdnjs (SRI-pinned, `is:inline`) and draws connector lines between match
    elements on `DOMContentLoaded`.
-3. **Leaderboard auto-refresh** — the leaderboard page runs a `setInterval` that hard-reloads with a
-   cache-busting query string every five minutes.
+3. **Leaderboard auto-refresh** — for a Sheets-managed event, the leaderboard page runs a
+   `setInterval` that hard-reloads with a cache-busting query string every five minutes. An
+   app.hector.golf-managed event gets [`LiveLeaderboard.astro`](../astrosite/src/components/events/LiveLeaderboard.astro)
+   instead, which polls the leaderboard proxy (§10) and rewrites the rendered rows in place, cloning
+   the component's own row template so the replacements keep their scoped styles.
 4. **Google Tag Manager** — the inline bootstrap in `Layout.astro`.
 
 ## 4. Data model
@@ -342,12 +354,16 @@ files:
   Hector/Victor champion when the event JSON records no winners *and* every leaderboard entry reads
   `through === "F"`.
 - **Leaderboard enrichment** — `enrichLeaderboard()` splits the stored display strings
-  (`"Lasse Koskela + Jari Kuusela"`) on `+` and resolves each name back to a `Player` through an
-  index built from full names, privacy-shortened names, and all aliases. It normalises `through` to
-  `"F"` when complete and synthesises anonymous `"Team N"` placeholders before play starts.
+  (`"Lasse Koskela + Jari Kuusela"`) with `splitCompetitorNames()`, which accepts `+` or `&` because
+  Sheets and app.hector.golf disagree on the separator, and resolves each name back to a `Player`
+  through an index built from full names, privacy-shortened names, and all aliases. It normalises
+  `through` to `"F"` when complete and synthesises anonymous `"Team N"` placeholders before play
+  starts.
 - **Positions** — `leaderboardPosition()` computes `1` / `T3` ranks honouring the per-competition
   scoring direction (`hector: ascending` because it counts strokes; `victor: descending` because it
-  counts Stableford points).
+  counts Stableford points). It lives in `leaderboards/presentation.ts` alongside the score, diff and
+  `through` formatters, so the statically rendered board and the live one cannot drift apart — that
+  module is free of `fs` and Zod precisely so the browser can import it.
 - **Chronological grouping** — `getAllEventsGroupedByChronology()`, with the special rule that a
   matchplay event holding a recorded winner counts as past regardless of its dates.
 - **Date formatting** — events store ISO dates, so the derivation now runs the other way:
@@ -376,6 +392,7 @@ files:
 | Ringside Golf | same module | Same token | Second player-lookup endpoint |
 | Google Sheets v4 | `code/leaderboards/google-sheets.ts` | Service account (`GOOGLE_CREDENTIALS`) | Live leaderboards for sheet-managed events |
 | app.hector.golf | `code/leaderboards/app.ts` | `x-api-key` | Live leaderboards for app-managed events |
+| app.hector.golf (browser) | `code/leaderboards/app-payload.ts` | None — via the `TournamentLeaderboard` proxy (§10) | The same standings, polled from the visitor's browser |
 | GitHub Contents API | `code/leaderboards/github.ts` | `GITHUB_ACCESS_TOKEN` (Octokit) | Commits leaderboard JSON directly |
 | Google Gemini | via `backend/` functions | Bearer (`ASTROSITE_API_KEY`) | Biography and avatar generation |
 
@@ -394,9 +411,13 @@ Notable details:
 - **Google Sheets access is layout-tolerant**: rather than fixed ranges, `google-sheets.ts` searches
   the `LEADERBOARD` tab for anchor cells (`findCellContaining`, `findCellBelowContaining`,
   `findEmptyCellBelow`) and derives the data range from them.
-- **app.hector.golf responses are Zod-validated** against a detailed schema and then projected down
-  into the same `GoogleSheetTeamLeaderboard` / `GoogleSheetIndividualLeaderboard` shapes the Sheets
-  path produces, so everything downstream is source-agnostic.
+- **app.hector.golf responses are read strictly on the write path and loosely in the browser.**
+  `app.ts` Zod-validates the payload in full before anything can be written to a data file and
+  published; `app-payload.ts` checks only the fields it renders, because a payload the browser does
+  not recognise costs a viewer one live update rather than corrupting stored results. Both share the
+  same extractors, so the field mapping is defined once, and both project down into the
+  `GoogleSheetTeamLeaderboard` / `GoogleSheetIndividualLeaderboard` shapes the Sheets path produces,
+  so everything downstream is source-agnostic.
 
 ## 8. The data pipeline
 
@@ -527,10 +548,10 @@ repository's security settings — there is no `.github/dependabot.yml`.
 
 ## 10. The backend (`backend/backend-functions/`)
 
-Three HTTP-triggered **GCP Cloud Functions gen2**, deployed to `europe-north1` on the `nodejs24`
-runtime, each a thin wrapper over Google Gemini via `@google/generative-ai`. There is no Express
-app, no database, and no persistent storage — the Functions Framework merely supplies
-Express-compatible request and response types.
+Four HTTP-triggered **GCP Cloud Functions gen2**, deployed to `europe-north1` on the `nodejs24`
+runtime. Three are thin wrappers over Google Gemini via `@google/generative-ai`; the fourth is the
+leaderboard proxy. There is no Express app, no database, and no persistent storage — the Functions
+Framework merely supplies Express-compatible request and response types.
 
 Base URL: `https://europe-north1-<project>.cloudfunctions.net/<FunctionName>`.
 
@@ -539,6 +560,16 @@ Base URL: `https://europe-north1-<project>.cloudfunctions.net/<FunctionName>`.
 | `GeneratePlayerBiography` | `gemini-2.5-flash` | Bearer (`ASTROSITE_API_KEY`) | `update-player-biographies.ts` — the only automated caller |
 | `GeneratePlayerAvatar` | `gemini-2.5-flash-image` | Bearer (`ASTROSITE_API_KEY`) | `generate-avatars.sh`, run by hand |
 | `ExtractScorecardInformation` | `gemini-1.5-flash` | Bearer (`ASTROSITE_API_KEY`) | No caller in this repository |
+| `TournamentLeaderboard` | — (proxy, not Gemini) | None; CORS-limited to hector.golf | The live leaderboard in a visitor's browser |
+
+**Why the proxy exists.** app.hector.golf answers `401` without an `x-api-key`, and hector.golf is a
+static site, so polling it from the browser would mean publishing `HECTOR_APP_API_KEY` in page
+source. The function holds the key server-side and returns the upstream payload verbatim, which
+keeps all reading and normalising in the site's own tested code. It is not an open proxy: the
+upstream URL is a fixed template and the only caller-controlled input is an `event` id constrained to
+`^[A-Za-z0-9_-]{1,64}$` — the same pattern `code/leaderboards/sources.ts` keeps on the site side.
+Failures answer `502` and are never cached, so the next poll retries. The site reaches it through
+`PUBLIC_LEADERBOARD_PROXY_URL`; unset, the live leaderboard is absent from the build entirely.
 
 The substance lives in `backend/backend-functions/src/lib/prompts/`:
 
