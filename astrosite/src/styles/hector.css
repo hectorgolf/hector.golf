@@ -282,7 +282,13 @@ hr {
 	color: var(--gold-400);
 }
 
-/* Score colours, matching the app's leaderboard semantics. */
+/*
+ * Score colours. The three should read as siblings of equal weight, so level par
+ * sits at ink-300 rather than the ink-100 body colour: at 17:1 against the ground it
+ * drowned out the red and the blue beside it, and now measures 11.0 against their
+ * 7.4 and 11.9. Being an unsaturated neutral it gains none of the apparent
+ * brightness the other two get from their saturation, which closes the gap further.
+ */
 .under-par {
 	color: var(--rose-400);
 }
@@ -292,7 +298,7 @@ hr {
 }
 
 .level-par {
-	color: var(--ink-100);
+	color: var(--ink-300);
 }
 
 /* ------------------------------------------------------------- surfaces ---- */
