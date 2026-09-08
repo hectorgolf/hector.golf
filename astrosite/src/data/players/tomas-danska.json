@@ -1,18 +1,18 @@
 {
-  "id": "tomas-d",
-  "name": {
-    "first": "Tomas",
-    "last": "Danska"
-  },
-  "privacy": "shorten-last-name",
-  "contact": {
-    "phone": ""
-  },
-  "club": "ERG",
-  "handicap": 36,
-  "biography": [
-    "Tomas, representing Espoo Ringside Golf, has contributed to the enduring legacy of the Hector Trophée through his participation in past editions. His presence on the course consistently underscored a profound dedication to the competitive spirit of golf, embodying the perseverance characteristic of players who commit to this annual challenge.",
-    "Across three distinct appearances in this esteemed tournament, Tomas diligently navigated the intricate demands of both the team and individual formats. Despite exhibiting commendable skill and strategic play, neither the coveted Hector Trophée nor the individual Victor Trophy has yet graced his collection. This outcome eloquently highlights the formidable standard required to claim outright victory within the event.",
-    "As the Hector Trophée 2026 looms, Tomas will not be among the distinguished competitors, having, for the present, concluded his active engagement with the tournament circuit. While his direct pursuit of accolades within the Hector Trophée has paused, his consistent participation and steadfast commitment remain a testament to the aspirational nature of this prestigious competition."
-  ]
+    "id": "tomas-d",
+    "name": {
+        "first": "Tomas",
+        "last": "Danska"
+    },
+    "privacy": "shorten-last-name",
+    "contact": {
+        "phone": ""
+    },
+    "club": "ERG",
+    "handicap": 36,
+    "biography": [
+        "Tomas, representing Espoo Ringside Golf, has contributed to the enduring legacy of the Hector Trophée through his participation in past editions. His presence on the course consistently underscored a profound dedication to the competitive spirit of golf, embodying the perseverance characteristic of players who commit to this annual challenge.",
+        "Across three distinct appearances in this esteemed tournament, Tomas diligently navigated the intricate demands of both the team and individual formats. Despite exhibiting commendable skill and strategic play, neither the coveted Hector Trophée nor the individual Victor Trophy has yet graced his collection. This outcome eloquently highlights the formidable standard required to claim outright victory within the event.",
+        "As the Hector Trophée 2026 looms, Tomas will not be among the distinguished competitors, having, for the present, concluded his active engagement with the tournament circuit. While his direct pursuit of accolades within the Hector Trophée has paused, his consistent participation and steadfast commitment remain a testament to the aspirational nature of this prestigious competition."
+    ]
 }

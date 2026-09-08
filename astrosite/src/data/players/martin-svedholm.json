@@ -1,21 +1,21 @@
 {
-  "id": "martin-s",
-  "name": {
-    "first": "Martin",
-    "last": "Svedholm"
-  },
-  "privacy": "shorten-last-name",
-  "contact": {
-    "phone": "+358505790324"
-  },
-  "club": "StLG",
-  "handicap": 11.1,
-  "misc": [
-    "Rarely seen on the course without a drink in his hand"
-  ],
-  "biography": [
-    "Martin, representing St. Laurence Golf, is a figure whose presence on the Hector Trophée links is as consistent as his renowned companion: a refreshing beverage, rarely out of hand. This distinctive habit, far from hindering his focus, has become an emblematic part of his competitive persona, underscoring a relaxed yet profoundly dedicated approach to the game.",
-    "Across his ten previous engagements with this esteemed tournament, Martin has carved out a legacy of versatile excellence. He has, notably, been an integral part of a victorious pair that secured the coveted Hector Trophée on one occasion, demonstrating his formidable capacity for collaborative play. Complementing this team success, his individual prowess was unequivocally recognized with a victory in the prestigious Victor Trophy, showcasing his mastery of the individual challenges presented within the event's structure. These dual triumphs firmly establish his status as a highly accomplished competitor.",
-    "The forthcoming Hector Trophée 2026 will mark Martin's eleventh venture into this prestigious competition, a testament to his steadfast commitment and sustained competitive drive. His unique on-course demeanor, paired with a proven record of both individual and team success, ensures that his pursuit of further distinguished honors remains a captivating narrative for all enthusiasts of the Hector Trophée."
-  ]
+    "id": "martin-s",
+    "name": {
+        "first": "Martin",
+        "last": "Svedholm"
+    },
+    "privacy": "shorten-last-name",
+    "contact": {
+        "phone": "+358505790324"
+    },
+    "club": "StLG",
+    "handicap": 11.1,
+    "misc": [
+        "Rarely seen on the course without a drink in his hand"
+    ],
+    "biography": [
+        "Martin, representing St. Laurence Golf, is a figure whose presence on the Hector Trophée links is as consistent as his renowned companion: a refreshing beverage, rarely out of hand. This distinctive habit, far from hindering his focus, has become an emblematic part of his competitive persona, underscoring a relaxed yet profoundly dedicated approach to the game.",
+        "Across his ten previous engagements with this esteemed tournament, Martin has carved out a legacy of versatile excellence. He has, notably, been an integral part of a victorious pair that secured the coveted Hector Trophée on one occasion, demonstrating his formidable capacity for collaborative play. Complementing this team success, his individual prowess was unequivocally recognized with a victory in the prestigious Victor Trophy, showcasing his mastery of the individual challenges presented within the event's structure. These dual triumphs firmly establish his status as a highly accomplished competitor.",
+        "The forthcoming Hector Trophée 2026 will mark Martin's eleventh venture into this prestigious competition, a testament to his steadfast commitment and sustained competitive drive. His unique on-course demeanor, paired with a proven record of both individual and team success, ensures that his pursuit of further distinguished honors remains a captivating narrative for all enthusiasts of the Hector Trophée."
+    ]
 }

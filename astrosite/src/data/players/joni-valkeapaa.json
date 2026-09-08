@@ -1,17 +1,17 @@
 {
-  "id": "joni-v",
-  "name": {
-    "first": "Joni",
-    "last": "Valkeapää"
-  },
-  "privacy": "shorten-last-name",
-  "contact": {
-    "phone": ""
-  },
-  "club": "HSGC",
-  "biography": [
-    "Joni, representing Hill Side Golf Club, entered the competitive arena of the Hector Trophée with a singular, yet profoundly impactful, appearance that etched his name into the tournament's history with remarkable swiftness.",
-    "In his sole venture onto the hallowed links, Joni demonstrated immediate and undeniable prowess in the collaborative format. Partnering effectively, he swiftly claimed the coveted Hector Trophée, securing team victory in his inaugural and only competitive outing. While this triumph unequivocally underscored his capacity for collective success, the individual Victor Trophy remained beyond his grasp, a testament to the distinct challenges of solo competition.",
-    "Following this decisive campaign, Joni has since concluded his active competitive chapter within Hector events. As such, he will not be among the distinguished players contending for honors at the forthcoming Hector Trophée 2026, his unique, one-event journey standing as a complete narrative, a testament to the fact that sometimes, a single, brilliant moment is all that is needed to leave an indelible mark."
-  ]
+    "id": "joni-v",
+    "name": {
+        "first": "Joni",
+        "last": "Valkeapää"
+    },
+    "privacy": "shorten-last-name",
+    "contact": {
+        "phone": ""
+    },
+    "club": "HSGC",
+    "biography": [
+        "Joni, representing Hill Side Golf Club, entered the competitive arena of the Hector Trophée with a singular, yet profoundly impactful, appearance that etched his name into the tournament's history with remarkable swiftness.",
+        "In his sole venture onto the hallowed links, Joni demonstrated immediate and undeniable prowess in the collaborative format. Partnering effectively, he swiftly claimed the coveted Hector Trophée, securing team victory in his inaugural and only competitive outing. While this triumph unequivocally underscored his capacity for collective success, the individual Victor Trophy remained beyond his grasp, a testament to the distinct challenges of solo competition.",
+        "Following this decisive campaign, Joni has since concluded his active competitive chapter within Hector events. As such, he will not be among the distinguished players contending for honors at the forthcoming Hector Trophée 2026, his unique, one-event journey standing as a complete narrative, a testament to the fact that sometimes, a single, brilliant moment is all that is needed to leave an indelible mark."
+    ]
 }

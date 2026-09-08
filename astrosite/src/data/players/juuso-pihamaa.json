@@ -1,23 +1,23 @@
 {
-  "id": "juuso-p",
-  "name": {
-    "first": "Juuso",
-    "last": "Pihamaa"
-  },
-  "privacy": "shorten-last-name",
-  "contact": {
-    "phone": "+358407505539"
-  },
-  "club": "HyG",
-  "handicap": 8.3,
-  "misc": [
-    "Runs his mouth all the time",
-    "Constantly sees birds and other wildlife on the course",
-    "Might stand on the ball for quite some time in the tee box"
-  ],
-  "biography": [
-    "Juuso, representing Hyvinkään Golf, embodies a distinct approach to the Hector Trophée, one characterized by an unreserved enthusiasm and a profound engagement with the natural environment of the course. His presence is often marked by a lively, continuous commentary, reflecting a personality that is as effusive as it is observant.",
-    "Over his eight prior participations in this esteemed tournament, Juuso has consistently pursued both the coveted Hector Trophée for the winning pair and the individual Victor Trophy. Despite his diligent efforts across these many engagements, neither of these ultimate accolades has yet graced his collection, indicating an ongoing quest for a breakthrough victory. His rounds are frequently punctuated by moments of pause, as he often directs his attention to the diverse array of birds and other wildlife inhabiting the fairways, showcasing a deep appreciation for the course's natural beauty.",
-    "This unique attentiveness to his surroundings, while adding a singular charm to his play, occasionally translates into a notably deliberate pace, particularly when on the tee box. Here, Juuso might stand contemplating his shot, or perhaps simply immersing himself in the ambiance, for an extended period, a testament to his unhurried enjoyment of the game. The forthcoming Hector Trophée 2026 will mark Juuso's ninth appearance, underscoring his unwavering dedication and ensuring his journey remains a compelling, often vocal, narrative for all who follow the event."
-  ]
+    "id": "juuso-p",
+    "name": {
+        "first": "Juuso",
+        "last": "Pihamaa"
+    },
+    "privacy": "shorten-last-name",
+    "contact": {
+        "phone": "+358407505539"
+    },
+    "club": "HyG",
+    "handicap": 8.3,
+    "misc": [
+        "Runs his mouth all the time",
+        "Constantly sees birds and other wildlife on the course",
+        "Might stand on the ball for quite some time in the tee box"
+    ],
+    "biography": [
+        "Juuso, representing Hyvinkään Golf, embodies a distinct approach to the Hector Trophée, one characterized by an unreserved enthusiasm and a profound engagement with the natural environment of the course. His presence is often marked by a lively, continuous commentary, reflecting a personality that is as effusive as it is observant.",
+        "Over his eight prior participations in this esteemed tournament, Juuso has consistently pursued both the coveted Hector Trophée for the winning pair and the individual Victor Trophy. Despite his diligent efforts across these many engagements, neither of these ultimate accolades has yet graced his collection, indicating an ongoing quest for a breakthrough victory. His rounds are frequently punctuated by moments of pause, as he often directs his attention to the diverse array of birds and other wildlife inhabiting the fairways, showcasing a deep appreciation for the course's natural beauty.",
+        "This unique attentiveness to his surroundings, while adding a singular charm to his play, occasionally translates into a notably deliberate pace, particularly when on the tee box. Here, Juuso might stand contemplating his shot, or perhaps simply immersing himself in the ambiance, for an extended period, a testament to his unhurried enjoyment of the game. The forthcoming Hector Trophée 2026 will mark Juuso's ninth appearance, underscoring his unwavering dedication and ensuring his journey remains a compelling, often vocal, narrative for all who follow the event."
+    ]
 }

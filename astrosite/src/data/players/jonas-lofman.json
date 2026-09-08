@@ -1,18 +1,18 @@
 {
-  "id": "jonas-l",
-  "name": {
-    "first": "Jonas",
-    "last": "Löfman"
-  },
-  "privacy": "shorten-last-name",
-  "contact": {
-    "phone": ""
-  },
-  "club": "VaGo",
-  "handicap": 18.5,
-  "biography": [
-    "Jonas, representing Vantaan Golfpuisto, entered the competitive arena of the Hector Trophée, contributing to the tournament's history through his earnest, albeit limited, presence on the greens. His participation, though not extensive, marked a clear dedication to testing his skills against the challenges of this esteemed event.",
-    "Across his two distinct appearances in this prestigious competition, Jonas diligently contended in both the collaborative pair format and the individual challenges. Despite his committed efforts, neither the coveted Hector Trophée for the winning pair nor the individual Victor Trophy ultimately materialized. This outcome underscores the formidable competitive standard required for triumph in this annual event.",
-    "Jonas is now regarded as having concluded his active competitive chapter within Hector events. Consequently, he will not be among the distinguished competitors vying for accolades at the forthcoming Hector Trophée 2026, his journey remaining a concise yet notable entry in the tournament's enduring chronicles."
-  ]
+    "id": "jonas-l",
+    "name": {
+        "first": "Jonas",
+        "last": "Löfman"
+    },
+    "privacy": "shorten-last-name",
+    "contact": {
+        "phone": ""
+    },
+    "club": "VaGo",
+    "handicap": 18.5,
+    "biography": [
+        "Jonas, representing Vantaan Golfpuisto, entered the competitive arena of the Hector Trophée, contributing to the tournament's history through his earnest, albeit limited, presence on the greens. His participation, though not extensive, marked a clear dedication to testing his skills against the challenges of this esteemed event.",
+        "Across his two distinct appearances in this prestigious competition, Jonas diligently contended in both the collaborative pair format and the individual challenges. Despite his committed efforts, neither the coveted Hector Trophée for the winning pair nor the individual Victor Trophy ultimately materialized. This outcome underscores the formidable competitive standard required for triumph in this annual event.",
+        "Jonas is now regarded as having concluded his active competitive chapter within Hector events. Consequently, he will not be among the distinguished competitors vying for accolades at the forthcoming Hector Trophée 2026, his journey remaining a concise yet notable entry in the tournament's enduring chronicles."
+    ]
 }

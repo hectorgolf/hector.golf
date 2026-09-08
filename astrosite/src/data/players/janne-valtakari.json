@@ -1,23 +1,23 @@
 {
-  "id": "janne-v",
-  "name": {
-    "first": "Janne",
-    "last": "Valtakari"
-  },
-  "privacy": "shorten-last-name",
-  "contact": {
-    "phone": "+358451673611"
-  },
-  "club": "ReG",
-  "handicap": 18.4,
-  "misc": [
-    "Has a habit of getting lost on golf course grounds",
-    "Generous",
-    "Does not spit in the glass"
-  ],
-  "biography": [
-    "Janne, representing Revontuli Golf, stands as a cherished and remarkably affable personality within the Hector Trophée community. His consistent presence on the links, marked by a profound enjoyment of the game, has fostered a reputation for sportsmanship and an unwavering commitment to the camaraderie that defines this annual event.",
-    "Over the course of his eight previous participations in this distinguished tournament, Janne has competed assiduously in both the challenging individual format and the collaborative pair format. Despite his persistent efforts, the ultimate triumph of the Hector Trophée for the winning pair, and the singular recognition of the individual Victor Trophy, have both, to date, remained elusive. Janne is known for his generous disposition and an endearing habit of occasionally becoming wonderfully disoriented on the sprawling golf course grounds, a testament to his deep immersion in the natural beauty and flow of the game.",
-    "Furthermore, Janne upholds a rare, unwritten code of conduct that is often admired by his peers; he famously \"does not spit in the glass,\" a testament to his impeccable etiquette and genuine respect for his fellow competitors and the integrity of the game. While Janne maintains an active connection with the wider Hector golfing community, he is not currently slated to contend for accolades at the forthcoming Hector Trophée 2026. Nevertheless, his enduring presence and admirable character ensure that his journey remains a compelling subplot, eagerly anticipated should he return to the field in future editions."
-  ]
+    "id": "janne-v",
+    "name": {
+        "first": "Janne",
+        "last": "Valtakari"
+    },
+    "privacy": "shorten-last-name",
+    "contact": {
+        "phone": "+358451673611"
+    },
+    "club": "ReG",
+    "handicap": 18.4,
+    "misc": [
+        "Has a habit of getting lost on golf course grounds",
+        "Generous",
+        "Does not spit in the glass"
+    ],
+    "biography": [
+        "Janne, representing Revontuli Golf, stands as a cherished and remarkably affable personality within the Hector Trophée community. His consistent presence on the links, marked by a profound enjoyment of the game, has fostered a reputation for sportsmanship and an unwavering commitment to the camaraderie that defines this annual event.",
+        "Over the course of his eight previous participations in this distinguished tournament, Janne has competed assiduously in both the challenging individual format and the collaborative pair format. Despite his persistent efforts, the ultimate triumph of the Hector Trophée for the winning pair, and the singular recognition of the individual Victor Trophy, have both, to date, remained elusive. Janne is known for his generous disposition and an endearing habit of occasionally becoming wonderfully disoriented on the sprawling golf course grounds, a testament to his deep immersion in the natural beauty and flow of the game.",
+        "Furthermore, Janne upholds a rare, unwritten code of conduct that is often admired by his peers; he famously \"does not spit in the glass,\" a testament to his impeccable etiquette and genuine respect for his fellow competitors and the integrity of the game. While Janne maintains an active connection with the wider Hector golfing community, he is not currently slated to contend for accolades at the forthcoming Hector Trophée 2026. Nevertheless, his enduring presence and admirable character ensure that his journey remains a compelling subplot, eagerly anticipated should he return to the field in future editions."
+    ]
 }

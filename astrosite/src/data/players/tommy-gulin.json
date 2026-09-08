@@ -1,18 +1,18 @@
 {
-  "id": "tommy-g",
-  "name": {
-    "first": "Tommy",
-    "last": "Gulin"
-  },
-  "privacy": "shorten-last-name",
-  "contact": {
-    "phone": "+358407226282"
-  },
-  "club": "ERG",
-  "handicap": -3,
-  "biography": [
-    "Tommy, representing Espoo Ringside Golf, has become a familiar figure at the Hector Trophée, a competition he approaches with a quiet determination and an unwavering focus on the intricacies of the game. His presence in the field consistently underscores his commitment to the annual event, embodying the spirit of persistent competition.",
-    "Across his three previous appearances in this esteemed tournament, Tommy has displayed a commendable resolve, navigating both the individual and pair formats with diligence. Despite his consistent effort and strategic play, the coveted Hector Trophée and the individual Victor Trophy have, thus far, eluded his grasp. This record highlights the demanding nature of the event, where even seasoned players find victory a formidable aspiration.",
-    "Although Tommy remains an active and respected competitor within the Hector Trophée circuit, he will not be among the distinguished players contending for the trophies at the forthcoming Hector Trophée 2026. While his immediate participation is paused, his journey within the tournament continues to be one marked by an ongoing quest for that defining triumph, a narrative many observers eagerly follow for future editions."
-  ]
+    "id": "tommy-g",
+    "name": {
+        "first": "Tommy",
+        "last": "Gulin"
+    },
+    "privacy": "shorten-last-name",
+    "contact": {
+        "phone": "+358407226282"
+    },
+    "club": "ERG",
+    "handicap": -3,
+    "biography": [
+        "Tommy, representing Espoo Ringside Golf, has become a familiar figure at the Hector Trophée, a competition he approaches with a quiet determination and an unwavering focus on the intricacies of the game. His presence in the field consistently underscores his commitment to the annual event, embodying the spirit of persistent competition.",
+        "Across his three previous appearances in this esteemed tournament, Tommy has displayed a commendable resolve, navigating both the individual and pair formats with diligence. Despite his consistent effort and strategic play, the coveted Hector Trophée and the individual Victor Trophy have, thus far, eluded his grasp. This record highlights the demanding nature of the event, where even seasoned players find victory a formidable aspiration.",
+        "Although Tommy remains an active and respected competitor within the Hector Trophée circuit, he will not be among the distinguished players contending for the trophies at the forthcoming Hector Trophée 2026. While his immediate participation is paused, his journey within the tournament continues to be one marked by an ongoing quest for that defining triumph, a narrative many observers eagerly follow for future editions."
+    ]
 }

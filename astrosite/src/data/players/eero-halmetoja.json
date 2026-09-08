@@ -1,23 +1,23 @@
 {
-  "id": "eero-h",
-  "name": {
-    "first": "Eero",
-    "last": "Halmetoja"
-  },
-  "privacy": "shorten-last-name",
-  "contact": {
-    "phone": "+358408456410"
-  },
-  "club": "VGH",
-  "handicap": 9.8,
-  "misc": [
-    "Pasi's little brother",
-    "Has been working on his mental game a lot"
-  ],
-  "biography": [
-    "Eero, representing Vuosaari Golf Helsinki, and known to many as the younger brother of fellow competitor Pasi, brings a uniquely reflective and internally focused intensity to the Hector Trophée. His demeanor on the course suggests a player who is deeply invested in understanding the nuances of his own game, a cerebral approach that sets him apart.",
-    "Over the course of his eight appearances in this esteemed tournament, Eero has carved out a compelling narrative of individual brilliance. While the team championship, the coveted Hector Trophée, has to date not been secured by his pairs, his singular prowess shone brightly when he claimed the prestigious Victor Trophy, distinguishing himself as the premier individual performer. This remarkable personal triumph underscores his capacity for excellence when pitted against the field in solo competition.",
-    "Eero's journey has been further defined by a profound dedication to enhancing his mental game, an aspect he considers paramount to sustained success. This introspective work aims to foster a resilience and clarity that he seeks to translate not only into consistent individual performance but also into the synergistic dynamics required for team victory. It is a continuous evolution, meticulously crafted away from the glare of public expectation, focusing on the inner fortitude essential for championship golf.",
-    "Although Eero remains an active and respected figure within the broader Hector events, he will not be among the distinguished competitors at the forthcoming Hector Trophée 2026. Nevertheless, his continuing quest to unite his formidable individual skill with team glory ensures that any future reappearance will be met with keen anticipation, as he strives to add the Hector Trophée to his already impressive personal accolade."
-  ]
+    "id": "eero-h",
+    "name": {
+        "first": "Eero",
+        "last": "Halmetoja"
+    },
+    "privacy": "shorten-last-name",
+    "contact": {
+        "phone": "+358408456410"
+    },
+    "club": "VGH",
+    "handicap": 9.8,
+    "misc": [
+        "Pasi's little brother",
+        "Has been working on his mental game a lot"
+    ],
+    "biography": [
+        "Eero, representing Vuosaari Golf Helsinki, and known to many as the younger brother of fellow competitor Pasi, brings a uniquely reflective and internally focused intensity to the Hector Trophée. His demeanor on the course suggests a player who is deeply invested in understanding the nuances of his own game, a cerebral approach that sets him apart.",
+        "Over the course of his eight appearances in this esteemed tournament, Eero has carved out a compelling narrative of individual brilliance. While the team championship, the coveted Hector Trophée, has to date not been secured by his pairs, his singular prowess shone brightly when he claimed the prestigious Victor Trophy, distinguishing himself as the premier individual performer. This remarkable personal triumph underscores his capacity for excellence when pitted against the field in solo competition.",
+        "Eero's journey has been further defined by a profound dedication to enhancing his mental game, an aspect he considers paramount to sustained success. This introspective work aims to foster a resilience and clarity that he seeks to translate not only into consistent individual performance but also into the synergistic dynamics required for team victory. It is a continuous evolution, meticulously crafted away from the glare of public expectation, focusing on the inner fortitude essential for championship golf.",
+        "Although Eero remains an active and respected figure within the broader Hector events, he will not be among the distinguished competitors at the forthcoming Hector Trophée 2026. Nevertheless, his continuing quest to unite his formidable individual skill with team glory ensures that any future reappearance will be met with keen anticipation, as he strives to add the Hector Trophée to his already impressive personal accolade."
+    ]
 }

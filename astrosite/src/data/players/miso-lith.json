@@ -1,27 +1,27 @@
 {
-  "id": "miso-l",
-  "name": {
-    "first": "Miso",
-    "last": "Lith"
-  },
-  "privacy": "shorten-last-name",
-  "aliases": [
-    {
-      "first": "Miso",
-      "last": "Korkiakoski"
-    }
-  ],
-  "contact": {
-    "phone": "+358505003049"
-  },
-  "club": "HirG",
-  "handicap": 10.9,
-  "misc": [
-    "Bags Miura irons and is rumoured to sleep with them."
-  ],
-  "biography": [
-    "Miso, representing Hirsala Golf, approaches the Hector Trophée with a singular dedication to the precision and craftsmanship of his equipment, a commitment that extends beyond the ordinary, as evidenced by his unwavering allegiance to Miura irons. This profound connection to his tools underscores a player who meticulously considers every aspect of his game, seeking an edge through unparalleled fidelity to his gear.",
-    "Across his ten previous engagements with this esteemed tournament, Miso has consistently demonstrated his prowess in the collaborative format. He was an integral part of a triumphant duo that raised the coveted Hector Trophée on one occasion, a testament to his collaborative strength and ability to perform effectively under pressure. However, the individual Victor Trophy, the ultimate accolade for solo performance, has, to date, remained just beyond his grasp, creating a compelling narrative of an ongoing personal quest for singular recognition.",
-    "Miso's deep-seated connection to his equipment is legendary; it is widely rumored that he regards his Miura irons with an intimacy that borders on the extraordinary, treating them with a reverence that extends even to their off-course care, hinting at a player who is truly one with his clubs. While Miso maintains an active presence within the broader Hector Trophée community, he is not currently slated to compete in the forthcoming Hector Trophée 2026. Nevertheless, his enduring commitment to the sport, coupled with his past team achievement and unique personal dedication, ensures that any future participation would be met with keen interest from observers of the tournament, eagerly anticipating his return to the links."
-  ]
+    "id": "miso-l",
+    "name": {
+        "first": "Miso",
+        "last": "Lith"
+    },
+    "privacy": "shorten-last-name",
+    "aliases": [
+        {
+            "first": "Miso",
+            "last": "Korkiakoski"
+        }
+    ],
+    "contact": {
+        "phone": "+358505003049"
+    },
+    "club": "HirG",
+    "handicap": 10.9,
+    "misc": [
+        "Bags Miura irons and is rumoured to sleep with them."
+    ],
+    "biography": [
+        "Miso, representing Hirsala Golf, approaches the Hector Trophée with a singular dedication to the precision and craftsmanship of his equipment, a commitment that extends beyond the ordinary, as evidenced by his unwavering allegiance to Miura irons. This profound connection to his tools underscores a player who meticulously considers every aspect of his game, seeking an edge through unparalleled fidelity to his gear.",
+        "Across his ten previous engagements with this esteemed tournament, Miso has consistently demonstrated his prowess in the collaborative format. He was an integral part of a triumphant duo that raised the coveted Hector Trophée on one occasion, a testament to his collaborative strength and ability to perform effectively under pressure. However, the individual Victor Trophy, the ultimate accolade for solo performance, has, to date, remained just beyond his grasp, creating a compelling narrative of an ongoing personal quest for singular recognition.",
+        "Miso's deep-seated connection to his equipment is legendary; it is widely rumored that he regards his Miura irons with an intimacy that borders on the extraordinary, treating them with a reverence that extends even to their off-course care, hinting at a player who is truly one with his clubs. While Miso maintains an active presence within the broader Hector Trophée community, he is not currently slated to compete in the forthcoming Hector Trophée 2026. Nevertheless, his enduring commitment to the sport, coupled with his past team achievement and unique personal dedication, ensures that any future participation would be met with keen interest from observers of the tournament, eagerly anticipating his return to the links."
+    ]
 }

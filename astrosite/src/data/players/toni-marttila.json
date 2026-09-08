@@ -1,21 +1,21 @@
 {
-  "id": "toni-m",
-  "name": {
-    "first": "Toni",
-    "last": "Marttila"
-  },
-  "privacy": "shorten-last-name",
-  "contact": {
-    "phone": "+358504418241"
-  },
-  "club": "HirG",
-  "handicap": 13.3,
-  "misc": [
-    "Primary organizer of the Hector Trophée event."
-  ],
-  "biography": [
-    "As the primary organizer of the esteemed Hector Trophée, Toni of Hirsala Golf holds a unique and foundational position within the tournament's illustrious history. His commitment extends far beyond the administrative facets of the event, as he has been an unwavering presence on the links, embodying the competitive spirit and camaraderie that define this annual gathering.",
-    "Toni's playing record is a testament to his exceptional and enduring skill. He has claimed the coveted Hector Trophée on three separate occasions, consistently demonstrating his capacity to guide his pair to ultimate victory. Beyond his triumphs in the team format, his individual prowess is highlighted by his two Victor Trophée titles, signifying his mastery over the individual challenges presented within the tournament's structure. These significant accomplishments firmly establish his status as one of the most decorated competitors throughout the twelve editions of the Hector Trophée.",
-    "The forthcoming Hector Trophée 2026 will mark Toni's remarkable thirteenth appearance in the event, underscoring his unparalleled dedication and longevity. His continuous participation, coupled with his formidable achievements, portrays a figure who not only meticulously orchestrates the framework for excellence but also consistently performs at the highest echelon of the competition. His pursuit of further accolades remains a compelling narrative for all enthusiasts of the Hector Trophée."
-  ]
+    "id": "toni-m",
+    "name": {
+        "first": "Toni",
+        "last": "Marttila"
+    },
+    "privacy": "shorten-last-name",
+    "contact": {
+        "phone": "+358504418241"
+    },
+    "club": "HirG",
+    "handicap": 13.3,
+    "misc": [
+        "Primary organizer of the Hector Trophée event."
+    ],
+    "biography": [
+        "As the primary organizer of the esteemed Hector Trophée, Toni of Hirsala Golf holds a unique and foundational position within the tournament's illustrious history. His commitment extends far beyond the administrative facets of the event, as he has been an unwavering presence on the links, embodying the competitive spirit and camaraderie that define this annual gathering.",
+        "Toni's playing record is a testament to his exceptional and enduring skill. He has claimed the coveted Hector Trophée on three separate occasions, consistently demonstrating his capacity to guide his pair to ultimate victory. Beyond his triumphs in the team format, his individual prowess is highlighted by his two Victor Trophée titles, signifying his mastery over the individual challenges presented within the tournament's structure. These significant accomplishments firmly establish his status as one of the most decorated competitors throughout the twelve editions of the Hector Trophée.",
+        "The forthcoming Hector Trophée 2026 will mark Toni's remarkable thirteenth appearance in the event, underscoring his unparalleled dedication and longevity. His continuous participation, coupled with his formidable achievements, portrays a figure who not only meticulously orchestrates the framework for excellence but also consistently performs at the highest echelon of the competition. His pursuit of further accolades remains a compelling narrative for all enthusiasts of the Hector Trophée."
+    ]
 }

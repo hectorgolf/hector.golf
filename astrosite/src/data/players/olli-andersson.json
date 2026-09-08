@@ -1,22 +1,22 @@
 {
-  "id": "olli-a",
-  "name": {
-    "first": "Olli",
-    "last": "Andersson"
-  },
-  "privacy": "shorten-last-name",
-  "contact": {
-    "phone": "+358503753183"
-  },
-  "club": "HGK",
-  "handicap": 9.7,
-  "misc": [
-    "Doubles as a professional model as his side hustle",
-    "Few players dare to give him lip due to his intimidating presence and wrestling skills"
-  ],
-  "biography": [
-    "Olli, representing Helsingin Golfklubi, commands a singular presence within the competitive landscape of the Hector Trophée. Known for an intimidating aura on the course, a demeanor perhaps honed by his parallel career as a professional model, Olli is a figure few opponents dare to challenge, a reputation further cemented by his formidable wrestling prowess.",
-    "The forthcoming Hector Trophée 2026 will mark Olli's ninth appearance in this prestigious event, a testament to his unwavering commitment to the competition. Across his eight previous participations, Olli has consistently engaged with both the challenging individual format and the collaborative pair format. However, despite his sustained presence and competitive drive, he has yet to claim either the coveted Hector Trophée for the winning pair or the individual Victor Trophy.",
-    "This ongoing pursuit of a championship title, set against his formidable personal bearing, creates a compelling narrative for observers. As Olli prepares for his ninth foray into the Hector Trophée, his journey continues to be one of keen interest, as he endeavors to translate his powerful presence into an overdue competitive triumph."
-  ]
+    "id": "olli-a",
+    "name": {
+        "first": "Olli",
+        "last": "Andersson"
+    },
+    "privacy": "shorten-last-name",
+    "contact": {
+        "phone": "+358503753183"
+    },
+    "club": "HGK",
+    "handicap": 9.7,
+    "misc": [
+        "Doubles as a professional model as his side hustle",
+        "Few players dare to give him lip due to his intimidating presence and wrestling skills"
+    ],
+    "biography": [
+        "Olli, representing Helsingin Golfklubi, commands a singular presence within the competitive landscape of the Hector Trophée. Known for an intimidating aura on the course, a demeanor perhaps honed by his parallel career as a professional model, Olli is a figure few opponents dare to challenge, a reputation further cemented by his formidable wrestling prowess.",
+        "The forthcoming Hector Trophée 2026 will mark Olli's ninth appearance in this prestigious event, a testament to his unwavering commitment to the competition. Across his eight previous participations, Olli has consistently engaged with both the challenging individual format and the collaborative pair format. However, despite his sustained presence and competitive drive, he has yet to claim either the coveted Hector Trophée for the winning pair or the individual Victor Trophy.",
+        "This ongoing pursuit of a championship title, set against his formidable personal bearing, creates a compelling narrative for observers. As Olli prepares for his ninth foray into the Hector Trophée, his journey continues to be one of keen interest, as he endeavors to translate his powerful presence into an overdue competitive triumph."
+    ]
 }

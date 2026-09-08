@@ -1,21 +1,21 @@
 {
-  "id": "daniel-h",
-  "name": {
-    "first": "Daniel",
-    "last": "Hylton"
-  },
-  "privacy": "shorten-last-name",
-  "contact": {
-    "phone": "+358403424395"
-  },
-  "club": "OjlG",
-  "handicap": 13.1,
-  "misc": [
-    "Always a gentleman despite occasionally losing his temper on the course"
-  ],
-  "biography": [
-    "Daniel, representing Oulujokilaakson Golfklubi ry, approaches the Hector Trophée with a distinctive blend of courteous professionalism and profound competitive passion. Renowned for his gentlemanly conduct, his rounds are nonetheless punctuated by moments of fervent expression, a testament to his deep investment in every shot.",
-    "Over his seven prior appearances in this prestigious event, Daniel has cultivated an impressive record in the team format. He has twice been a pivotal member of a victorious duo that hoisted the esteemed Hector Trophée, showcasing his exceptional ability to perform under pressure and synergize with a partner. Despite these significant collective achievements, the singular honor of the Victor Trophy, awarded to the tournament's top individual performer, has, as yet, eluded his grasp.",
-    "While Daniel maintains his active involvement and respected standing within the broader Hector events, he will not be among the talented field contending for accolades at the forthcoming Hector Trophée 2026. His ongoing journey, marked by significant team triumphs and a spirited pursuit of individual recognition, continues to be a captivating storyline for all who follow the Hector Trophée, with eager anticipation for his potential return in future editions."
-  ]
+    "id": "daniel-h",
+    "name": {
+        "first": "Daniel",
+        "last": "Hylton"
+    },
+    "privacy": "shorten-last-name",
+    "contact": {
+        "phone": "+358403424395"
+    },
+    "club": "OjlG",
+    "handicap": 13.1,
+    "misc": [
+        "Always a gentleman despite occasionally losing his temper on the course"
+    ],
+    "biography": [
+        "Daniel, representing Oulujokilaakson Golfklubi ry, approaches the Hector Trophée with a distinctive blend of courteous professionalism and profound competitive passion. Renowned for his gentlemanly conduct, his rounds are nonetheless punctuated by moments of fervent expression, a testament to his deep investment in every shot.",
+        "Over his seven prior appearances in this prestigious event, Daniel has cultivated an impressive record in the team format. He has twice been a pivotal member of a victorious duo that hoisted the esteemed Hector Trophée, showcasing his exceptional ability to perform under pressure and synergize with a partner. Despite these significant collective achievements, the singular honor of the Victor Trophy, awarded to the tournament's top individual performer, has, as yet, eluded his grasp.",
+        "While Daniel maintains his active involvement and respected standing within the broader Hector events, he will not be among the talented field contending for accolades at the forthcoming Hector Trophée 2026. His ongoing journey, marked by significant team triumphs and a spirited pursuit of individual recognition, continues to be a captivating storyline for all who follow the Hector Trophée, with eager anticipation for his potential return in future editions."
+    ]
 }

@@ -1,21 +1,21 @@
 {
-  "id": "jussi-a",
-  "name": {
-    "first": "Jussi",
-    "last": "Allonen"
-  },
-  "privacy": "shorten-last-name",
-  "contact": {
-    "phone": "+358406803204"
-  },
-  "club": "StLG",
-  "handicap": 10.3,
-  "misc": [
-    "His usual shot shape could be described as a \"power draw\"."
-  ],
-  "biography": [
-    "Jussi, proudly representing St. Laurence Golf, consistently brings a potent blend of strength and strategic intent to the Hector Trophée. His powerful game, often defined by a remarkable \"power draw,\" makes him a prominent figure on the course, embodying an athlete committed to pushing the boundaries of competitive golf.",
-    "Across his four previous engagements with this esteemed competition, Jussi has diligently applied himself to both the challenging individual format and the collaborative pair format. Despite his formidable approach and consistent effort across these editions, neither the coveted Hector Trophée for the victorious pair nor the individual Victor Trophy has, to date, been secured. This outcome underscores the exceptionally high competitive standard and the challenging nature of triumph within the event.",
-    "The forthcoming Hector Trophée 2026 will mark Jussi's fifth appearance, underscoring his enduring dedication to competitive golf. His relentless quest for a maiden championship title, fueled by his unique blend of power and precision, ensures he remains a captivating figure, keenly observed as he seeks to translate his distinctive game into ultimate victory."
-  ]
+    "id": "jussi-a",
+    "name": {
+        "first": "Jussi",
+        "last": "Allonen"
+    },
+    "privacy": "shorten-last-name",
+    "contact": {
+        "phone": "+358406803204"
+    },
+    "club": "StLG",
+    "handicap": 10.3,
+    "misc": [
+        "His usual shot shape could be described as a \"power draw\"."
+    ],
+    "biography": [
+        "Jussi, proudly representing St. Laurence Golf, consistently brings a potent blend of strength and strategic intent to the Hector Trophée. His powerful game, often defined by a remarkable \"power draw,\" makes him a prominent figure on the course, embodying an athlete committed to pushing the boundaries of competitive golf.",
+        "Across his four previous engagements with this esteemed competition, Jussi has diligently applied himself to both the challenging individual format and the collaborative pair format. Despite his formidable approach and consistent effort across these editions, neither the coveted Hector Trophée for the victorious pair nor the individual Victor Trophy has, to date, been secured. This outcome underscores the exceptionally high competitive standard and the challenging nature of triumph within the event.",
+        "The forthcoming Hector Trophée 2026 will mark Jussi's fifth appearance, underscoring his enduring dedication to competitive golf. His relentless quest for a maiden championship title, fueled by his unique blend of power and precision, ensures he remains a captivating figure, keenly observed as he seeks to translate his distinctive game into ultimate victory."
+    ]
 }
