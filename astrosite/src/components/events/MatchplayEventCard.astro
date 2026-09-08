@@ -1,4 +1,6 @@
 ---
+import MatchplayMark from '../MatchplayMark.astro'
+
 interface Props {
 	title: string
 	href: string
@@ -24,7 +26,10 @@ const { title, image, href, date, location, status, live = false } = Astro.props
 		}
 		<span class="body">
 			<span class="top">
-				<span class="format">Matchplay</span>
+				<span class="format" aria-label="Matchplay event">
+					<MatchplayMark size={13} />
+					Matchplay
+				</span>
 				{
 					status && (
 						<span class={live ? 'pill pill-live' : 'pill'}>
