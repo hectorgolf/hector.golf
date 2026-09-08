@@ -459,9 +459,9 @@ const degrees = (value: number | undefined) => (value === undefined ? 'neutral' 
 				<div class="specimen card">
 					<span class="specimen-label">Leaderboard leader</span>
 					<div class="specimen-demo">
-						<span class="lb-chip num" style="background: var(--hector)">1</span>
+						<span class="chip-num lb-chip" style="background: var(--hector)">1</span>
 						<span class="score lb-score">257.8</span>
-						<span class="lb-chip num" style="background: var(--victor)">T1</span>
+						<span class="chip-num lb-chip" style="background: var(--victor)">T1</span>
 						<span class="score lb-score">146.0</span>
 					</div>
 					<p>
@@ -474,8 +474,13 @@ const degrees = (value: number | undefined) => (value === undefined ? 'neutral' 
 					<div class="specimen-demo">
 						<span class="btn btn-primary">Final results →</span>
 						<span class="pill pill-violet">Up next</span>
+						<span class="chip-num round-chip">R1</span>
 					</div>
-					<p>Violet, and only violet: the thing you press and the thing that is selected.</p>
+					<p>
+						Violet, and only violet: the thing you press, the thing that is selected, and the
+						identifiers in between. The chip is squarer than the pill so an identity and a status
+						never read as the same object.
+					</p>
 				</div>
 
 				<div class="specimen card">
@@ -833,14 +838,17 @@ const degrees = (value: number | undefined) => (value === undefined ? 'neutral' 
 	}
 
 	.lb-chip {
-		display: inline-grid;
-		place-items: center;
-		min-width: 1.55rem;
-		padding: 0.1rem 0.3rem;
-		border-radius: 0.4rem;
-		font-size: 11px;
-		font-weight: 700;
 		color: var(--ink-950);
+	}
+
+	/* The round-number chip, as it renders in a round's header. */
+	.round-chip {
+		min-width: 1.8rem;
+		padding: 0.15rem 0.4rem;
+		font-size: 13px;
+		color: var(--violet-200);
+		background: var(--surface-raised);
+		background: color-mix(in srgb, var(--violet-400) 20%, var(--surface));
 	}
 
 	.lb-score {

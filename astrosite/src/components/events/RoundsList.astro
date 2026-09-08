@@ -103,7 +103,7 @@ function pluralize(points: number, unit: string): string {
                     return (
                         <li class="round card" data-state={state}>
                             <div class="round-head">
-                                <span class="round-no num">R{index + 1}</span>
+                                <span class="round-no chip-num">R{index + 1}</span>
                                 <span class="round-title">
                                     Day {round.day}, Round {round.round}
                                 </span>
@@ -230,10 +230,14 @@ function pluralize(points: number, unit: string): string {
         flex-wrap: wrap;
     }
 
+    /* Violet, because a round number identifies rather than names a competition. */
     .round-no {
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--violet-400);
+        min-width: 1.8rem;
+        padding: 0.15rem 0.4rem;
+        font-size: 13px;
+        color: var(--violet-200);
+        background: var(--surface-raised);
+        background: color-mix(in srgb, var(--violet-400) 20%, var(--surface));
     }
 
     .round-title {
