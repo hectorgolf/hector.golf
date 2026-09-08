@@ -41,6 +41,11 @@ describe("readAppLeaderboardPayload", () => {
         expect(snapshot.victor).toEqual([]);
     });
 
+    it("reads an entry that only names the player, before any ranking exists", () => {
+        const snapshot = readAppLeaderboardPayload({ ...PAYLOAD, victor: [{ player: "Lasse K" }] })!;
+        expect(snapshot.victor).toEqual([{ player: "Lasse K", points: 0, diff: "", through: "0/3" }]);
+    });
+
     it("ignores fields it does not render", () => {
         // The strict schema in app.ts guards the path that writes to disk. Here an
         // extra or missing decoration must not cost the viewer a live update.

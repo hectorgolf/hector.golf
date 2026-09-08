@@ -15,16 +15,16 @@ import type { GoogleSheetIndividualLeaderboard, GoogleSheetTeamLeaderboard } fro
  */
 export type AppTeamEntry = {
     players: string;
-    points: number;
+    points?: number;
     diffToLeader?: number | null;
-    roundsPlayed: number;
+    roundsPlayed?: number;
 };
 
 export type AppPlayerEntry = {
     player: string;
-    points: number;
+    points?: number;
     diffToLeader?: number | null;
-    roundsPlayed: number;
+    roundsPlayed?: number;
 };
 
 export type AppLeaderboardPayload = {
@@ -49,18 +49,18 @@ export type AppLeaderboardSnapshot = LeaderboardData & {
 export const extractHectorRows = (data: AppLeaderboardPayload): GoogleSheetTeamLeaderboard => {
     return data.hector.map((entry) => ({
         team: entry.players,
-        points: entry.points,
+        points: entry.points ?? 0,
         diff: entry.diffToLeader ? String(entry.diffToLeader) : "",
-        through: `${entry.roundsPlayed}/${data.rounds.length}`,
+        through: `${entry.roundsPlayed ?? 0}/${data.rounds.length}`,
     }));
 };
 
 export const extractVictorRows = (data: AppLeaderboardPayload): GoogleSheetIndividualLeaderboard => {
     return data.victor.map((entry) => ({
         player: entry.player,
-        points: entry.points,
+        points: entry.points ?? 0,
         diff: entry.diffToLeader ? String(entry.diffToLeader) : "",
-        through: `${entry.roundsPlayed}/${data.rounds.length}`,
+        through: `${entry.roundsPlayed ?? 0}/${data.rounds.length}`,
     }));
 };
 
@@ -71,10 +71,12 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
 const hasEntryShape = (value: unknown, nameField: "players" | "player"): boolean => {
     if (!isRecord(value)) return false;
     const diff = value.diffToLeader;
+    const points = value.points;
+    const roundsPlayed = value.roundsPlayed;
     return (
         typeof value[nameField] === "string" &&
-        typeof value.points === "number" &&
-        typeof value.roundsPlayed === "number" &&
+        (points === undefined || typeof points === "number") &&
+        (roundsPlayed === undefined || typeof roundsPlayed === "number") &&
         (diff === undefined || diff === null || typeof diff === "number")
     );
 };
