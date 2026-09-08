@@ -6,7 +6,11 @@
 interface Props {
 	title: string
 	eyebrow?: string
-	/** Metadata parts, joined with a middot: ["Konopiště, Czechia", "Sep 24–27"] */
+	/**
+	 * Metadata parts, shown middot-separated on one line and stacked on a narrow
+	 * screen: ["Konopiště, Czechia", "Sep 24–27"]. Parts wrap as whole units, so a
+	 * date range does not get chopped across two lines.
+	 */
 	meta?: (string | undefined | null)[]
 	lede?: string
 	align?: 'left' | 'center'
@@ -19,7 +23,22 @@ const metaParts = (meta ?? []).filter((part): part is string => !!part)
 <header class="page-header" data-align={align}>
 	{eyebrow && <span class="eyebrow">{eyebrow}</span>}
 	<h1>{title}</h1>
-	{metaParts.length > 0 && <span class="meta">{metaParts.join(' · ')}</span>}
+	{
+		metaParts.length > 0 && (
+			<span class="meta meta-parts">
+				{metaParts.map((part, index) => (
+					<>
+						{index > 0 && (
+							<span class="meta-separator" aria-hidden="true">
+								·
+							</span>
+						)}
+						<span class="meta-part">{part}</span>
+					</>
+				))}
+			</span>
+		)
+	}
 	{lede && <p class="lede">{lede}</p>}
 	<slot />
 </header>
@@ -31,5 +50,46 @@ const metaParts = (meta ?? []).filter((part): part is string => !!part)
 
 	.page-header[data-align='center'] .lede {
 		margin-inline: auto;
+	}
+
+	/*
+	 * Laid out as flex items rather than one joined string. A single text node wraps
+	 * at any space it likes, which chopped "September 24–27, 2026" mid-range; as flex
+	 * items each part moves to the next line whole, and only wraps inside itself if it
+	 * alone is too wide for the column — which keeps a long course address readable
+	 * rather than pushing the page sideways.
+	 */
+	.page-header .meta-parts {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0 0.55em;
+	}
+
+	.page-header[data-align='center'] .meta-parts {
+		justify-content: center;
+	}
+
+	.meta-separator {
+		color: var(--text-faint);
+	}
+
+	/*
+	 * Below the layout's own mobile breakpoint the parts stack, each on its own line,
+	 * and the separators go with the single-line arrangement they belong to.
+	 */
+	@media (max-width: 560px) {
+		.page-header .meta-parts {
+			flex-direction: column;
+			gap: 0.2rem;
+		}
+
+		.page-header[data-align='center'] .meta-parts {
+			align-items: center;
+		}
+
+		.meta-separator {
+			display: none;
+		}
 	}
 </style>
