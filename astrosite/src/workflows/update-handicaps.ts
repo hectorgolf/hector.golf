@@ -6,6 +6,7 @@ import type { HandicapSource } from "../code/handicaps/handicap-source-api.ts";
 import { createWisegolfSession } from "../code/handicaps/wisegolf-api.ts";
 
 import { formatEventDates, isoDateToday } from "../code/dates.ts";
+import { writeJsonFile } from "../code/json.ts";
 
 import { playersData, hectorEvents, hasParticipants, isUpcomingEvent, pathToEventJson } from "../code/data.ts";
 import { getPlayerName, updatePlayerData } from "../code/players.ts";
@@ -125,7 +126,7 @@ const persistHandicapHistoryToDisk = async (
     if (newHandicapChanges.length > 0) {
         console.log(`Updated ${newHandicapChanges.length} players' handicap:`);
         console.log(JSON.stringify(newHandicapChanges, null, 2));
-        writeFileSync(pathToHandicapHistoryJson, JSON.stringify(handicapHistory.concat(newHandicapChanges), null, 2));
+        writeJsonFile(pathToHandicapHistoryJson, handicapHistory.concat(newHandicapChanges));
         writeFileSync(
             pathToHandicapUpdateCommitMessage,
             `Updated ${newHandicapChanges.length} players' handicap:\n${commitMessage.join("\n")}`,
@@ -292,7 +293,7 @@ const updateBucketsForUpcomingEvents = async () => {
             if (JSON.stringify(newBuckets) !== JSON.stringify(oldBuckets)) {
                 eventObject.buckets = newBuckets;
                 const filePath = pathToEventJson(eventObject);
-                writeFileSync(filePath, JSON.stringify(eventObject, null, 2));
+                writeJsonFile(filePath, eventObject);
                 console.log(`Updated buckets for ${eventObject.name} in ${filePath}`);
             } else {
                 console.log(`No changes to buckets for event ${event.id} (${event.name} on ${formatEventDates(event)})`);

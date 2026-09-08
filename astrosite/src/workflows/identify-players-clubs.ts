@@ -6,6 +6,7 @@ import type { HandicapSource } from "../code/handicaps/handicap-source-api.ts";
 import { createWisegolfSession } from "../code/handicaps/wisegolf-api.ts";
 
 import { pathToPlayerJson, playersData } from "../code/data.ts";
+import { writeJsonFile } from "../code/json.ts";
 import { getPlayerName } from "../code/players.ts";
 
 const getPlayerById = (id: string): Player | undefined => {
@@ -57,7 +58,7 @@ const persistPlayersToDisk = (players: Player[]) => {
     console.log(`Updating ${players.length} players' club membership:`);
     players.forEach((player: Player) => {
         console.log(JSON.stringify(player, null, 4));
-        writeFileSync(pathToPlayerJson(player), JSON.stringify(player, null, 4));
+        writeJsonFile(pathToPlayerJson(player), player);
     });
     writeFileSync(
         pathToClubMembershipUpdateCommitMessage,

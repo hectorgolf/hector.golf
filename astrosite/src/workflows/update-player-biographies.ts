@@ -10,6 +10,7 @@ import { type EventTiming, type HectorEvent } from "../schemas/events.ts";
 import { createWisegolfSession } from "../code/handicaps/wisegolf-api";
 import { type GolfClub, type HandicapSource } from "../code/handicaps/handicap-source-api";
 import { parseIsoDate } from "../code/dates.ts";
+import { writeJsonFile } from "../code/json.ts";
 import { formatForPrinting } from "../code/strings.ts";
 
 const ENV = import.meta.env || process.env || {};
@@ -50,7 +51,7 @@ const golfClubs: Promise<GolfClub[]> = (async () => {
         .map((c) => c.abbreviation)
         .filter((abbr, index, self) => self.indexOf(abbr) === index)
         .map((abbr) => mergeClubs(clubs.filter((c) => c.abbreviation === abbr)));
-    writeFileSync(join(dirname(__filename), "../../src/data/clubs.json"), JSON.stringify(merged, null, 2));
+    writeJsonFile(join(dirname(__filename), "../../src/data/clubs.json"), merged);
     return merged;
 })();
 
