@@ -185,13 +185,13 @@
           "contribution": {
             "hector": 1
           },
+          "teamContribution": "team",
+          "birdieBonus": 0.5,
+          "eagleBonus": 1,
           "openingShotsRequirement": {
             "minimumPerPlayer": 6,
             "penaltyPerMissingStroke": 2
-          },
-          "teamContribution": "team",
-          "birdieBonus": 0.5,
-          "eagleBonus": 1
+          }
         }
       ]
     }
@@ -278,7 +278,7 @@
       },
       {
         "id": "lasse-k",
-        "handicap": 14.1
+        "handicap": 14.3
       }
     ]
   ],
