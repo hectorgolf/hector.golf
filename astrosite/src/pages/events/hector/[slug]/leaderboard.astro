@@ -12,12 +12,19 @@ import { type HectorEvent } from '../../../../schemas/events'
 import { getAllEventIds, getEventById } from '../../../../code/events'
 
 import { getLeaderboardsByEventId, getEventsWithLeaderboards } from '../../../../code/leaderboards/leaderboards'
-import { formatEventDates, parseIsoDate } from '../../../../code/dates'
+import { appEventIdFromLeaderboardUrl, isAppHectorGolfLeaderboard } from '../../../../code/leaderboards/sources'
+import LiveLeaderboard from '../../../../components/events/LiveLeaderboard.astro'
+import { formatEventDates, parseIsoDate, addDays } from '../../../../code/dates'
 
 
 export function getStaticPaths() {
     const eventsWithLeaderboards = getEventsWithLeaderboards()
-    return getAllEventIds(e => e.format === 'hector' && eventsWithLeaderboards.includes(e.id)).map((id) => {
+    // An event polled from app.hector.golf gets a page as soon as it is configured,
+    // before any snapshot has been published — otherwise the live board would have
+    // nowhere to appear until the first scheduled update, hours into play.
+    return getAllEventIds(e => e.format === 'hector'
+        && (eventsWithLeaderboards.includes(e.id) || isAppHectorGolfLeaderboard((e as HectorEvent).leaderboardSheet))
+    ).map((id) => {
         return { params: { slug: id } }
     })
 }
@@ -50,6 +57,19 @@ const allThrough = Math.min(...(hectorLeaderboard || [])
     .map(entry => entry.through)
     .map(through => parseInt(through.split('/')[0] || '0')))
 
+// Only app.hector.golf standings can be polled from a browser: the Google Sheets
+// events have no endpoint behind the leaderboard proxy.
+const liveEventId = appEventIdFromLeaderboardUrl(event.leaderboardSheet)
+const leaderboardProxy = (import.meta.env.PUBLIC_LEADERBOARD_PROXY_URL || '').trim()
+const live = !!liveEventId && !!leaderboardProxy
+// Stop polling a day after the last round; a finished event also stops itself as
+// soon as the payload says it is final.
+const stopPollingAfter = `${addDays(event.timing.end, 1)}T00:00:00Z`
+
+// Show the boards even when empty for a live event, so there are tables to update.
+const showHector = !!hectorLeaderboard || live
+const showVictor = !!victorLeaderboard || live
+
 
 ---
 <Layout title={`${event.name} leaderboard`} section="events">
@@ -66,39 +86,41 @@ const allThrough = Math.min(...(hectorLeaderboard || [])
             meta={[event.location, formatEventDates(event)]}
         />
 
-        {hectorLeaderboard && (
+        {showHector && (
             <section class="section">
                 <div class="section-head">
                     <h2>Hector</h2>
                     <span class="meta">Pairs</span>
                 </div>
-                {hectorLeaderboard.length === 0 ? (
+                {(hectorLeaderboard?.length ?? 0) === 0 && !live ? (
                     <p class="pending meta">{resultsMissingLabel}</p>
                 ) : (
                     <LeaderboardTable
-                        entries={hectorLeaderboard}
+                        entries={hectorLeaderboard || []}
                         competitorLabel="Team"
                         ascending={hectorLeaderboardScoringDirection === 'ascending'}
                         competition="hector"
+                        live={live}
                     />
                 )}
             </section>
         )}
 
-        {victorLeaderboard && (
+        {showVictor && (
             <section class="section">
                 <div class="section-head">
                     <h2>Victor</h2>
                     <span class="meta">Individual</span>
                 </div>
-                {victorLeaderboard.length === 0 ? (
+                {(victorLeaderboard?.length ?? 0) === 0 && !live ? (
                     <p class="pending meta">{resultsMissingLabel}</p>
                 ) : (
                     <LeaderboardTable
-                        entries={victorLeaderboard}
+                        entries={victorLeaderboard || []}
                         competitorLabel="Player"
                         ascending={victorLeaderboardScoringDirection === 'ascending'}
                         competition="victor"
+                        live={live}
                     />
                 )}
             </section>
@@ -106,16 +128,27 @@ const allThrough = Math.min(...(hectorLeaderboard || [])
 
         <RoundsList event={event} allThrough={allThrough} />
 
-        {updatedAt && (
-            <p class="updated-at meta">Updated {updatedAt.toISOString()}</p>
-        )}
+        {live ? (
+            <LiveLeaderboard
+                eventId={liveEventId!}
+                endpoint={leaderboardProxy}
+                stopAfter={stopPollingAfter}
+            />
+        ) : (
+            <>
+                {updatedAt && (
+                    <p class="updated-at meta">Updated {updatedAt.toISOString()}</p>
+                )}
 
-        <script is:inline>
-            // Automatically refresh the page every 5 minutes
-            setInterval(() => {
-                location.href = location.href.split('?')[0] + '?' + Date.now();
-            }, 5 * 60 * 1000);
-        </script>
+                <script is:inline>
+                    // Automatically refresh the page every 5 minutes so a fresh
+                    // deploy's standings are picked up without a manual reload.
+                    setInterval(() => {
+                        location.href = location.href.split('?')[0] + '?' + Date.now();
+                    }, 5 * 60 * 1000);
+                </script>
+            </>
+        )}
     </main>
 </Layout>
 

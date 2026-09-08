@@ -76,6 +76,58 @@ curl -X POST "https://europe-north1-gen-lang-client-0537211409.cloudfunctions.ne
 }
 ```
 
+# TournamentLeaderboard API
+
+`TournamentLeaderboard` is a public, cacheable read of an app.hector.golf tournament
+payload. It exists so the website's live leaderboard can poll the standings from a
+visitor's browser: app.hector.golf requires an `x-api-key`, and hector.golf is a
+static site, so the key stays in this function rather than in page source.
+
+It returns the upstream payload **verbatim**. All the reading and normalising happens
+in the site's own code (`astrosite/src/code/leaderboards/app-payload.ts`), which is
+where the tests for it live.
+
+It is not an open proxy: the upstream URL is a fixed template and the only thing a
+caller controls is the `event` parameter, constrained to `^[A-Za-z0-9_-]{1,64}$`. The
+same pattern is kept in `astrosite/src/code/leaderboards/sources.ts`.
+
+## Request
+
+```bash
+curl "https://europe-north1-gen-lang-client-0537211409.cloudfunctions.net/TournamentLeaderboard?event=HECTOR2026"
+```
+
+No authentication: the standings are published on the public website anyway. Browser
+access is limited by CORS to the hector.golf origins plus localhost for development.
+
+## Responses
+
+| Status | When |
+| ------ | ---- |
+| `200`  | Upstream payload, with `Cache-Control: public, max-age=30, s-maxage=60, stale-while-revalidate=300` |
+| `400`  | `?event=` missing or not a plausible tournament id |
+| `405`  | Anything other than `GET` or `OPTIONS` |
+| `500`  | `HECTOR_APP_API_KEY` is not configured on the function |
+| `502`  | Upstream refused or could not be reached (never cached, so the next poll retries) |
+
+## Deploying
+
+```bash
+cd backend/backend-functions
+npm run deploy:tournament-leaderboard
+```
+
+Needs `HECTOR_APP_API_KEY` in `.env` alongside the existing `GCLOUD_PROJECT_ID`. Then
+set the site's `PUBLIC_LEADERBOARD_PROXY_URL` repository variable to the deployed URL —
+until that is set, the leaderboard pages render exactly as they did before.
+
+## Running it locally
+
+```bash
+cd backend/backend-functions
+npm run start:tournament-leaderboard    # reads .env, serves on :8080
+```
+
 # Local CLI For GeneratePlayerAvatar
 
 From [backend/backend-functions](backend/backend-functions), run:
