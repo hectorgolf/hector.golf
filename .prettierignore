@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.astro/
+package-lock.json
+
+# The committed data files are written by astrosite/src/code/json.ts, using
+# JSON.stringify. Prettier cannot be made to agree with it: JSON.stringify always
+# puts each array element on its own line, while Prettier collapses a short array
+# onto one ("courses": [""]). Letting a formatter near these files would undo the
+# writers on every save, which is the exact churn they were changed to stop.
+astrosite/src/data/

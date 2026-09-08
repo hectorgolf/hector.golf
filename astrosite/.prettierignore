@@ -1,0 +1,8 @@
+# Prettier reads the ignore file from the directory it is run in, so this repeats
+# the one rule that matters when someone runs it from astrosite/ rather than the
+# repository root. See ../.prettierignore for the reasoning and the rest.
+src/data/
+dist/
+.astro/
+node_modules/
+package-lock.json

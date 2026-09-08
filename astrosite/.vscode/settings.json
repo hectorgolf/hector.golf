@@ -1,0 +1,19 @@
+{
+  // JSON formatting here is owned by src/code/json.ts, and VS Code's built-in JSON
+  // formatter does not read .prettierignore — so turn it off for JSON rather than
+  // let a stray Format Document explode the hand-laid course scorecards or
+  // re-indent files a workflow will only rewrite again.
+  "[json]": {
+    "editor.formatOnSave": false,
+    "editor.tabSize": 4
+  },
+  "[jsonc]": {
+    "editor.formatOnSave": false,
+    "editor.tabSize": 4
+  },
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "files.eol": "\n"
+  // Everything else is left to your own preference: .editorconfig and .prettierrc
+  // at the repository root already describe the house style.
+}
