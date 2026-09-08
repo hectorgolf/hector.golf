@@ -31,8 +31,7 @@ if (!wisegolfUsername || !wisegolfPassword) {
     console.error(`Missing wisegolfclub.fi credentials:`);
     console.error(`WISEGOLF_USERNAME:   ${redact(wisegolfUsername)}`);
     console.error(`WISEGOLF_PASSWORD:   ${redact(wisegolfPassword)}`);
-    console.error(`Please try again and provide the missing environment variables.`);
-    process.exit(1);
+    console.error(`Functionality is likely impaired - please provide the missing environment variables.`);
 }
 console.log(`wisegolfUsername:   ${redact(wisegolfUsername)}`);
 console.log(`wisegolfPassword:   ${redact(wisegolfPassword)}`);
