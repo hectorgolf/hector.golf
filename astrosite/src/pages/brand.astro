@@ -1,0 +1,949 @@
+---
+/**
+ * The colour brandbook, generated from the design system rather than describing it.
+ *
+ * Swatches paint with `var(--token)`, the figures beside them are measured from the
+ * same stylesheet at build time, and the specimens are the real components. Nothing
+ * here restates a value by hand, so nothing here can fall out of step with the site.
+ */
+import { getCollection } from 'astro:content'
+
+import Layout from '../layouts/Layout.astro'
+import PageHeader from '../components/PageHeader.astro'
+import HectorMark from '../components/HectorMark.astro'
+import CompetitionMark from '../components/CompetitionMark.astro'
+import WinBadge from '../components/players/icons/WinBadge.astro'
+import stylesheet from '../styles/hector.css?raw'
+import { parseRootTokens, describeToken, resolveToken } from '../code/palette'
+
+const tokens = parseRootTokens(stylesheet)
+const describe = (token: string) => describeToken(tokens, token)
+
+const competitions = [
+	{
+		key: 'hector' as const,
+		name: 'Gold',
+		competition: 'Hector',
+		base: 'The pairs competition, and the house colour: the falcon wordmark, page eyebrows and the H % contribution pill.',
+		soft: 'Win-badge years, and the label inside the H % pill.',
+	},
+	{
+		key: 'victor' as const,
+		name: 'Fairway',
+		competition: 'Victor',
+		base: "The individual side competition: its trophy, its champion card, the V % pill and the Victor leaderboard's leader chip.",
+		soft: 'Win-badge years, and the label inside the V % pill.',
+	},
+	{
+		key: 'matchplay' as const,
+		name: 'Ember',
+		competition: 'Matchplay',
+		base: 'The knockout event: its shield, its format label on event cards, and winners and settled scores in the bracket.',
+		soft: "Win-badge years, and a champion's name on hover.",
+	},
+]
+
+/*
+ * Both tones get the same card, so the two rows line up competition by competition
+ * and the pairing is readable down a column rather than stated in prose.
+ */
+const tones = [
+	{
+		id: 'base',
+		heading: 'Base',
+		note: 'Marks, fills and solid chips — wherever the colour carries a shape rather than type.',
+		cards: competitions.map((c) => ({
+			...c,
+			tone: 'base' as const,
+			where: c.base,
+			swatch: describe(`--${c.key}`),
+		})),
+	},
+	{
+		id: 'soft',
+		heading: 'Soft',
+		note: 'One step lighter, for type and figures small enough that the base would strain against a dark tint.',
+		cards: competitions.map((c) => ({
+			...c,
+			tone: 'soft' as const,
+			where: c.soft,
+			swatch: describe(`--${c.key}-soft`),
+		})),
+	},
+]
+
+const violetScale = [200, 300, 400, 500, 600, 700, 800, 900, 950].map((step) => ({
+	step,
+	swatch: describe(`--violet-${step}`),
+}))
+
+const violetRoles = [
+	{ steps: '200', role: 'link hover' },
+	{ steps: '300', role: 'link rest' },
+	{ steps: '400', role: 'quiet accents, card arrows' },
+	{ steps: '500', role: 'focus ring, active rail' },
+	{ steps: '600', role: 'primary button, active nav, selection' },
+	{ steps: '700', role: 'button pressed, card hover border' },
+	{ steps: '800–950', role: 'tinted panels and pill grounds' },
+]
+
+const inkScale = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950].map((step) => ({
+	step,
+	swatch: describe(`--ink-${step}`),
+}))
+
+const semanticInk = [
+	{ token: '--text', use: 'Body copy, table cells' },
+	{ token: '--text-muted', use: 'Secondary copy, ledes' },
+	{ token: '--text-dim', use: 'Metadata strips, captions' },
+	{ token: '--text-faint', use: 'Column labels, separators' },
+	{ token: '--bg', use: 'Page ground' },
+	{ token: '--surface', use: 'Cards, tables, panels' },
+	{ token: '--surface-raised', use: 'Inputs, neutral pills, chips' },
+	{ token: '--line', use: 'Hairlines, card edges' },
+	{ token: '--line-strong', use: 'Input borders, dividers' },
+	{ token: '--line-bright', use: 'Diagram structure — bracket boxes' },
+].map((row) => ({ ...row, swatch: describe(row.token) }))
+
+const status = [
+	{ token: '--emerald-400', means: 'Live — a round in progress, the pulsing dot' },
+	{ token: '--rose-400', means: 'Under par' },
+	{ token: '--ink-300', means: 'Level par' },
+	{ token: '--sky-300', means: 'Over par' },
+	{ token: '--amber-400', means: 'Reserved — unused, and never a substitute for gold' },
+].map((row) => ({ ...row, swatch: describe(row.token) }))
+
+const parColours = [
+	{ label: '−4', token: '--rose-400' },
+	{ label: 'E', token: '--ink-300' },
+	{ label: '+2', token: '--sky-300' },
+].map((row) => ({ ...row, swatch: describe(row.token) }))
+
+/*
+ * Tee markers are the one set of colours that does not come from the palette — each
+ * course names its own. Read them from the content collection so this page shows what
+ * the data actually holds rather than an approximation of it.
+ */
+const courses = await getCollection('courses')
+const teeColours = new Map<string, Map<string, number>>()
+for (const course of courses) {
+	for (const tee of course.data.course?.tees ?? []) {
+		if (!tee.name || !tee.color) continue
+		const name = tee.name.toLowerCase()
+		const counts = teeColours.get(name) ?? new Map<string, number>()
+		counts.set(tee.color, (counts.get(tee.color) ?? 0) + 1)
+		teeColours.set(name, counts)
+	}
+}
+const ground = resolveToken(tokens, '--bg')
+const tees = [...teeColours.entries()]
+	.map(([name, counts]) => {
+		const [color] = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]
+		return { name, color, ...describeToken({ c: color, ground }, 'c', 'ground') }
+	})
+	.sort((a, b) => b.contrast - a.contrast)
+
+const calls = [
+	{
+		kind: 'do',
+		text: 'Reach for --hector, --victor and --matchplay rather than --gold-400 or a hex. If a competition is ever recoloured, the semantic token is the only edit.',
+	},
+	{
+		kind: 'dont',
+		text: 'Use gold as a generic "trophy" or "achievement" colour. That habit is what made a Victor win and a Matchplay win both look like Hector wins.',
+	},
+	{
+		kind: 'do',
+		text: 'Let gold double as the house colour in the wordmark, page eyebrows and scorecard headers. The site is Hector, so the brand and the competition share a colour on purpose.',
+	},
+	{
+		kind: 'dont',
+		text: "Colour a figure that spans competitions. A player's total win count covers all three, so it takes ink and lets the badges beneath it carry the meaning.",
+	},
+	{
+		kind: 'do',
+		text: 'Mix pill and badge grounds from the colour they carry, with a flat --surface-raised declared first as the fallback. Three tints stay in step without three hand-tuned values.',
+	},
+	{
+		kind: 'dont',
+		text: 'Put a competition colour on anything interactive, or violet on anything that names a competition. The two systems stay legible only while they stay separate.',
+	},
+]
+
+const degrees = (value: number | undefined) => (value === undefined ? 'neutral' : `${Math.round(value)}°`)
+---
+
+<Layout title="Hector colour system">
+	<main class="page brandbook">
+		<PageHeader
+			title="The Hector colour system"
+			eyebrow="Hector Trophée"
+			meta={['Dark ground only', '3 competitions', '1 interface hue']}
+			lede="How colour is used across hector.golf and the scorecard app. Every swatch, hex code, hue angle and contrast ratio below is read out of src/styles/hector.css at build time, so this page cannot fall behind the stylesheet — and the specimens are the real components."
+		>
+			<div class="masthead-marks" aria-hidden="true">
+				<CompetitionMark competition="hector" size={30} />
+				<CompetitionMark competition="victor" size={27} />
+				<CompetitionMark competition="matchplay" size={27} />
+			</div>
+		</PageHeader>
+
+		<section class="section">
+			<div class="section-head">
+				<h2>The one rule</h2>
+				<span class="meta">Start here</span>
+			</div>
+			<p class="dim rule-lede">
+				The palette is two systems that never borrow from each other. Get this right and the rest
+				follows; get it wrong and a badge that names a competition becomes indistinguishable from a
+				button you can press.
+			</p>
+			<div class="rule card">
+				<div class="rule-side">
+					<h3 class="label">Competition identity</h3>
+					<div class="rule-dots">
+						{competitions.map((c) => <span class="dot-lg" style={`background: var(--${c.key})`} />)}
+					</div>
+					<p>
+						Gold, fairway and ember answer the question <em>which competition is this?</em> They
+						belong to trophies, champions, win badges, contribution pills and a leaderboard's
+						leader. Nothing clickable.
+					</p>
+				</div>
+				<div class="rule-side">
+					<h3 class="label">Interface</h3>
+					<div class="rule-dots">
+						<span class="dot-lg" style="background: var(--violet-600)"></span>
+						<span class="dot-lg" style="background: var(--violet-400)"></span>
+						<span class="dot-lg" style="background: var(--violet-200)"></span>
+					</div>
+					<p>
+						Violet answers <em>what can I do, and what is selected?</em> Buttons, links, the active
+						nav item, the round in play, focus rings, text selection. Never a competition.
+					</p>
+				</div>
+				<div class="rule-footer">
+					<strong>Neutral is the default.</strong> If a thing is neither a competition nor something
+					you can act on — a handicap allowance, a tee time, a par figure — it takes ink, not a hue.
+					Spending a competition colour on decoration is what made every trophy on the site gold in
+					the first place.
+				</div>
+			</div>
+		</section>
+
+		<section class="section">
+			<div class="section-head">
+				<h2>The three competitions</h2>
+				<span class="meta">Identity</span>
+			</div>
+			<p class="dim rule-lede">
+				Three trophies are in play at once, so the hues are spread deliberately far apart and each
+				is checked against the page ground so it survives at badge sizes. Every mark, eyebrow and
+				badge reads its colour from the semantic token, so the three can never drift out of step.
+			</p>
+			{
+				tones.map((tone) => (
+					<div class="tone" data-tone={tone.id}>
+						<div class="tone-head">
+							<h3>{tone.heading}</h3>
+							<p class="dim">{tone.note}</p>
+						</div>
+						<div class="competitions">
+							{tone.cards.map((c) => (
+								<article class="comp card">
+									<div class="comp-band" style={`background: var(${c.swatch.token})`}>
+										<CompetitionMark competition={c.key} size={42} class="comp-band-mark" />
+									</div>
+									<div class="comp-body">
+										<div class="comp-name">
+											<h4>{c.name}</h4>
+											<span class="comp-role">{c.competition}</span>
+										</div>
+										<p class="comp-where">{c.where}</p>
+										<dl class="comp-specs">
+											<div class="spec">
+												<dt>Token</dt>
+												<dd class="num">{c.swatch.token}</dd>
+											</div>
+											<div class="spec">
+												<dt>Hex</dt>
+												<dd class="num">{c.swatch.hex}</dd>
+											</div>
+											<div class="spec">
+												<dt>Hue</dt>
+												<dd class="num">{degrees(c.swatch.hue)}</dd>
+											</div>
+											<div class="spec">
+												<dt>On ground</dt>
+												<dd class="score">{c.swatch.contrast.toFixed(1)}:1</dd>
+											</div>
+										</dl>
+									</div>
+								</article>
+							))}
+						</div>
+					</div>
+				))
+			}
+		</section>
+
+		<section class="section">
+			<div class="section-head">
+				<h2>Interface violet</h2>
+				<span class="meta">{violetScale.length} steps</span>
+			</div>
+			<p class="dim rule-lede">
+				One hue for everything a person can act on. It runs deep enough for solid button fills and
+				light enough for link text on the dark ground, which is why it can cover the whole interface
+				alone.
+			</p>
+			<div class="scale">
+				{
+					violetScale.map(({ step, swatch }) => (
+						<div
+							class="scale-step num"
+							style={`background: var(${swatch.token}); color: var(${
+								swatch.contrast > 5 ? '--ink-950' : '--ink-50'
+							})`}
+							title={`${swatch.token} · ${swatch.hex}`}
+						>
+							{step}
+						</div>
+					))
+				}
+			</div>
+			<div class="scale-note">
+				{
+					violetRoles.map((r) => (
+						<div class="num">
+							<b>{r.steps}</b> {r.role}
+						</div>
+					))
+				}
+			</div>
+		</section>
+
+		<section class="section">
+			<div class="section-head">
+				<h2>Ink</h2>
+				<span class="meta">{inkScale.length} steps</span>
+			</div>
+			<p class="dim rule-lede">
+				The neutral everything sits on, biased very slightly toward violet rather than a flat grey.
+				Note the jump between 600 and 700: everything from 700 down is a <em>surface</em>, everything
+				from 600 up is <em>type</em>. There is no mid-grey, by design.
+			</p>
+			<div class="scale">
+				{
+					inkScale.map(({ step, swatch }) => (
+						<div
+							class="scale-step num"
+							style={`background: var(${swatch.token}); color: var(${
+								swatch.contrast > 5 ? '--ink-950' : '--ink-50'
+							})`}
+							title={`${swatch.token} · ${swatch.hex}`}
+						>
+							{step}
+						</div>
+					))
+				}
+			</div>
+			<div class="table-scroll">
+				<table class="data">
+					<thead>
+						<tr>
+							<th />
+							<th>Token</th>
+							<th>Resolves to</th>
+							<th>Use</th>
+							<th class="numeric">On ground</th>
+						</tr>
+					</thead>
+					<tbody>
+						{
+							semanticInk.map((row) => (
+								<tr>
+									<td class="chip-cell">
+										<span class="chip" style={`background: var(${row.token})`} />
+									</td>
+									<td class="num token-cell">{row.token}</td>
+									<td class="num dim">{row.swatch.hex}</td>
+									<td>{row.use}</td>
+									<td class="numeric dim">
+										{row.token === '--bg' ? '—' : `${row.swatch.contrast.toFixed(1)}:1`}
+									</td>
+								</tr>
+							))
+						}
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section class="section">
+			<div class="section-head">
+				<h2>Status</h2>
+				<span class="meta">Reserved</span>
+			</div>
+			<p class="dim rule-lede">
+				Hues that report what is happening, independent of both systems above. The one to watch is
+				emerald: it means <em>live</em>, and it sits far enough from fairway that a Victor win never
+				reads as a round in progress. The three par colours are meant to read as siblings of equal
+				weight, which is why level par takes ink-300 rather than the body colour.
+			</p>
+			<div class="table-scroll">
+				<table class="data">
+					<thead>
+						<tr>
+							<th />
+							<th>Token</th>
+							<th>Hex</th>
+							<th>Means</th>
+							<th class="numeric">Hue</th>
+							<th class="numeric">On ground</th>
+						</tr>
+					</thead>
+					<tbody>
+						{
+							status.map((row) => (
+								<tr>
+									<td class="chip-cell">
+										<span class="chip" style={`background: var(${row.token})`} />
+									</td>
+									<td class="num token-cell">{row.token}</td>
+									<td class="num dim">{row.swatch.hex}</td>
+									<td>{row.means}</td>
+									<td class="numeric dim">{degrees(row.swatch.hue)}</td>
+									<td class="numeric dim">{row.swatch.contrast.toFixed(1)}:1</td>
+								</tr>
+							))
+						}
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section class="section">
+			<div class="section-head">
+				<h2>In practice</h2>
+				<span class="meta">Real components</span>
+			</div>
+			<p class="dim rule-lede">
+				Not mock-ups: these are the same components the site renders, so the rules above can be
+				judged rather than taken on trust.
+			</p>
+			<div class="specimens">
+				<div class="specimen card">
+					<span class="specimen-label">Win badges</span>
+					<div class="specimen-demo">
+						<WinBadge competition="hector" year={2025} />
+						<WinBadge competition="victor" year={2025} />
+						<WinBadge competition="matchplay" year={2024} />
+					</div>
+					<p>Mark in the base colour, year in the soft. Pill ground is mixed from the colour itself.</p>
+				</div>
+
+				<div class="specimen card">
+					<span class="specimen-label">Round format pills</span>
+					<div class="specimen-demo">
+						<span class="pill num">HCP 100%</span>
+						<span class="pill pill-hector num">H 33%</span>
+						<span class="pill pill-victor num">V 100%</span>
+					</div>
+					<p>
+						The two contribution pills name competitions. The handicap allowance names neither, so
+						it stays neutral.
+					</p>
+				</div>
+
+				<div class="specimen card">
+					<span class="specimen-label">Leaderboard leader</span>
+					<div class="specimen-demo">
+						<span class="lb-chip num" style="background: var(--hector)">1</span>
+						<span class="score lb-score">257.8</span>
+						<span class="lb-chip num" style="background: var(--victor)">T1</span>
+						<span class="score lb-score">146.0</span>
+					</div>
+					<p>
+						The leader's chip takes the colour of the board it settles. A shared lead still leads.
+					</p>
+				</div>
+
+				<div class="specimen card">
+					<span class="specimen-label">Interface</span>
+					<div class="specimen-demo">
+						<span class="btn btn-primary">Final results →</span>
+						<span class="pill pill-violet">Up next</span>
+					</div>
+					<p>Violet, and only violet: the thing you press and the thing that is selected.</p>
+				</div>
+
+				<div class="specimen card">
+					<span class="specimen-label">Status &amp; scores</span>
+					<div class="specimen-demo">
+						<span class="pill pill-live"><span class="live-dot" aria-hidden="true"></span>Live</span>
+						<span class="pill">Final</span>
+						{
+							parColours.map((p) => (
+								<span class="score lb-score" style={`color: var(${p.token})`}>
+									{p.label}
+								</span>
+							))
+						}
+					</div>
+					<p>
+						Emerald for live, neutral for settled, and the three par colours at {
+							parColours.map((p, i) => (
+								<>
+									{i > 0 && ' / '}
+									<span class="num">{p.swatch.contrast.toFixed(1)}</span>
+								</>
+							))
+						}:1 — close enough to read as one set.
+					</p>
+				</div>
+
+				<div class="specimen card">
+					<span class="specimen-label">Tee dots</span>
+					<div class="specimen-demo tees">
+						{
+							tees.map((tee) => (
+								<span class="tee num">
+									<i style={`background: ${tee.color}`} />
+									{tee.name}
+								</span>
+							))
+						}
+					</div>
+					<p>
+						Not palette colours: these are the literal <code class="num">tee.color</code> values
+						from each course's data, so a blue tee is <code class="num">{
+							tees.find((t) => t.name === 'blue')?.color ?? '#0000ff'
+						}</code>. The darkest of them fall to {
+							Math.min(...tees.map((t) => t.contrast)).toFixed(1)
+						}:1 against the ground, which is why every dot carries a hairline ring — without it they
+						disappear.
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="section">
+			<div class="section-head">
+				<h2>Judgement calls</h2>
+				<span class="meta">Do / Don't</span>
+			</div>
+			<div class="calls">
+				{
+					calls.map((call) => (
+						<div class="call" data-kind={call.kind}>
+							<span class="call-kind">{call.kind === 'do' ? 'Do' : "Don't"}</span>
+							<p>{call.text}</p>
+						</div>
+					))
+				}
+			</div>
+		</section>
+
+		<footer class="brand-footer">
+			<HectorMark size={22} class="footer-mark" />
+			<p class="meta">
+				Generated from src/styles/hector.css · Applied through &lt;CompetitionMark /&gt;
+			</p>
+		</footer>
+	</main>
+</Layout>
+
+<style>
+	.brandbook {
+		padding-bottom: 4rem;
+	}
+
+	.masthead-marks {
+		display: flex;
+		align-items: flex-end;
+		gap: 0.6rem;
+		margin-top: 1.25rem;
+	}
+
+	.rule-lede {
+		margin-bottom: 1.5rem;
+		font-size: 0.95rem;
+	}
+
+	/* The page's spine, so it carries more weight than anything else here. */
+	.rule {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		border-color: var(--line-strong);
+		overflow: hidden;
+	}
+
+	.rule-side {
+		padding: 1.4rem 1.5rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.9rem;
+	}
+
+	.rule-side + .rule-side {
+		border-left: 1px solid var(--line-strong);
+	}
+
+	.rule-side p {
+		font-size: 13.5px;
+		color: var(--text-muted);
+		max-width: none;
+	}
+
+	.rule-dots {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.dot-lg {
+		width: 30px;
+		height: 30px;
+		border-radius: 9999px;
+	}
+
+	.rule-footer {
+		grid-column: 1 / -1;
+		border-top: 1px solid var(--line-strong);
+		background: var(--surface-raised);
+		padding: 1rem 1.5rem;
+		font-size: 13.5px;
+		color: var(--ink-200);
+	}
+
+	/* ------------------------------------------------- competition cards --- */
+
+	.competitions {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+	}
+
+	.comp {
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+
+	/* The colour itself is the card's header — no separate swatch needed. */
+	.comp-band {
+		height: 74px;
+		display: flex;
+		align-items: center;
+		padding: 0 1.1rem;
+	}
+
+	.comp-band :global(.comp-band-mark) {
+		color: var(--ink-950);
+		opacity: 0.82;
+	}
+
+	.comp-body {
+		padding: 1rem 1.1rem 1.15rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.7rem;
+		flex: 1;
+	}
+
+	.comp-name {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.5rem;
+	}
+
+	.comp-name h4 {
+		font-size: 1.15rem;
+	}
+
+	.comp-role {
+		font-size: 13px;
+		color: var(--text-muted);
+	}
+
+	.comp-where {
+		font-size: 12.5px;
+		color: var(--text-dim);
+		max-width: none;
+	}
+
+	.comp-specs {
+		display: flex;
+		flex-direction: column;
+		margin: auto 0 0;
+		padding-top: 0.15rem;
+		border-top: 1px solid var(--line);
+	}
+
+	.spec {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		padding-top: 0.35rem;
+	}
+
+	.spec dt {
+		font-size: 10px;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--text-faint);
+	}
+
+	.spec dd {
+		margin: 0;
+		font-size: 12px;
+		color: var(--ink-100);
+	}
+
+	.spec dd.score {
+		font-size: 14px;
+	}
+
+	/* Two tones, same card, so base and soft pair up down each column. */
+	.tone + .tone {
+		margin-top: 2rem;
+	}
+
+	.tone-head {
+		display: flex;
+		align-items: baseline;
+		flex-wrap: wrap;
+		gap: 0.35rem 0.75rem;
+		margin-bottom: 0.9rem;
+	}
+
+	.tone-head h3 {
+		font-family: var(--font-sans);
+		font-size: 11px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		color: var(--ink-100);
+	}
+
+	.tone-head p {
+		font-size: 12.5px;
+		max-width: none;
+	}
+
+	/* ------------------------------------------------------------ scales --- */
+
+	.scale {
+		display: flex;
+		border-radius: var(--radius);
+		overflow: hidden;
+		border: 1px solid var(--line);
+	}
+
+	.scale-step {
+		flex: 1;
+		min-width: 0;
+		height: 68px;
+		display: flex;
+		align-items: flex-end;
+		justify-content: center;
+		padding-bottom: 0.4rem;
+		font-size: 10px;
+		font-weight: 600;
+	}
+
+	.scale-note {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem 1.25rem;
+		margin-top: 0.8rem;
+	}
+
+	.scale-note div {
+		font-size: 11.5px;
+		color: var(--text-dim);
+	}
+
+	.scale-note b {
+		color: var(--ink-200);
+		font-weight: 600;
+	}
+
+	/* ------------------------------------------------------------ tables --- */
+
+	table.data {
+		margin-top: 1.5rem;
+	}
+
+	.chip-cell {
+		width: 46px;
+	}
+
+	.chip {
+		display: inline-block;
+		width: 34px;
+		height: 18px;
+		border-radius: 4px;
+		vertical-align: middle;
+		box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.09);
+	}
+
+	.token-cell {
+		color: var(--violet-200);
+		white-space: nowrap;
+	}
+
+	/* -------------------------------------------------------- specimens --- */
+
+	.specimens {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+	}
+
+	.specimen {
+		padding: 1.1rem 1.15rem 1.2rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.85rem;
+	}
+
+	.specimen-label {
+		font-size: 10px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.16em;
+		color: var(--text-faint);
+	}
+
+	.specimen-demo {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.specimen p {
+		font-size: 12.5px;
+		color: var(--text-dim);
+		max-width: none;
+		margin: auto 0 0;
+	}
+
+	.lb-chip {
+		display: inline-grid;
+		place-items: center;
+		min-width: 1.55rem;
+		padding: 0.1rem 0.3rem;
+		border-radius: 0.4rem;
+		font-size: 11px;
+		font-weight: 700;
+		color: var(--ink-950);
+	}
+
+	.lb-score {
+		font-size: 1.05rem;
+		color: var(--ink-50);
+	}
+
+	.tees {
+		gap: 0.45rem 0.9rem;
+	}
+
+	.tee {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		font-size: 11px;
+		color: var(--text-muted);
+	}
+
+	/* The ring is what keeps a black or pure-blue tee visible on this ground. */
+	.tee i {
+		width: 12px;
+		height: 12px;
+		border-radius: 9999px;
+		box-shadow: 0 0 0 1px rgb(255 255 255 / 0.3);
+	}
+
+	/* --------------------------------------------------------- do / don't --- */
+
+	.calls {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+	}
+
+	/* A left rail rather than a card: these are notes on the rules above. */
+	.call {
+		padding: 0.9rem 1.1rem;
+		border-left: 3px solid var(--line-bright);
+		background: var(--surface);
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+	}
+
+	.call[data-kind='do'] {
+		border-left-color: var(--victor);
+	}
+
+	.call[data-kind='dont'] {
+		border-left-color: var(--matchplay);
+	}
+
+	.call-kind {
+		font-size: 10px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.18em;
+	}
+
+	.call[data-kind='do'] .call-kind {
+		color: var(--victor);
+	}
+
+	.call[data-kind='dont'] .call-kind {
+		color: var(--matchplay);
+	}
+
+	.call p {
+		font-size: 13.5px;
+		color: var(--text-muted);
+		max-width: none;
+	}
+
+	/* --------------------------------------------------------- footnote --- */
+
+	.brand-footer {
+		margin-top: 4rem;
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--line);
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.brand-footer :global(.footer-mark) {
+		color: var(--hector);
+		opacity: 0.6;
+	}
+
+	.brand-footer p {
+		max-width: none;
+	}
+
+	@media (max-width: 640px) {
+		.rule {
+			grid-template-columns: 1fr;
+		}
+
+		.rule-side + .rule-side {
+			border-left: 0;
+			border-top: 1px solid var(--line-strong);
+		}
+	}
+</style>

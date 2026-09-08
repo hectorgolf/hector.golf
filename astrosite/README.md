@@ -1,3 +1,32 @@
+# hector.golf
+
+The public site for the Hector Trophée: events, players, courses and past issues of
+the Golf Report. Live scoring and leaderboards live in a separate app at
+[app.hector.golf](https://app.hector.golf).
+
+## Design system
+
+Colour, type and the shared component primitives are defined in
+[`src/styles/hector.css`](src/styles/hector.css), which mirrors the scorecard app's
+theme so the two properties read as one product.
+
+**[The colour brandbook is at `/brand`](src/pages/brand.astro)** — run `npm run dev`
+and open <http://localhost:4321/brand>. It is generated from the stylesheet rather
+than describing it: every swatch, hex code, hue angle and contrast ratio is parsed
+out of `hector.css` at build time, the tee-marker colours come from the course
+collection, and the component specimens are the real components. Change a token and
+the brandbook follows on the next build. It is deliberately not linked from the site's
+navigation.
+
+The one rule worth knowing before touching colour: **violet is the interface**
+(buttons, links, selection, active state) and **gold, fairway and ember are the three
+competitions** (Hector, Victor, Matchplay). The two sets never borrow from each other.
+Reach for the semantic tokens — `--hector`, `--victor`, `--matchplay` — rather than
+the underlying `--gold-400`, and let `<CompetitionMark />` pair a competition with its
+mark and its tint.
+
+---
+
 # Astro Starter Kit: Basics
 
 ```sh
