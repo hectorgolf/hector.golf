@@ -92,6 +92,8 @@ const config = { eventId, endpoint, pollSeconds, stopAfter, roster: rosterByName
 
 		/** Consecutive failures, used to back off rather than hammer a sick endpoint. */
 		let failures = 0
+		/** Whether a payload has ever been rendered, which decides what the status may say. */
+		let painted = false
 		let stopped = false
 		let timer: number | undefined
 		let inFlight = false
@@ -127,6 +129,9 @@ const config = { eventId, endpoint, pollSeconds, stopAfter, roster: rosterByName
 			// Nothing to update for a tab nobody is looking at; the visibility
 			// listener polls immediately when it comes back.
 			if (document.visibilityState !== 'visible') {
+				// Only before the first paint: once there are standings on screen, the
+				// timestamp they were read at is worth more than a notice about polling.
+				if (!painted) setStatus('Updates pause while this tab is in the background')
 				schedule()
 				return
 			}
@@ -141,8 +146,17 @@ const config = { eventId, endpoint, pollSeconds, stopAfter, roster: rosterByName
 				if (!snapshot) throw new Error('unrecognised payload')
 
 				failures = 0
-				render(boards, snapshot, config.roster)
-				setStatus(describe(snapshot.generatedAt))
+
+				if (snapshot.status === 'upcoming') {
+					// Before play starts every competitor legitimately reads 0.0, which
+					// as a board is the whole field tied for the lead. Leave the page in
+					// whatever state the build published and keep watching for 'live'.
+					setStatus('Live standings begin when play starts')
+				} else {
+					render(boards, snapshot, config.roster)
+					painted = true
+					setStatus(describe(snapshot.generatedAt))
+				}
 
 				if (snapshot.status === 'final') {
 					// Standings cannot move again; one last render is all that is needed.
