@@ -128,7 +128,9 @@ describe('Component <RoundsList/>', async () => {
     it('still shows the handicap allowance alongside it', async () => {
         const result = await render(eventWith())
 
-        expect(result).toContain('100% handicap allowance')
+        // The allowance rides in a badge next to the format name at every width, so
+        // there is no separate long form for it the way there is for the other rules.
+        expect(result).toContain('HCP 100%')
     })
 
     it('renders nothing when the event has no rounds', async () => {

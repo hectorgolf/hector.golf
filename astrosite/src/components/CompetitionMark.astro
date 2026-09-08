@@ -1,0 +1,63 @@
+---
+/**
+ * A competition's trophy mark in that competition's colour.
+ *
+ * The single place where a competition is paired with its shape and its tint, so a
+ * Victor trophy cannot end up gold on one page and ember on another. Pass
+ * `tone="soft"` for the lighter variant used on small type.
+ */
+import HectorMark from './HectorMark.astro'
+import VictorMark from './VictorMark.astro'
+import MatchplayMark from './MatchplayMark.astro'
+
+export type Competition = 'hector' | 'victor' | 'matchplay'
+
+interface Props {
+	competition: Competition
+	size?: number | string
+	tone?: 'base' | 'soft'
+	/** Accessible name. Omit for a mark that only repeats adjacent text. */
+	title?: string
+	class?: string
+}
+
+const { competition, size = 16, tone = 'base', title, class: className } = Astro.props
+
+const Mark = { hector: HectorMark, victor: VictorMark, matchplay: MatchplayMark }[competition]
+---
+
+<span class:list={['competition-mark', className]} data-competition={competition} data-tone={tone}>
+	<Mark size={size} title={title} />
+</span>
+
+<style>
+	.competition-mark {
+		display: inline-flex;
+		align-items: center;
+		flex-shrink: 0;
+	}
+
+	.competition-mark[data-competition='hector'] {
+		color: var(--hector);
+	}
+
+	.competition-mark[data-competition='victor'] {
+		color: var(--victor);
+	}
+
+	.competition-mark[data-competition='matchplay'] {
+		color: var(--matchplay);
+	}
+
+	.competition-mark[data-tone='soft'][data-competition='hector'] {
+		color: var(--hector-soft);
+	}
+
+	.competition-mark[data-tone='soft'][data-competition='victor'] {
+		color: var(--victor-soft);
+	}
+
+	.competition-mark[data-tone='soft'][data-competition='matchplay'] {
+		color: var(--matchplay-soft);
+	}
+</style>

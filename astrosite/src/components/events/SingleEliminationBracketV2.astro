@@ -64,20 +64,6 @@ rounds.forEach(round => {
                                     <span class="player">{matchRightLabel}</span>
                                 </div>
                             </div>
-                            <script is:inline define:vars={{ connectorsFromFrontMatter: connectors }}>
-                                addEventListener("DOMContentLoaded", (_event) => {
-                                    connectorsFromFrontMatter.forEach(function(tuple) {
-                                        const start = document.getElementById(tuple[0]);
-                                        const end = document.getElementById(tuple[1]);
-                                        const options = {
-                                            path: 'grid', color: 'white', size: 1,
-                                            startSocket: 'right', endSocket: 'left',
-                                            startPlug: 'behind', endPlug: 'behind'
-                                        };
-                                        new LeaderLine(start, end, options);
-                                    })
-                                });
-                            </script>
                         </>
                     )
                 }))}
@@ -87,6 +73,110 @@ rounds.forEach(round => {
         return content
     }))}
 </div>
+
+<script is:inline define:vars={{ connectorsFromFrontMatter: connectors }}>
+    /*
+     * Draw the connectors between matches.
+     *
+     * LeaderLine paints absolutely positioned SVGs in document coordinates, measured
+     * once when the line is constructed, and does not follow the boxes afterwards. So
+     * anything that reflows the page after we draw — web fonts swapping in, the hero
+     * image getting its intrinsic height, the bracket being scrolled sideways on a
+     * narrow screen — leaves every line hanging where the boxes used to be. Keep the
+     * instances around and re-measure whenever the layout can have moved.
+     */
+    ;(function () {
+        // Kept in step with --line-bright; LeaderLine needs a literal, not a var().
+        var BRACKET_LINE_COLOR = '#3c3b44'
+        var lines = []
+
+        function draw() {
+            connectorsFromFrontMatter.forEach(function (tuple) {
+                var start = document.getElementById(tuple[0])
+                var end = document.getElementById(tuple[1])
+                if (!start || !end) return
+                lines.push(
+                    new LeaderLine(start, end, {
+                        path: 'grid',
+                        color: BRACKET_LINE_COLOR,
+                        size: 1,
+                        startSocket: 'right',
+                        endSocket: 'left',
+                        startPlug: 'behind',
+                        endPlug: 'behind',
+                    })
+                )
+            })
+        }
+
+        var lastOrigin = null
+
+        /*
+         * `force` skips the did-anything-move check. Repositioning appends absolutely
+         * positioned SVGs that can themselves extend the document, so an unguarded
+         * ResizeObserver feeds back into itself; comparing the bracket's own origin
+         * first makes those callbacks free once things have settled.
+         */
+        function reposition(force) {
+            var bracket = document.querySelector('.tournament-bracket')
+            if (bracket && force !== true) {
+                var box = bracket.getBoundingClientRect()
+                var origin =
+                    Math.round(box.top + window.scrollY) +
+                    ':' +
+                    Math.round(box.left + window.scrollX - bracket.scrollLeft)
+                if (origin === lastOrigin) return
+                lastOrigin = origin
+            }
+            lines.forEach(function (line) {
+                line.position()
+            })
+        }
+
+        function onSettled() {
+            draw()
+
+            // Late-arriving fonts and images both move the bracket down the page.
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(reposition)
+            addEventListener('load', reposition)
+
+            // Anything else that reflows the content above the bracket.
+            if (window.ResizeObserver) new ResizeObserver(reposition).observe(document.body)
+
+            var resizeTimer
+            addEventListener('resize', function () {
+                clearTimeout(resizeTimer)
+                resizeTimer = setTimeout(function () {
+                    reposition(true)
+                }, 100)
+            })
+
+            // The bracket scrolls horizontally when it outgrows the viewport.
+            var bracket = document.querySelector('.tournament-bracket')
+            if (bracket) {
+                var queued = false
+                bracket.addEventListener(
+                    'scroll',
+                    function () {
+                        if (queued) return
+                        queued = true
+                        requestAnimationFrame(function () {
+                            queued = false
+                            reposition()
+                        })
+                    },
+                    { passive: true }
+                )
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            addEventListener('DOMContentLoaded', onSettled)
+        } else {
+            onSettled()
+        }
+    })()
+</script>
 
 <style>
     .tournament-bracket {
@@ -99,7 +189,16 @@ rounds.forEach(round => {
         row-gap: 0; /* we don't want any space between rows (although there's only one row so not strictly necessary) */
         column-gap: 60px;
         padding-right: 10px;
-        width: 990px;  /* 4 rounds (200px each) plus 3 gaps (60px each) plus 10px of right padding */
+        /*
+         * 4 rounds (200px each) plus 3 gaps (60px each) plus 10px of right padding.
+         *
+         * This is wider than the page column, so on a narrow screen the document
+         * scrolls sideways as a whole rather than the bracket scrolling inside itself.
+         * That keeps the connectors attached to their boxes — LeaderLine paints them
+         * into document.body, so they are not clipped by this element's overflow and
+         * would spill across the page if only the bracket scrolled.
+         */
+        width: 990px;
         height: 1425px;
     }
 
@@ -130,7 +229,8 @@ rounds.forEach(round => {
     }
 
     .tournament-bracket .match-inner-spacer .match-id {
-        color: #888888;
+        font-family: var(--font-num);
+        color: var(--text-faint);
         font-size: 0.75em;
         padding-right: 5px;
     }
@@ -153,8 +253,17 @@ rounds.forEach(round => {
         align-items: flex-start;
         min-width: 150px;
         height: 88px;
-        border: 1px solid white;
-        background-color: black;
+        /* Brighter than a card's edge: here the border is structure, not just trim. */
+        border: 1px solid var(--line-bright);
+        border-radius: var(--radius-sm);
+        background-color: var(--surface);
+        font-size: 13px;
+    }
+
+    /* The next match to be played gets the violet rail used elsewhere for "up next". */
+    .tournament-bracket .round .game.ready-to-play {
+        border-color: var(--violet-800);
+        box-shadow: inset 3px 0 0 var(--violet-500);
     }
     .tournament-bracket .round .game div {
         margin-left: 4px;
@@ -166,38 +275,44 @@ rounds.forEach(round => {
     .tournament-bracket .game a {
         text-decoration: none;
     }
+    .tournament-bracket .game .match-score {
+        font-family: var(--font-score);
+        font-weight: 700;
+    }
     .tournament-bracket .game .match-score.finished {
-        font-weight: bold;
-        color: gold;
+        color: var(--matchplay);
     }
     .tournament-bracket .game .match-score.scheduled {
-        font-weight: normal;
-        color: #888888;
+        font-family: var(--font-num);
+        font-weight: 400;
+        color: var(--text-faint);
         font-size: 0.75em;
     }
     .tournament-bracket .game .match-score.pending {
-        font-weight: normal;
-        color: white;
+        font-weight: 400;
+        color: var(--ink-200);
     }
+    /* This is a Matchplay bracket, so a win here reads in the Matchplay colour. */
     .tournament-bracket .game .winner,
     .tournament-bracket .game .winner a {
-        font-weight:bold;
-        color: gold;
+        font-weight: 700;
+        color: var(--matchplay);
     }
     .tournament-bracket .game .loser,
     .tournament-bracket .game .loser a {
-        font-weight:normal;
-        color: white;
+        font-weight: 400;
+        color: var(--text-dim);
     }
     .tournament-bracket .game.ready-to-play .game-top,
     .tournament-bracket .game.ready-to-play .game-top a,
     .tournament-bracket .game.ready-to-play .game-bottom,
     .tournament-bracket .game.ready-to-play .game-bottom a {
-        color: #ff8888;
+        color: var(--violet-200);
     }
     .tournament-bracket .game .game-top .hcp,
     .tournament-bracket .game .game-bottom .hcp {
-        color: #ccaabb;
+        font-family: var(--font-num);
+        color: var(--text-faint);
         font-size: 0.75em;
         margin-top: 4px;
     }
@@ -209,16 +324,16 @@ rounds.forEach(round => {
     }
 
     .tournament-bracket .undetermined {
-        color: #888888;
+        color: var(--text-faint);
         font-size: 0.8em;
     }
 
     .tournament-bracket .game-spacer {
-        border-right:1px solid #aaa;
-        min-height:40px;
+        border-right: 1px solid var(--line-strong);
+        min-height: 40px;
         display: flex;
         align-items: center;
-        color: #888888;
+        color: var(--text-faint);
         font-size: 0.75em;
         text-align: right;
     }

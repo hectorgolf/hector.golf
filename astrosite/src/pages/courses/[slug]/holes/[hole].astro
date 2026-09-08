@@ -37,155 +37,183 @@ const prevHoleHref = `${courseHref}/holes/${holeNumber == 1 ? numberOfHoles : ho
 const nextHoleHref = `${courseHref}/holes/${holeNumber == numberOfHoles ? 1 : holeNumber + 1}`;
 ---
 
-<Layout title={`${course.name} #${holeNumber}`}>
-    <main>
+<Layout title={`${course.name} #${holeNumber}`} section="courses">
+    <main class="page">
         <div class="breadcrumbs">
             <Breadcrumb title="Home" href="/" />
             <Breadcrumb title="Courses" href="/courses" />
             <Breadcrumb title={course.name} href={courseHref} />
         </div>
 
-        <div class="box-container">
-            <div class="hole-data-container">
-                <div class="h1-container">
-                    <a class="prev-hole-navigation" href={prevHoleHref}></a>
-                    <h1><span class="text-gradient">{hole}</span></h1>
-                    <a class="next-hole-navigation" href={nextHoleHref}></a>
-                </div>
-                <div class="hole-specs-container">
-                    <div class="par"><span class="text-gradient">PAR {holeData?.par}</span></div>
-                    <div class="hcp"><span class="text-gradient">HCP {holeData?.hcp}</span></div>
-                    <div class="tee-lengths-container">
-                        {course.course!.tees.map((tee) => {
-                            const holeLength = holeData?.lengths?.[tee.name]
-                            return (
-                                <div class="tee-length">
-                                    <svg class="color" width="22" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
-                                        <circle cx="12" cy="12" r="6" style={`fill:${tee.color};stroke:${tee.stroke || tee.color};`}/>
-                                    </svg>
-                                    <span class="length">{holeLength} m</span>
-                                </div>
-                            )
-                        })}
-                    </div>
-                </div>
+        <div class="hole-header">
+            <span class="eyebrow">{course.name}</span>
+            <div class="hole-nav">
+                <a class="nav-arrow" href={prevHoleHref} aria-label="Previous hole">&#8249;</a>
+                <h1 class="score">{hole}</h1>
+                <a class="nav-arrow" href={nextHoleHref} aria-label="Next hole">&#8250;</a>
             </div>
-            <div class="hole-layout-container">
-                <span class="hole-layout">
-                    <img src={holeDescription?.layout} alt={`Hole ${hole}`} />
-                </span>
-            </div>
+            <span class="meta">Hole {hole} of {numberOfHoles}</span>
         </div>
 
-        <p>{holeDescription?.description}</p>
+        <div class="hole-body">
+            <div class="hole-specs card">
+                <div class="spec-row">
+                    <div class="spec">
+                        <span class="label">Par</span>
+                        <span class="score value">{holeData?.par}</span>
+                    </div>
+                    <div class="spec">
+                        <span class="label">Hcp</span>
+                        <span class="score value">{holeData?.hcp}</span>
+                    </div>
+                </div>
+                <table class="data tee-lengths">
+                    <caption>Playing length</caption>
+                    <tbody>
+                        {course.course!.tees.map((tee) => (
+                            <tr>
+                                <td class="tee">
+                                    <svg class="color" width="18" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+                                        <circle
+                                            cx="12"
+                                            cy="12"
+                                            r="6"
+                                            style={`fill:${tee.color};stroke:${tee.stroke || tee.color};`}
+                                        />
+                                    </svg>
+                                    <span>{tee.name}</span>
+                                </td>
+                                <td class="numeric">{holeData?.lengths?.[tee.name]} m</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            <figure class="hole-layout">
+                <img src={holeDescription?.layout} alt={`Layout of hole ${hole}`} />
+            </figure>
+        </div>
+
+        {holeDescription?.description && <p class="hole-description">{holeDescription.description}</p>}
     </main>
 </Layout>
 
 <style>
-
-    .hole-specs-container {
-        margin-left: 0px;
+    .hole-header {
+        padding: 2rem 0 1.5rem;
         text-align: center;
     }
 
-    .hole-data-container .par {
-        margin-top: 20px;
-        font-weight: bold;
-        font-size: 1.25em;
+    .hole-header .eyebrow,
+    .hole-header .meta {
+        display: block;
     }
 
-    .hole-data-container .hcp {
-        margin-bottom: 20px;
-        font-weight: bold;
-        font-size: 1.25em;
-    }
-
-    .h1-container {
+    .hole-nav {
         display: flex;
-        flex-direction: row;
+        align-items: center;
         justify-content: center;
-        vertical-align: middle;
-        text-align: center;
+        gap: 0.75rem;
+        margin: 0.35rem 0 0.5rem;
     }
 
-    .h1-container .next-hole-navigation,
-    .h1-container .prev-hole-navigation {
-        width: 50px;
-        text-align: center;
-        vertical-align: middle;
-    }
-    .h1-container .prev-hole-navigation {
-        background-image: url("/images/chevron-left.svg");
-        background-repeat: no-repeat;
-        background-position: center;
-        background-size: 40px 40px;
-    }
-    .h1-container .next-hole-navigation {
-        background-image: url("/images/chevron-right.svg");
-        background-repeat: no-repeat;
-        background-position: center;
-        background-size: 40px 40px;
-    }
-
-    .h1-container h1 {
-        width: 80px;
-        text-align: center;
-        margin-top: 0px;
-        margin-bottom: 0px;
-    }
-
-    .box-container {
-        display: flex;
-        flex-direction: row;
-        justify-content: stretch;
-        min-width: 20px;
-        min-height: 20px;
-        margin-top: 50px;
-    }
-
-    .box-container .hole-data-container {
-        flex: 0.5;
-        min-width: 175px;
-        min-height: 10px;
-    }
-
-    .box-container .hole-layout-container {
-        flex: 0.5;
-        min-width: 10px;
-        min-height: 10px;
-        text-align: center;
-    }
-
-    main {
-        margin: auto;
-        width: 900px;
-        max-width: calc(100% - 2rem);
-        color: white;
-        line-height: 1.6;
-    }
-
-    .tee-length .length {
-        margin-left: 3px;
-        vertical-align: text-bottom;
-    }
-
-    h1 {
-        font-weight: 700;
+    .hole-nav h1 {
+        font-family: var(--font-score);
+        font-size: clamp(3rem, 12vw, 4.5rem);
         line-height: 1;
-        text-align: left;
-        margin-top: 0.3em;
-        margin-bottom: 0.3em;
-        display: inline;
+        min-width: 3ch;
+        margin: 0;
     }
 
-    .h1-container {
-        margin-bottom: 20px;
+    .nav-arrow {
+        display: grid;
+        place-items: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 9999px;
+        border: 1px solid var(--line-strong);
+        background: var(--surface);
+        color: var(--text-muted);
+        font-size: 1.4rem;
+        line-height: 1;
+        padding-bottom: 0.15em;
+    }
+
+    .nav-arrow:hover {
+        border-color: var(--violet-700);
+        color: var(--ink-50);
+    }
+
+    .hole-body {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: minmax(180px, 260px) 1fr;
+        align-items: start;
+    }
+
+    .hole-specs {
+        padding: 1rem 1.1rem 1.1rem;
+    }
+
+    .spec-row {
+        display: flex;
+        gap: 1.75rem;
+        padding-bottom: 0.9rem;
+        margin-bottom: 0.9rem;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .spec {
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+    }
+
+    .spec .label {
+        font-size: 10px;
+        letter-spacing: 0.16em;
+    }
+
+    .spec .value {
+        font-size: 1.9rem;
+        line-height: 1;
+        color: var(--ink-50);
+    }
+
+    .tee-lengths .tee {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        color: var(--ink-200);
+    }
+
+    .tee-lengths .numeric {
+        color: var(--text-muted);
+    }
+
+    /* Layout art is dark-on-white, so it keeps a light plate. */
+    .hole-layout {
+        margin: 0;
+        padding: 0.75rem;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--line);
+        background: var(--ink-100);
+        text-align: center;
     }
 
     .hole-layout img {
-        max-height: 600px;
-        min-height: 300px;
-        max-width: calc(80%);
+        max-height: 560px;
+        margin-inline: auto;
     }
 
+    .hole-description {
+        margin-top: 1.75rem;
+        color: var(--text-muted);
+    }
+
+    @media (max-width: 640px) {
+        .hole-body {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>

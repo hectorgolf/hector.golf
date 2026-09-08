@@ -1,39 +1,29 @@
 ---
 interface Props {
-	title?: string;
+	title?: string
 }
 
-const { title } = Astro.props;
+const { title } = Astro.props
 ---
 
 <div class="highlight">
-	<p>{title}</p>
-	<slot/>
+	{title && <span class="eyebrow">{title}</span>}
+	<slot />
 </div>
+
 <style>
+	/* A violet-tinted panel, matching the app's emphasised blocks. */
 	.highlight {
 		margin-bottom: 2rem;
-		border: 1px solid rgba(var(--accent-light), 25%);
-		background: linear-gradient(rgba(var(--accent-dark), 66%), rgba(var(--accent-dark), 33%));
-		padding: 1.5rem;
-		border-radius: 8px;
+		padding: 1.25rem;
+		border-radius: var(--radius-lg);
+		border: 1px solid var(--violet-900);
+		background: linear-gradient(rgb(21 16 46 / 0.6), rgb(21 16 46 / 0.15));
 	}
 
-	.highlight code {
-		font-size: 0.8em;
-		font-weight: bold;
-		background: rgba(var(--accent-light), 12%);
-		color: rgb(var(--accent-light));
-		border-radius: 4px;
-		padding: 0.3em 0.4em;
-	}
-
-	.highlight strong {
-		color: rgb(var(--accent-light));
-	}
-
-	.highlight a {
-		color: #ffffff;
-		font-weight: bold;
+	.eyebrow {
+		display: block;
+		margin-bottom: 0.6rem;
+		color: var(--violet-300);
 	}
 </style>

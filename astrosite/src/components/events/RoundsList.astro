@@ -12,6 +12,14 @@ interface Props {
 let { event, allThrough } = Astro.props;
 event = event as HectorEvent;
 
+/*
+ * `allThrough` is derived from leaderboard data and is only a real hole count while
+ * a round is in progress: it comes back NaN once every entry reads "F", and Infinity
+ * when there is no leaderboard at all. Only badge rounds as played/next when we
+ * actually know where the field is.
+ */
+const progressKnown = Number.isInteger(allThrough)
+
 const linkToCourse = (course: Course): string => {
     return `/courses/${course.id}`
 }
@@ -73,207 +81,239 @@ function pluralize(points: number, unit: string): string {
 }
 
 ---
-<>
-    {(event.rounds && event.rounds.length > 0) && (
-        <div class="rounds">
-            <h2>Rounds</h2>
-            {event.rounds.map((round, index) => {
-                const course = getCourseById(round.course)
-                if (!course) return null
-                const tee = course.course?.tees?.find(t => t.name.toLowerCase() === round.tee.toLowerCase())
-                const isCompleted = index < allThrough
-                const isNext = index === allThrough
-                const roundClass = isCompleted ? 'completed' : (isNext ? 'next' : 'upcoming')
-                return (
-                    <div class={`round ${roundClass}`.trim()}>
-                        <div class="highlight"></div>
-                        <div class="padding"></div>
-                        <div class="content">
-                            <h3>R{index + 1}: Day {round.day}, Round {round.round}</h3>
+
+{
+    event.rounds && event.rounds.length > 0 && (
+        <section class="section rounds">
+            <div class="section-head">
+                <h2>Rounds</h2>
+                <span class="meta">{event.rounds.length} rounds</span>
+            </div>
+            <ol role="list" class="round-list">
+                {event.rounds.map((round, index) => {
+                    const course = getCourseById(round.course)
+                    if (!course) return null
+                    const tee = course.course?.tees?.find(
+                        (t) => t.name.toLowerCase() === round.tee.toLowerCase()
+                    )
+                    const isCompleted = progressKnown && index < allThrough
+                    const isNext = progressKnown && index === allThrough
+                    const state = isCompleted ? 'completed' : isNext ? 'next' : 'upcoming'
+                    const stateLabel = isCompleted ? 'Final' : isNext ? 'Up next' : 'Upcoming'
+                    return (
+                        <li class="round card" data-state={state}>
+                            <div class="round-head">
+                                <span class="round-no num">R{index + 1}</span>
+                                <span class="round-title">
+                                    Day {round.day}, Round {round.round}
+                                </span>
+                                {progressKnown && (
+                                    <span class={isNext ? 'pill pill-violet' : 'pill'}>{stateLabel}</span>
+                                )}
+                            </div>
                             <div class="course">
                                 <a href={linkToCourse(course)}>{course.name}</a>
                                 {tee && (
                                     <>
-                                        <span class="dot" style={`background-color: ${tee.color}; border: 1pt solid white;`}></span>
-                                        <span class="name">{tee.name}</span>
+                                        <span class="dot" style={`background-color: ${tee.color};`} aria-hidden="true" />
+                                        <span class="tee-name">{tee.name} tee</span>
                                     </>
                                 )}
                             </div>
-                            <div class="game-formats">
-                                {round.gameFormats.map(gf => {
-                                    const allowance = gf.handicapAllowance ? `${Math.round(gf.handicapAllowance * 100)}%` : ''
+                            <ul class="game-formats">
+                                {round.gameFormats.map((gf) => {
+                                    const allowance = gf.handicapAllowance
+                                        ? `${Math.round(gf.handicapAllowance * 100)}%`
+                                        : ''
                                     const hectorContribution = gf.contribution?.hector
                                     const victorContribution = gf.contribution?.victor
                                     return (
-                                        <div class="game-format">
-                                            <ul class="game-format-specification">
-                                                <li>
-                                                    <span class="name">{gf.format}</span>
-                                                    {allowance && (<ul class="handicap-allowances">
-                                                        <li class="handicap-allowance short">{allowance} HCP</li>
-                                                        <li class="handicap-allowance long">{allowance} handicap allowance</li>
-                                                    </ul>)}
-                                                    {(hectorContribution || victorContribution) && (
-                                                        <ul class="contribution">
-                                                            {hectorContribution && (
-                                                                <li class="score-contribution long">{
-                                                                    isGroupFormat(gf.format)
-                                                                    ? `Hector points: ${Math.round(hectorContribution * 100)}% of the team's score`
-                                                                    : `Hector points: ${Math.round(hectorContribution * 100)}% of ${scoreSource(gf.teamContribution)} score`
-                                                                }</li>
-                                                                <li class="score-contribution short">{
-                                                                    isGroupFormat(gf.format)
-                                                                    ? `Hector: ${Math.round(hectorContribution * 100)}% of the team's score`
-                                                                    : `Hector: ${Math.round(hectorContribution * 100)}% of ${scoreSource(gf.teamContribution)} score`
-                                                                }</li>
-                                                            )}
-                                                            {victorContribution && (
-                                                                <li class="score-contribution long">{`Victor points: Contributes ${Math.round(victorContribution * 100)}% to the individual's Victor points`}</li>
-                                                                <li class="score-contribution short">{`Victor: ${Math.round(victorContribution * 100)}% of individual's score`}</li>
-                                                            )}
-                                                        </ul>
-                                                    )}
-                                                    {hasMaximumScorePerHole(gf.format) && (
-                                                        <ul class="maximum-scores">
-                                                            <li class="maximum-score long">{maxScoreTextLong(maxStrokesOverParFor(event, round))}</li>
-                                                            <li class="maximum-score short">{maxScoreTextShort(maxStrokesOverParFor(event, round))}</li>
-                                                        </ul>
-                                                    )}
-                                                    {isScrambleFormat(gf.format) && (
-                                                        <ul class="opening-shots">
-                                                            <li class="opening-shot-rules long">{openingShotsTextLong(gf.openingShotsRequirement)}</li>
-                                                            <li class="opening-shot-rules short">{openingShotsTextShort(gf.openingShotsRequirement)}</li>
-                                                        </ul>
-                                                    )}
-                                                </li>
-                                                {(gf.birdieBonus || gf.eagleBonus) && (
-                                                    <ul class="score-bonuses">
-                                                        {gf.birdieBonus && (<li class="bonus birdie">{pluralize(gf.birdieBonus, 'point') + ' for each Birdie'}</li>)}
-                                                        {gf.eagleBonus && (<li class="bonus eagle">{pluralize(gf.eagleBonus, 'point') + ' for each Eagle'}</li>)}
-                                                    </ul>
+                                        <li class="game-format">
+                                            <div class="format-head">
+                                                <span class="bullet" aria-hidden="true">
+                                                    &bull;
+                                                </span>
+                                                <span class="format-name">{gf.format}</span>
+                                                {/* Neutral: a handicap allowance belongs to no competition. */}
+                                                {allowance && <span class="pill num">HCP {allowance}</span>}
+                                                {hectorContribution && (
+                                                    <span class="pill pill-hector num">
+                                                        H {Math.round(hectorContribution * 100)}%
+                                                    </span>
+                                                )}
+                                                {victorContribution && (
+                                                    <span class="pill pill-victor num">
+                                                        V {Math.round(victorContribution * 100)}%
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <ul class="format-notes">
+                                                {hectorContribution && (
+                                                    <>
+                                                        <li class="score-contribution long">
+                                                            {isGroupFormat(gf.format)
+                                                                ? `Hector points: ${Math.round(hectorContribution * 100)}% of the team's score`
+                                                                : `Hector points: ${Math.round(hectorContribution * 100)}% of ${scoreSource(gf.teamContribution)} score`}
+                                                        </li>
+                                                        <li class="score-contribution short">
+                                                            {isGroupFormat(gf.format)
+                                                                ? `Hector: ${Math.round(hectorContribution * 100)}% of the team's score`
+                                                                : `Hector: ${Math.round(hectorContribution * 100)}% of ${scoreSource(gf.teamContribution)} score`}
+                                                        </li>
+                                                    </>
+                                                )}
+                                                {victorContribution && (
+                                                    <>
+                                                        <li class="score-contribution long">{`Victor points: Contributes ${Math.round(victorContribution * 100)}% to the individual's Victor points`}</li>
+                                                        <li class="score-contribution short">{`Victor: ${Math.round(victorContribution * 100)}% of individual's score`}</li>
+                                                    </>
+                                                )}
+                                                {hasMaximumScorePerHole(gf.format) && (
+                                                    <>
+                                                        <li class="maximum-score long">{maxScoreTextLong(maxStrokesOverParFor(event, round))}</li>
+                                                        <li class="maximum-score short">{maxScoreTextShort(maxStrokesOverParFor(event, round))}</li>
+                                                    </>
+                                                )}
+                                                {isScrambleFormat(gf.format) && (
+                                                    <>
+                                                        <li class="opening-shot-rules long">{openingShotsTextLong(gf.openingShotsRequirement)}</li>
+                                                        <li class="opening-shot-rules short">{openingShotsTextShort(gf.openingShotsRequirement)}</li>
+                                                    </>
+                                                )}
+                                                {gf.birdieBonus && (
+                                                    <li>{pluralize(gf.birdieBonus, 'point')} for each Birdie</li>
+                                                )}
+                                                {gf.eagleBonus && (
+                                                    <li>{pluralize(gf.eagleBonus, 'point')} for each Eagle</li>
                                                 )}
                                             </ul>
-                                        </div>
+                                        </li>
                                     )
                                 })}
-                            </div>
-                        </div>
-                    </div>
-                )
-            })}
-        </div>
-    )}
-</>
+                            </ul>
+                        </li>
+                    )
+                })}
+            </ol>
+        </section>
+    )
+}
 
 <style>
-    main {
-		font-size: 20px;
-	}
-
-    .dot {
-        height: 12px;
-        width: 12px;
-        border-radius: 50%;
-        display: inline-block;
+    .round-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
     }
-
-    .game-formats ul {
-        margin-block-start: auto;
-        margin-block-end: auto;
-        padding-inline-start: 20px;
-    }
-
-    .game-formats ul li {
-        padding-inline-start: 0px;
-    }
-
-    .game-formats ul li.bonus {
-        list-style-type: "+  ";
-        margin-inline-start: 20px;
-    }
-
 
     .round {
-        display: grid;
-        grid-template-columns: [highlighter] 4px [padding] 8px [content] 100%;
-        margin-top: 10px;
+        padding: 0.85rem 1rem 0.95rem;
     }
 
-    .round h3 {
-        margin-top: 8px;
-        margin-bottom: 8px;
+    /* The round in play gets the inset accent rail the app uses for live rounds. */
+    .round[data-state='next'] {
+        box-shadow: inset 3px 0 0 var(--violet-500);
+        border-color: var(--violet-900);
     }
 
-    .round .content,
-    .round .highlight {
+    .round[data-state='completed'] {
+        opacity: 0.72;
+    }
+
+    .round-head {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        flex-wrap: wrap;
+    }
+
+    .round-no {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--violet-400);
+    }
+
+    .round-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ink-50);
+    }
+
+    .round-head .pill {
+        margin-left: auto;
+    }
+
+    .course {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-top: 0.35rem;
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+
+    .course a {
+        color: var(--ink-200);
+        font-weight: 500;
+    }
+
+    .course a:hover {
+        color: var(--violet-200);
+    }
+
+    .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 9999px;
         display: inline-block;
+        box-shadow: 0 0 0 1px rgb(255 255 255 / 0.25);
+        flex-shrink: 0;
     }
 
-    .round .content { padding-bottom: 10px; }
-
-    .round.next .highlight {
-        background: linear-gradient(rgba(var(--accent-light), 66%), rgba(var(--accent-dark), 33%));
+    .game-formats {
+        list-style: none;
+        margin: 0.7rem 0 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
     }
 
-    .round.upcoming .highlight {
-        background: linear-gradient(rgba(var(--accent-light), 10%), rgba(var(--accent-dark), 66%));
+    .format-head {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        font-size: 13px;
     }
 
-    .round.next {
-        background: linear-gradient(rgba(var(--accent-dark), 66%), rgba(var(--accent-dark), 33%));
+    .bullet {
+        color: var(--text-faint);
     }
 
-    .round.completed,
-    .round.completed a {
-        color: grey;
+    .format-name {
+        color: var(--ink-200);
     }
 
-    .round.upcoming,
-    .round.upcoming a {
-        color: lightgrey;
-    }
-
-    .round .course .dot {
-        margin-left: 16px;
-        margin-right: 4px;
-        margin-top: -2px;
-    }
-
-    .round .game-format { font-size: 0.9em; }
-
-    .rounds .game-format ul.contribution,
-    .rounds .game-format ul.maximum-scores,
-    .rounds .game-format ul.opening-shots,
-    .rounds .game-format ul.score-bonuses,
-    .rounds .game-format ul.handicap-allowances {
-        padding-inline-start: 0px;
-        font-size: 0.8em;
-        opacity: 0.7;
+    .format-notes {
+        list-style: none;
+        margin: 0.25rem 0 0 0.9rem;
+        padding: 0;
+        font-size: 12px;
+        color: var(--text-faint);
+        line-height: 1.5;
     }
 
     @media only screen and (max-width: 500px) {
-        main {
-            font-size: 16px;
-        }
-
-        .rounds .handicap-allowance.short { display: block; }
-        .rounds .handicap-allowance.long { display: none; }
-        .rounds .score-contribution.short { display: block; }
-        .rounds .score-contribution.long { display: none; }
-        .rounds .opening-shot-rules.short { display: block; }
-        .rounds .opening-shot-rules.long { display: none; }
-        .rounds .maximum-score.short { display: block; }
-        .rounds .maximum-score.long { display: none; }
+        .format-notes .short { display: list-item; }
+        .format-notes .long { display: none; }
     }
 
     @media only screen and (min-width: 501px) {
-        .rounds .handicap-allowance.short { display: none; }
-        .rounds .handicap-allowance.long { display: block; }
-        .rounds .score-contribution.short { display: none; }
-        .rounds .score-contribution.long { display: block; }
-        .rounds .opening-shot-rules.short { display: none; }
-        .rounds .opening-shot-rules.long { display: block; }
-        .rounds .maximum-score.short { display: none; }
-        .rounds .maximum-score.long { display: block; }
+        .format-notes .short { display: none; }
+        .format-notes .long { display: list-item; }
     }
 </style>

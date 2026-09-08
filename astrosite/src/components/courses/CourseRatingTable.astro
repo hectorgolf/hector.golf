@@ -10,8 +10,11 @@ const { course } = Astro.props;
 ---
 
 {course.course && (
-    <div class="slope-and-rating">
-        <h2>Course rating</h2>
+    <section class="section slope-and-rating">
+        <div class="section-head">
+            <h2>Course rating</h2>
+            <span class="meta">Slope &amp; CR</span>
+        </div>
         <div class="course-rating-table">
             <table>
                 <thead>
@@ -55,87 +58,88 @@ const { course } = Astro.props;
             </table>
             <!-- <code>{JSON.stringify(course.course.tees, null, 2)}</code> -->
         </div>
-    </div>
+    </section>
 )}
 
 <style>
+    .course-rating-table {
+        overflow-x: auto;
+    }
+
     table {
+        border-collapse: separate;
+        border-spacing: 0;
+        font-family: var(--font-num);
+        font-variant-numeric: tabular-nums;
+        font-size: 13px;
         text-align: center;
-        border-collapse: collapse;
-    }
-
-    table thead tr {
-        background-color: #333333;
-    }
-
-    table tbody td.divider {
-        color: #bbbbbb;
-    }
-
-    table tbody {
-        font-size: 0.85em;
-    }
-
-    table tr.subheading {
-        border-bottom: 1px solid white;
-    }
-
-    table tr.subheading th {
-        padding-bottom: 10px;
-    }
-
-    .course-rating-table .tee-identifier .name {
-        vertical-align: text-bottom;
-        margin-left: 3px;
-    }
-
-    .tee-identifier, .tee-par, .tee-length {
-        text-align: center;
-    }
-
-    td {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
         overflow: hidden;
+    }
+
+    table th,
+    table td {
+        background: var(--ink-950);
+        color: var(--ink-200);
+        border-bottom: 1px solid var(--line);
+        padding: 0.4rem 0.6rem;
+        font-weight: 400;
         white-space: nowrap;
-        text-overflow: ellipsis;
     }
 
-    td.tee-identifier, td.tee-par, td.tee-length, td.tee-slope.ladies, td.tee-rating.ladies {
-        padding-right: 10px;
+    table tbody tr:last-child td {
+        border-bottom: 0;
     }
 
-    th {
-        padding-right: 10px;
+    table thead th {
+        background: var(--surface-raised);
+        color: var(--text-muted);
+        font-family: var(--font-sans);
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
     }
 
-    table td.even, table th.even {
-        background-image: linear-gradient(to bottom right, #111111, #333333);
+    table thead tr.subheading th {
+        color: var(--text-faint);
+        letter-spacing: 0.08em;
+        padding-top: 0;
     }
 
-    table td.odd, table th.odd {
-        background-image: linear-gradient(to bottom right, #444444, #222222);
+    table td.tee-identifier {
+        text-align: left;
+        color: var(--ink-100);
+        font-weight: 600;
     }
 
-    @media only screen and (max-width: 500px) {
-        .tee-identifier .name {
-            display: none;
-        }
-        .tee-identifier {
-            text-align: center;
-        }
-        .course-rating-table, .course-rating-table table {
-            width: 100%;
-        }
+    .tee-identifier .color {
+        vertical-align: middle;
     }
 
-    @media only screen and (min-width: 501px) {
-        .tee-identifier {
-            text-align: left;
-        }
-
-        th, td.tee-par, td.tee-length, td.tee-slope.ladies, td.tee-rating.ladies {
-            padding-left: 10px;
-            padding-right: 10px;
-        }
+    .tee-identifier .name {
+        vertical-align: middle;
+        margin-left: 2px;
     }
 
+    /* Squeeze the "M / W" pairs together so they read as one value. */
+    table td.divider {
+        color: var(--text-faint);
+        padding-inline: 0;
+    }
+
+    table td.men {
+        padding-right: 0.15rem;
+    }
+
+    table td.ladies {
+        padding-left: 0.15rem;
+        color: var(--text-muted);
+    }
+
+    table td.tee-length,
+    table td.tee-par {
+        color: var(--text-muted);
+    }
 </style>

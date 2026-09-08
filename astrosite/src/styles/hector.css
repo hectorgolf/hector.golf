@@ -1,0 +1,758 @@
+/*
+ * Hector design system.
+ *
+ * Tokens, base typography and component classes shared with the scorecard app at
+ * app.hector.golf so that the two properties read as one product. Palette, type
+ * scale and the .card / .pill / .btn / .num / .score primitives mirror the app's
+ * Tailwind theme one-to-one.
+ */
+
+:root {
+	/* Ink — the neutral scale everything sits on */
+	--ink-50: #f7f7fa;
+	--ink-100: #efeef3;
+	--ink-200: #dfdde4;
+	--ink-300: #c2c0c9;
+	--ink-400: #aeacb7;
+	--ink-500: #9a98a6;
+	--ink-600: #7c7a86;
+	--ink-700: #2c2b31;
+	--ink-800: #1d1c20;
+	--ink-900: #131215;
+	--ink-950: #0a0a0c;
+
+	/* Violet — the brand/interactive colour */
+	--violet-200: #cfc6f0;
+	--violet-300: #ada0e6;
+	--violet-400: #8b79d8;
+	--violet-500: #6d58c6;
+	--violet-600: #5340ad;
+	--violet-700: #41328a;
+	--violet-800: #322769;
+	--violet-900: #241c4b;
+	--violet-950: #15102e;
+
+	/* Gold — the Hector mark, champions, and eyebrow labels */
+	--gold-300: #efcf7f;
+	--gold-400: #e3b341;
+
+	/*
+	 * Ember — Matchplay. Its own hue rather than a second gold: at ~17deg it reads
+	 * clearly orange-red against gold's ~42deg yellow, and holds ~6:1 on the page
+	 * ground so it stays legible at badge sizes.
+	 */
+	--ember-300: #f79a6d;
+	--ember-400: #ee6a35;
+
+	/*
+	 * Fairway — Victor. A grass green at ~99deg, well clear of both gold (~42deg) and
+	 * the emerald used for live/success status (~160deg), so it never reads as "this
+	 * is live". Named for the fairway rather than "green", which in a golf codebase
+	 * already means the putting surface.
+	 */
+	--fairway-300: #a8dc85;
+	--fairway-400: #7ac74f;
+
+	/* Status */
+	--emerald-400: #34d399;
+	--emerald-950: #022c22;
+	--rose-400: #fb7185;
+	--rose-950: #4c0519;
+	--amber-400: #fbbf24;
+	--amber-950: #451a03;
+	--sky-300: #7dd3fc;
+	--sky-950: #0c4a6e;
+
+	/* Semantic aliases */
+	--bg: var(--ink-950);
+	--surface: var(--ink-900);
+	--surface-raised: var(--ink-800);
+	--line: var(--ink-800);
+	--line-strong: var(--ink-700);
+	/*
+	 * One step brighter than the app's border scale, which jumps straight from
+	 * ink-700 to the ink-600 text grey. For diagrams — the matchplay bracket — where
+	 * a border carries structure rather than just fencing off a surface.
+	 */
+	--line-bright: #3c3b44;
+	--text: var(--ink-100);
+	--text-muted: var(--ink-400);
+	--text-dim: var(--ink-500);
+	--text-faint: var(--ink-600);
+	--accent: var(--violet-500);
+
+	/*
+	 * Competition identity. Every trophy mark, eyebrow, win badge and score that
+	 * stands for a competition takes its colour from here, so the three stay in step
+	 * wherever they appear.
+	 *
+	 * Violet is deliberately absent: it belongs to the interface — selection, active
+	 * state, buttons and links — and colouring a competition with it would make those
+	 * two meanings impossible to tell apart.
+	 */
+	--hector: var(--gold-400);
+	--hector-soft: var(--gold-300);
+	--victor: var(--fairway-400);
+	--victor-soft: var(--fairway-300);
+	--matchplay: var(--ember-400);
+	--matchplay-soft: var(--ember-300);
+
+	/* Type */
+	--font-sans: Geist, ui-sans-serif, system-ui, -apple-system, sans-serif;
+	--font-serif: Fraunces, Georgia, 'Times New Roman', serif;
+	--font-score: 'Barlow Semi Condensed', Geist, system-ui, sans-serif;
+	--font-num: Inconsolata, ui-monospace, SFMono-Regular, monospace;
+
+	/* Shape */
+	--radius-sm: 0.5rem;
+	--radius: 0.75rem;
+	--radius-lg: 1rem;
+	--radius-xl: 1.25rem;
+
+	--page-max: 960px;
+	--ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------------------------------------------------------------- reset ---- */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	background: var(--bg);
+	color-scheme: dark;
+	-webkit-text-size-adjust: 100%;
+	scroll-behavior: smooth;
+}
+
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--text);
+	font-family: var(--font-sans);
+	font-size: 15px;
+	line-height: 1.6;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-tap-highlight-color: transparent;
+}
+
+img,
+svg,
+video {
+	max-width: 100%;
+}
+
+img {
+	display: block;
+	height: auto;
+}
+
+/* ----------------------------------------------------------- typography ---- */
+
+h1,
+h2,
+h3,
+h4 {
+	font-family: var(--font-serif);
+	font-weight: 600;
+	line-height: 1.1;
+	letter-spacing: -0.01em;
+	color: var(--ink-50);
+	margin: 0;
+	text-wrap: balance;
+}
+
+h1 {
+	font-size: clamp(2.1rem, 6vw, 3.25rem);
+}
+
+h2 {
+	font-size: clamp(1.35rem, 3.2vw, 1.75rem);
+}
+
+h3 {
+	font-size: 1.1rem;
+}
+
+p {
+	margin: 0 0 1em;
+	color: var(--ink-200);
+	max-width: 68ch;
+}
+
+p:last-child {
+	margin-bottom: 0;
+}
+
+a {
+	color: var(--violet-300);
+	text-decoration: none;
+	transition: color 0.15s var(--ease);
+}
+
+a:hover {
+	color: var(--violet-200);
+}
+
+strong {
+	font-weight: 600;
+	color: var(--ink-50);
+}
+
+hr {
+	border: 0;
+	border-top: 1px solid var(--line);
+	margin: 2rem 0;
+}
+
+::selection {
+	background: var(--violet-600);
+	color: #fff;
+}
+
+:focus-visible {
+	outline: 2px solid var(--violet-500);
+	outline-offset: 2px;
+	border-radius: 4px;
+}
+
+/* --------------------------------------------------------- text helpers ---- */
+
+/* Tabular monospace figures — handicaps, hole numbers, yardages, times. */
+.num {
+	font-family: var(--font-num);
+	font-variant-numeric: tabular-nums;
+	font-feature-settings: 'tnum';
+}
+
+/* Condensed bold figures — scores and totals. */
+.score {
+	font-family: var(--font-score);
+	font-weight: 700;
+	letter-spacing: 0.01em;
+	font-variant-numeric: tabular-nums;
+}
+
+.label {
+	font-size: 13px;
+	line-height: 1.4;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--text-muted);
+}
+
+/* Small gold kicker above a page or section title. */
+.eyebrow {
+	font-family: var(--font-sans);
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.22em;
+	color: var(--gold-400);
+}
+
+/* Mono metadata strip — "KONOPIŠTĖ · CZECHIA · SEPTEMBER 24–27". */
+.meta {
+	font-family: var(--font-num);
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.18em;
+	color: var(--text-dim);
+}
+
+.muted {
+	color: var(--text-muted);
+}
+
+.dim {
+	color: var(--text-dim);
+}
+
+.serif {
+	font-family: var(--font-serif);
+}
+
+.gold {
+	color: var(--gold-400);
+}
+
+/*
+ * Score colours. The three should read as siblings of equal weight, so level par
+ * sits at ink-300 rather than the ink-100 body colour: at 17:1 against the ground it
+ * drowned out the red and the blue beside it, and now measures 11.0 against their
+ * 7.4 and 11.9. Being an unsaturated neutral it gains none of the apparent
+ * brightness the other two get from their saturation, which closes the gap further.
+ */
+.under-par {
+	color: var(--rose-400);
+}
+
+.over-par {
+	color: var(--sky-300);
+}
+
+.level-par {
+	color: var(--ink-300);
+}
+
+/* ------------------------------------------------------------- surfaces ---- */
+
+.card {
+	border-radius: var(--radius-lg);
+	border: 1px solid var(--line);
+	background: var(--surface);
+}
+
+/* An interactive card: whole surface is a link. */
+.card-link {
+	display: block;
+	position: relative;
+	border-radius: var(--radius-lg);
+	border: 1px solid var(--line);
+	background: var(--surface);
+	color: inherit;
+	overflow: hidden;
+	transition:
+		border-color 0.18s var(--ease),
+		background-color 0.18s var(--ease),
+		transform 0.18s var(--ease);
+}
+
+.card-link:hover,
+.card-link:focus-visible {
+	border-color: var(--violet-700);
+	background: #17161b;
+	transform: translateY(-2px);
+	color: inherit;
+}
+
+.card-link:active {
+	transform: translateY(0);
+}
+
+.pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	white-space: nowrap;
+	border-radius: 9999px;
+	padding: 0.125rem 0.5rem;
+	font-size: 12px;
+	line-height: 1.5;
+	font-weight: 500;
+	background: var(--surface-raised);
+	color: var(--text-muted);
+}
+
+/* Interface pill — selection and active state, never a competition. */
+.pill-violet {
+	background: rgb(21 16 46 / 0.7);
+	color: var(--violet-300);
+}
+
+/*
+ * Competition pills. Each tint is mixed from the competition's own colour so the
+ * three cannot drift apart, over a flat fallback for browsers without color-mix().
+ */
+.pill-hector,
+.pill-victor,
+.pill-matchplay {
+	background: var(--surface-raised);
+	background: color-mix(in srgb, currentColor 14%, var(--surface));
+}
+
+.pill-hector {
+	color: var(--hector-soft);
+}
+
+.pill-victor {
+	color: var(--victor-soft);
+}
+
+.pill-matchplay {
+	color: var(--matchplay-soft);
+}
+
+.pill-live {
+	background: var(--emerald-950);
+	color: var(--emerald-400);
+}
+
+.pill-outline {
+	background: transparent;
+	border: 1px solid var(--line-strong);
+	color: var(--text-muted);
+}
+
+.live-dot {
+	display: inline-block;
+	width: 6px;
+	height: 6px;
+	border-radius: 9999px;
+	background: currentColor;
+	box-shadow: 0 0 6px currentColor;
+	animation: live-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.35;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.live-dot {
+		animation: none;
+	}
+	html {
+		scroll-behavior: auto;
+	}
+}
+
+/* -------------------------------------------------------------- buttons ---- */
+
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	border: 0;
+	border-radius: var(--radius);
+	padding: 0.6rem 1rem;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+	transition:
+		color 0.15s var(--ease),
+		background-color 0.15s var(--ease),
+		border-color 0.15s var(--ease);
+}
+
+.btn:active {
+	transform: scale(0.98);
+}
+
+.btn-primary {
+	background: var(--violet-600);
+	color: #fff;
+}
+
+.btn-primary:hover {
+	background: var(--violet-500);
+	color: #fff;
+}
+
+.btn-primary:active {
+	background: var(--violet-700);
+}
+
+.btn-ghost {
+	border: 1px solid var(--line-strong);
+	background: var(--surface-raised);
+	color: var(--ink-200);
+}
+
+.btn-ghost:hover {
+	border-color: var(--violet-700);
+	color: var(--ink-50);
+}
+
+/* ------------------------------------------------------------ hero image --- */
+
+.hero-figure {
+	position: relative;
+	overflow: hidden;
+	border-radius: var(--radius-lg);
+	border: 1px solid var(--line);
+	background: var(--surface);
+	margin: 0;
+}
+
+.hero-figure img {
+	width: 100%;
+	object-fit: cover;
+	filter: brightness(0.88) saturate(0.9);
+}
+
+.hero-figure::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		to top,
+		var(--ink-900),
+		rgb(19 18 21 / 0.2) 55%,
+		rgb(10 10 12 / 0.25)
+	);
+	pointer-events: none;
+}
+
+.hero-figure figcaption {
+	position: absolute;
+	left: 1rem;
+	bottom: 0.6rem;
+	z-index: 1;
+	font-family: var(--font-num);
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.22em;
+	color: rgb(255 255 255 / 0.72);
+}
+
+/* --------------------------------------------------------------- tables ---- */
+
+.table-scroll {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+table.data {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 14px;
+}
+
+table.data caption {
+	text-align: left;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.18em;
+	color: var(--text-dim);
+	padding-bottom: 0.6rem;
+}
+
+table.data th {
+	font-family: var(--font-sans);
+	font-size: 10px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.14em;
+	color: var(--text-dim);
+	text-align: left;
+	padding: 0 0.6rem 0.45rem;
+	border-bottom: 1px solid var(--line);
+	white-space: nowrap;
+}
+
+table.data td {
+	padding: 0.55rem 0.6rem;
+	border-bottom: 1px solid var(--line);
+	color: var(--ink-200);
+	vertical-align: middle;
+}
+
+table.data tbody tr:last-child td {
+	border-bottom: 0;
+}
+
+table.data tbody tr:hover td {
+	background: rgb(255 255 255 / 0.02);
+}
+
+table.data th:first-child,
+table.data td:first-child {
+	padding-left: 0;
+}
+
+table.data th:last-child,
+table.data td:last-child {
+	padding-right: 0;
+}
+
+table.data .numeric {
+	text-align: right;
+	font-family: var(--font-num);
+	font-variant-numeric: tabular-nums;
+}
+
+table.data tfoot td {
+	border-top: 1px solid var(--line-strong);
+	border-bottom: 0;
+	font-weight: 600;
+	color: var(--ink-50);
+}
+
+/* ---------------------------------------------------------------- shell ---- */
+
+.page {
+	width: 100%;
+	max-width: var(--page-max);
+	margin-inline: auto;
+	padding: 0 1.25rem 5rem;
+}
+
+.page-header {
+	padding: 2.25rem 0 1.75rem;
+}
+
+.page-header .eyebrow {
+	display: block;
+	margin-bottom: 0.5rem;
+}
+
+.page-header h1 {
+	margin: 0;
+}
+
+.page-header .meta {
+	display: block;
+	margin-top: 0.7rem;
+}
+
+.page-header .lede {
+	margin-top: 0.9rem;
+	color: var(--text-muted);
+	font-size: 1rem;
+}
+
+/* Section heading with an optional trailing action/badge. */
+.section {
+	margin-top: 2.75rem;
+}
+
+.section-head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 1rem;
+	margin-bottom: 1rem;
+	padding-bottom: 0.6rem;
+	border-bottom: 1px solid var(--line);
+}
+
+.section-head h2 {
+	font-size: 1.35rem;
+}
+
+.grid {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.grid-wide {
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+}
+
+/* Segmented pill switcher, as used for the app's round selector. */
+.segmented {
+	display: inline-flex;
+	gap: 0.25rem;
+	padding: 0.25rem;
+	border-radius: 9999px;
+	border: 1px solid var(--line);
+	background: var(--surface);
+}
+
+.segmented a,
+.segmented button {
+	border: 0;
+	background: none;
+	border-radius: 9999px;
+	padding: 0.35rem 0.85rem;
+	font: inherit;
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--text-muted);
+	cursor: pointer;
+	white-space: nowrap;
+	transition:
+		color 0.15s var(--ease),
+		background-color 0.15s var(--ease);
+}
+
+.segmented a:hover,
+.segmented button:hover {
+	color: var(--ink-200);
+}
+
+.segmented [aria-current='page'],
+.segmented .is-active {
+	background: var(--violet-600);
+	color: #fff;
+}
+
+/* ------------------------------------------------------ cookie consent ----- */
+
+/* Retheme vanilla-cookieconsent to the Hector palette. */
+#cc-main {
+	--cc-font-family: var(--font-sans);
+	--cc-bg: var(--ink-900);
+	--cc-primary-color: var(--ink-100);
+	--cc-secondary-color: var(--ink-400);
+	--cc-btn-primary-bg: var(--violet-600);
+	--cc-btn-primary-color: #fff;
+	--cc-btn-primary-border-color: var(--violet-600);
+	--cc-btn-primary-hover-bg: var(--violet-500);
+	--cc-btn-primary-hover-color: #fff;
+	--cc-btn-primary-hover-border-color: var(--violet-500);
+	--cc-btn-secondary-bg: var(--ink-800);
+	--cc-btn-secondary-color: var(--ink-200);
+	--cc-btn-secondary-border-color: var(--ink-700);
+	--cc-btn-secondary-hover-bg: var(--ink-700);
+	--cc-btn-secondary-hover-color: var(--ink-50);
+	--cc-btn-secondary-hover-border-color: var(--ink-700);
+	--cc-separator-border-color: var(--ink-800);
+	--cc-toggle-on-bg: var(--violet-600);
+	--cc-toggle-off-bg: var(--ink-700);
+	--cc-toggle-readonly-bg: var(--ink-800);
+	--cc-cookie-category-block-bg: var(--ink-800);
+	--cc-cookie-category-block-border: var(--ink-700);
+	--cc-overlay-bg: rgb(10 10 12 / 0.7);
+	--cc-btn-border-radius: 0.75rem;
+	--cc-modal-border-radius: 1rem;
+}
+
+/* ----------------------------------------------------------- breadcrumbs --- */
+
+.breadcrumbs {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.1rem;
+	padding-top: 1.5rem;
+	font-family: var(--font-num);
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.14em;
+}
+
+.breadcrumbs + .page-header {
+	padding-top: 1rem;
+}
+
+.breadcrumb {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	padding-right: 0.35rem;
+}
+
+.breadcrumb svg {
+	color: var(--text-faint);
+	flex-shrink: 0;
+}
+
+.breadcrumb a {
+	color: var(--text-dim);
+}
+
+.breadcrumb a:hover {
+	color: var(--ink-200);
+}

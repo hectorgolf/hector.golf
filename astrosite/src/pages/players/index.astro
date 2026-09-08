@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import PlayerCard from '../../components/players/PlayerCard.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
+import PageHeader from '../../components/PageHeader.astro';
 import { getAllPlayers, getEventsOfPlayer, getPlayerHandicapById, getPlayerName } from '../../code/players';
 import { yearOfEvent } from '../../code/data';
 import { getTotalWinsByPlayer, getEventsWonByPlayer, getHectorWinsByPlayer, getVictorWinsByPlayer, getMatchplayWinsByPlayer } from '../../code/stats';
@@ -99,44 +100,22 @@ const players = getAllPlayers().sort((a, b) => {
 
 ---
 
-<Layout title="Hector players">
-    <main>
-		<div class="breadcrumbs">
-			<Breadcrumb title="Home" href="/" />
-		</div>
-        <h1><span class="text-gradient">Players</span></h1>
-        <ul role="list" class="link-card-grid">
+<Layout title="Hector players" section="players">
+    <main class="page">
+        <div class="breadcrumbs">
+            <Breadcrumb title="Home" href="/" />
+        </div>
+        <PageHeader
+            title="Players"
+            eyebrow="The field"
+            meta={[`${players.length} players`]}
+            lede="Every golfer who has ever teed it up in a Hector event, ranked by silverware."
+        />
+        <ul role="list" class="grid grid-wide">
             {players.map((player) => {
-				const hcp = getPlayerHandicapById(player.id)
+                const hcp = getPlayerHandicapById(player.id)
                 return <PlayerCard id={player.id} name={player.name} image={player.image} href={linkToPlayer(player)} starts={startsCount(player)} hectorWins={yearsOfHectorWins(player)} victorWins={yearsOfVictorWins(player)} matchplayWins={yearsOfMatchplayWins(player)} handicap={hcp} />
             })}
         </ul>
     </main>
 </Layout>
-
-<style>
-	main {
-		margin: auto;
-		width: 900px;
-		max-width: calc(100% - 2rem);
-		color: white;
-		font-size: 20px;
-		line-height: 1.6;
-	}
-
-	h1 {
-		text-transform: uppercase;
-		font-size: 3.11rem;
-		font-weight: 700;
-		line-height: 1;
-		text-align: center;
-		margin-bottom: 1em;
-	}
-
-	.link-card-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
-		gap: 2rem;
-		padding: 0;
-	}
-</style>

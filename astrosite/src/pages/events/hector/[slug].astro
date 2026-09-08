@@ -3,6 +3,8 @@ import Layout from '../../../layouts/Layout.astro'
 import Breadcrumb from '../../../components/Breadcrumb.astro'
 import CourseCard from '../../../components/courses/CourseCard.astro'
 import RoundsList from '../../../components/events/RoundsList.astro'
+import PageHeader from '../../../components/PageHeader.astro'
+import CompetitionMark from '../../../components/CompetitionMark.astro'
 import { type HectorEvent } from '../../../schemas/events'
 import { type Course } from '../../../schemas/courses'
 import { type Player } from '../../../schemas/players'
@@ -79,138 +81,173 @@ const fieldAndBucketsTitle = eventHasStarted(event) ? 'Field and buckets' : 'Fie
 const description = event.description ? event.description.split(/\n+/) : []
 ---
 
-<Layout title={event.name}>
-    <main>
-		<div class="breadcrumbs">
-			<Breadcrumb title="Home" href="/" />
-			<Breadcrumb title="Events" href="/events" />
-			<Breadcrumb title="Hectors" href="/events/hector" />
-		</div>
-        <h1><span class="text-gradient">{event.name}</span></h1>
-        <div class="event-details">
-            <div class="event-location">{event.location}</div>
-            <div class="event-date">{event.date}</div>
+<Layout title={event.name} section="events">
+    <main class="page">
+        <div class="breadcrumbs">
+            <Breadcrumb title="Home" href="/" />
+            <Breadcrumb title="Events" href="/events" />
+            <Breadcrumb title="Hectors" href="/events/hector" />
         </div>
-        {event.hero_image ? <img src={event.hero_image} title={event.name}/><br/> : ""}
-        {description.map(paragraph => {
-            return (<p>{paragraph}</p>)
-        })}
-        {(hectorWinners.length > 0 || victorWinners.length > 0) && (
-            <div class="results">
-                <h2>Champions</h2>
-                {hectorWinners.length > 0 && (
-                    <div class="hector">
-                        <h3>Hector Trophée</h3>
-                        {hectorWinners.map((player, index) => {
-                            return (
-                                <span>{index > 0 && " & "}<a href={`/players/${player!.id}`}>{getPlayerName(player!)}</a></span>
-                            )
-                        })}
-                    </div>
-                )}
-                {victorWinners.length > 0 && (
-                    <div class="victor">
-                        <h3>Victor</h3>
-                        {victorWinners.map((player, index) => {
-                            return (
-                                <span>{index > 0 && " & "}<a href={`/players/${player!.id}`}>{getPlayerName(player!)}</a></span>
-                            )
-                        })}
-                        {victorWinners.length > 1 && (<span class="tied">(tied)</span>)}
-                    </div>
-                )}
+        <PageHeader
+            title={event.name}
+            eyebrow="Hector Trophée"
+            meta={[event.location, event.date]}
+        />
+
+        {event.hero_image && (
+            <figure class="hero-figure event-hero">
+                <img src={event.hero_image} alt="" />
+                <figcaption>{event.location}</figcaption>
+            </figure>
+        )}
+
+        {description.length > 0 && (
+            <div class="description">
+                {description.map((paragraph) => (
+                    <p>{paragraph}</p>
+                ))}
             </div>
+        )}
+
+        {(hectorWinners.length > 0 || victorWinners.length > 0) && (
+            <section class="section">
+                <div class="section-head">
+                    <h2>Champions</h2>
+                </div>
+                <div class="champions">
+                    {hectorWinners.length > 0 && (
+                        <div class="champion card" data-competition="hector">
+                            <CompetitionMark competition="hector" size={30} class="trophy" />
+                            <div>
+                                <span class="eyebrow">Hector Trophée</span>
+                                <p class="names">
+                                    {hectorWinners.map((player, index) => (
+                                        <span>
+                                            {index > 0 && ' & '}
+                                            <a href={`/players/${player!.id}`}>{getPlayerName(player!)}</a>
+                                        </span>
+                                    ))}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                    {victorWinners.length > 0 && (
+                        <div class="champion card" data-competition="victor">
+                            <CompetitionMark competition="victor" size={30} class="trophy" />
+                            <div>
+                                <span class="eyebrow">Victor</span>
+                                <p class="names">
+                                    {victorWinners.map((player, index) => (
+                                        <span>
+                                            {index > 0 && ' & '}
+                                            <a href={`/players/${player!.id}`}>{getPlayerName(player!)}</a>
+                                        </span>
+                                    ))}
+                                    {victorWinners.length > 1 && <span class="pill">tied</span>}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </section>
         )}
 
         {(leaderboards.hector || leaderboards.victor) && (
-            <div class="leaderboard">
-                <h2>Leaderboard</h2>
+            <section class="section">
+                <div class="section-head">
+                    <h2>Leaderboard</h2>
+                    {eventHasStarted(event) && !eventHasEnded(event) && (
+                        <span class="pill pill-live">
+                            <span class="live-dot" aria-hidden="true" />
+                            Live
+                        </span>
+                    )}
+                </div>
                 {eventHasStarted(event) ? (
-                    <a href={linkToLeaderboards}>
-                        {(eventHasEnded(event) ? "Final results" : "Live leaderboard")}
+                    <a class="btn btn-primary" href={linkToLeaderboards}>
+                        {eventHasEnded(event) ? 'Final results' : 'Live leaderboard'} &rarr;
                     </a>
                 ) : (
-                    <p>Leaderboard will be available <a href={linkToLeaderboards}>here</a> once the event starts</p>
+                    <p class="dim">
+                        The leaderboard opens <a href={linkToLeaderboards}>here</a> once the event starts.
+                    </p>
                 )}
-            </div>
+            </section>
         )}
 
         {(event.results?.teams?.length ?? 0) > 0 && (
-            <div class="teams">
-                <h2>Teams</h2>
-                <ul>
-                    {event.results?.teams?.map(team => {
-                        return (
-                            <li>
-                                {team.players.map(id => getPlayerById(id)).filter(p => !!p).map((player, index) => {
-                                    return (
-                                        <span>{index > 0 && " & "}<a href={`/players/${player!.id}`}>{getPlayerName(player!)}</a></span>
-                                    )
-                                })}
-                            </li>
-                        )
-                    })}
+            <section class="section">
+                <div class="section-head">
+                    <h2>Teams</h2>
+                    <span class="meta">{event.results?.teams?.length} pairs</span>
+                </div>
+                <ul role="list" class="teams">
+                    {event.results?.teams?.map((team) => (
+                        <li class="team card">
+                            {team.players
+                                .map((id) => getPlayerById(id))
+                                .filter((p) => !!p)
+                                .map((player, index) => (
+                                    <span>
+                                        {index > 0 && <span class="plus"> + </span>}
+                                        <a href={`/players/${player!.id}`}>{getPlayerName(player!)}</a>
+                                    </span>
+                                ))}
+                        </li>
+                    ))}
                 </ul>
-            </div>
+            </section>
         )}
 
         {bucket1 && bucket2 && (
-            <div class="field">
-                <h2>{fieldAndBucketsTitle}</h2>
-                <span class="buckets">
-                    <div class="bucket bucket1">
-                        <h3>Bucket 1</h3>
-                        <table>
-                            <tbody>
-                                {bucket1.map(player => {
-                                    const handicap = getPlayerHandicapById(player.id);
-                                    return (
+            <section class="section">
+                <div class="section-head">
+                    <h2>{fieldAndBucketsTitle}</h2>
+                    <span class="meta">{bucket1.length + bucket2.length} players</span>
+                </div>
+                <div class="buckets">
+                    {[
+                        { label: 'Bucket 1', players: bucket1 },
+                        { label: 'Bucket 2', players: bucket2 },
+                    ].map((bucket) => (
+                        <div class="bucket card">
+                            <table class="data">
+                                <caption>{bucket.label}</caption>
+                                <tbody>
+                                    {bucket.players.map((player) => (
                                         <tr>
                                             <td class="name">
                                                 <a href={`/players/${player.id}`}>{getPlayerName(player)}</a>
                                             </td>
-                                            <td class="handicap">
-                                                ({Number(handicap).toFixed(1)})
+                                            <td class="numeric handicap">
+                                                {Number(getPlayerHandicapById(player.id)).toFixed(1)}
                                             </td>
                                         </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="bucket bucket2">
-                        <h3>Bucket 2</h3>
-                        <table>
-                            <tbody>
-                                {bucket2.map(player => {
-                                    const handicap = getPlayerHandicapById(player.id);
-                                    return (
-                                        <tr>
-                                            <td class="name">
-                                                <a href={`/players/${player.id}`}>{getPlayerName(player)}</a>
-                                            </td>
-                                            <td class="handicap">
-                                                ({Number(handicap).toFixed(1)})
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                </span>
-            </div>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ))}
+                </div>
+            </section>
         )}
 
         {eventCourses.length > 0 && (
-            <div class="related-courses">
-                <h2>{eventCourses.length === 1 ? "Course" : "Courses"}</h2>
-                <ul role="list" class="link-card-grid">
-                    {eventCourses.map((course) => {
-                        return (<CourseCard name={course.name} href={`/courses/${course.id}`} location={course.contact.address} image={course.hero_image} />)
-                    })}
+            <section class="section">
+                <div class="section-head">
+                    <h2>{eventCourses.length === 1 ? 'Course' : 'Courses'}</h2>
+                </div>
+                <ul role="list" class="grid grid-wide">
+                    {eventCourses.map((course) => (
+                        <CourseCard
+                            name={course.name}
+                            href={`/courses/${course.id}`}
+                            location={course.contact.address}
+                            image={course.hero_image}
+                        />
+                    ))}
                 </ul>
-            </div>
+            </section>
         )}
 
         <RoundsList event={event} allThrough={allThrough} />
@@ -218,169 +255,128 @@ const description = event.description ? event.description.split(/\n+/) : []
 </Layout>
 
 <style>
-    pre {
-        max-width: calc(100% - 2rem);
-        overflow: scroll;
+    .event-hero {
+        margin-bottom: 1.75rem;
     }
 
-    main {
-		margin: auto;
-		width: 900px;
-		max-width: calc(100% - 2rem);
-		color: white;
-		font-size: 20px;
-		line-height: 1.6;
-	}
-
-    h1 {
-		text-transform: uppercase;
-		font-size: 3.06rem;
-		font-weight: 700;
-		line-height: 1;
-		text-align: left;
-		margin-bottom: 1em;
-	}
-
-    h2 {
-        margin-block-start: 1em;
-        margin-block-end: 0.5em;
-    }
-
-    .event-details {
-        font-weight: bold;
-    }
-
-	.link-card-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
-		gap: 2rem;
-		padding: 0;
-	}
-
-    .hero {
-        display: flex;
-        width: calc(100%);
-        max-height: 300px;
-    }
-    .hero img {
-        width: calc(100%);
+    .event-hero img {
+        max-height: 320px;
     }
 
     .description {
-        width: calc(100%);
-    }
-    .description img {
-        width: calc(100%);
+        color: var(--text-muted);
     }
 
-    .holes {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-
-    .holes .hole {
-        margin: 10px;
-        width: calc(33% - 20px);
-        text-align: center;
-    }
-
-    .holes .hole img {
-        min-width: 80px;
-        height: 150px;
-    }
-
-    .holes a, .teams a, .results a {
-        color: #fff;
-        text-decoration: none;
-    }
-
-    .teams ul {
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-    }
-
-    .holes a, .field a, .results a {
-        color: #fff;
-        text-decoration: none;
-    }
-
-    .field ul {
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-    }
-
-    .field .handicap {
-        color: lightblue;
-        margin-left: 10px;
-    }
-
-    .results .victor .tied {
-        font-style: italic;
-    }
-
-    .results h3 {
-        margin-bottom: 0.25em;
-    }
-
-    .leaderboard .competitor .points {
-        color: lightblue;
-    }
-
-    .leaderboard td, .leaderboard th {
-        text-align: left;
-        padding-right: 10px;
-    }
-
-    .leaderboard td.name, .leaderboard th.name {
-        text-align: left;
-        padding-right: 20px;
-    }
-
-    .field .buckets .bucket .name {
-        display: inline-block;
-        max-width: 140px;
-    }
-
-    .field .buckets { max-width: 560px; }
-    .field .buckets .bucket { font-size: 0.75em; width: 100%; max-width: 270px; }
-    .field .buckets .bucket td.name { width: 70%; }
-    .field .buckets .bucket td.handicap { width: 20%; }
-
-    .field .buckets {
+    .champions {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 2rem;
+        gap: 0.75rem;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    }
+
+    .champion {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        padding: 1rem 1.1rem;
+    }
+
+    .champion .trophy {
+        flex-shrink: 0;
+    }
+
+    /* Eyebrow and hover follow the trophy, so each card reads as one competition. */
+    .champion[data-competition='hector'] {
+        --champion-tint: var(--hector);
+        --champion-tint-soft: var(--hector-soft);
+    }
+
+    .champion[data-competition='victor'] {
+        --champion-tint: var(--victor);
+        --champion-tint-soft: var(--victor-soft);
+    }
+
+    .champion[data-competition='matchplay'] {
+        --champion-tint: var(--matchplay);
+        --champion-tint-soft: var(--matchplay-soft);
+    }
+
+    .champion .eyebrow {
+        display: block;
+        margin-bottom: 0.2rem;
+        color: var(--champion-tint);
+    }
+
+    .champion .names {
+        margin: 0;
+        font-family: var(--font-serif);
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--ink-50);
+    }
+
+    .champion .names a {
+        color: inherit;
+    }
+
+    .champion .names a:hover {
+        color: var(--champion-tint-soft);
+    }
+
+    .champion .pill {
+        margin-left: 0.4rem;
+        font-style: normal;
+        font-family: var(--font-sans);
+        font-size: 11px;
+        vertical-align: middle;
+    }
+
+    .teams {
+        list-style: none;
+        margin: 0;
         padding: 0;
+        display: grid;
+        gap: 0.5rem;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
     }
 
-    @media only screen and (min-width: 380px) {
-        .field .buckets .bucket { font-size: 0.85em; }
+    .team {
+        padding: 0.6rem 0.9rem;
+        font-size: 14px;
     }
 
-    @media only screen and (min-width: 450px) {
-        .field .buckets .bucket { font-size: 0.95em; }
+    .team a {
+        color: var(--ink-100);
+        font-weight: 500;
     }
 
-    @media only screen and (min-width: 640px) {
-        .field .buckets { gap: 100px; }
-    }
-    /*
-    @media only screen and (min-width: 320px) {
-
-        .field .buckets {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 2rem;
-            padding: 0;
-        }
+    .team a:hover {
+        color: var(--violet-200);
     }
 
-    @media only screen and (min-width: 360px) {
-
+    .plus {
+        color: var(--text-faint);
     }
-    */
 
+    .buckets {
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    }
+
+    .bucket {
+        padding: 0.9rem 1.1rem 1rem;
+    }
+
+    .bucket .name a {
+        color: var(--ink-100);
+    }
+
+    .bucket .name a:hover {
+        color: var(--violet-200);
+    }
+
+    .bucket .handicap {
+        color: var(--text-dim);
+        width: 3.5rem;
+    }
 </style>

@@ -85,53 +85,93 @@ const inOrOut = firstHole <= 9 ? "Out" : "In";
 )}
 
 <style>
-
     table {
+        border-collapse: separate;
+        border-spacing: 0;
         text-align: center;
-        border-collapse: collapse;
-    }
-
-    table tr.subheading {
-        border-bottom: 1px solid white;
-    }
-
-    table tr.subheading th {
-        padding-bottom: 10px;
-    }
-
-    table .heading-column {
-        background-image: linear-gradient(to bottom right, #555, #333);
-        font-weight: 700;
-    }
-
-    table tr td.center-aligned { text-align: center; padding-left: 2px; padding-right: 2px; }
-    table tr th.center-aligned { text-align: center; padding-left: 2px; padding-right: 2px; }
-    table tr td.left-aligned { text-align: left; padding-right: 4px;  }
-    table tr th.left-aligned { text-align: left; padding-right: 4px; }
-
-    table td.hole-length,
-    table td.tee-identifier,
-    table tr.par, table tr.hcp, table thead tr {
-        font-size: 0.8em;
-    }
-
-    table td, table th {
-        background-image: linear-gradient(to bottom right, #111, #000);
-    }
-    table td.even, table th.even {
-        background-image: linear-gradient(to bottom right, #111, #333);
-    }
-    table td.odd, table th.odd {
-        background-image: linear-gradient(to bottom right, #444, #222);
+        font-family: var(--font-num);
+        font-variant-numeric: tabular-nums;
+        font-size: 12px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        overflow: hidden;
     }
 
     table tr {
-        height: 32px;
+        height: 30px;
+    }
+
+    table td,
+    table th {
+        background: var(--ink-950);
+        color: var(--ink-200);
+        border-bottom: 1px solid var(--line);
+        border-right: 1px solid var(--line);
+        padding: 0 0.35rem;
+        font-weight: 400;
+    }
+
+    table tr:last-child td {
+        border-bottom: 0;
+    }
+
+    table td:last-child,
+    table th:last-child {
+        border-right: 0;
+    }
+
+    /* Hole numbers and the Out/In totals read as the card's chrome. */
+    table thead th {
+        background: var(--surface-raised);
+        color: var(--text-muted);
+        font-weight: 700;
+    }
+
+    table .heading-column {
+        background: var(--surface-raised);
+        color: var(--ink-100);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 10px;
+        white-space: nowrap;
+    }
+
+    table thead th.heading-column {
+        color: var(--gold-400);
+    }
+
+    /* Faint striping so the eye can track a hole down the card. */
+    table td.odd,
+    table th.odd {
+        background: var(--surface);
+    }
+
+    table tr.par td:not(.heading-column) {
+        color: var(--ink-50);
+        font-weight: 600;
+    }
+
+    table tr.hcp td:not(.heading-column) {
+        color: var(--text-dim);
+    }
+
+    table td.hole-length {
+        color: var(--text-muted);
+        font-size: 11px;
+    }
+
+    table td.tee-identifier {
+        text-align: left;
+    }
+
+    .tee-identifier .color {
+        vertical-align: middle;
     }
 
     .tee-identifier .name {
-        vertical-align: text-bottom;
-        margin-left: 3px;
+        vertical-align: middle;
+        margin-left: 1px;
     }
 
     @media only screen and (max-width: 500px) {
@@ -139,27 +179,13 @@ const inOrOut = firstHole <= 9 ? "Out" : "In";
             display: none;
         }
 
-        .scorecard-half-table table, .scorecard-half-table .front-nine, .scorecard-half-table .back-nine {
+        .scorecard-half-table table {
             width: 100%;
         }
 
         tr.tee td.tee-identifier.heading-column {
             text-align: center;
         }
-
-        /*
-        .hole-length-container {
-            height: 50px;
-            position: relative;
-        }
-        .hole-length-container .hole-length-container-label {
-	        left: 50%;
-	        position: absolute;
-	        transform: rotate(90deg);
-	        transform-origin: center left;
-	        white-space: nowrap;
-        }
-        */
     }
 
     @media only screen and (min-width: 501px) {
@@ -167,5 +193,4 @@ const inOrOut = firstHole <= 9 ? "Out" : "In";
             text-align: left;
         }
     }
-
 </style>

@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
+import PageHeader from '../../components/PageHeader.astro';
 import CourseRatingTable from '../../components/courses/CourseRatingTable.astro';
 import ScorecardTable from '../../components/courses/ScorecardTable.astro';
 import { type Course } from '../../schemas/courses';
@@ -29,23 +30,33 @@ const holeLayoutShape = course.course?.descriptions?.[0]?.shape === 'wide' ? 'wi
 
 ---
 
-<Layout title={course.name}>
-    <main>
+<Layout title={course.name} section="courses">
+    <main class="page">
         <div class="breadcrumbs">
             <Breadcrumb title="Home" href="/" />
             <Breadcrumb title="Courses" href="/courses" />
         </div>
-        <h1><span class="text-gradient">{course.name}</span></h1>
+        <PageHeader
+            title={course.name}
+            eyebrow="Course"
+            meta={[course.contact?.address]}
+        />
 
-        <div class="hero">
-            <img src={course.hero_image} alt={course.name} />
-        </div>
+        <figure class="hero-figure course-hero">
+            <img src={course.hero_image} alt="" />
+            {course.contact?.address && <figcaption>{course.contact.address}</figcaption>}
+        </figure>
 
         <div class="description">
             {course.description_long.map((segment) => {
                 if (segment.type === 'image') {
-                    return <img src={segment.url} />
-                } if (segment.type === 'paragraph' && segment.content) {
+                    return (
+                        <figure class="hero-figure inline-figure">
+                            <img src={segment.url} alt="" />
+                        </figure>
+                    )
+                }
+                if (segment.type === 'paragraph' && segment.content) {
                     return <p>{segment.content}</p>
                 }
             })}
@@ -55,163 +66,152 @@ const holeLayoutShape = course.course?.descriptions?.[0]?.shape === 'wide' ? 'wi
 
         <ScorecardTable course={course} />
 
-        {(course.images.course_layout || course.course) && (
-            <div class="course-layout">
-                {course.images.course_layout && (
-                    <>
-                        <h2>Course layout</h2>
-                        <img src={course.images.course_layout} />
-                    </>
-                )}
-
-                {course.course?.descriptions && (
-                    <div class:list={['holes-grid', { narrow: holeLayoutShape === 'narrow', wide: holeLayoutShape === 'wide' }]}>
-                        {course.course.descriptions.map((hole) => {
-                            const holeHref = `/courses/${slug}/holes/${hole.hole}`
-                            return (
-                                <div class:list={['hole', { narrow: holeLayoutShape === 'narrow', wide: holeLayoutShape === 'wide' }]}>
-                                    <a href={holeHref}>
-                                        <h2>Hole {hole.hole}</h2>
-                                        <img src={hole.layout} />
-                                    </a>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
-            </div>
+        {course.images.course_layout && (
+            <section class="section">
+                <div class="section-head">
+                    <h2>Course layout</h2>
+                </div>
+                <figure class="hero-figure layout-figure">
+                    <img src={course.images.course_layout} alt={`Layout of ${course.name}`} />
+                </figure>
+            </section>
         )}
 
-        <div class="related-events">
-            <h2>Events at {course.name}</h2>
-            {relatedEvents.map((event) => {
-                return (
-                    <div class="related-event"><a href={linkToEvent(event)}>{event.name}</a></div>
-                );
-            })}
-        </div>
+        {course.course?.descriptions && (
+            <section class="section">
+                <div class="section-head">
+                    <h2>Holes</h2>
+                    <span class="meta">{course.course.descriptions.length} holes</span>
+                </div>
+                <ul role="list" class:list={['holes-grid', holeLayoutShape]}>
+                    {course.course.descriptions.map((hole) => (
+                        <li class:list={['hole', holeLayoutShape]}>
+                            <a class="card-link" href={`/courses/${slug}/holes/${hole.hole}`}>
+                                <span class="hole-no num">Hole {hole.hole}</span>
+                                <img src={hole.layout} alt="" loading="lazy" />
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            </section>
+        )}
+
+        {relatedEvents.length > 0 && (
+            <section class="section">
+                <div class="section-head">
+                    <h2>Events here</h2>
+                    <span class="meta">
+                        {relatedEvents.length} {relatedEvents.length === 1 ? 'event' : 'events'}
+                    </span>
+                </div>
+                <ul role="list" class="related-events">
+                    {relatedEvents.map((event) => (
+                        <li class="related-event card">
+                            <a href={linkToEvent(event)}>{event.name}</a>
+                            <span class="meta">{event.date}</span>
+                        </li>
+                    ))}
+                </ul>
+            </section>
+        )}
     </main>
 </Layout>
 
-<style define:vars={{ holeLayoutShape }}>
-    pre {
-        max-width: calc(100% - 2rem);
-        overflow: scroll;
+<style>
+    .course-hero {
+        margin-bottom: 1.75rem;
     }
 
-    main {
-		margin: auto;
-		width: 900px;
-		max-width: calc(100% - 2rem);
-		color: white;
-		font-size: 20px;
-		line-height: 1.6;
-	}
-
-    h1 {
-		text-transform: uppercase;
-		font-size: 3.03rem;
-		font-weight: 700;
-		line-height: 1;
-		text-align: left;
-		margin-bottom: 1em;
-	}
-
-    h2 {
-        margin-block-start: 1em;
-        margin-block-end: 0.5em;
-    }
-
-	.link-card-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
-		gap: 2rem;
-		padding: 0;
-	}
-
-    .hero {
-        display: flex;
-        width: calc(100%);
-    }
-
-    .hero img {
-        width: calc(100%);
-        aspect-ratio: 16/9 auto;
-        object-fit: cover;
+    .course-hero img {
+        aspect-ratio: 16 / 9;
+        max-height: 380px;
     }
 
     .description {
-        width: calc(100%);
+        color: var(--text-muted);
     }
 
-    .description img {
-        width: calc(100%);
-        aspect-ratio: 16/9 auto;
+    .inline-figure {
+        margin: 1.5rem 0;
     }
 
-    .course-layout img {
-        width: 100%;
+    .inline-figure img {
+        aspect-ratio: 16 / 9;
+        max-height: 340px;
     }
 
-    @media only screen and (max-width: 500px) {
-        .holes .hole { width: calc(100% / 4  - 40px); }
+    /* Layout diagrams are line art on white — no dark gradient over them. */
+    .layout-figure,
+    .hole img {
+        background: var(--ink-100);
+    }
+
+    .layout-figure::after {
+        display: none;
+    }
+
+    .layout-figure img {
+        filter: none;
     }
 
     .holes-grid {
+        list-style: none;
+        margin: 0;
+        padding: 0;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
-        /* grid-template-rows: repeat(auto-fill, minmax(180px, 1fr)); */
+        gap: 0.6rem;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 140px), 1fr));
     }
 
-    .holes-grid .hole {
-        margin: 10px;
-        min-width: 80px;
+    .holes-grid.wide {
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr));
+    }
+
+    .hole .card-link {
+        padding: 0.5rem;
+    }
+
+    .hole-no {
+        display: block;
+        padding: 0.15rem 0 0.4rem;
         text-align: center;
-        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: var(--gold-400);
     }
 
-    .holes-grid .hole.narrow {
-        min-width: 80px;
-    }
-
-    .holes-grid .hole.wide {
-        min-width: 120px;
-    }
-
-    .holes-grid a {
-        color: #fff;
-        text-decoration: none;
+    .hole img {
         width: 100%;
-    }
-
-    .holes-grid .hole img {
-        min-width: 80px;
-        height: 300px;
+        height: 190px;
         object-fit: contain;
+        border-radius: 0.4rem;
     }
 
-    .holes-grid .hole.narrow img {
-        min-width: 80px;
-        height: 300px;
+    .related-events {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 0.5rem;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
     }
 
-    .holes-grid .hole.wide img {
-        min-width: 120px;
-        height: 300px;
+    .related-event {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        padding: 0.65rem 0.9rem;
+        font-size: 14px;
     }
 
-    .holes-grid { grid-template-columns: 1fr 1fr 1fr; }
-    @media only screen and (min-width: 900px) {
-        .holes-grid { grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr; }
-    }
-    @media only screen and (min-width: 600px) and (max-width: 899px) {
-        .holes-grid { grid-template-columns: 1fr 1fr 1fr 1fr; }
-    }
-    @media only screen and (min-width: 500px) and (max-width: 599px) {
-        .holes-grid { grid-template-columns: 1fr 1fr 1fr; }
-    }
-    @media only screen and (min-width: 300px) and (max-width: 500px) {
-        .holes-grid.wide { grid-template-columns: 1fr 1fr; }
+    .related-event a {
+        color: var(--ink-100);
+        font-weight: 600;
     }
 
+    .related-event a:hover {
+        color: var(--violet-200);
+    }
 </style>

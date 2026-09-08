@@ -1,0 +1,54 @@
+---
+/**
+ * A "won this in <year>" badge for a player's track record.
+ *
+ * Replaces the three near-identical Hector/Victor/Matchplay icon components, which
+ * had drifted into rendering every trophy in the same gold.
+ */
+import CompetitionMark, { type Competition } from '../../CompetitionMark.astro'
+
+interface Props {
+	competition: Competition
+	year: number
+}
+
+const { competition, year } = Astro.props
+
+const name = { hector: 'Hector Trophée', victor: 'Victor', matchplay: 'Matchplay' }[competition]
+---
+
+<span class="badge" data-competition={competition} title={`${name} winner ${year}`}>
+	<CompetitionMark competition={competition} size={11} />
+	<span class="year num">{year}</span>
+</span>
+
+<style>
+	.badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.2rem;
+		padding: 0.1rem 0.35rem 0.1rem 0.25rem;
+		border-radius: 9999px;
+		/* Tint derived from the competition's own colour, so the three can't drift. */
+		background: var(--surface-raised);
+		background: color-mix(in srgb, currentColor 14%, var(--surface));
+	}
+
+	.badge[data-competition='hector'] {
+		color: var(--hector-soft);
+	}
+
+	.badge[data-competition='victor'] {
+		color: var(--victor-soft);
+	}
+
+	.badge[data-competition='matchplay'] {
+		color: var(--matchplay-soft);
+	}
+
+	.year {
+		font-size: 10px;
+		font-weight: 600;
+		color: currentColor;
+	}
+</style>
