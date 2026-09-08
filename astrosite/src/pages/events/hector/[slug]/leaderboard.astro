@@ -9,7 +9,7 @@ import { type Player } from '../../../../schemas/players'
 import { getAllPlayers, getPlayerName, getPlayerAliases } from '../../../../code/players'
 
 import { type HectorEvent } from '../../../../schemas/events'
-import { getAllEventIds, getEventById } from '../../../../code/events'
+import { getAllEventIds, getEventById, eventHasEnded, eventHasStarted } from '../../../../code/events'
 
 import { getLeaderboardsByEventId, getEventsWithLeaderboards } from '../../../../code/leaderboards/leaderboards'
 import { appEventIdFromLeaderboardUrl, isAppHectorGolfLeaderboard } from '../../../../code/leaderboards/sources'
@@ -70,6 +70,15 @@ const stopPollingAfter = `${addDays(event.timing.end, 1)}T00:00:00Z`
 const showHector = !!hectorLeaderboard || live
 const showVictor = !!victorLeaderboard || live
 
+// What an empty live board says before the first standings arrive. The build can
+// only reason from the event's dates; the island replaces this with the
+// tournament's own answer on its first successful read.
+const liveEmptyMessage = !eventHasStarted(event)
+    ? 'Live standings begin when play starts'
+    : eventHasEnded(event)
+      ? resultsMissingLabel
+      : 'Waiting for the first standings of the round'
+
 
 ---
 <Layout title={`${event.name} leaderboard`} section="events">
@@ -101,6 +110,7 @@ const showVictor = !!victorLeaderboard || live
                         ascending={hectorLeaderboardScoringDirection === 'ascending'}
                         competition="hector"
                         live={live}
+                        emptyMessage={liveEmptyMessage}
                     />
                 )}
             </section>
@@ -121,6 +131,7 @@ const showVictor = !!victorLeaderboard || live
                         ascending={victorLeaderboardScoringDirection === 'ascending'}
                         competition="victor"
                         live={live}
+                        emptyMessage={liveEmptyMessage}
                     />
                 )}
             </section>

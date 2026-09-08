@@ -151,7 +151,10 @@ const config = { eventId, endpoint, pollSeconds, stopAfter, roster: rosterByName
 					// Before play starts every competitor legitimately reads 0.0, which
 					// as a board is the whole field tied for the lead. Leave the page in
 					// whatever state the build published and keep watching for 'live'.
-					setStatus('Live standings begin when play starts')
+					// The boards say why they are empty, so the status line stays quiet
+					// rather than repeating it underneath them.
+					sayInBoards(boards, 'Live standings begin when play starts')
+					setStatus('')
 				} else {
 					render(boards, snapshot, config.roster)
 					painted = true
@@ -180,6 +183,20 @@ const config = { eventId, endpoint, pollSeconds, stopAfter, roster: rosterByName
 
 		setStatus('Checking for updates…')
 		void tick()
+	}
+
+	/**
+	 * Replaces the build's guess about why a board is empty with the real reason.
+	 *
+	 * The build only knows the event's dates; the tournament itself knows whether
+	 * play has started. A board that already has standings has no empty row and is
+	 * left alone.
+	 */
+	function sayInBoards(boards: Map<string, HTMLTableElement>, text: string) {
+		for (const table of boards.values()) {
+			const cell = table.querySelector<HTMLElement>('[data-empty-state] .empty')
+			if (cell) cell.textContent = text
+		}
 	}
 
 	function describe(generatedAt: string | undefined): string {
@@ -220,6 +237,10 @@ const config = { eventId, endpoint, pollSeconds, stopAfter, roster: rosterByName
 
 		// An empty payload means "not started yet", not "wipe the board".
 		if (rows.length === 0) return
+
+		// The empty-state row spans every column and holds none of the data cells,
+		// so it has to go before the children below are reused as standings.
+		body.querySelector('[data-empty-state]')?.remove()
 
 		const ascending = table.dataset.ascending !== 'false'
 
