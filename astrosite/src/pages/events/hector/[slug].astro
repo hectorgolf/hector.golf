@@ -123,7 +123,7 @@ const description = event.description ? event.description.split(/\n+/) : []
                                 <p class="names">
                                     {hectorWinners.map((player, index) => (
                                         <span>
-                                            {index > 0 && ' & '}
+                                            {index > 0 && ' + '}
                                             <a href={`/players/${player!.id}`}>{getPlayerName(player!)}</a>
                                         </span>
                                     ))}
@@ -311,11 +311,12 @@ const description = event.description ? event.description.split(/\n+/) : []
         font-family: var(--font-serif);
         font-size: 1.1rem;
         font-weight: 600;
-        color: var(--ink-50);
+        color: var(--text-faint);
     }
 
     .champion .names a {
         color: inherit;
+        color: var(--ink-50);
     }
 
     .champion .names a:hover {
