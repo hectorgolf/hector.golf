@@ -103,28 +103,28 @@ const AppHectorGolfResponseSchema = z.object({
     ),
     hector: z.array(
         z.object({
-            // null until the event is under way and there is something to rank.
-            position: z.number().nullable(),
-            positionLabel: z.string(),
-            pairId: z.string(),
+            // null (or absent) until the event is under way and there is something to rank.
+            position: z.number().nullable().optional(),
+            positionLabel: z.string().optional(),
+            pairId: z.string().optional(),
             players: z.string(),
-            points: z.number(),
+            points: z.number().default(0),
             diffToLeader: z.number().optional().nullable(),
             thru: z.number().optional().nullable(),
-            roundsPlayed: z.number(),
-            perRound: z.record(z.string(), z.number()),
+            roundsPlayed: z.number().default(0),
+            perRound: z.record(z.string(), z.number()).optional(),
         }),
     ),
     victor: z.array(
         z.object({
-            // null until the event is under way and there is something to rank.
-            position: z.number().nullable(),
-            positionLabel: z.string(),
-            playerId: z.string(),
+            // null (or absent) until the event is under way and there is something to rank.
+            position: z.number().nullable().optional(),
+            positionLabel: z.string().optional(),
+            playerId: z.string().optional(),
             player: z.string(),
-            points: z.number(),
+            points: z.number().default(0),
             diffToLeader: z.number().optional().nullable(),
-            roundsPlayed: z.number(),
+            roundsPlayed: z.number().default(0),
         }),
     ),
 });

@@ -118,8 +118,18 @@ describe("Parsing app.hector.golf tournament responses", () => {
         expect(await fetchHectorLeaderboardDataFromApp(URL)).toBeDefined();
     });
 
-    it("reports an unparseable payload rather than pretending the leaderboard is empty", async () => {
+    it("accepts an entry that only names the player, before any ranking exists", async () => {
+        // What the API actually serves for an event that has not started yet:
+        // no position, points, or rounds-played, just the entrant's name.
         serve({ ...UPCOMING, victor: [{ player: "Lasse K" }] });
+
+        const data = await fetchHectorLeaderboardDataFromApp(URL);
+
+        expect(data!.victor).toEqual([{ player: "Lasse K", points: 0, diff: "", through: "0/2" }]);
+    });
+
+    it("reports an unparseable payload rather than pretending the leaderboard is empty", async () => {
+        serve({ ...UPCOMING, victor: [{ points: "36" }] });
 
         // An empty result would be published over the live standings; undefined
         // tells the caller to skip the update instead.
