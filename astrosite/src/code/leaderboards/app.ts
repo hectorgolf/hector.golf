@@ -1,6 +1,13 @@
 import z from "zod";
-import type { GoogleSheetIndividualLeaderboard, GoogleSheetTeamLeaderboard } from "./types";
 import { redact } from "../strings";
+import {
+    extractHectorRows,
+    extractVictorRows,
+    type AppLeaderboardPayload,
+    type LeaderboardData,
+} from "./app-payload";
+
+export type { LeaderboardData };
 
 function acquireApiKey() {
     try {
@@ -35,17 +42,17 @@ const fetchTournamentDataFromApp = async (url: string): Promise<any | undefined>
     return await data.json();
 };
 
-export type LeaderboardData = {
-    hector: GoogleSheetTeamLeaderboard;
-    victor: GoogleSheetIndividualLeaderboard;
-};
-
 /**
  * Fetches the tournament standings, or `undefined` if they could not be read.
  *
  * The distinction matters: an event that has not started yet legitimately has
  * empty leaderboards, so callers must not treat a failure as "no results" —
  * publishing that would wipe whatever standings are already live.
+ *
+ * This is the strict path. What it returns gets written to a data file and
+ * published, so the payload is validated in full before any of it is believed.
+ * The browser-side live leaderboard reads the same payload through
+ * `readAppLeaderboardPayload`, which checks only the fields it renders.
  */
 export const fetchHectorLeaderboardDataFromApp = async (url: string): Promise<LeaderboardData | undefined> => {
     const json = await fetchTournamentDataFromApp(url);
@@ -55,28 +62,9 @@ export const fetchHectorLeaderboardDataFromApp = async (url: string): Promise<Le
         console.error(`Invalid response from Hector API. Error: ${result.error} Payload: ${JSON.stringify(json)}`);
         return undefined;
     }
-    const hector = extractHectorResults(result.data);
-    const victor = extractVictorResults(result.data);
-    return { hector, victor };
+    const payload = result.data as AppLeaderboardPayload;
+    return { hector: extractHectorRows(payload), victor: extractVictorRows(payload) };
 };
-
-function extractHectorResults(data: AppHectorGolfResponse): GoogleSheetTeamLeaderboard {
-    return data.hector.map((entry) => ({
-        team: entry.players,
-        points: entry.points,
-        diff: entry.diffToLeader ? String(entry.diffToLeader) : "",
-        through: `${entry.roundsPlayed}/${data.rounds.length}`,
-    }));
-}
-
-function extractVictorResults(data: AppHectorGolfResponse): GoogleSheetIndividualLeaderboard {
-    return data.victor.map((entry) => ({
-        player: entry.player,
-        points: entry.points,
-        diff: entry.diffToLeader ? String(entry.diffToLeader) : "",
-        through: `${entry.roundsPlayed}/${data.rounds.length}`,
-    }));
-}
 
 const AppHectorGolfResponseSchema = z.object({
     generatedAt: z.coerce.date(),
@@ -140,5 +128,3 @@ const AppHectorGolfResponseSchema = z.object({
         }),
     ),
 });
-
-type AppHectorGolfResponse = z.infer<typeof AppHectorGolfResponseSchema>;

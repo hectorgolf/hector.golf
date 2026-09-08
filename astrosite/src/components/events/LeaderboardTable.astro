@@ -1,6 +1,7 @@
 ---
 import { getPlayerName } from '../../code/players'
-import { leaderboardPosition, type EnrichedLeaderboard } from '../../code/leaderboards/leaderboards'
+import { type EnrichedLeaderboard } from '../../code/leaderboards/leaderboards'
+import { leaderboardPosition, normalizeDiff, pointsLabel } from '../../code/leaderboards/presentation'
 import { type Competition } from '../CompetitionMark.astro'
 
 interface Props {
@@ -10,19 +11,34 @@ interface Props {
 	ascending: boolean
 	/** Which competition this board settles — tints the leader's chip. */
 	competition: Competition
+	/**
+	 * Emit a row template and mark the table up for the live updater.
+	 *
+	 * Only set for events whose standings can actually be polled. Without it the
+	 * table renders exactly as it always has.
+	 */
+	live?: boolean
+	/**
+	 * What to say in the body of a live board that has no standings yet.
+	 *
+	 * It belongs inside the table rather than under it: the rows are where a
+	 * reader is looking, so that is where an explanation for their absence has to
+	 * be. The live updater replaces it with the real reason once it has read the
+	 * tournament, and clears it when the first standings arrive.
+	 */
+	emptyMessage?: string
 }
 
-const { entries, competitorLabel, ascending, competition } = Astro.props
-
-const normalizeDiff = (diff: string): string => {
-	if (diff === '') return diff
-	if (diff === '0.0') return ''
-	return diff.includes('.') ? diff : `${diff}.0`
-}
+const { entries, competitorLabel, ascending, competition, live = false, emptyMessage } = Astro.props
 ---
 
 <div class="table-scroll">
-	<table class="data leaderboard" data-competition={competition}>
+	<table
+		class="data leaderboard"
+		data-competition={competition}
+		data-board={live ? competition : undefined}
+		data-ascending={live ? String(ascending) : undefined}
+	>
 		<thead>
 			<tr>
 				<th class="place">#</th>
@@ -32,7 +48,12 @@ const normalizeDiff = (diff: string): string => {
 				<th class="thru">Thru</th>
 			</tr>
 		</thead>
-		<tbody>
+		<tbody data-rows>
+			{live && entries.length === 0 && (
+				<tr data-empty-state>
+					<td class="empty" colspan="5">{emptyMessage}</td>
+				</tr>
+			)}
 			{
 				entries.map(({ players, points, diff, through, description }) => {
 					const position = leaderboardPosition(entries, points, ascending)
@@ -56,7 +77,7 @@ const normalizeDiff = (diff: string): string => {
 								)}
 							</td>
 							<td class="numeric points">
-								<span class="score">{points}</span>
+								<span class="score">{pointsLabel(points)}</span>
 							</td>
 							<td class="numeric diff">{normalizeDiff(diff)}</td>
 							<td class="thru num">{through}</td>
@@ -66,6 +87,31 @@ const normalizeDiff = (diff: string): string => {
 			}
 		</tbody>
 	</table>
+	{
+		/*
+		 * The live updater clones this rather than building rows from strings, so
+		 * that cloned rows carry the same scoped-style attributes as rendered ones
+		 * and there is no HTML being assembled from upstream values.
+		 */
+		live && (
+			<Fragment>
+				<template data-row-template>
+					<tr>
+						<td class="place"><span class="chip-num badge" data-cell="place" /></td>
+						<td class="competitor" data-cell="competitor" />
+						<td class="numeric points"><span class="score" data-cell="points" /></td>
+						<td class="numeric diff" data-cell="diff" />
+						<td class="thru num" data-cell="thru" />
+					</tr>
+				</template>
+				<template data-competitor-template>
+					<a data-proto="link" href="/players/" />
+					<span class="plus" data-proto="plus"> + </span>
+					<span data-proto="text" />
+				</template>
+			</Fragment>
+		)
+	}
 </div>
 
 <style>
@@ -121,5 +167,15 @@ const normalizeDiff = (diff: string): string => {
 		text-align: center;
 		color: var(--text-dim);
 		font-size: 12px;
+	}
+
+	/* Occupies the space the standings will, so the board reads as waiting
+	   rather than broken. */
+	.empty {
+		text-align: center;
+		padding: 2.5rem 1rem;
+		color: var(--text-muted);
+		font-size: 0.9375rem;
+		line-height: 1.5;
 	}
 </style>

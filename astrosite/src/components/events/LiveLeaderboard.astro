@@ -1,0 +1,331 @@
+---
+/**
+ * Keeps a rendered leaderboard current while an event is being played.
+ *
+ * The statically rendered tables are the leaderboard; this only rewrites their
+ * rows in place. With JavaScript off, the proxy down, or the payload in an
+ * unexpected shape, the page keeps showing whatever the last build published —
+ * which is exactly what it showed before this component existed.
+ *
+ * Only mounted for events whose standings come from app.hector.golf, because that
+ * is the only source with an endpoint the browser can reach.
+ */
+import { getAllPlayers, getPlayerAliases, getPlayerName } from '../../code/players'
+
+interface Props {
+	/** The `event` parameter to ask the proxy for, e.g. "HECTOR2026". */
+	eventId: string
+	/** The leaderboard proxy's URL. Empty disables polling entirely. */
+	endpoint: string
+	/** How often to re-read the standings, in seconds. */
+	pollSeconds?: number
+	/** Stop polling once this instant has passed, as an ISO 8601 string. */
+	stopAfter: string
+}
+
+const { eventId, endpoint, pollSeconds = 30, stopAfter } = Astro.props
+
+/**
+ * Everyone who could appear on this board, by every name they go by.
+ *
+ * Names arrive from upstream as free text, so the lookup has to be by string — but
+ * this map is published in the page, so it is built from privacy-respecting names
+ * only. A player the site shortens to "Toni M" appears here as "Toni M" and nowhere
+ * as their full surname, which the page does not print either. The cost is that a
+ * payload naming that player in full will not link to their page; it still shows
+ * exactly what upstream sent, as the statically rendered board already does.
+ */
+const rosterByName: Record<string, { id: string; name: string }> = {}
+for (const player of getAllPlayers()) {
+	const display = getPlayerName(player)
+	for (const alias of [display, ...getPlayerAliases(player)]) {
+		if (alias) rosterByName[alias] = { id: player.id, name: display }
+	}
+}
+
+const config = { eventId, endpoint, pollSeconds, stopAfter, roster: rosterByName }
+---
+
+{
+	endpoint && (
+		<>
+			<script is:inline type="application/json" data-live-leaderboard-config set:html={JSON.stringify(config)} />
+			<p class="live-status" data-live-status aria-live="polite" />
+		</>
+	)
+}
+
+<script>
+	import { readAppLeaderboardPayload } from '../../code/leaderboards/app-payload'
+	import {
+		leaderboardPosition,
+		normalizeDiff,
+		pointsLabel,
+		splitCompetitorNames,
+		throughLabel,
+	} from '../../code/leaderboards/presentation'
+
+	type RosterEntry = { id: string; name: string }
+	type Config = {
+		eventId: string
+		endpoint: string
+		pollSeconds: number
+		stopAfter: string
+		roster: Record<string, RosterEntry>
+	}
+	type Row = { competitor: string; points: number | string; diff: string; through: string }
+
+	const configElement = document.querySelector('[data-live-leaderboard-config]')
+	const statusElement = document.querySelector<HTMLElement>('[data-live-status]')
+
+	if (configElement?.textContent) {
+		const config: Config = JSON.parse(configElement.textContent)
+		start(config)
+	}
+
+	function start(config: Config) {
+		const boards = new Map<string, HTMLTableElement>()
+		for (const table of document.querySelectorAll<HTMLTableElement>('table[data-board]')) {
+			boards.set(table.dataset.board as string, table)
+		}
+		if (boards.size === 0) return
+
+		/** Consecutive failures, used to back off rather than hammer a sick endpoint. */
+		let failures = 0
+		/** Whether a payload has ever been rendered, which decides what the status may say. */
+		let painted = false
+		let stopped = false
+		let timer: number | undefined
+		let inFlight = false
+
+		const stopAfter = Date.parse(config.stopAfter)
+		const baseDelay = Math.max(10, config.pollSeconds) * 1000
+
+		const setStatus = (text: string) => {
+			if (statusElement) statusElement.textContent = text
+		}
+
+		const stop = (finalText?: string) => {
+			stopped = true
+			if (timer) window.clearTimeout(timer)
+			timer = undefined
+			if (finalText) setStatus(finalText)
+		}
+
+		const schedule = () => {
+			if (stopped) return
+			if (timer) window.clearTimeout(timer)
+			// Back off up to eight times the base delay, then hold there.
+			const delay = baseDelay * Math.min(8, 2 ** failures)
+			timer = window.setTimeout(tick, delay)
+		}
+
+		const tick = async () => {
+			if (stopped || inFlight) return
+			if (Number.isFinite(stopAfter) && Date.now() > stopAfter) {
+				stop()
+				return
+			}
+			// Nothing to update for a tab nobody is looking at; the visibility
+			// listener polls immediately when it comes back.
+			if (document.visibilityState !== 'visible') {
+				// Only before the first paint: once there are standings on screen, the
+				// timestamp they were read at is worth more than a notice about polling.
+				if (!painted) setStatus('Updates pause while this tab is in the background')
+				schedule()
+				return
+			}
+
+			inFlight = true
+			try {
+				const url = `${config.endpoint}?event=${encodeURIComponent(config.eventId)}`
+				const response = await fetch(url, { headers: { accept: 'application/json' } })
+				if (!response.ok) throw new Error(`proxy returned ${response.status}`)
+
+				const snapshot = readAppLeaderboardPayload(await response.json())
+				if (!snapshot) throw new Error('unrecognised payload')
+
+				failures = 0
+
+				if (snapshot.status === 'upcoming') {
+					// Before play starts every competitor legitimately reads 0.0, which
+					// as a board is the whole field tied for the lead. Leave the page in
+					// whatever state the build published and keep watching for 'live'.
+					// The boards say why they are empty, so the status line stays quiet
+					// rather than repeating it underneath them.
+					sayInBoards(boards, 'Live standings begin when play starts')
+					setStatus('')
+				} else {
+					render(boards, snapshot, config.roster)
+					painted = true
+					setStatus(describe(snapshot.generatedAt))
+				}
+
+				if (snapshot.status === 'final') {
+					// Standings cannot move again; one last render is all that is needed.
+					stop(`${describe(snapshot.generatedAt)} · final`)
+					return
+				}
+			} catch (error) {
+				failures += 1
+				console.warn('Live leaderboard update failed', error)
+				// The table keeps its last good rows. Say so rather than blanking it.
+				if (failures >= 2) setStatus('Live updates unavailable — showing the last published standings')
+			} finally {
+				inFlight = false
+			}
+			schedule()
+		}
+
+		document.addEventListener('visibilitychange', () => {
+			if (document.visibilityState === 'visible' && !stopped) void tick()
+		})
+
+		setStatus('Checking for updates…')
+		void tick()
+	}
+
+	/**
+	 * Replaces the build's guess about why a board is empty with the real reason.
+	 *
+	 * The build only knows the event's dates; the tournament itself knows whether
+	 * play has started. A board that already has standings has no empty row and is
+	 * left alone.
+	 */
+	function sayInBoards(boards: Map<string, HTMLTableElement>, text: string) {
+		for (const table of boards.values()) {
+			const cell = table.querySelector<HTMLElement>('[data-empty-state] .empty')
+			if (cell) cell.textContent = text
+		}
+	}
+
+	function describe(generatedAt: string | undefined): string {
+		const at = generatedAt ? new Date(generatedAt) : new Date()
+		if (Number.isNaN(at.getTime())) return 'Updated just now'
+		const time = at.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+		return `Updated ${time}`
+	}
+
+	function render(
+		boards: Map<string, HTMLTableElement>,
+		snapshot: { hector: unknown[]; victor: unknown[] },
+		roster: Record<string, RosterEntry>,
+	) {
+		const hectorRows: Row[] = (snapshot.hector as Array<Record<string, never>>).map((entry: any) => ({
+			competitor: entry.team,
+			points: entry.points,
+			diff: entry.diff,
+			through: entry.through,
+		}))
+		const victorRows: Row[] = (snapshot.victor as Array<Record<string, never>>).map((entry: any) => ({
+			competitor: entry.player,
+			points: entry.points,
+			diff: entry.diff,
+			through: entry.through,
+		}))
+		applyRows(boards.get('hector'), hectorRows, roster)
+		applyRows(boards.get('victor'), victorRows, roster)
+	}
+
+	function applyRows(table: HTMLTableElement | undefined, rows: Row[], roster: Record<string, RosterEntry>) {
+		if (!table) return
+		const body = table.querySelector<HTMLTableSectionElement>('[data-rows]')
+		const container = table.closest('.table-scroll')
+		const rowTemplate = container?.querySelector<HTMLTemplateElement>('[data-row-template]')
+		const competitorTemplate = container?.querySelector<HTMLTemplateElement>('[data-competitor-template]')
+		if (!body || !rowTemplate || !competitorTemplate) return
+
+		// An empty payload means "not started yet", not "wipe the board".
+		if (rows.length === 0) return
+
+		// The empty-state row spans every column and holds none of the data cells,
+		// so it has to go before the children below are reused as standings.
+		body.querySelector('[data-empty-state]')?.remove()
+
+		const ascending = table.dataset.ascending !== 'false'
+
+		rows.forEach((row, index) => {
+			let tr = body.children[index] as HTMLElement | undefined
+			if (!tr) {
+				const cloned = rowTemplate.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined
+				if (!cloned) return
+				body.appendChild(cloned)
+				tr = cloned
+			}
+
+			const position = leaderboardPosition(rows, row.points, ascending)
+			const place = tr.querySelector<HTMLElement>('[data-cell="place"]')
+			if (place) {
+				place.textContent = position
+				place.classList.toggle('is-leader', position === '1' || position === 'T1')
+			}
+
+			const points = tr.querySelector<HTMLElement>('[data-cell="points"]')
+			if (points) points.textContent = pointsLabel(row.points)
+
+			const diff = tr.querySelector<HTMLElement>('[data-cell="diff"]')
+			if (diff) diff.textContent = normalizeDiff(row.diff)
+
+			const thru = tr.querySelector<HTMLElement>('[data-cell="thru"]')
+			if (thru) thru.textContent = throughLabel(row.through)
+
+			const competitor = tr.querySelector<HTMLElement>('[data-cell="competitor"]')
+			if (competitor) fillCompetitor(competitor, competitorTemplate, row.competitor, roster)
+		})
+
+		// A round can be voided, so the board is allowed to get shorter.
+		while (body.children.length > rows.length) {
+			body.lastElementChild?.remove()
+		}
+	}
+
+	/**
+	 * Writes the competitor cell, linking the names we recognise.
+	 *
+	 * Every node is cloned from the template rather than built from a string, so
+	 * each one carries the scoped-style attribute its rendered counterpart has, and
+	 * an upstream name can never be interpreted as markup.
+	 */
+	function fillCompetitor(
+		cell: HTMLElement,
+		template: HTMLTemplateElement,
+		competitor: string,
+		roster: Record<string, RosterEntry>,
+	) {
+		const linkProto = template.content.querySelector<HTMLAnchorElement>('[data-proto="link"]')
+		const plusProto = template.content.querySelector<HTMLElement>('[data-proto="plus"]')
+		const textProto = template.content.querySelector<HTMLElement>('[data-proto="text"]')
+		if (!linkProto || !plusProto || !textProto) return
+
+		const names = splitCompetitorNames(competitor)
+		const matched = names.map((name) => roster[name]).filter((entry): entry is RosterEntry => !!entry)
+
+		cell.replaceChildren()
+
+		// Partial matches would silently drop a name, so link all or none — the same
+		// all-or-nothing rule the build applies when it enriches a stored snapshot.
+		if (matched.length > 0 && matched.length === names.length) {
+			matched.forEach((entry, index) => {
+				if (index) cell.appendChild(plusProto.cloneNode(true))
+				const link = linkProto.cloneNode(true) as HTMLAnchorElement
+				link.setAttribute('href', `/players/${entry.id}`)
+				link.textContent = entry.name
+				cell.appendChild(link)
+			})
+			return
+		}
+
+		const text = textProto.cloneNode(true) as HTMLElement
+		text.textContent = competitor
+		cell.appendChild(text)
+	}
+</script>
+
+<style>
+	.live-status {
+		margin-top: 0.5rem;
+		color: var(--text-faint);
+		font-size: 12px;
+		min-height: 1.2em;
+	}
+</style>

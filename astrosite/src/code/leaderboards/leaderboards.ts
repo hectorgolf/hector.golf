@@ -3,6 +3,10 @@ import { join } from 'path';
 import type { GoogleSheetIndividualLeaderboard, GoogleSheetTeamLeaderboard } from './types';
 import { type Player } from '../../schemas/players'
 import { getAllPlayers, getPlayerName, getPlayerAliases } from '../../code/players'
+import { splitCompetitorNames, throughLabel } from './presentation'
+
+// Re-exported so the many existing importers keep a single place to reach for it.
+export { leaderboardPosition } from './presentation'
 
 
 export type EnrichedLeaderboardEntry = {
@@ -64,17 +68,10 @@ const playerNameToPlayer = (name: string): Player => {
 }
 
 const enrichLeaderboard = (leaderboard: GoogleSheetTeamLeaderboard|GoogleSheetIndividualLeaderboard): EnrichedLeaderboard => {
-    const isFinished = (through: string): boolean => {
-        if (through && through.match(/^\d+\/\d+$/)) {
-            const [ howMany, outOfHowMany] = through.split('/')
-            return howMany === outOfHowMany
-        }
-        return false
-    }
     const enrichLeaderboardEntry = (entry: any): EnrichedLeaderboardEntry => {
         const playersString = (entry as any).team || (entry as any).player
-        const players: Array<Player> = playersString.split('+').map(playerNameToPlayer).filter((p: Player|undefined) => !!p)
-        const status = isFinished(entry.through) ? 'F' : (entry.through || '0')
+        const players: Array<Player> = splitCompetitorNames(playersString).map(playerNameToPlayer).filter((p: Player|undefined) => !!p)
+        const status = throughLabel(entry.through)
         return {
             players,
             description: playersString,
@@ -99,12 +96,3 @@ const enrichLeaderboard = (leaderboard: GoogleSheetTeamLeaderboard|GoogleSheetIn
     return leaderboard.filter(entry => !!((entry as any).team || (entry as any).player)).map((entry) => enrichLeaderboardEntry(entry))
 }
 
-export const leaderboardPosition = (leaderboard: EnrichedLeaderboard, points: number, lowerIsBetter: boolean): string => {
-    const numberOfBetterScores = leaderboard.filter(({ points: p }) => lowerIsBetter ? parseFloat((p as any) as string) < points : parseFloat((p as any) as string) > points).length
-    const numberOfEqualScores = leaderboard.filter(({ points: p }) => p === points).length
-    if (numberOfEqualScores > 1) {
-        return `T${numberOfBetterScores + 1}`
-    } else {
-        return `${numberOfBetterScores + 1}`
-    }
-}

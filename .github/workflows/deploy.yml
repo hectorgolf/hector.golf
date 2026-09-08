@@ -63,6 +63,9 @@ jobs:
         env:
           WISEGOLF_USERNAME: ${{ secrets.WISEGOLF_USERNAME }}
           WISEGOLF_PASSWORD: ${{ secrets.WISEGOLF_PASSWORD }}
+          # Public URL of the leaderboard proxy. Unset simply leaves the live
+          # leaderboard off, and every page renders from the last published snapshot.
+          PUBLIC_LEADERBOARD_PROXY_URL: ${{ vars.PUBLIC_LEADERBOARD_PROXY_URL }}
 
   # This is the deployment step that takes the built site artifact from the
   # previous step and deploys it to GitHub Pages. This step will only run after
