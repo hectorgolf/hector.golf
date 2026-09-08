@@ -17,8 +17,11 @@ jobs:
         working-directory: astrosite
 
     env:
+      # Wisegolf credentials
       WISEGOLF_USERNAME: ${{ secrets.WISEGOLF_USERNAME }}
       WISEGOLF_PASSWORD: ${{ secrets.WISEGOLF_PASSWORD }}
+      # API key for app.hector.golf
+      HECTOR_APP_API_KEY: ${{ secrets.HECTOR_APP_API_KEY }}
       # Public URL of the leaderboard proxy. Unset simply leaves the live
       # leaderboard off, and every page renders from the last published snapshot.
       PUBLIC_LEADERBOARD_PROXY_URL: ${{ vars.PUBLIC_LEADERBOARD_PROXY_URL }}
