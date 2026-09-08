@@ -117,7 +117,13 @@ cd backend/backend-functions
 npm run deploy:tournament-leaderboard
 ```
 
-Needs `HECTOR_APP_API_KEY` in `.env` alongside the existing `GCLOUD_PROJECT_ID`. Then
+Needs `HECTOR_APP_API_KEY` in `.env` alongside the existing `GCLOUD_PROJECT_ID`.
+
+All four deploy scripts name the target project on the command line
+(`--project=$GCLOUD_PROJECT_ID`) and set the quota project for that one
+invocation, so they never modify your active `gcloud` configuration. If you keep
+more than one GCP context on one machine, deploying here leaves the other one
+alone. Then
 set the site's `PUBLIC_LEADERBOARD_PROXY_URL` repository variable to the deployed URL —
 until that is set, the leaderboard pages render exactly as they did before.
 
