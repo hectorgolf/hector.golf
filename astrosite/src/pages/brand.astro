@@ -24,28 +24,51 @@ const competitions = [
 		key: 'hector' as const,
 		name: 'Gold',
 		competition: 'Hector',
-		swatch: describe('--hector'),
-		soft: describe('--hector-soft'),
-		where:
-			"The pairs competition, and the house colour: the falcon wordmark, page eyebrows and the H % contribution pill.",
+		base: 'The pairs competition, and the house colour: the falcon wordmark, page eyebrows and the H % contribution pill.',
+		soft: 'Win-badge years, and the label inside the H % pill.',
 	},
 	{
 		key: 'victor' as const,
 		name: 'Fairway',
 		competition: 'Victor',
-		swatch: describe('--victor'),
-		soft: describe('--victor-soft'),
-		where:
-			"The individual side competition: its trophy, its champion card, the V % pill and the Victor leaderboard's leader chip.",
+		base: "The individual side competition: its trophy, its champion card, the V % pill and the Victor leaderboard's leader chip.",
+		soft: 'Win-badge years, and the label inside the V % pill.',
 	},
 	{
 		key: 'matchplay' as const,
 		name: 'Ember',
 		competition: 'Matchplay',
-		swatch: describe('--matchplay'),
-		soft: describe('--matchplay-soft'),
-		where:
-			'The knockout event: its shield, its format label on event cards, and winners and settled scores in the bracket.',
+		base: 'The knockout event: its shield, its format label on event cards, and winners and settled scores in the bracket.',
+		soft: "Win-badge years, and a champion's name on hover.",
+	},
+]
+
+/*
+ * Both tones get the same card, so the two rows line up competition by competition
+ * and the pairing is readable down a column rather than stated in prose.
+ */
+const tones = [
+	{
+		id: 'base',
+		heading: 'Base',
+		note: 'Marks, fills and solid chips — wherever the colour carries a shape rather than type.',
+		cards: competitions.map((c) => ({
+			...c,
+			tone: 'base' as const,
+			where: c.base,
+			swatch: describe(`--${c.key}`),
+		})),
+	},
+	{
+		id: 'soft',
+		heading: 'Soft',
+		note: 'One step lighter, for type and figures small enough that the base would strain against a dark tint.',
+		cards: competitions.map((c) => ({
+			...c,
+			tone: 'soft' as const,
+			where: c.soft,
+			swatch: describe(`--${c.key}-soft`),
+		})),
 	},
 ]
 
@@ -179,11 +202,7 @@ const degrees = (value: number | undefined) => (value === undefined ? 'neutral' 
 				<div class="rule-side">
 					<h3 class="label">Competition identity</h3>
 					<div class="rule-dots">
-						{
-							competitions.map((c) => (
-								<span class="dot-lg" style={`background: var(${c.swatch.token})`} />
-							))
-						}
+						{competitions.map((c) => <span class="dot-lg" style={`background: var(--${c.key})`} />)}
 					</div>
 					<p>
 						Gold, fairway and ember answer the question <em>which competition is this?</em> They
@@ -222,53 +241,50 @@ const degrees = (value: number | undefined) => (value === undefined ? 'neutral' 
 				is checked against the page ground so it survives at badge sizes. Every mark, eyebrow and
 				badge reads its colour from the semantic token, so the three can never drift out of step.
 			</p>
-			<div class="competitions">
-				{
-					competitions.map((c) => (
-						<article class="comp card">
-							<div class="comp-band" style={`background: var(${c.swatch.token})`}>
-								<CompetitionMark competition={c.key} size={42} class="comp-band-mark" />
-							</div>
-							<div class="comp-body">
-								<div class="comp-name">
-									<h3>{c.name}</h3>
-									<span class="comp-role">{c.competition}</span>
-								</div>
-								<p class="comp-where">{c.where}</p>
-								<dl class="comp-specs">
-									<div class="spec">
-										<dt>Token</dt>
-										<dd class="num">{c.swatch.token}</dd>
+			{
+				tones.map((tone) => (
+					<div class="tone" data-tone={tone.id}>
+						<div class="tone-head">
+							<h3>{tone.heading}</h3>
+							<p class="dim">{tone.note}</p>
+						</div>
+						<div class="competitions">
+							{tone.cards.map((c) => (
+								<article class="comp card">
+									<div class="comp-band" style={`background: var(${c.swatch.token})`}>
+										<CompetitionMark competition={c.key} size={42} class="comp-band-mark" />
 									</div>
-									<div class="spec">
-										<dt>Hex</dt>
-										<dd class="num">{c.swatch.hex}</dd>
+									<div class="comp-body">
+										<div class="comp-name">
+											<h4>{c.name}</h4>
+											<span class="comp-role">{c.competition}</span>
+										</div>
+										<p class="comp-where">{c.where}</p>
+										<dl class="comp-specs">
+											<div class="spec">
+												<dt>Token</dt>
+												<dd class="num">{c.swatch.token}</dd>
+											</div>
+											<div class="spec">
+												<dt>Hex</dt>
+												<dd class="num">{c.swatch.hex}</dd>
+											</div>
+											<div class="spec">
+												<dt>Hue</dt>
+												<dd class="num">{degrees(c.swatch.hue)}</dd>
+											</div>
+											<div class="spec">
+												<dt>On ground</dt>
+												<dd class="score">{c.swatch.contrast.toFixed(1)}:1</dd>
+											</div>
+										</dl>
 									</div>
-									<div class="spec">
-										<dt>Hue</dt>
-										<dd class="num">{degrees(c.swatch.hue)}</dd>
-									</div>
-									<div class="spec">
-										<dt>On ground</dt>
-										<dd class="score">{c.swatch.contrast.toFixed(1)}:1</dd>
-									</div>
-								</dl>
-							</div>
-						</article>
-					))
-				}
-			</div>
-			<p class="card soft-note">
-				Each colour has a <strong>soft</strong> variant one step lighter — {
-					competitions.map((c, i) => (
-						<>
-							{i > 0 && (i === competitions.length - 1 ? ' and ' : ', ')}
-							<code class="num" style={`color: var(${c.soft.token})`}>{c.soft.token}</code>
-						</>
-					))
-				} — for text and figures small enough that the base would strain. Use the base for marks and
-				fills, the soft for type on a dark tint.
-			</p>
+								</article>
+							))}
+						</div>
+					</div>
+				))
+			}
 		</section>
 
 		<section class="section">
@@ -642,7 +658,7 @@ const degrees = (value: number | undefined) => (value === undefined ? 'neutral' 
 		gap: 0.5rem;
 	}
 
-	.comp-name h3 {
+	.comp-name h4 {
 		font-size: 1.15rem;
 	}
 
@@ -690,12 +706,31 @@ const degrees = (value: number | undefined) => (value === undefined ? 'neutral' 
 		font-size: 14px;
 	}
 
-	.soft-note {
-		margin-top: 1rem;
-		padding: 1rem 1.1rem;
-		font-size: 13.5px;
+	/* Two tones, same card, so base and soft pair up down each column. */
+	.tone + .tone {
+		margin-top: 2rem;
+	}
+
+	.tone-head {
+		display: flex;
+		align-items: baseline;
+		flex-wrap: wrap;
+		gap: 0.35rem 0.75rem;
+		margin-bottom: 0.9rem;
+	}
+
+	.tone-head h3 {
+		font-family: var(--font-sans);
+		font-size: 11px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		color: var(--ink-100);
+	}
+
+	.tone-head p {
+		font-size: 12.5px;
 		max-width: none;
-		color: var(--ink-200);
 	}
 
 	/* ------------------------------------------------------------ scales --- */
