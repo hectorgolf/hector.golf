@@ -4,6 +4,7 @@ import Breadcrumb from '../../../components/Breadcrumb.astro'
 import CourseCard from '../../../components/courses/CourseCard.astro'
 import RoundsList from '../../../components/events/RoundsList.astro'
 import PageHeader from '../../../components/PageHeader.astro'
+import CompetitionMark from '../../../components/CompetitionMark.astro'
 import { type HectorEvent } from '../../../schemas/events'
 import { type Course } from '../../../schemas/courses'
 import { type Player } from '../../../schemas/players'
@@ -115,8 +116,8 @@ const description = event.description ? event.description.split(/\n+/) : []
                 </div>
                 <div class="champions">
                     {hectorWinners.length > 0 && (
-                        <div class="champion card">
-                            <img class="trophy" src="/images/trophy/hector-gold.svg" alt="" />
+                        <div class="champion card" data-competition="hector">
+                            <CompetitionMark competition="hector" size={30} class="trophy" />
                             <div>
                                 <span class="eyebrow">Hector Trophée</span>
                                 <p class="names">
@@ -131,8 +132,8 @@ const description = event.description ? event.description.split(/\n+/) : []
                         </div>
                     )}
                     {victorWinners.length > 0 && (
-                        <div class="champion card">
-                            <img class="trophy" src="/images/trophy/victor-gold.svg" alt="" />
+                        <div class="champion card" data-competition="victor">
+                            <CompetitionMark competition="victor" size={30} class="trophy" />
                             <div>
                                 <span class="eyebrow">Victor</span>
                                 <p class="names">
@@ -280,14 +281,29 @@ const description = event.description ? event.description.split(/\n+/) : []
     }
 
     .champion .trophy {
-        width: 22px;
-        height: 34px;
         flex-shrink: 0;
+    }
+
+    /* Eyebrow and hover follow the trophy, so each card reads as one competition. */
+    .champion[data-competition='hector'] {
+        --champion-tint: var(--hector);
+        --champion-tint-soft: var(--hector-soft);
+    }
+
+    .champion[data-competition='victor'] {
+        --champion-tint: var(--victor);
+        --champion-tint-soft: var(--victor-soft);
+    }
+
+    .champion[data-competition='matchplay'] {
+        --champion-tint: var(--matchplay);
+        --champion-tint-soft: var(--matchplay-soft);
     }
 
     .champion .eyebrow {
         display: block;
         margin-bottom: 0.2rem;
+        color: var(--champion-tint);
     }
 
     .champion .names {
@@ -303,7 +319,7 @@ const description = event.description ? event.description.split(/\n+/) : []
     }
 
     .champion .names a:hover {
-        color: var(--gold-300);
+        color: var(--champion-tint-soft);
     }
 
     .champion .pill {

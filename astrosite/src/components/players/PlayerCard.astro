@@ -1,8 +1,6 @@
 ---
 import { getPlayerName } from '../../code/players'
-import HectorWinIcon from './icons/HectorWinIcon.astro'
-import VictorWinIcon from './icons/VictorWinIcon.astro'
-import MatchplayWinIcon from './icons/MatchplayWinIcon.astro'
+import WinBadge from './icons/WinBadge.astro'
 
 interface Props {
 	id: string
@@ -59,13 +57,13 @@ const wins = hectorWins.length + victorWins.length + matchplayWins.length
 				wins > 0 && (
 					<span class="trophies">
 						{hectorWins.map((year) => (
-							<HectorWinIcon year={year} />
+							<WinBadge competition="hector" year={year} />
 						))}
 						{victorWins.map((year) => (
-							<VictorWinIcon year={year} />
+							<WinBadge competition="victor" year={year} />
 						))}
 						{matchplayWins.map((year) => (
-							<MatchplayWinIcon year={year} />
+							<WinBadge competition="matchplay" year={year} />
 						))}
 					</span>
 				)

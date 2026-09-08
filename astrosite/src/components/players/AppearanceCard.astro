@@ -1,4 +1,5 @@
 ---
+import CompetitionMark from '../CompetitionMark.astro'
 import { linkToEvent } from '../../code/events'
 import { type Player } from '../../schemas/players'
 import { type Event, type HectorEvent } from '../../schemas/events'
@@ -24,9 +25,9 @@ const wonMatchplay =
 		<span class="top">
 			<span class="event-name">{event.name}</span>
 			<span class="trophies">
-				{wonHector && <img src="/images/trophy/hector-gold.svg" alt="Won the Hector Trophée" />}
-				{wonVictor && <img src="/images/trophy/victor-gold.svg" alt="Won the Victor Trophée" />}
-				{wonMatchplay && <img src="/images/trophy/matchplay-gold.svg" alt="Won the Matchplay" />}
+				{wonHector && <CompetitionMark competition="hector" size={15} title="Won the Hector Trophée" />}
+				{wonVictor && <CompetitionMark competition="victor" size={15} title="Won the Victor" />}
+				{wonMatchplay && <CompetitionMark competition="matchplay" size={15} title="Won the Matchplay" />}
 			</span>
 		</span>
 		<span class="meta">{[event.date, event.location].filter(Boolean).join(' · ')}</span>
@@ -65,8 +66,5 @@ const wonMatchplay =
 		flex-shrink: 0;
 	}
 
-	.trophies img {
-		width: 14px;
-		height: 22px;
-	}
+
 </style>

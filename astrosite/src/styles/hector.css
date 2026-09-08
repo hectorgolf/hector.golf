@@ -36,6 +36,14 @@
 	--gold-300: #efcf7f;
 	--gold-400: #e3b341;
 
+	/*
+	 * Ember — the Victor side competition. Its own hue rather than a second gold:
+	 * at ~17deg it reads clearly orange-red against gold's ~42deg yellow, and holds
+	 * ~6:1 on the page ground so it stays legible at badge sizes.
+	 */
+	--ember-300: #f79a6d;
+	--ember-400: #ee6a35;
+
 	/* Status */
 	--emerald-400: #34d399;
 	--emerald-950: #022c22;
@@ -63,6 +71,19 @@
 	--text-dim: var(--ink-500);
 	--text-faint: var(--ink-600);
 	--accent: var(--violet-500);
+
+	/*
+	 * Competition identity. Three trophies are in play and they used to render in the
+	 * same gold everywhere, which made a Victor win indistinguishable from a Hector
+	 * one. Every trophy mark, eyebrow and win badge takes its colour from here, so the
+	 * three stay in step wherever they appear.
+	 */
+	--hector: var(--gold-400);
+	--hector-soft: var(--gold-300);
+	--victor: var(--ember-400);
+	--victor-soft: var(--ember-300);
+	--matchplay: var(--violet-400);
+	--matchplay-soft: var(--violet-300);
 
 	/* Type */
 	--font-sans: Geist, ui-sans-serif, system-ui, -apple-system, sans-serif;

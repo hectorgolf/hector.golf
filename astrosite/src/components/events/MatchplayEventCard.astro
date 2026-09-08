@@ -1,5 +1,5 @@
 ---
-import MatchplayMark from '../MatchplayMark.astro'
+import CompetitionMark from '../CompetitionMark.astro'
 
 interface Props {
 	title: string
@@ -26,8 +26,8 @@ const { title, image, href, date, location, status, live = false } = Astro.props
 		}
 		<span class="body">
 			<span class="top">
-				<span class="format" aria-label="Matchplay event">
-					<MatchplayMark size={13} />
+				<span class="format" data-competition="matchplay" aria-label="Matchplay event">
+					<CompetitionMark competition="matchplay" size={13} />
 					Matchplay
 				</span>
 				{
@@ -103,11 +103,14 @@ const { title, image, href, date, location, status, live = false } = Astro.props
 		display: inline-flex;
 		align-items: center;
 		gap: 0.35rem;
-		color: var(--violet-400);
 		font-size: 10px;
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.2em;
+	}
+
+	.format[data-competition='matchplay'] {
+		color: var(--matchplay);
 	}
 
 	.title {
