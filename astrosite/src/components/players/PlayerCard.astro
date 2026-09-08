@@ -153,8 +153,12 @@ const wins = hectorWins.length + victorWins.length + matchplayWins.length
 		color: var(--ink-100);
 	}
 
+	/*
+	 * Deliberately not gold: this counts wins across all three competitions, and gold
+	 * now means Hector specifically. The badges underneath carry the colour instead.
+	 */
 	.stat .score[data-won] {
-		color: var(--gold-400);
+		color: var(--ink-50);
 	}
 
 	.stat-label {

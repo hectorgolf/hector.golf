@@ -1,15 +1,18 @@
 ---
 import { getPlayerName } from '../../code/players'
 import { leaderboardPosition, type EnrichedLeaderboard } from '../../code/leaderboards/leaderboards'
+import { type Competition } from '../CompetitionMark.astro'
 
 interface Props {
 	entries: EnrichedLeaderboard
 	/** Column heading for the competitor column: "Team" or "Player". */
 	competitorLabel: string
 	ascending: boolean
+	/** Which competition this board settles — tints the leader's chip. */
+	competition: Competition
 }
 
-const { entries, competitorLabel, ascending } = Astro.props
+const { entries, competitorLabel, ascending, competition } = Astro.props
 
 const normalizeDiff = (diff: string): string => {
 	if (diff === '') return diff
@@ -19,7 +22,7 @@ const normalizeDiff = (diff: string): string => {
 ---
 
 <div class="table-scroll">
-	<table class="data leaderboard">
+	<table class="data leaderboard" data-competition={competition}>
 		<thead>
 			<tr>
 				<th class="place">#</th>
@@ -87,8 +90,20 @@ const normalizeDiff = (diff: string): string => {
 		font-weight: 700;
 	}
 
+	/* The leader's chip carries the colour of the competition being settled. */
+	.leaderboard[data-competition='hector'] .badge.is-leader {
+		background: var(--hector);
+	}
+
+	.leaderboard[data-competition='victor'] .badge.is-leader {
+		background: var(--victor);
+	}
+
+	.leaderboard[data-competition='matchplay'] .badge.is-leader {
+		background: var(--matchplay);
+	}
+
 	.badge.is-leader {
-		background: var(--gold-400);
 		color: var(--ink-950);
 	}
 

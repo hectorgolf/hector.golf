@@ -37,12 +37,21 @@
 	--gold-400: #e3b341;
 
 	/*
-	 * Ember — the Victor side competition. Its own hue rather than a second gold:
-	 * at ~17deg it reads clearly orange-red against gold's ~42deg yellow, and holds
-	 * ~6:1 on the page ground so it stays legible at badge sizes.
+	 * Ember — Matchplay. Its own hue rather than a second gold: at ~17deg it reads
+	 * clearly orange-red against gold's ~42deg yellow, and holds ~6:1 on the page
+	 * ground so it stays legible at badge sizes.
 	 */
 	--ember-300: #f79a6d;
 	--ember-400: #ee6a35;
+
+	/*
+	 * Fairway — Victor. A grass green at ~99deg, well clear of both gold (~42deg) and
+	 * the emerald used for live/success status (~160deg), so it never reads as "this
+	 * is live". Named for the fairway rather than "green", which in a golf codebase
+	 * already means the putting surface.
+	 */
+	--fairway-300: #a8dc85;
+	--fairway-400: #7ac74f;
 
 	/* Status */
 	--emerald-400: #34d399;
@@ -73,17 +82,20 @@
 	--accent: var(--violet-500);
 
 	/*
-	 * Competition identity. Three trophies are in play and they used to render in the
-	 * same gold everywhere, which made a Victor win indistinguishable from a Hector
-	 * one. Every trophy mark, eyebrow and win badge takes its colour from here, so the
-	 * three stay in step wherever they appear.
+	 * Competition identity. Every trophy mark, eyebrow, win badge and score that
+	 * stands for a competition takes its colour from here, so the three stay in step
+	 * wherever they appear.
+	 *
+	 * Violet is deliberately absent: it belongs to the interface — selection, active
+	 * state, buttons and links — and colouring a competition with it would make those
+	 * two meanings impossible to tell apart.
 	 */
 	--hector: var(--gold-400);
 	--hector-soft: var(--gold-300);
-	--victor: var(--ember-400);
-	--victor-soft: var(--ember-300);
-	--matchplay: var(--violet-400);
-	--matchplay-soft: var(--violet-300);
+	--victor: var(--fairway-400);
+	--victor-soft: var(--fairway-300);
+	--matchplay: var(--ember-400);
+	--matchplay-soft: var(--ember-300);
 
 	/* Type */
 	--font-sans: Geist, ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -332,14 +344,33 @@ hr {
 	color: var(--text-muted);
 }
 
+/* Interface pill — selection and active state, never a competition. */
 .pill-violet {
 	background: rgb(21 16 46 / 0.7);
 	color: var(--violet-300);
 }
 
-.pill-gold {
-	background: rgb(69 26 3 / 0.55);
-	color: var(--gold-300);
+/*
+ * Competition pills. Each tint is mixed from the competition's own colour so the
+ * three cannot drift apart, over a flat fallback for browsers without color-mix().
+ */
+.pill-hector,
+.pill-victor,
+.pill-matchplay {
+	background: var(--surface-raised);
+	background: color-mix(in srgb, currentColor 14%, var(--surface));
+}
+
+.pill-hector {
+	color: var(--hector-soft);
+}
+
+.pill-victor {
+	color: var(--victor-soft);
+}
+
+.pill-matchplay {
+	color: var(--matchplay-soft);
 }
 
 .pill-live {

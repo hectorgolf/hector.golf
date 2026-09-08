@@ -280,7 +280,7 @@ rounds.forEach(round => {
         font-weight: 700;
     }
     .tournament-bracket .game .match-score.finished {
-        color: var(--gold-400);
+        color: var(--matchplay);
     }
     .tournament-bracket .game .match-score.scheduled {
         font-family: var(--font-num);
@@ -292,10 +292,11 @@ rounds.forEach(round => {
         font-weight: 400;
         color: var(--ink-200);
     }
+    /* This is a Matchplay bracket, so a win here reads in the Matchplay colour. */
     .tournament-bracket .game .winner,
     .tournament-bracket .game .winner a {
         font-weight: 700;
-        color: var(--gold-400);
+        color: var(--matchplay);
     }
     .tournament-bracket .game .loser,
     .tournament-bracket .game .loser a {

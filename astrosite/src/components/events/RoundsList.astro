@@ -134,14 +134,15 @@ function pluralize(points: number, unit: string): string {
                                                     &bull;
                                                 </span>
                                                 <span class="format-name">{gf.format}</span>
-                                                {allowance && <span class="pill pill-violet num">HCP {allowance}</span>}
+                                                {/* Neutral: a handicap allowance belongs to no competition. */}
+                                                {allowance && <span class="pill num">HCP {allowance}</span>}
                                                 {hectorContribution && (
-                                                    <span class="pill pill-gold num">
+                                                    <span class="pill pill-hector num">
                                                         H {Math.round(hectorContribution * 100)}%
                                                     </span>
                                                 )}
                                                 {victorContribution && (
-                                                    <span class="pill pill-violet num">
+                                                    <span class="pill pill-victor num">
                                                         V {Math.round(victorContribution * 100)}%
                                                     </span>
                                                 )}
