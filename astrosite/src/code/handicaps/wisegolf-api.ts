@@ -27,14 +27,11 @@ const ENV = import.meta.env || process.env || {};
 const wisegolfUsername = ENV.WISEGOLF_USERNAME;
 const wisegolfPassword = ENV.WISEGOLF_PASSWORD;
 
-if (!wisegolfUsername || !wisegolfPassword) {
-    console.error(`Missing wisegolfclub.fi credentials:`);
-    console.error(`WISEGOLF_USERNAME:   ${redact(wisegolfUsername)}`);
-    console.error(`WISEGOLF_PASSWORD:   ${redact(wisegolfPassword)}`);
-    console.error(`Functionality is likely impaired - please provide the missing environment variables.`);
-}
 console.log(`wisegolfUsername:   ${redact(wisegolfUsername)}`);
 console.log(`wisegolfPassword:   ${redact(wisegolfPassword)}`);
+if (!wisegolfUsername || !wisegolfPassword) {
+    console.error(`Functionality is likely impaired - please provide the missing environment variables.`);
+}
 
 const standardRequestHeaders = {
     Accept: "application/json",
@@ -93,6 +90,11 @@ function convertWisegolfClubToGolfClub(club: WisegolfClub): GolfClub {
 }
 
 export const createWisegolfSession = async (): Promise<WisegolfSession> => {
+    if (!wisegolfUsername || !wisegolfPassword) {
+        console.warn(`Missing WiseGolf credentials: initializing a NullHandicapSource instead of Wisegolf`);
+        return new NullHandicapSource(SOURCE_NAME);
+    }
+
     try {
         const token = await login(wisegolfUsername, wisegolfPassword);
         await fetchClubs(token); // pre-fetch clubs
