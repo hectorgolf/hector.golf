@@ -11,6 +11,7 @@ import { type Player } from '../../../schemas/players'
 import { getAllEventIds, getCoursesOfEvent, getEventById, eventHasStarted, eventHasEnded } from '../../../code/events'
 import { getPlayerName, getPlayerById, getPlayerHandicapById } from '../../../code/players'
 import { getLeaderboardsByEventId } from '../../../code/leaderboards/leaderboards'
+import { isAppHectorGolfLeaderboard } from '../../../code/leaderboards/sources'
 import { formatEventDates } from '../../../code/dates'
 
 
@@ -52,6 +53,10 @@ const bucket2 = bucket2trimmed ? untrimBucket(bucket2trimmed) : undefined
 // data is available and the event file itself does not have winners on record
 const leaderboards = getLeaderboardsByEventId(event.id)
 const linkToLeaderboards = `/events/${event.format}/${event.id}/leaderboard`
+// A leaderboard page also exists for an app.hector.golf event that has no published
+// snapshot yet, so the link has to appear before the first one lands.
+const hasLeaderboardPage = !!leaderboards.hector || !!leaderboards.victor
+    || isAppHectorGolfLeaderboard(event.leaderboardSheet)
 
 if (hectorWinners.length === 0 && leaderboards.hector && leaderboards.hector.length > 0) {
     const allAreFinished = leaderboards.hector.every(team => team.through === "F")
@@ -153,7 +158,7 @@ const description = event.description ? event.description.split(/\n+/) : []
             </section>
         )}
 
-        {(leaderboards.hector || leaderboards.victor) && (
+        {hasLeaderboardPage && (
             <section class="section">
                 <div class="section-head">
                     <h2>Leaderboard</h2>

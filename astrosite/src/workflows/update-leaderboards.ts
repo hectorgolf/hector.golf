@@ -7,6 +7,12 @@ import { redact } from "../code/strings.ts";
 import { fetchHectorLeaderboardData, fetchVictorLeaderboardData } from "../code/leaderboards/google-sheets.ts";
 import { updateHectorEventLeaderboard } from "../code/leaderboards/github.ts";
 import { fetchHectorLeaderboardDataFromApp } from "../code/leaderboards/app.ts";
+import { splitCompetitorNames } from "../code/leaderboards/presentation.ts";
+import {
+    googleSheetIdFromLeaderboardUrl,
+    isAppHectorGolfLeaderboard,
+    isGoogleSheetsLeaderboard,
+} from "../code/leaderboards/sources.ts";
 import type { GoogleSheetTeamLeaderboard, GoogleSheetIndividualLeaderboard } from "../code/leaderboards/types.ts";
 
 // This workflow updates the leaderboards for all ongoing Hector events that
@@ -80,7 +86,7 @@ async function updateLeaderboardsWithData(
             const leaderboardTeams = hectorLeaderboard.map((team) => {
                 return {
                     name: team.team,
-                    players: team.team.split("+").map((name) => getPlayerByName(name.trim())),
+                    players: splitCompetitorNames(team.team).map((name) => getPlayerByName(name)),
                 };
             });
             const rawEvent = eventsData.find((e) => e.id === event.id);
@@ -120,7 +126,7 @@ async function updateLeaderboardsForAllOngoingTournaments(): Promise<void> {
         let hectorLeaderboard: GoogleSheetTeamLeaderboard | undefined;
         let victorLeaderboard: GoogleSheetIndividualLeaderboard | undefined;
 
-        if (event.leaderboardSheet?.match(/^https:\/\/app.hector.golf\//)) {
+        if (isAppHectorGolfLeaderboard(event.leaderboardSheet)) {
             console.log(`${event.name} seems to be managed on app.hector.golf`);
             const data = await fetchHectorLeaderboardDataFromApp(event.leaderboardSheet);
             if (!data) {
@@ -130,11 +136,9 @@ async function updateLeaderboardsForAllOngoingTournaments(): Promise<void> {
             }
             hectorLeaderboard = data?.hector;
             victorLeaderboard = data?.victor;
-        } else if (event.leaderboardSheet?.match(/https?:\/\/docs\.google\.com\/spreadsheets/)) {
+        } else if (isGoogleSheetsLeaderboard(event.leaderboardSheet)) {
             console.log(`${event.name} seems to be managed on Google Sheets`);
-            const leaderboardSheetId = event.leaderboardSheet
-                ?.replace(/https?:\/\/docs\.google\.com\/spreadsheets\/d\//, "")
-                .replace(/\/.*$/, "");
+            const leaderboardSheetId = googleSheetIdFromLeaderboardUrl(event.leaderboardSheet);
             console.log(`Leaderboard sheet URL: ${event.leaderboardSheet}`);
             console.log(`Leaderboard sheet ID:  ${leaderboardSheetId}`);
             if (leaderboardSheetId) {
