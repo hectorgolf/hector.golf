@@ -3,7 +3,10 @@
     "name": "Hector Trophée VI",
     "format": "hector",
     "location": "Golf & Spa Resort Konopiště, Czechia",
-    "date": "September 20-22, 2019",
+    "timing": {
+        "start": "2019-09-20",
+        "end": "2019-09-22"
+    },
     "courses": [
         "konopiste-radecky",
         "konopiste-deste"

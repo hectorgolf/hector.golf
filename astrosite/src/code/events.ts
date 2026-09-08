@@ -8,7 +8,7 @@ import {
     EventFormat,
 } from "../schemas/events";
 import { type Course, schema as CourseSchema } from "../schemas/courses";
-import { parseEventDateRange, isoDate, isoDateToday, compareDateStrings } from "./dates";
+import { isoDateToday, compareIsoDates } from "./dates";
 import { eventsData, coursesData, isPastEvent } from "./data";
 import { getPlayerHandicapById } from "./players";
 
@@ -38,17 +38,11 @@ export function getAllEvents(providedFilter?: (e: Event) => boolean): Array<Even
 }
 
 export function eventHasStarted(event: Event): boolean {
-    const range = parseEventDateRange(event.date) || { startDate: undefined, endDate: undefined };
-    const { startDate } = range;
-    // console.log(`Checking if event ${event.name} has started: ${JSON.stringify(range)} vs ${isoDateToday()}`)
-    return !!(startDate && isoDate(startDate) <= isoDateToday());
+    return event.timing.start <= isoDateToday();
 }
 
 export function eventHasEnded(event: Event): boolean {
-    const range = parseEventDateRange(event.date) || { startDate: undefined, endDate: undefined };
-    const { endDate } = range;
-    // console.log(`Checking if event ${event.name} has ended: ${JSON.stringify(range)} vs ${isoDateToday()}`)
-    return !!(endDate && isoDate(endDate) < isoDateToday());
+    return event.timing.end < isoDateToday();
 }
 
 export function getAllEventsGroupedByChronology(providedFilter?: (e: Event) => boolean): {
@@ -64,11 +58,9 @@ export function getAllEventsGroupedByChronology(providedFilter?: (e: Event) => b
     const ongoingEvents: Array<Event> = [];
     const upcomingEvents: Array<Event> = [];
     getAllEvents(providedFilter).forEach((event) => {
-        const range = parseEventDateRange(event.date) || { startDate: undefined, endDate: undefined };
-        const { startDate, endDate } = range;
         const today = isoDateToday();
-        const isFuture = startDate && isoDate(startDate) > today;
-        const isPast = endDate && (isoDate(endDate) < today || isFinishedMatchplayEvent(event));
+        const isFuture = event.timing.start > today;
+        const isPast = event.timing.end < today || isFinishedMatchplayEvent(event);
         const isOngoing = !isFuture && !isPast;
         if (isFuture) {
             upcomingEvents.push(event);
@@ -83,7 +75,7 @@ export function getAllEventsGroupedByChronology(providedFilter?: (e: Event) => b
         }
     });
     const sortByDate = (a: Event, b: Event): number => {
-        const c = compareDateStrings(a.date, b.date);
+        const c = compareIsoDates(a.timing.end, b.timing.end);
         if (c !== 0) {
             return -c;
         }

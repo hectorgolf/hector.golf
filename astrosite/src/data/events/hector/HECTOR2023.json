@@ -3,7 +3,10 @@
     "name": "Hector Trophée 2023",
     "format": "hector",
     "location": "Diamond Country Club, Austria",
-    "date": "September 23-26, 2023",
+    "timing": {
+        "start": "2023-09-23",
+        "end": "2023-09-26"
+    },
     "courses": [
         "adamstal-championship",
         "diamondcc-diamond",

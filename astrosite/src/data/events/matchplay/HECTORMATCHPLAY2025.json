@@ -3,7 +3,10 @@
     "name": "Hector Matchplay 2025",
     "format": "matchplay",
     "location": "Finland",
-    "date": "May 27 - September 14, 2025",
+    "timing": {
+        "start": "2025-05-27",
+        "end": "2025-09-14"
+    },
     "description": "Sixteen passionate amateur golfers go head-to-head in a series of competitive matchplay duels, where every putt counts — even the ones that just miss. The single-elimination format means there’s no room for error, as each match decides who advances and who goes home.",
     "participants": [
         "jarkko-k",

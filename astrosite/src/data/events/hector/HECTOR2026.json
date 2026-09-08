@@ -3,7 +3,10 @@
   "ignore": false,
   "name": "Hector Trophée 2026",
   "location": "Golf & Spa Resort Konopiště, Czechia",
-  "date": "September 24-27, 2026",
+  "timing": {
+    "start": "2026-09-24",
+    "end": "2026-09-27"
+  },
   "description": "Hector Trophee returns to Golf & Spa Resort Konopiste in 2026, where the iconic Radecky and d'Este courses will once again decide who earns the season's biggest bragging rights. Over four days of pressure-packed competition, players will take on Radecky's full championship challenge through dense forest corridors, expansive bunkering, and demanding greens that reward precise iron play and steady putting nerves.\n\nThe test only tightens on d'Este, where narrower fairways, punishing rough, and a strategy-first layout force disciplined choices from the first tee to the final putt. With momentum swinging between two very different par-72 tracks and every shot counting, Hector Trophee 2026 is set up for another classic week in Konopiste.",
   "participants": [
     "lasse-k",

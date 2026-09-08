@@ -1,7 +1,7 @@
 import { writeFileSync } from "fs";
 
 import { type HectorEvent } from "../schemas/events.ts";
-import { parseEventDateRange, isoDate, isoDateToday } from "../code/dates.ts";
+import { isoDateToday } from "../code/dates.ts";
 import { playersData, eventsData, pathToEventJson, isHectorEvent } from "../code/data.ts";
 import { redact } from "../code/strings.ts";
 import { fetchHectorLeaderboardData, fetchVictorLeaderboardData } from "../code/leaderboards/google-sheets.ts";
@@ -38,19 +38,15 @@ function getOngoingHectorEvents(): Array<HectorEvent> {
         .filter(isHectorEvent)
         .filter((e) => !!e.leaderboardSheet)
         .filter((e) => {
-            const { startDate, endDate } = parseEventDateRange(e.date) || {};
-            if (!startDate) return false;
-            if (!endDate) return false;
-
-            if (!updateFutureEvents && isoDate(startDate) > isoDateToday()) {
+            if (!updateFutureEvents && e.timing.start > isoDateToday()) {
                 console.log(
-                    `Not updating leaderboards for ${e.name} because it's in the future: the tournament's date is ${JSON.stringify(e.date)} while today is ${isoDateToday()}`,
+                    `Not updating leaderboards for ${e.name} because it's in the future: the tournament starts on ${e.timing.start} while today is ${isoDateToday()}`,
                 );
                 return false; // event hasn't even started yet
             }
 
-            // if (isoDate(endDate) < isoDate(new Date(new Date().getTime() - 1000 * 60 * 60 * 24))) {
-            //     console.log(`Not updating leaderboards for ${e.name} because it's in the past: the tournament's date is ${JSON.stringify(e.date)} while today is ${isoDateToday()}`)
+            // if (e.timing.end < addDays(isoDateToday(), -1)) {
+            //     console.log(`Not updating leaderboards for ${e.name} because it's in the past: the tournament ended on ${e.timing.end} while today is ${isoDateToday()}`)
             //     return false // event finished yesterday or earlier
             // }
             return true;

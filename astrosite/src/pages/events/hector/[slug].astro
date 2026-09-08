@@ -11,6 +11,7 @@ import { type Player } from '../../../schemas/players'
 import { getAllEventIds, getCoursesOfEvent, getEventById, eventHasStarted, eventHasEnded } from '../../../code/events'
 import { getPlayerName, getPlayerById, getPlayerHandicapById } from '../../../code/players'
 import { getLeaderboardsByEventId } from '../../../code/leaderboards/leaderboards'
+import { formatEventDates } from '../../../code/dates'
 
 
 export function getStaticPaths() {
@@ -91,7 +92,7 @@ const description = event.description ? event.description.split(/\n+/) : []
         <PageHeader
             title={event.name}
             eyebrow="Hector Trophée"
-            meta={[event.location, event.date]}
+            meta={[event.location, formatEventDates(event)]}
         />
 
         {event.hero_image && (

@@ -6,6 +6,7 @@ import EventCard from '../components/events/EventCard.astro'
 import MatchplayEventCard from '../components/events/MatchplayEventCard.astro'
 import { getAllEventsGroupedByChronology, linkToEvent } from '../code/events'
 import { EventFormat } from '../schemas/events'
+import { formatEventDates } from '../code/dates'
 
 const { ongoing, upcoming } = getAllEventsGroupedByChronology()
 const featured = [...ongoing, ...upcoming].slice(0, 3)
@@ -55,7 +56,7 @@ const featuredIsLive = ongoing.length > 0
 							const props = {
 								title: event.name,
 								location: event.location,
-								date: event.date,
+								date: formatEventDates(event),
 								href: linkToEvent(event),
 								status,
 								live,

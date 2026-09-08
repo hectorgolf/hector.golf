@@ -1,6 +1,7 @@
 ---
 import CompetitionMark from '../CompetitionMark.astro'
 import { linkToEvent } from '../../code/events'
+import { formatEventDates } from '../../code/dates'
 import { type Player } from '../../schemas/players'
 import { type Event, type HectorEvent } from '../../schemas/events'
 
@@ -30,7 +31,7 @@ const wonMatchplay =
 				{wonMatchplay && <CompetitionMark competition="matchplay" size={15} title="Won the Matchplay" />}
 			</span>
 		</span>
-		<span class="meta">{[event.date, event.location].filter(Boolean).join(' · ')}</span>
+		<span class="meta">{[formatEventDates(event), event.location].filter(Boolean).join(' · ')}</span>
 	</a>
 </li>
 

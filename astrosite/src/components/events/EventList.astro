@@ -3,6 +3,7 @@ import EventCard from '../../components/events/EventCard.astro'
 import MatchplayEventCard from '../../components/events/MatchplayEventCard.astro'
 import PageHeader from '../../components/PageHeader.astro'
 import { getAllEventsGroupedByChronology, linkToEvent } from '../../code/events'
+import { formatEventDates } from '../../code/dates'
 import { EventFormat, type Event } from '../../schemas/events'
 
 interface Props {
@@ -29,7 +30,7 @@ const groups = [
 const cardFor = (event: Event, status: string, live: boolean) => ({
 	title: event.name,
 	location: event.location,
-	date: event.date,
+	date: formatEventDates(event),
 	href: linkToEvent(event),
 	status,
 	live,

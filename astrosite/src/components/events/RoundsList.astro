@@ -2,6 +2,7 @@
 import { type HectorEvent } from '../../schemas/events'
 import { getCourseById } from '../../code/courses'
 import { hasMaximumScorePerHole, maxStrokesOverParFor } from '../../code/scoring'
+import { titleOfRound } from '../../code/rounds'
 import type { Course } from '../../schemas/courses'
 
 interface Props {
@@ -104,9 +105,7 @@ function pluralize(points: number, unit: string): string {
                         <li class="round card" data-state={state}>
                             <div class="round-head">
                                 <span class="round-no chip-num">R{index + 1}</span>
-                                <span class="round-title">
-                                    Day {round.day}, Round {round.round}
-                                </span>
+                                <span class="round-title">{titleOfRound(event, round)}</span>
                                 {progressKnown && (
                                     <span class={isNext ? 'pill pill-violet' : 'pill'}>{stateLabel}</span>
                                 )}

@@ -3,7 +3,10 @@
     "name": "Hector Trophée V",
     "format": "hector",
     "location": "Sand Valley Golf Resort, Poland",
-    "date": "August 3-5, 2018",
+    "timing": {
+        "start": "2018-08-03",
+        "end": "2018-08-05"
+    },
     "courses": [
         "sandvalley"
     ],

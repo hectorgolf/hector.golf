@@ -1,97 +1,159 @@
 /**
+ * A calendar date with no time of day, spelled the way the data files spell it:
+ * "2026-09-24".
+ *
+ * Events are stored as a start date and an end date in this form rather than as a
+ * prose range like "September 24-27, 2026", so that the day a round is played is
+ * something the site can compute instead of something it has to parse back out of
+ * English.
+ */
+export type IsoDate = string;
+
+const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+const MONTH_NAMES = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+];
+
+const WEEKDAY_NAMES = [
+    "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+];
+
+/**
  * Gets the given date in ISO format (yyyy-mm-dd).
  *
  * @param date The `Date` object to convert to an ISO format `string`.
  * @returns The date in ISO format (yyyy-mm-dd) or an empty string if the provided date was `undefined`.
  */
-export const isoDate = (date: Date|undefined): string => date?.toISOString()?.slice(0, 10) || '';
+export const isoDate = (date: Date|undefined): IsoDate => {
+    if (!date) return '';
+    const pad = (n: number): string => String(n).padStart(2, '0');
+    // Built from the local calendar fields rather than `toISOString()`, which would
+    // convert to UTC first and hand back the neighbouring day west of Greenwich.
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
 
 /**
  * Get the current date in ISO format (yyyy-mm-dd)
  * @returns the current date in ISO format (yyyy-mm-dd)
  */
-export const isoDateToday = (): string => {
-    const now = new Date()
-    now.setHours(12, 0, 0, 0)
-    return isoDate(now)
-}
+export const isoDateToday = (): IsoDate => isoDate(new Date());
 
-export function parseEventDateRange(dateRange: string): { startDate: Date; endDate: Date } | null {
-	const months = [
-		"January", "February", "March", "April", "May", "June",
-		"July", "August", "September", "October", "November", "December"
-	];
-
-	// Regex to match patterns like "2024" (e.g. for a matchplay event with no specific dates – at least until the winner is known)
-	const singleYearRegex = /^(\d{4})$/;
-	// Regex to match patterns like "July 28, 2024"
-	const singleDateRegex = /^(\w+)\s(\d+),\s(\d{4})$/;
-	// Regex to match patterns like "September 25-28, 2024"
-	const singleMonthRegex = /^(\w+)\s(\d+)\s*-\s*(\d+),\s(\d{4})$/;
-	// Regex to match patterns like "September 30 - October 2, 2024"
-	const twoMonthRegex = /^(\w+)\s(\d+)\s*-\s*(\w+)\s(\d+),\s(\d{4})$/;
-
-	let match;
-
-	if ((match = dateRange.match(singleMonthRegex))) {
-		// "September 25-28, 2024"
-		const [, month, startDay, endDay, year] = match;
-		const monthIndex = months.indexOf(month);
-
-		if (monthIndex === -1) return null;
-
-		const startDate = new Date(parseInt(year), monthIndex, parseInt(startDay), 12, 0, 0);
-		const endDate = new Date(parseInt(year), monthIndex, parseInt(endDay), 12, 0, 0);
-
-		return { startDate, endDate };
-	} else if ((match = dateRange.match(twoMonthRegex))) {
-		// "September 30 - October 2, 2024"
-		const [, startMonth, startDay, endMonth, endDay, year] = match;
-		const startMonthIndex = months.indexOf(startMonth);
-		const endMonthIndex = months.indexOf(endMonth);
-
-		if (startMonthIndex === -1 || endMonthIndex === -1) return null;
-
-		const startDate = new Date(parseInt(year), startMonthIndex, parseInt(startDay), 12, 0, 0);
-		const endDate = new Date(parseInt(year), endMonthIndex, parseInt(endDay), 12, 0, 0);
-
-		return { startDate, endDate };
-	} else if ((match = dateRange.match(singleDateRegex))) {
-		// "September 30, 2024"
-		const [, month, day, year] = match;
-		const monthIndex = months.indexOf(month);
-		if (monthIndex === -1) return null;
-		const startDate = new Date(parseInt(year), monthIndex, parseInt(day), 12, 0, 0);
-		return { startDate, endDate: startDate };
-	} else if ((match = dateRange.match(singleYearRegex))) {
-		// "2024"
-		const [, year] = match;
-		const startDate = new Date(parseInt(year), 0, 1, 12, 12, 0, 0);
-		const endDate = new Date(parseInt(year), 11, 31, 12, 12, 0, 0);
-		return { startDate, endDate };
-	}
-
-	// If the format does not match, return null
-	return null;
+/**
+ * True if the string is a real calendar date in ISO format.
+ *
+ * The pattern alone is not enough: "2026-02-30" matches it and does not exist, and
+ * `Date` would quietly roll it over into March.
+ */
+export function isValidIsoDate(date: string): boolean {
+    const match = date.match(ISO_DATE_PATTERN);
+    if (!match) return false;
+    const [, year, month, day] = match;
+    const parsed = new Date(Number(year), Number(month) - 1, Number(day), 12, 0, 0, 0);
+    return (
+        parsed.getFullYear() === Number(year) &&
+        parsed.getMonth() === Number(month) - 1 &&
+        parsed.getDate() === Number(day)
+    );
 }
 
 /**
- * Comparison/sorting function for sorting date strings (such as "January 10-15, 2024" or "February 10, 2025").
+ * Reads an ISO date into a `Date` at local noon.
  *
- * @param a First date string to compare.
- * @param b Second date string to compare.
- * @returns Returns a negative number if `a` is before `b`, a positive number if `a` is after `b`, or 0 if they are the same.
+ * Noon rather than midnight because nothing here cares about the time of day, and
+ * midnight sits close enough to the boundary that a timezone offset or a daylight
+ * saving transition can push it onto the day before or after.
+ *
+ * @param date A calendar date in ISO format (yyyy-mm-dd).
+ * @returns The `Date` at noon local time on that day.
+ * @throws If the string is not a real ISO calendar date.
  */
-export const compareDateStrings = (a: string|undefined, b: string|undefined): number => {
-	if (!a && b) {
-		return 1;
-	} else if (!b && a) {
-		return -1;
-	} else if (a && b) {
-		// If both courses have had an event, sort by most recent event date
-		const aRange = parseEventDateRange(a);
-		const bRange = parseEventDateRange(b);
-		return (aRange?.endDate?.getTime() || 0) - (bRange?.endDate?.getTime() || 0);
-	}
-	return 0;
+export function parseIsoDate(date: IsoDate): Date {
+    if (!isValidIsoDate(date)) {
+        throw new Error(`Not a calendar date in ISO format (yyyy-mm-dd): ${JSON.stringify(date)}`);
+    }
+    const [, year, month, day] = date.match(ISO_DATE_PATTERN)!;
+    return new Date(Number(year), Number(month) - 1, Number(day), 12, 0, 0, 0);
 }
+
+/**
+ * The date a given number of days after (or, for a negative offset, before) another.
+ *
+ * @param date A calendar date in ISO format (yyyy-mm-dd).
+ * @param days How many days to move, which may be negative or zero.
+ * @returns The resulting date in ISO format.
+ */
+export function addDays(date: IsoDate, days: number): IsoDate {
+    const moved = parseIsoDate(date);
+    moved.setDate(moved.getDate() + days);
+    return isoDate(moved);
+}
+
+/**
+ * The weekday a date falls on, e.g. "Saturday".
+ *
+ * @param date A calendar date in ISO format (yyyy-mm-dd).
+ * @returns The English name of the weekday.
+ */
+export function weekdayOf(date: IsoDate): string {
+    return WEEKDAY_NAMES[parseIsoDate(date).getDay()]!;
+}
+
+/**
+ * A date range as it reads on a page: "September 24–27, 2026".
+ *
+ * Collapses whatever the two dates have in common — a one-day event names its day
+ * once, a range within a month names the month once, and a range within a year
+ * names the year once.
+ *
+ * @param startDate The first day, in ISO format (yyyy-mm-dd).
+ * @param endDate The last day, in ISO format (yyyy-mm-dd).
+ * @returns The range rendered for display.
+ */
+export function formatDateRange(startDate: IsoDate, endDate: IsoDate): string {
+    const start = parseIsoDate(startDate);
+    const end = parseIsoDate(endDate);
+    const startMonth = MONTH_NAMES[start.getMonth()];
+    const endMonth = MONTH_NAMES[end.getMonth()];
+
+    if (startDate === endDate) {
+        return `${startMonth} ${start.getDate()}, ${start.getFullYear()}`;
+    }
+    if (start.getFullYear() !== end.getFullYear()) {
+        // A range that crosses New Year has to name both years.
+        return `${startMonth} ${start.getDate()}, ${start.getFullYear()} – ${endMonth} ${end.getDate()}, ${end.getFullYear()}`;
+    }
+    if (start.getMonth() !== end.getMonth()) {
+        return `${startMonth} ${start.getDate()} – ${endMonth} ${end.getDate()}, ${end.getFullYear()}`;
+    }
+    // Tight en dash between two days of the same month, spaced one between months.
+    return `${startMonth} ${start.getDate()}–${end.getDate()}, ${end.getFullYear()}`;
+}
+
+/**
+ * An event's dates as they read on a page: "September 24–27, 2026".
+ *
+ * @param event Anything carrying an event's timing, which in practice is an `Event`.
+ * @returns The event's date range rendered for display.
+ */
+export function formatEventDates(event: { timing: { start: IsoDate; end: IsoDate } }): string {
+    return formatDateRange(event.timing.start, event.timing.end);
+}
+
+/**
+ * Comparison/sorting function for ISO dates (yyyy-mm-dd), oldest first.
+ *
+ * ISO dates sort correctly as plain strings; this exists for the `undefined`
+ * handling, which sorts a missing date last either way round.
+ *
+ * @param a First date to compare.
+ * @param b Second date to compare.
+ * @returns A negative number if `a` is before `b`, a positive number if `a` is after `b`, or 0 if they are the same.
+ */
+export const compareIsoDates = (a: IsoDate|undefined, b: IsoDate|undefined): number => {
+    if (!a && !b) return 0;
+    if (!a) return 1;
+    if (!b) return -1;
+    return a < b ? -1 : a > b ? 1 : 0;
+};

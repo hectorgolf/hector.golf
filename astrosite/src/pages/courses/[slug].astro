@@ -7,6 +7,7 @@ import ScorecardTable from '../../components/courses/ScorecardTable.astro';
 import { type Course } from '../../schemas/courses';
 import { getEventsAtCourse, linkToEvent } from '../../code/events';
 import { getCourseById } from '../../code/courses';
+import { formatEventDates } from '../../code/dates';
 import { getCollection } from 'astro:content';
 
 
@@ -108,7 +109,7 @@ const holeLayoutShape = course.course?.descriptions?.[0]?.shape === 'wide' ? 'wi
                     {relatedEvents.map((event) => (
                         <li class="related-event card">
                             <a href={linkToEvent(event)}>{event.name}</a>
-                            <span class="meta">{event.date}</span>
+                            <span class="meta">{formatEventDates(event)}</span>
                         </li>
                     ))}
                 </ul>

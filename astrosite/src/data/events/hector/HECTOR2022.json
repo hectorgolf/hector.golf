@@ -3,7 +3,10 @@
     "name": "Hector Trophée 2022",
     "format": "hector",
     "location": "Quellness Golf Resort, Germany",
-    "date": "September 14-17, 2022",
+    "timing": {
+        "start": "2022-09-14",
+        "end": "2022-09-17"
+    },
     "courses": [
         "quellness-porsche",
         "quellness-beckenbauer"

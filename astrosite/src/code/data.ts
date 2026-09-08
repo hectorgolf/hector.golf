@@ -12,7 +12,7 @@ import {
 } from "../schemas/events";
 import { type Course, schema as CourseSchema } from "../schemas/courses";
 import { type Player, schema as PlayerSchema } from "../schemas/players";
-import { isoDate, isoDateToday, parseEventDateRange } from "../code/dates.ts";
+import { isoDateToday, parseIsoDate } from "../code/dates.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -78,7 +78,7 @@ export function isFinnkampenEvent(
  */
 export function isUpcomingEvent(event: Event | undefined): boolean {
     if (!event) return false;
-    return isoDate(parseEventDateRange(event.date)?.startDate) >= isoDateToday();
+    return event.timing.start >= isoDateToday();
 }
 
 /**
@@ -89,27 +89,22 @@ export function isUpcomingEvent(event: Event | undefined): boolean {
  */
 export function isPastEvent(event: Event | undefined): boolean {
     if (!event) return false;
-    return isoDate(parseEventDateRange(event.date)?.endDate) < isoDateToday();
+    return event.timing.end < isoDateToday();
 }
 
 export function hasRecentlyEnded(event: Event): boolean {
-    const endDate = parseEventDateRange(event.date)?.endDate;
-    if (!endDate) return false;
+    const endDate = parseIsoDate(event.timing.end);
     const today = new Date();
     const daysSinceEnd = (today.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24);
     return daysSinceEnd >= 0 && daysSinceEnd <= 21; // within three weeks
 }
 
 export function yearOfEvent(event: HectorEvent|MatchplayEvent|FinnkampenEvent): number {
-	return parseYearFromDate(event.date)
+	return parseIsoDate(event.timing.end).getFullYear()
 }
 
 export function endDateOfEvent(event: Event): Date {
-    return new Date(parseEventDateRange(event.date)?.endDate || '1970-01-01')
-}
-
-function parseYearFromDate(date: string): number {
-	return parseInt(date.match(/\d{4}$/)?.[0] || '0')
+    return parseIsoDate(event.timing.end)
 }
 
 /**

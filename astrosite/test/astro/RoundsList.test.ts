@@ -16,7 +16,7 @@ const eventWith = (over: Record<string, unknown> = {}) => hectorEventSchema.pars
     format: 'hector',
     name: 'Test Invitational 2026',
     location: 'Nova Scotia, Canada',
-    date: 'November 1-2, 2026',
+    timing: { start: '2026-11-01', end: '2026-11-02' },
     participants: [],
     rounds: [
         {
@@ -131,6 +131,34 @@ describe('Component <RoundsList/>', async () => {
         // The allowance rides in a badge next to the format name at every width, so
         // there is no separate long form for it the way there is for the other rules.
         expect(result).toContain('HCP 100%')
+    })
+
+    it('titles each round by its weekday and time of day', async () => {
+        // The event runs Sunday 1 November through Monday 2 November 2026, with a
+        // round on each day, so neither day gets a time of day of its own.
+        const result = await render(eventWith())
+
+        expect(result).toContain('Sunday')
+        expect(result).toContain('Monday')
+        expect(result).not.toContain('Day 1, Round 1')
+    })
+
+    it('splits a two-round day into morning and afternoon', async () => {
+        const result = await render(eventWith({
+            rounds: [
+                {
+                    day: 1, round: 1, course: 'konopiste-radecky', tee: 'Yellow',
+                    gameFormats: [{ format: 'Stableford NET', handicapAllowance: 1 }],
+                },
+                {
+                    day: 1, round: 2, course: 'konopiste-radecky', tee: 'Yellow',
+                    gameFormats: [{ format: 'Stableford NET', handicapAllowance: 1 }],
+                },
+            ],
+        }))
+
+        expect(result).toContain('Sunday morning')
+        expect(result).toContain('Sunday afternoon')
     })
 
     it('renders nothing when the event has no rounds', async () => {

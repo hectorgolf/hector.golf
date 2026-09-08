@@ -3,7 +3,10 @@
     "name": "Hector Trophée IV",
     "format": "hector",
     "location": "Pickala Golf, Finland",
-    "date": "July 28, 2017",
+    "timing": {
+        "start": "2017-07-28",
+        "end": "2017-07-28"
+    },
     "courses": [
         "pickala-forest"
     ],

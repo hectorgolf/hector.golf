@@ -3,7 +3,10 @@
     "name": "Hector Trophée 2020",
     "format": "hector",
     "location": "Tahko Golf, Finland",
-    "date": "September 10-13, 2020",
+    "timing": {
+        "start": "2020-09-10",
+        "end": "2020-09-13"
+    },
     "courses": [
         "tahko-new-course",
         "tahko-old-course"

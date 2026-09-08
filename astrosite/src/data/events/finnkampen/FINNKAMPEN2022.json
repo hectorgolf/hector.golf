@@ -4,7 +4,10 @@
     "name": "Finnkampen 2022",
     "format": "finnkampen",
     "location": "Kurk Golf, Finland",
-    "date": "October 22, 2022",
+    "timing": {
+        "start": "2022-10-22",
+        "end": "2022-10-22"
+    },
     "courses": [
         "kurk-golf"
     ],

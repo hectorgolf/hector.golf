@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 import type { HandicapSource } from "../code/handicaps/handicap-source-api.ts";
 import { createWisegolfSession } from "../code/handicaps/wisegolf-api.ts";
 
-import { isoDateToday } from "../code/dates.ts";
+import { formatEventDates, isoDateToday } from "../code/dates.ts";
 
 import { playersData, hectorEvents, hasParticipants, isUpcomingEvent, pathToEventJson } from "../code/data.ts";
 import { getPlayerName, updatePlayerData } from "../code/players.ts";
@@ -224,7 +224,7 @@ const updateHandicapsForAllPlayers = async () => {
 type HectorEvent = {
     id: string;
     name: string;
-    date: string;
+    timing: { start: string; end: string };
     format: string;
     participants: Array<string>;
     buckets: undefined | Array<Array<{ id: string; handicap: number }>>;
@@ -257,7 +257,7 @@ const updateBucketsForUpcomingEvents = async () => {
     const eventsToUpdate = hectorEvents.filter(hasParticipants).filter(isUpcomingEvent) as HectorEvent[];
 
     for (const event of eventsToUpdate) {
-        console.log(`Updating buckets for ${event.name} on ${event.date}...`);
+        console.log(`Updating buckets for ${event.name} on ${formatEventDates(event)}...`);
         // Split participants to two buckets
         const trimPlayer = (player: Player): { id: string; handicap: number } => {
             return { id: player.id, handicap: player.handicap || 0 };
@@ -295,7 +295,7 @@ const updateBucketsForUpcomingEvents = async () => {
                 writeFileSync(filePath, JSON.stringify(eventObject, null, 2));
                 console.log(`Updated buckets for ${eventObject.name} in ${filePath}`);
             } else {
-                console.log(`No changes to buckets for event ${event.id} (${event.name} on ${event.date})`);
+                console.log(`No changes to buckets for event ${event.id} (${event.name} on ${formatEventDates(event)})`);
             }
         }
     }

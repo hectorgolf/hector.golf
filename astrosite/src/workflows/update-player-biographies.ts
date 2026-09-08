@@ -5,11 +5,11 @@ import { fileURLToPath } from "url";
 import { hectorEvents, hasParticipants, isUpcomingEvent, isPastEvent } from "../code/data.ts";
 import { getAllPlayers, getPlayerName, updatePlayerData } from "../code/players.ts";
 import { type Player } from "../schemas/players.ts";
-import { type HectorEvent } from "../schemas/events.ts";
+import { type EventTiming, type HectorEvent } from "../schemas/events.ts";
 
 import { createWisegolfSession } from "../code/handicaps/wisegolf-api";
 import { type GolfClub, type HandicapSource } from "../code/handicaps/handicap-source-api";
-import { parseEventDateRange } from "../code/dates.ts";
+import { parseIsoDate } from "../code/dates.ts";
 import { formatForPrinting } from "../code/strings.ts";
 
 const ENV = import.meta.env || process.env || {};
@@ -93,16 +93,15 @@ type PlayerBiographyInput = {
     otherGeneratedBiographies: string[];
 };
 
-function EventNameAndYearFrom(event: { name: string; date: string }): EventNameAndYear {
-    const range = parseEventDateRange(event.date);
+function EventNameAndYearFrom(event: { name: string; timing: EventTiming }): EventNameAndYear {
     return {
         name: event.name,
-        year: range?.endDate.getFullYear() || range?.startDate.getFullYear() || 0,
+        year: parseIsoDate(event.timing.end).getFullYear(),
     };
 }
 
-function describeEvent(event: { name: string; date: string }): string {
-    return `${event.name} (${parseEventDateRange(event.date)?.startDate.getFullYear()})`;
+function describeEvent(event: { name: string; timing: EventTiming }): string {
+    return `${event.name} (${parseIsoDate(event.timing.start).getFullYear()})`;
 }
 
 function describePlayer(player: Player): string {
@@ -143,7 +142,7 @@ async function extractPlayerBiographyInput(
         );
     }
 
-    // const lastAppearanceYear = parseEventDateRange(lastAppearance.date)?.endDate.getFullYear();
+    // const lastAppearanceYear = parseIsoDate(lastAppearance.timing.end).getFullYear();
     const nextHectorEvent = hectorEvents.filter(isUpcomingEvent).filter(hasParticipants)[0];
     return {
         name: player.name.first,

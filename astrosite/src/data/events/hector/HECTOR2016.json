@@ -3,7 +3,10 @@
     "name": "Hector Trophée III",
     "format": "hector",
     "location": "Kurk Golf, Finland",
-    "date": "July 21, 2016",
+    "timing": {
+        "start": "2016-07-21",
+        "end": "2016-07-21"
+    },
     "courses": [
         "kurk-golf"
     ],

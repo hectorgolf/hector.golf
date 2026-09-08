@@ -3,7 +3,10 @@
     "name": "Hector Matchplay 2026",
     "format": "matchplay",
     "location": "Finland",
-    "date": "May 4 - September 6, 2026",
+    "timing": {
+        "start": "2026-05-04",
+        "end": "2026-09-06"
+    },
     "description": "~~Sixteen~~ ~~Fifteen~~ Sixteen dedicated amateur golfers battle it out in a series of intense matchplay contests, where every stroke matters — including the near misses. With a straight knockout format, there’s no second chance: each match determines who moves on and who’s eliminated.",
     "participants": [
         "simo-l",

@@ -5,7 +5,7 @@ import Breadcrumb from '../../components/Breadcrumb.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import { getCollection } from 'astro:content';
 import { getEventsAtCourse } from '../../code/courses';
-import { compareDateStrings } from '../../code/dates';
+import { compareIsoDates } from '../../code/dates';
 import type { Course } from '../../schemas/courses';
 import type { Event } from '../../schemas/events';
 
@@ -24,8 +24,8 @@ const courses: Course[] = (await getCollection('courses')).map(course => course.
 const coursesSortedByDate = courses
 	.map(course => ({ course: course, mostRecentEvent: getEventsAtCourse(course.id)[0] }))
 	.sort((a: CourseAndMostRecentEvent, b: CourseAndMostRecentEvent) => {
-		const aDate = a.mostRecentEvent?.date
-		const bDate = b.mostRecentEvent?.date
+		const aDate = a.mostRecentEvent?.timing.end
+		const bDate = b.mostRecentEvent?.timing.end
 
 		if (!aDate && bDate) {
 			return 1;
@@ -33,7 +33,7 @@ const coursesSortedByDate = courses
 			return -1;
 		}
 		if (aDate && bDate) {
-			const c = compareDateStrings(aDate, bDate);
+			const c = compareIsoDates(aDate, bDate);
 			if (c !== 0) {
 				return c;
 			}

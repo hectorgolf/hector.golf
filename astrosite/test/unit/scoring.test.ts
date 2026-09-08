@@ -164,7 +164,7 @@ describe("Maximum score per hole", () => {
             format: "hector",
             name: "Hector Trophée 2026",
             location: "Konopiště",
-            date: "September 24–27, 2026",
+            timing: { start: "2026-09-24", end: "2026-09-27" },
             participants: [],
             rounds: [round()],
             ...over,

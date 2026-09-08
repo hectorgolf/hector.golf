@@ -3,7 +3,10 @@
     "name": "Hector Trophée 2021",
     "format": "hector",
     "location": "Penati Golf Resort, Slovakia",
-    "date": "September 1-4, 2021",
+    "timing": {
+        "start": "2021-09-01",
+        "end": "2021-09-04"
+    },
     "courses": [
         "penati-legend",
         "penati-heritage"

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { isValidIsoDate } from "../code/dates";
+
 const matchplayMatchSchema = z.object({
     id: z.string(),
     leftSource: z.string().nullable(),
@@ -145,12 +147,46 @@ const finnkampenResultsSchema = z
     })
     .optional();
 
+/**
+ * A calendar date, spelled "2026-09-24".
+ *
+ * An event carries its first and last day in this form rather than a prose range
+ * like "September 24-27, 2026". The prose is easy to write and hard to use: the day
+ * a given round is played is arithmetic on the start date, and arithmetic wants a
+ * date rather than a sentence to parse.
+ */
+const isoDateSchema = z
+    .string()
+    .refine(isValidIsoDate, { message: "expected a calendar date in ISO format, e.g. 2026-09-24" });
+
+/**
+ * When an event is played: its first day and its last.
+ *
+ * A one-day event repeats the same date, which keeps every reader of the pair
+ * honest — there is no "no end date" case for anyone to forget about.
+ *
+ * The two dates travel together in an object of their own so that the chronology
+ * check can live here, on the thing it is about. A refinement on the event itself
+ * would not survive `z.discriminatedUnion`, which rejects an option carrying one.
+ */
+const eventTimingSchema = z
+    .object({
+        /** The event's first day. Round day 1 is played on this date. */
+        start: isoDateSchema,
+        /** The event's last day, which for a one-day event is the start date again. */
+        end: isoDateSchema,
+    })
+    .refine((timing) => timing.start <= timing.end, {
+        message: "an event cannot end before it starts",
+        path: ["end"],
+    });
+
 const BaseEventSchema = z.object({
     id: z.string(),
     ignore: z.boolean().optional().default(false),
     name: z.string(),
     location: z.string(),
-    date: z.string(),
+    timing: eventTimingSchema,
     hero_image: z.string().optional(),
     description: z.string().optional(),
     participants: z.array(z.string()),
@@ -199,6 +235,9 @@ export const genericEventSchema = z.discriminatedUnion("format", [
 ]);
 
 export type Event = z.infer<typeof genericEventSchema>;
+
+/** When an event is played: its first and last day. */
+export type EventTiming = z.infer<typeof eventTimingSchema>;
 
 /** The name of a game format, e.g. "Better Ball Stableford NET". */
 export type HectorGameFormatName = z.infer<typeof gameFormatSchema>["format"];

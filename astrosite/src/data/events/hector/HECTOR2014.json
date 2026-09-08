@@ -3,7 +3,10 @@
     "name": "Hector Trophée I",
     "format": "hector",
     "location": "Pickala Golf, Finland",
-    "date": "August 22, 2014",
+    "timing": {
+        "start": "2014-08-22",
+        "end": "2014-08-22"
+    },
     "courses": [
         "pickala-forest"
     ],

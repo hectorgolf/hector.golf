@@ -3,7 +3,10 @@
     "name": "Hector Matchplay 2024",
     "format": "matchplay",
     "location": "Finland",
-    "date": "June 19 - September 1, 2024",
+    "timing": {
+        "start": "2024-06-19",
+        "end": "2024-09-01"
+    },
     "description": "16 of the world's best amateur golfers face each other in a sequence of grueling head-to-head battles to the lip-out bogey. This matchplay tournament format uses a single elimination bracket, making the stakes high from the very start.",
     "participants": [
         "lasse-k",

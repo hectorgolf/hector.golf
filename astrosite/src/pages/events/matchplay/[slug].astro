@@ -9,6 +9,7 @@ import { type MatchplayEvent } from '../../../schemas/events';
 import { type Player } from '../../../schemas/players';
 import { getAllEventIds, getEventById } from '../../../code/events';
 import { getPlayerName, getPlayerById } from '../../../code/players';
+import { formatEventDates } from '../../../code/dates';
 
 
 export function getStaticPaths() {
@@ -40,7 +41,7 @@ const eventDescriptionHtml = event.description ? md.render(event.description) : 
             <Breadcrumb title="Events" href="/events" />
             <Breadcrumb title="Matchplay" href="/events/matchplay" />
         </div>
-        <PageHeader title={event.name} eyebrow="Matchplay" meta={[event.location, event.date]} />
+        <PageHeader title={event.name} eyebrow="Matchplay" meta={[event.location, formatEventDates(event)]} />
 
         {event.hero_image && (
             <figure class="hero-figure event-hero">
