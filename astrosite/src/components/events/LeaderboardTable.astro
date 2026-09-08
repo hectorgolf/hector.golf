@@ -38,6 +38,7 @@ const { entries, competitorLabel, ascending, competition, live = false, emptyMes
 		data-competition={competition}
 		data-board={live ? competition : undefined}
 		data-ascending={live ? String(ascending) : undefined}
+		data-empty={live && entries.length === 0 ? '' : undefined}
 	>
 		<thead>
 			<tr>
@@ -117,6 +118,20 @@ const { entries, competitorLabel, ascending, competition, live = false, emptyMes
 <style>
 	table.leaderboard {
 		min-width: 420px;
+	}
+
+	/*
+	 * A board with nothing in it yet has no columns worth protecting, and the
+	 * floor above is wider than a phone: it pushed the centred message out of the
+	 * scroll container, so reading it meant scrolling sideways. The live updater
+	 * drops this attribute when the first standings arrive.
+	 */
+	table.leaderboard[data-empty] {
+		min-width: 0;
+	}
+
+	table.leaderboard[data-empty] thead {
+		display: none;
 	}
 
 	.place {

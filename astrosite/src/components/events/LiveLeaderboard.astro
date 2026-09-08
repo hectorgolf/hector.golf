@@ -241,6 +241,9 @@ const config = { eventId, endpoint, pollSeconds, stopAfter, roster: rosterByName
 		// The empty-state row spans every column and holds none of the data cells,
 		// so it has to go before the children below are reused as standings.
 		body.querySelector('[data-empty-state]')?.remove()
+		// Restores the width floor and the column headings now that there are rows
+		// whose columns need to line up.
+		delete table.dataset.empty
 
 		const ascending = table.dataset.ascending !== 'false'
 
