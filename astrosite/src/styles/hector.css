@@ -52,6 +52,12 @@
 	--surface-raised: var(--ink-800);
 	--line: var(--ink-800);
 	--line-strong: var(--ink-700);
+	/*
+	 * One step brighter than the app's border scale, which jumps straight from
+	 * ink-700 to the ink-600 text grey. For diagrams — the matchplay bracket — where
+	 * a border carries structure rather than just fencing off a surface.
+	 */
+	--line-bright: #3c3b44;
 	--text: var(--ink-100);
 	--text-muted: var(--ink-400);
 	--text-dim: var(--ink-500);
