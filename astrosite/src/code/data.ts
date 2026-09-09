@@ -16,12 +16,18 @@ import { isoDateToday, parseIsoDate } from "../code/dates.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 
+/**
+ * The path an event's data file lives at.
+ *
+ * Deriving the path from the id is only safe because it holds for events: all 18
+ * of them are named `{format}/{id}.json`. It does *not* hold for players — every
+ * one of the 45 player files has a filename that differs from the record's id
+ * (`anders-forss.json` holds `"id": "anders-f"`) — so there is deliberately no
+ * player counterpart to this function. Use `playerDataPath()` below, which finds
+ * the file by reading it, and `updatePlayerData()` in `players.ts` to write one.
+ */
 export function pathToEventJson(event: Event): string {
     return join(dirname(__filename), `../data/events/${event.format}/${event.id}.json`);
-}
-
-export function pathToPlayerJson(player: Player): string {
-    return join(dirname(__filename), `../data/players/${player.id}.json`);
 }
 
 /**
@@ -155,6 +161,11 @@ export const playersData: Player[] = (await glob("src/data/players/**/*.json"))
 
 /**
  * Find the path to the player's data file.
+ *
+ * The filenames do not follow from the ids, so the only way to find a player's
+ * file is to open the files and match on `id`. Any writer of player data has to
+ * go through here — see `updatePlayerData()` in `players.ts`, and the regression
+ * test in `test/unit/player-data-paths.test.ts`.
  *
  * @param player The Player object or player ID to find the path for.
  * @returns The path to the player's data file, or `undefined` if the player is not found.

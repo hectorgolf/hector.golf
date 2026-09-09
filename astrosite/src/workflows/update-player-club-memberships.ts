@@ -5,16 +5,17 @@ import { fileURLToPath } from "url";
 import type { GolfClub, HandicapSource } from "../code/handicaps/handicap-source-api.ts";
 import { createWisegolfSession } from "../code/handicaps/wisegolf-api.ts";
 
-import { pathToPlayerJson, playersData } from "../code/data.ts";
-import { writeJsonFile } from "../code/json.ts";
-import { getPlayerName } from "../code/players.ts";
+import { playersData } from "../code/data.ts";
+import type { Player } from "../schemas/players.ts";
+import { getPlayerName, updatePlayerData } from "../code/players.ts";
 
 const getPlayerById = (id: string): Player | undefined => {
-    let record = playersData.find((record) => record.id === id) as Player;
+    const record = playersData.find((record) => record.id === id);
     if (!record) {
         return undefined;
     }
-    return { ...record, handicap: record.handicap };
+    // A copy, so that assigning a club below does not mutate the shared `playersData`.
+    return { ...record };
 };
 
 // Get the resolved path to this file and determine the directory from that
@@ -33,22 +34,7 @@ if (existsSync(pathToClubMembershipUpdateCommitMessage)) {
 }
 writeFileSync(pathToClubMembershipUpdateCommitMessage, "");
 
-type Player = {
-    id: string;
-    name: {
-        first: string;
-        last: string;
-    };
-    contact: {
-        phone: string;
-    };
-    image?: string;
-    club?: string;
-    handicap?: number;
-    clubFound?: boolean;
-};
-
-const persistPlayersToDisk = (players: Player[]) => {
+const persistPlayersToDisk = async (players: Player[]) => {
     if (players.length === 0) {
         console.log(`No new clubs found. Skipping persisting to disk.`);
         return;
@@ -59,10 +45,13 @@ const persistPlayersToDisk = (players: Player[]) => {
     });
 
     console.log(`Updating ${players.length} players' club membership:`);
-    players.forEach((player: Player) => {
+    for (const player of players) {
         console.log(JSON.stringify(player, null, 4));
-        writeJsonFile(pathToPlayerJson(player), player);
-    });
+        // `updatePlayerData` looks up the file the player was read from. Building the
+        // path from the id instead would write a second record under a filename that
+        // no player file uses, and the site would then load the player twice.
+        await updatePlayerData(player);
+    }
     writeFileSync(
         pathToClubMembershipUpdateCommitMessage,
         `Updated ${players.length} players' club membership:\n${commitMessage.join("\n")}`,
@@ -131,7 +120,7 @@ const updateClubMemberships = async () => {
         const updatedPlayers = attemptedPlayers.filter((player: any) => !!player.club);
         if (updatedPlayers.length > 0) {
             console.log(`Found clubs for ${updatedPlayers.length} players. Persisting to disk...`);
-            persistPlayersToDisk(updatedPlayers);
+            await persistPlayersToDisk(updatedPlayers);
         } else {
             console.log(`No new clubs found. Skipping persisting to disk.`);
         }
