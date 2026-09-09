@@ -1,129 +1,129 @@
 {
-    "id": "HECTOR2020",
-    "name": "Hector Trophée 2020",
-    "format": "hector",
-    "location": "Tahko Golf, Finland",
-    "timing": {
-        "start": "2020-09-10",
-        "end": "2020-09-13"
-    },
-    "courses": [
-        "tahko-new-course",
-        "tahko-old-course"
+  "id": "HECTOR2020",
+  "name": "Hector Trophée 2020",
+  "format": "hector",
+  "location": "Tahko Golf, Finland",
+  "timing": {
+    "start": "2020-09-10",
+    "end": "2020-09-13"
+  },
+  "courses": [
+    "tahko-new-course",
+    "tahko-old-course"
+  ],
+  "participants": [
+    "olli-v",
+    "daniel-h",
+    "miso-l",
+    "lassi-k",
+    "martin-s",
+    "pekka-s",
+    "olli-a",
+    "sami-h",
+    "eero-h",
+    "lauri-p",
+    "simo-l",
+    "janne-v",
+    "kristian-h",
+    "timo-l",
+    "juuso-p",
+    "mikko-o",
+    "lasse-k",
+    "okko-p",
+    "jussi-a",
+    "jarkko-k",
+    "marcus-m",
+    "toni-m"
+  ],
+  "results": {
+    "teams": [
+      {
+        "name": "Olli Varis & Daniel Hylton",
+        "players": [
+          "olli-v",
+          "daniel-h"
+        ]
+      },
+      {
+        "name": "Miso Lith & Lassi Koto",
+        "players": [
+          "miso-l",
+          "lassi-k"
+        ]
+      },
+      {
+        "name": "Martin Svedholm & Pekka Saijonmaa",
+        "players": [
+          "martin-s",
+          "pekka-s"
+        ]
+      },
+      {
+        "name": "Olli Andersson & Sami Heikkinen",
+        "players": [
+          "olli-a",
+          "sami-h"
+        ]
+      },
+      {
+        "name": "Eero Halmetoja & Lauri Paatela",
+        "players": [
+          "eero-h",
+          "lauri-p"
+        ]
+      },
+      {
+        "name": "Simo Liukkonen Janne Valtakari",
+        "players": [
+          "simo-l",
+          "janne-v"
+        ]
+      },
+      {
+        "name": "Kristian Hiljander & Timo Lukumaa",
+        "players": [
+          "kristian-h",
+          "timo-l"
+        ]
+      },
+      {
+        "name": "Juuso Pihamaa & Mikko Oesch",
+        "players": [
+          "juuso-p",
+          "mikko-o"
+        ]
+      },
+      {
+        "name": "Lasse Koskela & Okko Pykäläinen",
+        "players": [
+          "lasse-k",
+          "okko-p"
+        ]
+      },
+      {
+        "name": "Jussi Allonen & Jarkko Kailanto",
+        "players": [
+          "jussi-a",
+          "jarkko-k"
+        ]
+      },
+      {
+        "name": "Marcus Mattila & Toni Marttila",
+        "players": [
+          "marcus-m",
+          "toni-m"
+        ]
+      }
     ],
-    "participants": [
-        "olli-v",
-        "daniel-h",
-        "miso-l",
-        "lassi-k",
+    "winners": {
+      "hector": [
         "martin-s",
-        "pekka-s",
-        "olli-a",
-        "sami-h",
-        "eero-h",
-        "lauri-p",
-        "simo-l",
-        "janne-v",
-        "kristian-h",
-        "timo-l",
-        "juuso-p",
-        "mikko-o",
-        "lasse-k",
-        "okko-p",
-        "jussi-a",
-        "jarkko-k",
-        "marcus-m",
-        "toni-m"
-    ],
-    "results": {
-        "teams": [
-            {
-                "name": "Olli Varis & Daniel Hylton",
-                "players": [
-                    "olli-v",
-                    "daniel-h"
-                ]
-            },
-            {
-                "name": "Miso Lith & Lassi Koto",
-                "players": [
-                    "miso-l",
-                    "lassi-k"
-                ]
-            },
-            {
-                "name": "Martin Svedholm & Pekka Saijonmaa",
-                "players": [
-                    "martin-s",
-                    "pekka-s"
-                ]
-            },
-            {
-                "name": "Olli Andersson & Sami Heikkinen",
-                "players": [
-                    "olli-a",
-                    "sami-h"
-                ]
-            },
-            {
-                "name": "Eero Halmetoja & Lauri Paatela",
-                "players": [
-                    "eero-h",
-                    "lauri-p"
-                ]
-            },
-            {
-                "name": "Simo Liukkonen Janne Valtakari",
-                "players": [
-                    "simo-l",
-                    "janne-v"
-                ]
-            },
-            {
-                "name": "Kristian Hiljander & Timo Lukumaa",
-                "players": [
-                    "kristian-h",
-                    "timo-l"
-                ]
-            },
-            {
-                "name": "Juuso Pihamaa & Mikko Oesch",
-                "players": [
-                    "juuso-p",
-                    "mikko-o"
-                ]
-            },
-            {
-                "name": "Lasse Koskela & Okko Pykäläinen",
-                "players": [
-                    "lasse-k",
-                    "okko-p"
-                ]
-            },
-            {
-                "name": "Jussi Allonen & Jarkko Kailanto",
-                "players": [
-                    "jussi-a",
-                    "jarkko-k"
-                ]
-            },
-            {
-                "name": "Marcus Mattila & Toni Marttila",
-                "players": [
-                    "marcus-m",
-                    "toni-m"
-                ]
-            }
-        ],
-        "winners": {
-            "hector": [
-                "martin-s",
-                "pekka-s"
-            ],
-            "victor": [
-                "Lassi Koto"
-            ]
-        }
-    },
-    "description": "Tahko Golf in Finland was the venue for the Hector Trophée 2020, occurring from September 10-13 despite a global pandemic and torrential rain reminiscent of an apocalypse on first two days of competition. The tournament’s format blended stroke play, stableford, best ball, and scramble, providing a comprehensive challenge that culminated in a dynamic competition."
+        "pekka-s"
+      ],
+      "victor": [
+        "Lassi Koto"
+      ]
+    }
+  },
+  "description": "Tahko Golf in Finland was the venue for the Hector Trophée 2020, occurring from September 10-13 despite a global pandemic and torrential rain reminiscent of an apocalypse on first two days of competition. The tournament’s format blended stroke play, stableford, best ball, and scramble, providing a comprehensive challenge that culminated in a dynamic competition."
 }

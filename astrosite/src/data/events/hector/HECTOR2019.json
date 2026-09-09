@@ -1,139 +1,139 @@
 {
-    "id": "HECTOR2019",
-    "name": "Hector Trophée VI",
-    "format": "hector",
-    "location": "Golf & Spa Resort Konopiště, Czechia",
-    "timing": {
-        "start": "2019-09-20",
-        "end": "2019-09-22"
-    },
-    "courses": [
-        "konopiste-radecky",
-        "konopiste-deste"
+  "id": "HECTOR2019",
+  "name": "Hector Trophée VI",
+  "format": "hector",
+  "location": "Golf & Spa Resort Konopiště, Czechia",
+  "timing": {
+    "start": "2019-09-20",
+    "end": "2019-09-22"
+  },
+  "courses": [
+    "konopiste-radecky",
+    "konopiste-deste"
+  ],
+  "participants": [
+    "tommy-g",
+    "erik-f",
+    "juuso-p",
+    "lassi-k",
+    "simo-l",
+    "jarkko-k",
+    "okko-p",
+    "harri-v",
+    "martin-s",
+    "olli-a",
+    "eero-h",
+    "marcus-m",
+    "olli-v",
+    "jaakko-s",
+    "sami-h",
+    "daniel-h",
+    "toni-m",
+    "pekka-s",
+    "kristian-h",
+    "janne-v",
+    "mikko-o",
+    "mikko-l",
+    "timo-l",
+    "miso-l"
+  ],
+  "results": {
+    "teams": [
+      {
+        "name": "Tommy Gulin & Erik Fagerström",
+        "players": [
+          "tommy-g",
+          "erik-f"
+        ]
+      },
+      {
+        "name": "Juuso Pihamaa & Lassi Koto",
+        "players": [
+          "juuso-p",
+          "lassi-k"
+        ]
+      },
+      {
+        "name": "Simo Liukkonen & Jarkko Kailanto",
+        "players": [
+          "simo-l",
+          "jarkko-k"
+        ]
+      },
+      {
+        "name": "Okko Pykäläinen & Harri Vainio",
+        "players": [
+          "okko-p",
+          "harri-v"
+        ]
+      },
+      {
+        "name": "Martin Svedholm & Olli Andersson",
+        "players": [
+          "martin-s",
+          "olli-a"
+        ]
+      },
+      {
+        "name": "Eero Halmetoja & Marcus Mattila",
+        "players": [
+          "eero-h",
+          "marcus-m"
+        ]
+      },
+      {
+        "name": "Olli Varis & Jaakko Saarinen",
+        "players": [
+          "olli-v",
+          "jaakko-s"
+        ]
+      },
+      {
+        "name": "Sami Heikkinen & Daniel Hylton",
+        "players": [
+          "sami-h",
+          "daniel-h"
+        ]
+      },
+      {
+        "name": "Toni Marttila & Pekka Saijonmaa",
+        "players": [
+          "toni-m",
+          "pekka-s"
+        ]
+      },
+      {
+        "name": "Kristian Hiljander & Janne Valtakari",
+        "players": [
+          "kristian-h",
+          "janne-v"
+        ]
+      },
+      {
+        "name": "Mikko Oesch & Mikko Lifflander",
+        "players": [
+          "mikko-o",
+          "mikko-l"
+        ]
+      },
+      {
+        "name": "Miso Lith & Timo Lukumaa",
+        "players": [
+          "timo-l",
+          "miso-l"
+        ]
+      }
     ],
-    "participants": [
-        "tommy-g",
-        "erik-f",
-        "juuso-p",
-        "lassi-k",
-        "simo-l",
-        "jarkko-k",
+    "winners": {
+      "hector": [
         "okko-p",
-        "harri-v",
-        "martin-s",
-        "olli-a",
+        "harri-v"
+      ],
+      "victor": [
         "eero-h",
-        "marcus-m",
-        "olli-v",
-        "jaakko-s",
-        "sami-h",
-        "daniel-h",
-        "toni-m",
-        "pekka-s",
-        "kristian-h",
-        "janne-v",
-        "mikko-o",
-        "mikko-l",
-        "timo-l",
-        "miso-l"
-    ],
-    "results": {
-        "teams": [
-            {
-                "name": "Tommy Gulin & Erik Fagerström",
-                "players": [
-                    "tommy-g",
-                    "erik-f"
-                ]
-            },
-            {
-                "name": "Juuso Pihamaa & Lassi Koto",
-                "players": [
-                    "juuso-p",
-                    "lassi-k"
-                ]
-            },
-            {
-                "name": "Simo Liukkonen & Jarkko Kailanto",
-                "players": [
-                    "simo-l",
-                    "jarkko-k"
-                ]
-            },
-            {
-                "name": "Okko Pykäläinen & Harri Vainio",
-                "players": [
-                    "okko-p",
-                    "harri-v"
-                ]
-            },
-            {
-                "name": "Martin Svedholm & Olli Andersson",
-                "players": [
-                    "martin-s",
-                    "olli-a"
-                ]
-            },
-            {
-                "name": "Eero Halmetoja & Marcus Mattila",
-                "players": [
-                    "eero-h",
-                    "marcus-m"
-                ]
-            },
-            {
-                "name": "Olli Varis & Jaakko Saarinen",
-                "players": [
-                    "olli-v",
-                    "jaakko-s"
-                ]
-            },
-            {
-                "name": "Sami Heikkinen & Daniel Hylton",
-                "players": [
-                    "sami-h",
-                    "daniel-h"
-                ]
-            },
-            {
-                "name": "Toni Marttila & Pekka Saijonmaa",
-                "players": [
-                    "toni-m",
-                    "pekka-s"
-                ]
-            },
-            {
-                "name": "Kristian Hiljander & Janne Valtakari",
-                "players": [
-                    "kristian-h",
-                    "janne-v"
-                ]
-            },
-            {
-                "name": "Mikko Oesch & Mikko Lifflander",
-                "players": [
-                    "mikko-o",
-                    "mikko-l"
-                ]
-            },
-            {
-                "name": "Miso Lith & Timo Lukumaa",
-                "players": [
-                    "timo-l",
-                    "miso-l"
-                ]
-            }
-        ],
-        "winners": {
-            "hector": [
-                "okko-p",
-                "harri-v"
-            ],
-            "victor": [
-                "eero-h",
-                "martin-s"
-            ]
-        }
-    },
-    "description": ""
+        "martin-s"
+      ]
+    }
+  },
+  "description": ""
 }

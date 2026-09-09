@@ -1,5 +1,6 @@
 import { Octokit, RequestError } from "octokit";
 import type { GoogleSheetIndividualLeaderboard, GoogleSheetTeamLeaderboard } from "./types";
+import { serializeJson } from "../json";
 
 const getEnvironmentVariable = (name: string): string => {
     const value = process.env[name];
@@ -69,7 +70,7 @@ const createOrReplaceHectorLeaderboardDataFile = async (
         victor: victor,
         updatedAt: new Date().toISOString(),
     };
-    const fileContents = JSON.stringify(payload, null, 2);
+    const fileContents = serializeJson(payload);
     const fileContentsBase64 = Buffer.from(fileContents).toString("base64");
     const octokit = await authenticate(githubToken);
     const response = await octokit.rest.repos.createOrUpdateFileContents({

@@ -1,191 +1,191 @@
 {
-    "id": "HECTORMATCHPLAY2025",
-    "name": "Hector Matchplay 2025",
-    "format": "matchplay",
-    "location": "Finland",
-    "timing": {
-        "start": "2025-05-27",
-        "end": "2025-09-14"
+  "id": "HECTORMATCHPLAY2025",
+  "name": "Hector Matchplay 2025",
+  "format": "matchplay",
+  "location": "Finland",
+  "timing": {
+    "start": "2025-05-27",
+    "end": "2025-09-14"
+  },
+  "description": "Sixteen passionate amateur golfers go head-to-head in a series of competitive matchplay duels, where every putt counts — even the ones that just miss. The single-elimination format means there’s no room for error, as each match decides who advances and who goes home.",
+  "participants": [
+    "jarkko-k",
+    "janne-v",
+    "toni-m",
+    "harri-v",
+    "mikko-o",
+    "simo-l",
+    "martin-s",
+    "juuso-p",
+    "sami-h",
+    "ossi-l",
+    "eero-h",
+    "miso-l",
+    "olli-a",
+    "kristian-h",
+    "jaakko-s",
+    "marcus-m"
+  ],
+  "results": {
+    "winners": {
+      "matchplay": "ossi-l"
     },
-    "description": "Sixteen passionate amateur golfers go head-to-head in a series of competitive matchplay duels, where every putt counts — even the ones that just miss. The single-elimination format means there’s no room for error, as each match decides who advances and who goes home.",
-    "participants": [
-        "jarkko-k",
-        "janne-v",
-        "toni-m",
-        "harri-v",
-        "mikko-o",
-        "simo-l",
-        "martin-s",
-        "juuso-p",
-        "sami-h",
-        "ossi-l",
-        "eero-h",
-        "miso-l",
-        "olli-a",
-        "kristian-h",
-        "jaakko-s",
-        "marcus-m"
-    ],
-    "results": {
-        "winners": {
-            "matchplay": "ossi-l"
-        },
-        "bracket": [
-            {
-                "round": 1,
-                "matches": [
-                    {
-                        "id": "M01",
-                        "leftSource": null,
-                        "rightSource": null,
-                        "left": "juuso-p",
-                        "right": "janne-v",
-                        "score": "5&4",
-                        "winner": "juuso-p"
-                    },
-                    {
-                        "id": "M02",
-                        "leftSource": null,
-                        "rightSource": null,
-                        "left": "martin-s",
-                        "right": "harri-v",
-                        "score": "1&0",
-                        "winner": "martin-s"
-                    },
-                    {
-                        "id": "M03",
-                        "leftSource": null,
-                        "rightSource": null,
-                        "left": "toni-m",
-                        "right": "mikko-o",
-                        "score": "7&6",
-                        "winner": "mikko-o"
-                    },
-                    {
-                        "id": "M04",
-                        "leftSource": null,
-                        "rightSource": null,
-                        "left": "jarkko-k",
-                        "right": "simo-l",
-                        "score": "6&4",
-                        "winner": "simo-l"
-                    },
-                    {
-                        "id": "M05",
-                        "leftSource": null,
-                        "rightSource": null,
-                        "left": "sami-h",
-                        "right": "jaakko-s",
-                        "score": "5&4",
-                        "winner": "sami-h"
-                    },
-                    {
-                        "id": "M06",
-                        "leftSource": null,
-                        "rightSource": null,
-                        "left": "miso-l",
-                        "right": "marcus-m",
-                        "score": "3&1",
-                        "winner": "marcus-m"
-                    },
-                    {
-                        "id": "M07",
-                        "leftSource": null,
-                        "rightSource": null,
-                        "left": "kristian-h",
-                        "right": "eero-h",
-                        "score": "8&7",
-                        "winner": "eero-h"
-                    },
-                    {
-                        "id": "M08",
-                        "leftSource": null,
-                        "rightSource": null,
-                        "left": "olli-a",
-                        "right": "ossi-l",
-                        "score": "2&1",
-                        "winner": "ossi-l"
-                    }
-                ]
-            },
-            {
-                "round": 2,
-                "matches": [
-                    {
-                        "id": "M09",
-                        "leftSource": "M01",
-                        "rightSource": "M02",
-                        "left": "juuso-p",
-                        "right": "martin-s",
-                        "score": "1UP",
-                        "winner": "martin-s"
-                    },
-                    {
-                        "id": "M10",
-                        "leftSource": "M03",
-                        "rightSource": "M04",
-                        "left": "mikko-o",
-                        "right": "simo-l",
-                        "score": "4&2",
-                        "winner": "simo-l"
-                    },
-                    {
-                        "id": "M11",
-                        "leftSource": "M05",
-                        "rightSource": "M06",
-                        "left": "sami-h",
-                        "right": "marcus-m",
-                        "score": "1UP",
-                        "winner": "marcus-m"
-                    },
-                    {
-                        "id": "M12",
-                        "leftSource": "M07",
-                        "rightSource": "M08",
-                        "left": "eero-h",
-                        "right": "ossi-l",
-                        "score": "4&3",
-                        "winner": "ossi-l"
-                    }
-                ]
-            },
-            {
-                "round": 3,
-                "matches": [
-                    {
-                        "id": "M13",
-                        "leftSource": "M09",
-                        "rightSource": "M10",
-                        "left": "martin-s",
-                        "right": "simo-l",
-                        "score": "2&1",
-                        "winner": "simo-l"
-                    },
-                    {
-                        "id": "M14",
-                        "leftSource": "M11",
-                        "rightSource": "M12",
-                        "left": "marcus-m",
-                        "right": "ossi-l",
-                        "score": "2UP",
-                        "winner": "ossi-l"
-                    }
-                ]
-            },
-            {
-                "round": 4,
-                "matches": [
-                    {
-                        "id": "M15",
-                        "leftSource": "M13",
-                        "rightSource": "M14",
-                        "left": "simo-l",
-                        "right": "ossi-l",
-                        "score": "3&2",
-                        "winner": "ossi-l"
-                    }
-                ]
-            }
+    "bracket": [
+      {
+        "round": 1,
+        "matches": [
+          {
+            "id": "M01",
+            "leftSource": null,
+            "rightSource": null,
+            "left": "juuso-p",
+            "right": "janne-v",
+            "score": "5&4",
+            "winner": "juuso-p"
+          },
+          {
+            "id": "M02",
+            "leftSource": null,
+            "rightSource": null,
+            "left": "martin-s",
+            "right": "harri-v",
+            "score": "1&0",
+            "winner": "martin-s"
+          },
+          {
+            "id": "M03",
+            "leftSource": null,
+            "rightSource": null,
+            "left": "toni-m",
+            "right": "mikko-o",
+            "score": "7&6",
+            "winner": "mikko-o"
+          },
+          {
+            "id": "M04",
+            "leftSource": null,
+            "rightSource": null,
+            "left": "jarkko-k",
+            "right": "simo-l",
+            "score": "6&4",
+            "winner": "simo-l"
+          },
+          {
+            "id": "M05",
+            "leftSource": null,
+            "rightSource": null,
+            "left": "sami-h",
+            "right": "jaakko-s",
+            "score": "5&4",
+            "winner": "sami-h"
+          },
+          {
+            "id": "M06",
+            "leftSource": null,
+            "rightSource": null,
+            "left": "miso-l",
+            "right": "marcus-m",
+            "score": "3&1",
+            "winner": "marcus-m"
+          },
+          {
+            "id": "M07",
+            "leftSource": null,
+            "rightSource": null,
+            "left": "kristian-h",
+            "right": "eero-h",
+            "score": "8&7",
+            "winner": "eero-h"
+          },
+          {
+            "id": "M08",
+            "leftSource": null,
+            "rightSource": null,
+            "left": "olli-a",
+            "right": "ossi-l",
+            "score": "2&1",
+            "winner": "ossi-l"
+          }
         ]
-    }
+      },
+      {
+        "round": 2,
+        "matches": [
+          {
+            "id": "M09",
+            "leftSource": "M01",
+            "rightSource": "M02",
+            "left": "juuso-p",
+            "right": "martin-s",
+            "score": "1UP",
+            "winner": "martin-s"
+          },
+          {
+            "id": "M10",
+            "leftSource": "M03",
+            "rightSource": "M04",
+            "left": "mikko-o",
+            "right": "simo-l",
+            "score": "4&2",
+            "winner": "simo-l"
+          },
+          {
+            "id": "M11",
+            "leftSource": "M05",
+            "rightSource": "M06",
+            "left": "sami-h",
+            "right": "marcus-m",
+            "score": "1UP",
+            "winner": "marcus-m"
+          },
+          {
+            "id": "M12",
+            "leftSource": "M07",
+            "rightSource": "M08",
+            "left": "eero-h",
+            "right": "ossi-l",
+            "score": "4&3",
+            "winner": "ossi-l"
+          }
+        ]
+      },
+      {
+        "round": 3,
+        "matches": [
+          {
+            "id": "M13",
+            "leftSource": "M09",
+            "rightSource": "M10",
+            "left": "martin-s",
+            "right": "simo-l",
+            "score": "2&1",
+            "winner": "simo-l"
+          },
+          {
+            "id": "M14",
+            "leftSource": "M11",
+            "rightSource": "M12",
+            "left": "marcus-m",
+            "right": "ossi-l",
+            "score": "2UP",
+            "winner": "ossi-l"
+          }
+        ]
+      },
+      {
+        "round": 4,
+        "matches": [
+          {
+            "id": "M15",
+            "leftSource": "M13",
+            "rightSource": "M14",
+            "left": "simo-l",
+            "right": "ossi-l",
+            "score": "3&2",
+            "winner": "ossi-l"
+          }
+        ]
+      }
+    ]
+  }
 }

@@ -1,0 +1,40 @@
+# Editor defaults for hector.golf.
+#
+# These describe what is already committed rather than imposing anything new, so
+# adopting them reformats nothing: the TypeScript is four-space, the Astro
+# components are tabs, the workflows are two-space YAML, and the JSON data files
+# are two-space with a trailing newline because that is what
+# astrosite/src/code/json.ts writes them as.
+#
+# The point is to stop an editor guessing differently and turning a one-line
+# change into a whole-file diff.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{ts,tsx,js,mjs,cjs}]
+indent_style = space
+indent_size = 4
+
+# Two, matching package.json, the tsconfigs, the editor settings, and the data
+# files that astrosite/src/code/json.ts writes.
+[*.{json,jsonc}]
+indent_style = space
+indent_size = 2
+
+# The components are tab-indented; the pages are mixed but lean the same way.
+[*.astro]
+indent_style = tab
+
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+# Two trailing spaces are a line break in Markdown.
+trim_trailing_whitespace = false

@@ -1,98 +1,98 @@
 {
-    "id": "HECTOR2017",
-    "name": "Hector Trophée IV",
-    "format": "hector",
-    "location": "Pickala Golf, Finland",
-    "timing": {
-        "start": "2017-07-28",
-        "end": "2017-07-28"
-    },
-    "courses": [
-        "pickala-forest"
+  "id": "HECTOR2017",
+  "name": "Hector Trophée IV",
+  "format": "hector",
+  "location": "Pickala Golf, Finland",
+  "timing": {
+    "start": "2017-07-28",
+    "end": "2017-07-28"
+  },
+  "courses": [
+    "pickala-forest"
+  ],
+  "participants": [
+    "toni-m",
+    "panu-l",
+    "mikko-o",
+    "olli-v",
+    "daniel-h",
+    "simo-l",
+    "tuomas-lesonen",
+    "tommy-nordberg",
+    "marcus-m",
+    "eero-s",
+    "martin-s",
+    "erik-f",
+    "juuso-p",
+    "lauri-s",
+    "janne-v",
+    "mikael-l"
+  ],
+  "results": {
+    "teams": [
+      {
+        "name": "Toni Marttila & Panu Liira",
+        "players": [
+          "toni-m",
+          "panu-l"
+        ]
+      },
+      {
+        "name": "Mikko Oesch & Olli Varis",
+        "players": [
+          "mikko-o",
+          "olli-v"
+        ]
+      },
+      {
+        "name": "Daniel Hylton & Simo Liukkonen",
+        "players": [
+          "daniel-h",
+          "simo-l"
+        ]
+      },
+      {
+        "name": "Tuomas Lesonen & Tommy Nordberg",
+        "players": [
+          "tuomas-lesonen",
+          "tommy-nordberg"
+        ]
+      },
+      {
+        "name": "Marcus Mattila & Eero Somervuo",
+        "players": [
+          "marcus-m",
+          "eero-s"
+        ]
+      },
+      {
+        "name": "Martin Svedholm & Erik Fagerström",
+        "players": [
+          "martin-s",
+          "erik-f"
+        ]
+      },
+      {
+        "name": "Juuso Pihamaa & Lauri Saarela",
+        "players": [
+          "juuso-p",
+          "lauri-s"
+        ]
+      },
+      {
+        "name": "Janne Valtakari & Mikael Lindberg",
+        "players": [
+          "janne-v",
+          "mikael-l"
+        ]
+      }
     ],
-    "participants": [
+    "winners": {
+      "hector": [
         "toni-m",
-        "panu-l",
-        "mikko-o",
-        "olli-v",
-        "daniel-h",
-        "simo-l",
-        "tuomas-lesonen",
-        "tommy-nordberg",
-        "marcus-m",
-        "eero-s",
-        "martin-s",
-        "erik-f",
-        "juuso-p",
-        "lauri-s",
-        "janne-v",
-        "mikael-l"
-    ],
-    "results": {
-        "teams": [
-            {
-                "name": "Toni Marttila & Panu Liira",
-                "players": [
-                    "toni-m",
-                    "panu-l"
-                ]
-            },
-            {
-                "name": "Mikko Oesch & Olli Varis",
-                "players": [
-                    "mikko-o",
-                    "olli-v"
-                ]
-            },
-            {
-                "name": "Daniel Hylton & Simo Liukkonen",
-                "players": [
-                    "daniel-h",
-                    "simo-l"
-                ]
-            },
-            {
-                "name": "Tuomas Lesonen & Tommy Nordberg",
-                "players": [
-                    "tuomas-lesonen",
-                    "tommy-nordberg"
-                ]
-            },
-            {
-                "name": "Marcus Mattila & Eero Somervuo",
-                "players": [
-                    "marcus-m",
-                    "eero-s"
-                ]
-            },
-            {
-                "name": "Martin Svedholm & Erik Fagerström",
-                "players": [
-                    "martin-s",
-                    "erik-f"
-                ]
-            },
-            {
-                "name": "Juuso Pihamaa & Lauri Saarela",
-                "players": [
-                    "juuso-p",
-                    "lauri-s"
-                ]
-            },
-            {
-                "name": "Janne Valtakari & Mikael Lindberg",
-                "players": [
-                    "janne-v",
-                    "mikael-l"
-                ]
-            }
-        ],
-        "winners": {
-            "hector": [
-                "toni-m",
-                "panu-l"
-            ]
-        }
-    },
-    "description": "On July 28, 2017, Hector Trophée returned to Pickala Golf for Hector Trophée V. Incorporating multiple formats into a one-day competitive golf outing, Hector Trophée V is considered by many to have been the last great event before a three-year drop in quality as some of the top players took a hiatus from participating in Hector events through 2018-2019. This format diversity highlighted the players’ tactical skills and endurance."
+        "panu-l"
+      ]
+    }
+  },
+  "description": "On July 28, 2017, Hector Trophée returned to Pickala Golf for Hector Trophée V. Incorporating multiple formats into a one-day competitive golf outing, Hector Trophée V is considered by many to have been the last great event before a three-year drop in quality as some of the top players took a hiatus from participating in Hector events through 2018-2019. This format diversity highlighted the players’ tactical skills and endurance."
 }
