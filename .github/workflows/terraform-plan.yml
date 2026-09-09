@@ -1,0 +1,98 @@
+# Plans the infrastructure in terraform/ on every pull request that touches it,
+# and posts the plan as a comment so the diff is reviewable alongside the code.
+#
+# This job can read everything and lock the state file, but it never applies —
+# that is terraform-apply.yml, gated by the `infrastructure` environment.
+name: Terraform plan
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform-*.yml'
+
+permissions:
+  contents: read
+  id-token: write       # required to mint the OIDC token for Workload Identity Federation
+  pull-requests: write  # required to post the plan comment
+
+defaults:
+  run:
+    working-directory: terraform
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Keyless: Actions presents its OIDC token and exchanges it for a
+      # short-lived GCP access token. There is no service account key anywhere.
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GH_WIF_PROVIDER }}
+          service_account: ${{ vars.GH_TERRAFORM_SA }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.15.1
+
+      - name: Check formatting
+        run: terraform fmt -check -recursive -diff
+
+      - name: Init
+        run: terraform init -input=false
+
+      - name: Validate
+        run: terraform validate -no-color
+
+      - name: Plan
+        id: plan
+        # pipefail matters: GitHub runs steps as `bash -e {0}`, which does not
+        # set it, so without this the exit status would be tee's and a failed
+        # plan would report success.
+        run: |
+          set -o pipefail
+          terraform plan -input=false -no-color 2>&1 | tee plan.txt
+        env:
+          # A JSON array, from a secret rather than a committed tfvars file:
+          # this repository is public and these are people's email addresses.
+          TF_VAR_admin_principals: ${{ secrets.TF_ADMIN_PRINCIPALS }}
+
+      - name: Comment the plan on the pull request
+        if: always()
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            // working-directory applies to `run` steps, not to actions, so this
+            // path is relative to the workspace root.
+            const file = 'terraform/plan.txt';
+            if (!fs.existsSync(file)) return;   // plan died before writing anything
+            const plan = fs.readFileSync(file, 'utf8');
+            // Keep well inside GitHub's 65,536-character comment limit.
+            const limit = 60000;
+            const body = plan.length > limit
+              ? `${plan.slice(0, limit)}\n\n…truncated. See the full plan in the job log.`
+              : plan;
+            const marker = '<!-- terraform-plan -->';
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(
+              github.rest.issues.listComments, { owner, repo, issue_number });
+            const existing = comments.find(
+              (c) => c.user.type === 'Bot' && c.body.includes(marker));
+            const text = `${marker}\n### Terraform plan\n\n\`\`\`terraform\n${body}\n\`\`\``;
+            if (existing) {
+              await github.rest.issues.updateComment(
+                { owner, repo, comment_id: existing.id, body: text });
+            } else {
+              await github.rest.issues.createComment(
+                { owner, repo, issue_number, body: text });
+            }

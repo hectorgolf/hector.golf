@@ -1,0 +1,16 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored; the
+# values in it are not secrets, but they are per-person and per-environment.
+
+project_id = "hector-golf"
+region     = "europe-north1"
+
+# Everyone who should be able to open the admin UI. IAP is deny by default, so
+# an empty list locks everyone out including you.
+admin_principals = [
+  "user:you@example.com",
+]
+
+# Optional: the €1/month budget alert. Needs billing-account permissions, so
+# apply this one locally rather than from CI.
+# enable_budget_alert = true
+# billing_account     = "01ABCD-234567-89EFGH"
