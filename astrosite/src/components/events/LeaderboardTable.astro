@@ -116,15 +116,23 @@ const { entries, competitorLabel, ascending, competition, live = false, emptyMes
 </div>
 
 <style>
+	/*
+	 * A floor wide enough to keep the columns off each other, capped at the room
+	 * the container actually has. A bare 420px floor overflowed on a phone — a
+	 * 440pt viewport less the page's 1.25rem gutters leaves 400px — so the board
+	 * scrolled sideways to reveal 20px of nothing. Below the floor the table lays
+	 * itself out in the width available and long competitor names wrap, which
+	 * reads better than a board you have to drag.
+	 */
 	table.leaderboard {
-		min-width: 420px;
+		min-width: min(420px, 100%);
 	}
 
 	/*
-	 * A board with nothing in it yet has no columns worth protecting, and the
-	 * floor above is wider than a phone: it pushed the centred message out of the
-	 * scroll container, so reading it meant scrolling sideways. The live updater
-	 * drops this attribute when the first standings arrive.
+	 * A board with nothing in it yet has no columns worth protecting, so the
+	 * centred message gets the whole width rather than being laid out around a
+	 * floor it does not need. The live updater drops this attribute when the
+	 * first standings arrive.
 	 */
 	table.leaderboard[data-empty] {
 		min-width: 0;
@@ -136,6 +144,35 @@ const { entries, competitorLabel, ascending, competition, live = false, emptyMes
 
 	.place {
 		width: 2.75rem;
+	}
+
+	/*
+	 * On a phone the columns are competing for a few hundred pixels, and most of
+	 * what they spend it on is gutter: five columns of 0.6rem padding either side
+	 * plus a place column sized for a chip half its width. Reclaiming that is
+	 * what keeps a name and its score on one line instead of wrapping the board
+	 * into double-height rows.
+	 */
+	@media (max-width: 520px) {
+		table.leaderboard th,
+		table.leaderboard td {
+			padding-left: 0.35rem;
+			padding-right: 0.35rem;
+		}
+
+		table.leaderboard th:first-child,
+		table.leaderboard td:first-child {
+			padding-left: 0;
+		}
+
+		table.leaderboard th:last-child,
+		table.leaderboard td:last-child {
+			padding-right: 0;
+		}
+
+		.place {
+			width: 2.1rem;
+		}
 	}
 
 	/* Shape and type come from .chip-num; only the leader's tint is local. */
