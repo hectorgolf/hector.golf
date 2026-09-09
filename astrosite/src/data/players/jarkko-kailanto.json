@@ -1,21 +1,21 @@
 {
-    "id": "jarkko-k",
-    "name": {
-        "first": "Jarkko",
-        "last": "Kailanto"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": "+358504860406"
-    },
-    "club": "HirG",
-    "handicap": 13.1,
-    "misc": [
-        "Nick name \"Bailando\"."
-    ],
-    "biography": [
-        "Jarkko, representing Hirsala Golf, is a competitor whose presence on the Hector Trophée circuit is as distinctive as his well-known moniker, \"Bailando.\" This nickname aptly captures the lively and energetic approach he brings to every aspect of the game, transforming each round into a spirited display of skill and determination.",
-        "Over his nine prior appearances in this esteemed tournament, Jarkko has forged a remarkable record of versatile achievement. He has, with a partner, lifted the coveted Hector Trophée, a testament to his formidable capacity for collaborative play. Further underscoring his individual prowess, Jarkko also secured the prestigious Victor Trophy, distinguishing himself as the tournament's premier solo performer. This rare dual accomplishment firmly cements his standing as one of the event's truly exceptional competitors.",
-        "As the forthcoming Hector Trophée 2026 approaches, it will mark Jarkko's tenth venture into this celebrated annual event. His continued active involvement and enduring quest for further accolades ensure that his vibrant journey remains a captivating narrative, eagerly followed by all enthusiasts of the Hector Trophée."
-    ]
+  "id": "jarkko-k",
+  "name": {
+    "first": "Jarkko",
+    "last": "Kailanto"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358504860406"
+  },
+  "club": "HirG",
+  "handicap": 13.1,
+  "misc": [
+    "Nick name \"Bailando\"."
+  ],
+  "biography": [
+    "Jarkko, representing Hirsala Golf, is a competitor whose presence on the Hector Trophée circuit is as distinctive as his well-known moniker, \"Bailando.\" This nickname aptly captures the lively and energetic approach he brings to every aspect of the game, transforming each round into a spirited display of skill and determination.",
+    "Over his nine prior appearances in this esteemed tournament, Jarkko has forged a remarkable record of versatile achievement. He has, with a partner, lifted the coveted Hector Trophée, a testament to his formidable capacity for collaborative play. Further underscoring his individual prowess, Jarkko also secured the prestigious Victor Trophy, distinguishing himself as the tournament's premier solo performer. This rare dual accomplishment firmly cements his standing as one of the event's truly exceptional competitors.",
+    "As the forthcoming Hector Trophée 2026 approaches, it will mark Jarkko's tenth venture into this celebrated annual event. His continued active involvement and enduring quest for further accolades ensure that his vibrant journey remains a captivating narrative, eagerly followed by all enthusiasts of the Hector Trophée."
+  ]
 }

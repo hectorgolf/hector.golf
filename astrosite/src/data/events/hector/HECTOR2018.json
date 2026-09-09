@@ -1,98 +1,98 @@
 {
-    "id": "HECTOR2018",
-    "name": "Hector Trophée V",
-    "format": "hector",
-    "location": "Sand Valley Golf Resort, Poland",
-    "timing": {
-        "start": "2018-08-03",
-        "end": "2018-08-05"
-    },
-    "courses": [
-        "sandvalley"
+  "id": "HECTOR2018",
+  "name": "Hector Trophée V",
+  "format": "hector",
+  "location": "Sand Valley Golf Resort, Poland",
+  "timing": {
+    "start": "2018-08-03",
+    "end": "2018-08-05"
+  },
+  "courses": [
+    "sandvalley"
+  ],
+  "participants": [
+    "simo-l",
+    "toni-m",
+    "olli-a",
+    "juuso-p",
+    "martin-s",
+    "eero-h",
+    "daniel-h",
+    "lassi-k",
+    "olli-v",
+    "jarkko-k",
+    "marcus-m",
+    "joakim-g",
+    "janne-v",
+    "timo-l",
+    "miso-l",
+    "mikko-o"
+  ],
+  "results": {
+    "teams": [
+      {
+        "name": "Simo Liukkonen & Toni Marttila",
+        "players": [
+          "simo-l",
+          "toni-m"
+        ]
+      },
+      {
+        "name": "Olli Andersson & Juuso Pihamaa",
+        "players": [
+          "olli-a",
+          "juuso-p"
+        ]
+      },
+      {
+        "name": "Martin Svedholm & Eero Halmetoja",
+        "players": [
+          "martin-s",
+          "eero-h"
+        ]
+      },
+      {
+        "name": "Daniel Hylton & Lassi Koto",
+        "players": [
+          "daniel-h",
+          "lassi-k"
+        ]
+      },
+      {
+        "name": "Olli Varis & Jarkko Kailanto",
+        "players": [
+          "olli-v",
+          "jarkko-k"
+        ]
+      },
+      {
+        "name": "Marcus Mattila & Joakim Grader",
+        "players": [
+          "marcus-m",
+          "joakim-g"
+        ]
+      },
+      {
+        "name": "Janne Valtakari & Timo Lukumaa",
+        "players": [
+          "janne-v",
+          "timo-l"
+        ]
+      },
+      {
+        "name": "Miso Lith & Mikko Oesch",
+        "players": [
+          "miso-l",
+          "mikko-o"
+        ]
+      }
     ],
-    "participants": [
+    "winners": {
+      "hector": [
         "simo-l",
-        "toni-m",
-        "olli-a",
-        "juuso-p",
-        "martin-s",
-        "eero-h",
-        "daniel-h",
-        "lassi-k",
-        "olli-v",
-        "jarkko-k",
-        "marcus-m",
-        "joakim-g",
-        "janne-v",
-        "timo-l",
-        "miso-l",
-        "mikko-o"
-    ],
-    "results": {
-        "teams": [
-            {
-                "name": "Simo Liukkonen & Toni Marttila",
-                "players": [
-                    "simo-l",
-                    "toni-m"
-                ]
-            },
-            {
-                "name": "Olli Andersson & Juuso Pihamaa",
-                "players": [
-                    "olli-a",
-                    "juuso-p"
-                ]
-            },
-            {
-                "name": "Martin Svedholm & Eero Halmetoja",
-                "players": [
-                    "martin-s",
-                    "eero-h"
-                ]
-            },
-            {
-                "name": "Daniel Hylton & Lassi Koto",
-                "players": [
-                    "daniel-h",
-                    "lassi-k"
-                ]
-            },
-            {
-                "name": "Olli Varis & Jarkko Kailanto",
-                "players": [
-                    "olli-v",
-                    "jarkko-k"
-                ]
-            },
-            {
-                "name": "Marcus Mattila & Joakim Grader",
-                "players": [
-                    "marcus-m",
-                    "joakim-g"
-                ]
-            },
-            {
-                "name": "Janne Valtakari & Timo Lukumaa",
-                "players": [
-                    "janne-v",
-                    "timo-l"
-                ]
-            },
-            {
-                "name": "Miso Lith & Mikko Oesch",
-                "players": [
-                    "miso-l",
-                    "mikko-o"
-                ]
-            }
-        ],
-        "winners": {
-            "hector": [
-                "simo-l",
-                "toni-m"
-            ]
-        }
-    },
-    "description": "At Sand Valley in Poland, the Hector Trophée VI in 2018 unfolded over August 3-5, featuring a combination of stroke play, stableford, best ball, and scramble. This variety in formats heightened the competitive spirit and showcased the participants’ strategic acumen and resilience towards high levels of alcohol in their blood."
+        "toni-m"
+      ]
+    }
+  },
+  "description": "At Sand Valley in Poland, the Hector Trophée VI in 2018 unfolded over August 3-5, featuring a combination of stroke play, stableford, best ball, and scramble. This variety in formats heightened the competitive spirit and showcased the participants’ strategic acumen and resilience towards high levels of alcohol in their blood."
 }

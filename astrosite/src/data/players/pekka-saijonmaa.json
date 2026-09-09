@@ -1,21 +1,21 @@
 {
-    "id": "pekka-s",
-    "name": {
-        "first": "Pekka",
-        "last": "Saijonmaa"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": "+358503788364"
-    },
-    "club": "ERG",
-    "handicap": 17.2,
-    "misc": [
-        "Waters the course more than the course sprinklers."
-    ],
-    "biography": [
-        "Pekka, representing Espoo Ringside Golf, brings a uniquely energetic style to the Hector Trophée. His dedication to the game is often manifest in a profound, almost elemental interaction with the course itself, giving the impression that he personally ensures the greens are adequately hydrated, sometimes with a vigor that rivals the installed irrigation systems. This distinctive approach underscores a player who is deeply invested in every shot and every moment of competition.",
-        "Across his seven previous outings in this prestigious event, Pekka has demonstrated his capability for success in the team format. He has, notably, been a part of a pair that hoisted the revered Hector Trophée on one occasion, a testament to his ability to contribute decisively when collaborating with a partner. This significant triumph marks a highlight in his competitive journey within the tournament.",
-        "Despite his collective achievement, the singular honor of the Victor Trophy, awarded to the tournament's best individual performer, has yet to be secured by Pekka. This pursuit for individual recognition remains a compelling aspect of his narrative. Although he maintains an active presence within the Hector Trophée community, Pekka is currently not slated to compete in the forthcoming Hector Trophée 2026, though his continued involvement in the broader competitive scene suggests a potential return in future editions."
-    ]
+  "id": "pekka-s",
+  "name": {
+    "first": "Pekka",
+    "last": "Saijonmaa"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358503788364"
+  },
+  "club": "ERG",
+  "handicap": 17.2,
+  "misc": [
+    "Waters the course more than the course sprinklers."
+  ],
+  "biography": [
+    "Pekka, representing Espoo Ringside Golf, brings a uniquely energetic style to the Hector Trophée. His dedication to the game is often manifest in a profound, almost elemental interaction with the course itself, giving the impression that he personally ensures the greens are adequately hydrated, sometimes with a vigor that rivals the installed irrigation systems. This distinctive approach underscores a player who is deeply invested in every shot and every moment of competition.",
+    "Across his seven previous outings in this prestigious event, Pekka has demonstrated his capability for success in the team format. He has, notably, been a part of a pair that hoisted the revered Hector Trophée on one occasion, a testament to his ability to contribute decisively when collaborating with a partner. This significant triumph marks a highlight in his competitive journey within the tournament.",
+    "Despite his collective achievement, the singular honor of the Victor Trophy, awarded to the tournament's best individual performer, has yet to be secured by Pekka. This pursuit for individual recognition remains a compelling aspect of his narrative. Although he maintains an active presence within the Hector Trophée community, Pekka is currently not slated to compete in the forthcoming Hector Trophée 2026, though his continued involvement in the broader competitive scene suggests a potential return in future editions."
+  ]
 }

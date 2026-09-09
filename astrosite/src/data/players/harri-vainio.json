@@ -1,23 +1,23 @@
 {
-    "id": "harri-v",
-    "name": {
-        "first": "Harri",
-        "last": "Vainio"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": "+358505980893"
-    },
-    "club": "HaG",
-    "handicap": 11.9,
-    "misc": [
-        "Is known as \"the doctor\".",
-        "Known for bomb drives despite his advanced age.",
-        "Finally made his first hole-in-one on May 24th, 2025, after 20 years of trying."
-    ],
-    "biography": [
-        "Harri, representing Hattula Golf and affectionately known as \"the doctor,\" approaches the Hector Trophée with a unique blend of seasoned experience and surprising vigor. His presence on the course is a testament to both his refined skill and an enduring passion for the game, consistently injecting a formidable power into the competitive field.",
-        "Across his six previous participations in this distinguished event, Harri has cultivated an impressive record of collective success. He has twice been a pivotal member of a victorious duo that hoisted the coveted Hector Trophée, underscoring his exceptional ability to perform under pressure within the team format. While these dual team championships highlight his collaborative strength, the individual Victor Trophy, signifying solo excellence, has to date remained an elusive accolade, representing an ongoing personal quest.",
-        "Despite his considerable tenure in the sport, Harri continues to defy conventional expectations, consistently celebrated for his prodigious \"bomb drives\" that belie his advanced age, a testament to his sustained physical prowess. A particularly memorable personal milestone was achieved on May 24th, 2025, when he finally recorded his first hole-in-one after two decades of dedication, a moment that resonated deeply throughout the golfing community. As Harri prepares for what will be his seventh appearance at the Hector Trophée 2026, his journey remains one of quiet determination, marked by significant collective triumphs and the persistent pursuit of individual recognition."
-    ]
+  "id": "harri-v",
+  "name": {
+    "first": "Harri",
+    "last": "Vainio"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358505980893"
+  },
+  "club": "HaG",
+  "handicap": 11.9,
+  "misc": [
+    "Is known as \"the doctor\".",
+    "Known for bomb drives despite his advanced age.",
+    "Finally made his first hole-in-one on May 24th, 2025, after 20 years of trying."
+  ],
+  "biography": [
+    "Harri, representing Hattula Golf and affectionately known as \"the doctor,\" approaches the Hector Trophée with a unique blend of seasoned experience and surprising vigor. His presence on the course is a testament to both his refined skill and an enduring passion for the game, consistently injecting a formidable power into the competitive field.",
+    "Across his six previous participations in this distinguished event, Harri has cultivated an impressive record of collective success. He has twice been a pivotal member of a victorious duo that hoisted the coveted Hector Trophée, underscoring his exceptional ability to perform under pressure within the team format. While these dual team championships highlight his collaborative strength, the individual Victor Trophy, signifying solo excellence, has to date remained an elusive accolade, representing an ongoing personal quest.",
+    "Despite his considerable tenure in the sport, Harri continues to defy conventional expectations, consistently celebrated for his prodigious \"bomb drives\" that belie his advanced age, a testament to his sustained physical prowess. A particularly memorable personal milestone was achieved on May 24th, 2025, when he finally recorded his first hole-in-one after two decades of dedication, a moment that resonated deeply throughout the golfing community. As Harri prepares for what will be his seventh appearance at the Hector Trophée 2026, his journey remains one of quiet determination, marked by significant collective triumphs and the persistent pursuit of individual recognition."
+  ]
 }

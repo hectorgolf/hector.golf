@@ -1,21 +1,21 @@
 {
-    "id": "panu-l",
-    "name": {
-        "first": "Panu",
-        "last": "Liira"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": "+358505658474"
-    },
-    "club": "KJKG",
-    "handicap": 19.2,
-    "misc": [
-        "Known for deliberating his next shot for a long time, leading to somewhat slow play"
-    ],
-    "biography": [
-        "Panu, a golfer noted for his meticulous approach to each shot, cultivated a reputation for thoughtful, albeit unhurried, play throughout his engagements with the Hector Trophée. His deliberate process on the course distinguished his participation, reflecting a player deeply committed to the strategic intricacies of golf.",
-        "Across three appearances in this prominent competition, Panu demonstrated his capacity for partnership success. He was a member of a victorious duo that raised the Hector Trophée on one occasion, a significant accomplishment underscoring his contribution to team dynamics. However, the individual Victor Trophy, signifying solo excellence, ultimately remained beyond his reach during his competitive tenure.",
-        "Having concluded his active involvement with Hector events, Panu will not be among the competitors at the forthcoming Hector Trophée 2026. His journey within the tournament, marked by a notable team triumph and a measured style of play, now forms a part of its established history."
-    ]
+  "id": "panu-l",
+  "name": {
+    "first": "Panu",
+    "last": "Liira"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358505658474"
+  },
+  "club": "KJKG",
+  "handicap": 19.2,
+  "misc": [
+    "Known for deliberating his next shot for a long time, leading to somewhat slow play"
+  ],
+  "biography": [
+    "Panu, a golfer noted for his meticulous approach to each shot, cultivated a reputation for thoughtful, albeit unhurried, play throughout his engagements with the Hector Trophée. His deliberate process on the course distinguished his participation, reflecting a player deeply committed to the strategic intricacies of golf.",
+    "Across three appearances in this prominent competition, Panu demonstrated his capacity for partnership success. He was a member of a victorious duo that raised the Hector Trophée on one occasion, a significant accomplishment underscoring his contribution to team dynamics. However, the individual Victor Trophy, signifying solo excellence, ultimately remained beyond his reach during his competitive tenure.",
+    "Having concluded his active involvement with Hector events, Panu will not be among the competitors at the forthcoming Hector Trophée 2026. His journey within the tournament, marked by a notable team triumph and a measured style of play, now forms a part of its established history."
+  ]
 }

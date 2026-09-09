@@ -1,21 +1,21 @@
 {
-    "id": "sami-h",
-    "name": {
-        "first": "Sami",
-        "last": "Heikkinen"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": "+358405392115"
-    },
-    "club": "HirG",
-    "handicap": 4.8,
-    "misc": [
-        "Regularly competes in the Finnish Mid Tour as well with decent results"
-    ],
-    "biography": [
-        "Sami, representing Hirsala Golf, embodies the spirit of quiet perseverance within the Hector Trophée. His consistent engagement with competitive golf is further exemplified by his regular, and often successful, appearances on the Finnish Mid Tour, demonstrating a sustained level of proficiency and a deep-seated commitment to the sport.",
-        "The forthcoming Hector Trophée 2026 will mark Sami's eighth consecutive participation in this esteemed event. Despite his unwavering presence across seven previous editions, the coveted Hector Trophée for the winning pair, and the individual Victor Trophy, have both remained just beyond his grasp. This record highlights the formidable standard required to claim victory in this challenging competition.",
-        "Sami's persistent pursuit of these accolades, coupled with his consistent performance in other high-level amateur circuits, positions him as a perennially respected competitor. His continued active engagement ensures that his journey remains a compelling narrative for all who follow the Hector Trophée, as he seeks to translate his consistent form into a breakthrough triumph."
-    ]
+  "id": "sami-h",
+  "name": {
+    "first": "Sami",
+    "last": "Heikkinen"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358405392115"
+  },
+  "club": "HirG",
+  "handicap": 4.8,
+  "misc": [
+    "Regularly competes in the Finnish Mid Tour as well with decent results"
+  ],
+  "biography": [
+    "Sami, representing Hirsala Golf, embodies the spirit of quiet perseverance within the Hector Trophée. His consistent engagement with competitive golf is further exemplified by his regular, and often successful, appearances on the Finnish Mid Tour, demonstrating a sustained level of proficiency and a deep-seated commitment to the sport.",
+    "The forthcoming Hector Trophée 2026 will mark Sami's eighth consecutive participation in this esteemed event. Despite his unwavering presence across seven previous editions, the coveted Hector Trophée for the winning pair, and the individual Victor Trophy, have both remained just beyond his grasp. This record highlights the formidable standard required to claim victory in this challenging competition.",
+    "Sami's persistent pursuit of these accolades, coupled with his consistent performance in other high-level amateur circuits, positions him as a perennially respected competitor. His continued active engagement ensures that his journey remains a compelling narrative for all who follow the Hector Trophée, as he seeks to translate his consistent form into a breakthrough triumph."
+  ]
 }

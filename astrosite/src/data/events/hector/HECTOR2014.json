@@ -1,80 +1,80 @@
 {
-    "id": "HECTOR2014",
-    "name": "Hector Trophée I",
-    "format": "hector",
-    "location": "Pickala Golf, Finland",
-    "timing": {
-        "start": "2014-08-22",
-        "end": "2014-08-22"
-    },
-    "courses": [
-        "pickala-forest"
+  "id": "HECTOR2014",
+  "name": "Hector Trophée I",
+  "format": "hector",
+  "location": "Pickala Golf, Finland",
+  "timing": {
+    "start": "2014-08-22",
+    "end": "2014-08-22"
+  },
+  "courses": [
+    "pickala-forest"
+  ],
+  "participants": [
+    "marcus-m",
+    "mikko-o",
+    "anders-f",
+    "matias-v",
+    "daniel-h",
+    "joni-v",
+    "rasmus-b",
+    "jarkko-k",
+    "lasse-k",
+    "panu-l",
+    "toni-m",
+    "tomas-d"
+  ],
+  "results": {
+    "teams": [
+      {
+        "name": "Marcus Mattila & Mikko Oesch",
+        "players": [
+          "marcus-m",
+          "mikko-o"
+        ]
+      },
+      {
+        "name": "Anders Forss & Matti Vahtola",
+        "players": [
+          "anders-f",
+          "matias-v"
+        ]
+      },
+      {
+        "name": "Daniel Hylton & Joni Valkeapää",
+        "players": [
+          "daniel-h",
+          "joni-v"
+        ]
+      },
+      {
+        "name": "Rasmus Back & Jarkko Kailanto",
+        "players": [
+          "rasmus-b",
+          "jarkko-k"
+        ]
+      },
+      {
+        "name": "Lasse Koskela & Panu Liira",
+        "players": [
+          "lasse-k",
+          "panu-l"
+        ]
+      },
+      {
+        "name": "Toni Marttila & Tomas Danska",
+        "players": [
+          "toni-m",
+          "tomas-d"
+        ]
+      }
     ],
-    "participants": [
-        "marcus-m",
-        "mikko-o",
-        "anders-f",
-        "matias-v",
+    "winners": {
+      "hector": [
         "daniel-h",
-        "joni-v",
-        "rasmus-b",
-        "jarkko-k",
-        "lasse-k",
-        "panu-l",
-        "toni-m",
-        "tomas-d"
-    ],
-    "results": {
-        "teams": [
-            {
-                "name": "Marcus Mattila & Mikko Oesch",
-                "players": [
-                    "marcus-m",
-                    "mikko-o"
-                ]
-            },
-            {
-                "name": "Anders Forss & Matti Vahtola",
-                "players": [
-                    "anders-f",
-                    "matias-v"
-                ]
-            },
-            {
-                "name": "Daniel Hylton & Joni Valkeapää",
-                "players": [
-                    "daniel-h",
-                    "joni-v"
-                ]
-            },
-            {
-                "name": "Rasmus Back & Jarkko Kailanto",
-                "players": [
-                    "rasmus-b",
-                    "jarkko-k"
-                ]
-            },
-            {
-                "name": "Lasse Koskela & Panu Liira",
-                "players": [
-                    "lasse-k",
-                    "panu-l"
-                ]
-            },
-            {
-                "name": "Toni Marttila & Tomas Danska",
-                "players": [
-                    "toni-m",
-                    "tomas-d"
-                ]
-            }
-        ],
-        "winners": {
-            "hector": [
-                "daniel-h",
-                "joni-v"
-            ]
-        }
-    },
-    "description": "The inaugural Hector Trophée competition was held in 2014 at Pickala Golf's Forest Course, marking the beginning of a prestigious amateur golf event that would grow in popularity and reputation over the years. While a markedly small event featuring a somewhat questionable field and a plethora of suspected rules violations, the first Hector Trophée set the stage for future tournaments, showcasing the talent and competitive spirit of amateur golfers from around the world."
+        "joni-v"
+      ]
+    }
+  },
+  "description": "The inaugural Hector Trophée competition was held in 2014 at Pickala Golf's Forest Course, marking the beginning of a prestigious amateur golf event that would grow in popularity and reputation over the years. While a markedly small event featuring a somewhat questionable field and a plethora of suspected rules violations, the first Hector Trophée set the stage for future tournaments, showcasing the talent and competitive spirit of amateur golfers from around the world."
 }

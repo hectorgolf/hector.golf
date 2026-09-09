@@ -1,21 +1,21 @@
 {
-    "id": "ossi-l",
-    "name": {
-        "first": "Ossi",
-        "last": "Laukkanen"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": "+358400492149"
-    },
-    "club": "KGC",
-    "handicap": 7,
-    "misc": [
-        "Rarely uses his driver, which has raised questions about his masculinity."
-    ],
-    "biography": [
-        "Ossi, representing Kullo Golf Club, has cultivated a distinctive approach to the Hector Trophée, marked by a thoughtful engagement with the course and a strategic game plan that sets him apart within the competitive field.",
-        "Over his three previous appearances in this esteemed tournament, Ossi has consistently displayed a methodical approach, often opting for precise iron play over the driver. This strategic choice, which has occasionally sparked light-hearted inquiry into his golfing temperament, highlights his dedication to course management. Despite his consistent, thoughtful play, outright victory, in the form of either the Hector Trophée or the individual Victor Trophy, has yet to materialize.",
-        "The forthcoming Hector Trophée 2026 will signify Ossi's fourth participation in this esteemed competition. His unwavering commitment to his particular strategic philosophy, combined with his persistent pursuit of a championship title, adds a compelling dimension to the tournament's ongoing story, as observers keenly anticipate whether his distinct approach will culminate in a breakthrough triumph."
-    ]
+  "id": "ossi-l",
+  "name": {
+    "first": "Ossi",
+    "last": "Laukkanen"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358400492149"
+  },
+  "club": "KGC",
+  "handicap": 7,
+  "misc": [
+    "Rarely uses his driver, which has raised questions about his masculinity."
+  ],
+  "biography": [
+    "Ossi, representing Kullo Golf Club, has cultivated a distinctive approach to the Hector Trophée, marked by a thoughtful engagement with the course and a strategic game plan that sets him apart within the competitive field.",
+    "Over his three previous appearances in this esteemed tournament, Ossi has consistently displayed a methodical approach, often opting for precise iron play over the driver. This strategic choice, which has occasionally sparked light-hearted inquiry into his golfing temperament, highlights his dedication to course management. Despite his consistent, thoughtful play, outright victory, in the form of either the Hector Trophée or the individual Victor Trophy, has yet to materialize.",
+    "The forthcoming Hector Trophée 2026 will signify Ossi's fourth participation in this esteemed competition. His unwavering commitment to his particular strategic philosophy, combined with his persistent pursuit of a championship title, adds a compelling dimension to the tournament's ongoing story, as observers keenly anticipate whether his distinct approach will culminate in a breakthrough triumph."
+  ]
 }

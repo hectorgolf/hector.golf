@@ -1,21 +1,21 @@
 {
-    "id": "timo-l",
-    "name": {
-        "first": "Timo",
-        "last": "Lukumaa"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": "+358456709767"
-    },
-    "club": "KGV",
-    "handicap": 11.1,
-    "misc": [
-        "Famous for being an ambassador for the AimPoint method for putting."
-    ],
-    "biography": [
-        "Timo, representing Keimola Golf, approaches the Hector Trophée with a distinctive emphasis on precision and strategic execution. His reputation as a fervent advocate and ambassador for the AimPoint method of putting highlights a meticulous approach to the game's finer details, suggesting a player who values calculated advantage on the greens.",
-        "Over his eight previous participations in this esteemed tournament, Timo has proven himself to be an exceptionally valuable partner in the team format. His contributions have been instrumental in his pairs securing the coveted Hector Trophée on three separate occasions, a remarkable testament to his capacity for cohesive play and clutch performance under pressure. These victories underscore his consistent ability to elevate his team's collective effort.",
-        "Despite his significant triumphs in the pair competition, the individual Victor Trophy has, to date, remained just beyond Timo's reach, presenting a compelling narrative of an ongoing pursuit for solo recognition. As he prepares for what will be his ninth appearance at the Hector Trophée 2026, his continued presence affirms a steadfast commitment to both personal excellence and the enduring spirit of the tournament."
-    ]
+  "id": "timo-l",
+  "name": {
+    "first": "Timo",
+    "last": "Lukumaa"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358456709767"
+  },
+  "club": "KGV",
+  "handicap": 11.1,
+  "misc": [
+    "Famous for being an ambassador for the AimPoint method for putting."
+  ],
+  "biography": [
+    "Timo, representing Keimola Golf, approaches the Hector Trophée with a distinctive emphasis on precision and strategic execution. His reputation as a fervent advocate and ambassador for the AimPoint method of putting highlights a meticulous approach to the game's finer details, suggesting a player who values calculated advantage on the greens.",
+    "Over his eight previous participations in this esteemed tournament, Timo has proven himself to be an exceptionally valuable partner in the team format. His contributions have been instrumental in his pairs securing the coveted Hector Trophée on three separate occasions, a remarkable testament to his capacity for cohesive play and clutch performance under pressure. These victories underscore his consistent ability to elevate his team's collective effort.",
+    "Despite his significant triumphs in the pair competition, the individual Victor Trophy has, to date, remained just beyond Timo's reach, presenting a compelling narrative of an ongoing pursuit for solo recognition. As he prepares for what will be his ninth appearance at the Hector Trophée 2026, his continued presence affirms a steadfast commitment to both personal excellence and the enduring spirit of the tournament."
+  ]
 }

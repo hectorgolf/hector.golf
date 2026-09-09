@@ -1,18 +1,18 @@
 {
-    "id": "lauri-s",
-    "name": {
-        "first": "Lauri",
-        "last": "Saarela"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": ""
-    },
-    "club": "JG",
-    "handicap": 47.7,
-    "biography": [
-        "Lauri, representing Jyväs-Golf, embarked on a singular venture into the competitive landscape of the esteemed Hector Trophée. His brief yet focused participation contributed to the tournament's rich history, marking a distinct, albeit concise, chapter in his competitive journey.",
-        "During this sole competitive outing, Lauri diligently pursued both the revered team championship, the Hector Trophée, and the individual Victor Trophy. Despite his earnest efforts, neither of these coveted accolades ultimately materialized, underscoring the formidable competitive standard upheld by the event's participants.",
-        "Presently, Lauri is regarded as having concluded his active involvement within Hector events, transitioning from an active competitor to a part of the tournament's established legacy. Consequently, he will not be among the distinguished players contending for honors at the forthcoming Hector Trophée 2026, his journey remaining a concise yet notable entry in the tournament's enduring chronicles."
-    ]
+  "id": "lauri-s",
+  "name": {
+    "first": "Lauri",
+    "last": "Saarela"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": ""
+  },
+  "club": "JG",
+  "handicap": 47.7,
+  "biography": [
+    "Lauri, representing Jyväs-Golf, embarked on a singular venture into the competitive landscape of the esteemed Hector Trophée. His brief yet focused participation contributed to the tournament's rich history, marking a distinct, albeit concise, chapter in his competitive journey.",
+    "During this sole competitive outing, Lauri diligently pursued both the revered team championship, the Hector Trophée, and the individual Victor Trophy. Despite his earnest efforts, neither of these coveted accolades ultimately materialized, underscoring the formidable competitive standard upheld by the event's participants.",
+    "Presently, Lauri is regarded as having concluded his active involvement within Hector events, transitioning from an active competitor to a part of the tournament's established legacy. Consequently, he will not be among the distinguished players contending for honors at the forthcoming Hector Trophée 2026, his journey remaining a concise yet notable entry in the tournament's enduring chronicles."
+  ]
 }

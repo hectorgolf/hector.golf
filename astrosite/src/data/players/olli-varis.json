@@ -1,21 +1,21 @@
 {
-    "id": "olli-v",
-    "name": {
-        "first": "Olli",
-        "last": "Varis"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": "+358445455556"
-    },
-    "club": "HirG",
-    "handicap": 8.4,
-    "misc": [
-        "Die hard Bryson Dechambeau fan"
-    ],
-    "biography": [
-        "Olli, representing Hirsala Golf, approaches the Hector Trophée with a discernible analytical inclination, a characteristic perhaps cultivated by his profound admiration for Bryson Dechambeau's data-driven methodology in golf. This dedication to dissecting the intricacies of the game underpins his consistent and thoughtful performances on the course.",
-        "Throughout his nine previous engagements with this distinguished competition, Olli has exhibited a remarkable versatility, achieving success in both the collaborative pair format and as an individual contender. He has, with a partner, hoisted the revered Hector Trophée on one occasion, a clear demonstration of his effectiveness in team play. Complementing this, his individual excellence was unequivocally recognized with a victory in the prestigious Victor Trophy, a notable achievement that highlights his singular command over the challenging conditions of the tournament. This rare dual triumph solidifies his esteemed position within the annals of the Hector Trophée.",
-        "As the Hector Trophée 2026 approaches, it will signify Olli's tenth consecutive participation, underscoring his enduring dedication to this annual event. His continued presence, driven by a blend of intellectual rigor and proven competitive prowess, ensures he remains a captivating figure, perpetually striving to enhance his game and accumulate further distinguished honors."
-    ]
+  "id": "olli-v",
+  "name": {
+    "first": "Olli",
+    "last": "Varis"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358445455556"
+  },
+  "club": "HirG",
+  "handicap": 8.4,
+  "misc": [
+    "Die hard Bryson Dechambeau fan"
+  ],
+  "biography": [
+    "Olli, representing Hirsala Golf, approaches the Hector Trophée with a discernible analytical inclination, a characteristic perhaps cultivated by his profound admiration for Bryson Dechambeau's data-driven methodology in golf. This dedication to dissecting the intricacies of the game underpins his consistent and thoughtful performances on the course.",
+    "Throughout his nine previous engagements with this distinguished competition, Olli has exhibited a remarkable versatility, achieving success in both the collaborative pair format and as an individual contender. He has, with a partner, hoisted the revered Hector Trophée on one occasion, a clear demonstration of his effectiveness in team play. Complementing this, his individual excellence was unequivocally recognized with a victory in the prestigious Victor Trophy, a notable achievement that highlights his singular command over the challenging conditions of the tournament. This rare dual triumph solidifies his esteemed position within the annals of the Hector Trophée.",
+    "As the Hector Trophée 2026 approaches, it will signify Olli's tenth consecutive participation, underscoring his enduring dedication to this annual event. His continued presence, driven by a blend of intellectual rigor and proven competitive prowess, ensures he remains a captivating figure, perpetually striving to enhance his game and accumulate further distinguished honors."
+  ]
 }

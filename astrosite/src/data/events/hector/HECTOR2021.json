@@ -1,120 +1,120 @@
 {
-    "id": "HECTOR2021",
-    "name": "Hector Trophée 2021",
-    "format": "hector",
-    "location": "Penati Golf Resort, Slovakia",
-    "timing": {
-        "start": "2021-09-01",
-        "end": "2021-09-04"
-    },
-    "courses": [
-        "penati-legend",
-        "penati-heritage"
+  "id": "HECTOR2021",
+  "name": "Hector Trophée 2021",
+  "format": "hector",
+  "location": "Penati Golf Resort, Slovakia",
+  "timing": {
+    "start": "2021-09-01",
+    "end": "2021-09-04"
+  },
+  "courses": [
+    "penati-legend",
+    "penati-heritage"
+  ],
+  "participants": [
+    "pasi-h",
+    "olli-a",
+    "simo-l",
+    "timo-l",
+    "toni-m",
+    "lauri-p",
+    "eero-h",
+    "marcus-m",
+    "martin-s",
+    "pekka-s",
+    "sami-h",
+    "jaakko-s",
+    "jussi-a",
+    "janne-v",
+    "juuso-p",
+    "lassi-k",
+    "harri-v",
+    "miso-l",
+    "mikko-o",
+    "lasse-k"
+  ],
+  "results": {
+    "teams": [
+      {
+        "name": "Pasi Halmetoja & Olli Andersson",
+        "players": [
+          "pasi-h",
+          "olli-a"
+        ]
+      },
+      {
+        "name": "Simo Liukkonen & Timo Lukumaa",
+        "players": [
+          "simo-l",
+          "timo-l"
+        ]
+      },
+      {
+        "name": "Toni Marttila & Lauri Paatela",
+        "players": [
+          "toni-m",
+          "lauri-p"
+        ]
+      },
+      {
+        "name": "Eero Halmetoja & Marcus Mattila",
+        "players": [
+          "eero-h",
+          "marcus-m"
+        ]
+      },
+      {
+        "name": "Martin Svedholm & Pekka Saijonmaa",
+        "players": [
+          "martin-s",
+          "pekka-s"
+        ]
+      },
+      {
+        "name": "Sami Heikkinen & Jaakko Saarinen",
+        "players": [
+          "sami-h",
+          "jaakko-s"
+        ]
+      },
+      {
+        "name": "Jussi Allonen & Janne Valtakari",
+        "players": [
+          "jussi-a",
+          "janne-v"
+        ]
+      },
+      {
+        "name": "Juuso Pihamaa & Lassi Koto",
+        "players": [
+          "juuso-p",
+          "lassi-k"
+        ]
+      },
+      {
+        "name": "Harri Vainio & Miso Lith",
+        "players": [
+          "harri-v",
+          "miso-l"
+        ]
+      },
+      {
+        "name": "Mikko Oesch & Lasse Koskela",
+        "players": [
+          "mikko-o",
+          "lasse-k"
+        ]
+      }
     ],
-    "participants": [
-        "pasi-h",
-        "olli-a",
+    "winners": {
+      "hector": [
         "simo-l",
-        "timo-l",
-        "toni-m",
-        "lauri-p",
-        "eero-h",
-        "marcus-m",
-        "martin-s",
-        "pekka-s",
-        "sami-h",
-        "jaakko-s",
-        "jussi-a",
-        "janne-v",
-        "juuso-p",
-        "lassi-k",
-        "harri-v",
-        "miso-l",
-        "mikko-o",
-        "lasse-k"
-    ],
-    "results": {
-        "teams": [
-            {
-                "name": "Pasi Halmetoja & Olli Andersson",
-                "players": [
-                    "pasi-h",
-                    "olli-a"
-                ]
-            },
-            {
-                "name": "Simo Liukkonen & Timo Lukumaa",
-                "players": [
-                    "simo-l",
-                    "timo-l"
-                ]
-            },
-            {
-                "name": "Toni Marttila & Lauri Paatela",
-                "players": [
-                    "toni-m",
-                    "lauri-p"
-                ]
-            },
-            {
-                "name": "Eero Halmetoja & Marcus Mattila",
-                "players": [
-                    "eero-h",
-                    "marcus-m"
-                ]
-            },
-            {
-                "name": "Martin Svedholm & Pekka Saijonmaa",
-                "players": [
-                    "martin-s",
-                    "pekka-s"
-                ]
-            },
-            {
-                "name": "Sami Heikkinen & Jaakko Saarinen",
-                "players": [
-                    "sami-h",
-                    "jaakko-s"
-                ]
-            },
-            {
-                "name": "Jussi Allonen & Janne Valtakari",
-                "players": [
-                    "jussi-a",
-                    "janne-v"
-                ]
-            },
-            {
-                "name": "Juuso Pihamaa & Lassi Koto",
-                "players": [
-                    "juuso-p",
-                    "lassi-k"
-                ]
-            },
-            {
-                "name": "Harri Vainio & Miso Lith",
-                "players": [
-                    "harri-v",
-                    "miso-l"
-                ]
-            },
-            {
-                "name": "Mikko Oesch & Lasse Koskela",
-                "players": [
-                    "mikko-o",
-                    "lasse-k"
-                ]
-            }
-        ],
-        "winners": {
-            "hector": [
-                "simo-l",
-                "timo-l"
-            ],
-            "victor": [
-                "toni-m"
-            ]
-        }
-    },
-    "description": "The Hector Trophée 2021, held at the Penati Golf Resort in Slovakia from September 1-4, offered a diverse competition format including stroke play, stableford, best ball, and scramble. This format tested the golfers' adaptability and skill, making for an engaging and multifaceted event."
+        "timo-l"
+      ],
+      "victor": [
+        "toni-m"
+      ]
+    }
+  },
+  "description": "The Hector Trophée 2021, held at the Penati Golf Resort in Slovakia from September 1-4, offered a diverse competition format including stroke play, stableford, best ball, and scramble. This format tested the golfers' adaptability and skill, making for an engaging and multifaceted event."
 }

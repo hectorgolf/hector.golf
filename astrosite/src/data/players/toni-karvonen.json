@@ -1,18 +1,18 @@
 {
-    "id": "toni-k",
-    "name": {
-        "first": "Toni",
-        "last": "Karvonen"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": "+358401383215"
-    },
-    "club": "KGC",
-    "handicap": 8.2,
-    "biography": [
-        "Toni, representing the esteemed Kullo Golf Club, is poised to make a highly anticipated and rather unconventional debut at the Hector Trophée 2026. For a considerable period, Toni has maintained a somewhat detached perspective regarding competitive golf, having previously been considered to have withdrawn from the active pursuit of tournament participation. His decision to enter this esteemed competition marks a significant departure from his established stance, transforming a long period of observation into a direct engagement with the event's challenges.",
-        "This forthcoming tournament will therefore mark Toni's inaugural foray onto the hallowed links of the Hector Trophée. With no prior appearances to his name, and consequently no past victories in either the coveted Hector Trophée team event or the individual Victor Trophy, his journey represents an entirely fresh chapter. This absence of a historical record within the tournament fosters a unique sense of curiosity, as all eyes will be keenly observing his performance without the pre-existing expectations that often accompany veteran competitors.",
-        "As Toni prepares to embark on this new competitive endeavor, his decision to re-enter the golfing landscape through the Hector Trophée 2026 promises an intriguing narrative. His arrival injects an element of the unknown into the field, leaving observers eager to witness how this debutant, emerging from a period of self-imposed competitive hiatus, will navigate the demands of one of golf's most prestigious pair and individual contests."
-    ]
+  "id": "toni-k",
+  "name": {
+    "first": "Toni",
+    "last": "Karvonen"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358401383215"
+  },
+  "club": "KGC",
+  "handicap": 8.2,
+  "biography": [
+    "Toni, representing the esteemed Kullo Golf Club, is poised to make a highly anticipated and rather unconventional debut at the Hector Trophée 2026. For a considerable period, Toni has maintained a somewhat detached perspective regarding competitive golf, having previously been considered to have withdrawn from the active pursuit of tournament participation. His decision to enter this esteemed competition marks a significant departure from his established stance, transforming a long period of observation into a direct engagement with the event's challenges.",
+    "This forthcoming tournament will therefore mark Toni's inaugural foray onto the hallowed links of the Hector Trophée. With no prior appearances to his name, and consequently no past victories in either the coveted Hector Trophée team event or the individual Victor Trophy, his journey represents an entirely fresh chapter. This absence of a historical record within the tournament fosters a unique sense of curiosity, as all eyes will be keenly observing his performance without the pre-existing expectations that often accompany veteran competitors.",
+    "As Toni prepares to embark on this new competitive endeavor, his decision to re-enter the golfing landscape through the Hector Trophée 2026 promises an intriguing narrative. His arrival injects an element of the unknown into the field, leaving observers eager to witness how this debutant, emerging from a period of self-imposed competitive hiatus, will navigate the demands of one of golf's most prestigious pair and individual contests."
+  ]
 }

@@ -1,18 +1,18 @@
 {
-    "id": "rasmus-b",
-    "name": {
-        "first": "Rasmus",
-        "last": "Back"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": ""
-    },
-    "club": "VGC",
-    "handicap": 19.2,
-    "biography": [
-        "Rasmus, representing Vihti Golf Club, entered the competitive arena of the Hector Trophée, carving out a memorable, albeit brief, presence within its esteemed history. His singular appearance highlighted a commitment to test his skills against the tournament's formidable challenges.",
-        "During his solitary venture onto the Hector Trophée links, Rasmus dedicated himself to pursuing both the revered team championship and the individual Victor Trophy. Despite his earnest efforts, ultimate victory in either category remained just beyond his grasp, underscoring the demanding competitive standard of the event.",
-        "Following this lone engagement, Rasmus has since moved away from competitive involvement in Hector events, effectively concluding his active participation. Therefore, he will not be counted among the distinguished players at the forthcoming Hector Trophée 2026, his journey remaining a concise yet notable entry in the tournament's annals."
-    ]
+  "id": "rasmus-b",
+  "name": {
+    "first": "Rasmus",
+    "last": "Back"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": ""
+  },
+  "club": "VGC",
+  "handicap": 19.2,
+  "biography": [
+    "Rasmus, representing Vihti Golf Club, entered the competitive arena of the Hector Trophée, carving out a memorable, albeit brief, presence within its esteemed history. His singular appearance highlighted a commitment to test his skills against the tournament's formidable challenges.",
+    "During his solitary venture onto the Hector Trophée links, Rasmus dedicated himself to pursuing both the revered team championship and the individual Victor Trophy. Despite his earnest efforts, ultimate victory in either category remained just beyond his grasp, underscoring the demanding competitive standard of the event.",
+    "Following this lone engagement, Rasmus has since moved away from competitive involvement in Hector events, effectively concluding his active participation. Therefore, he will not be counted among the distinguished players at the forthcoming Hector Trophée 2026, his journey remaining a concise yet notable entry in the tournament's annals."
+  ]
 }

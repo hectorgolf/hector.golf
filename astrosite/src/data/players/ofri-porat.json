@@ -1,23 +1,23 @@
 {
-    "id": "ofri-p",
-    "name": {
-        "first": "Ofri",
-        "last": "Porat"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": "+358504873415"
-    },
-    "club": "GPi",
-    "handicap": 5.5,
-    "misc": [
-        "Lives in Tampere, Finland",
-        "Appreciates the thoughtful course designs of Kosti Kuronen who passed away in 2024"
-    ],
-    "biography": [
-        "Ofri, representing Golf Pirkkala, brings a distinctive blend of competitive spirit and profound appreciation for the architectural nuances of golf course design to the Hector Trophée. Residing in Tampere, Finland, his connection to the sport extends beyond mere play, delving into the very canvas upon which the game is contested.",
-        "Across his three prior participations in this esteemed tournament, Ofri has consistently engaged with both the challenging individual format and the collaborative pair format. Despite his diligent efforts and thoughtful strategizing, the coveted Hector Trophée for the winning pair, and the individual Victor Trophy, have both thus far remained just beyond his grasp.",
-        "This unyielding pursuit of excellence is perhaps influenced by his deep admiration for the late Kosti Kuronen, whose thoughtful course designs, sadly concluded with his passing in 2024, resonate deeply with Ofri’s own analytical approach to the game. He sees each hole as a strategic puzzle, appreciating the intellectual challenge embedded in well-crafted layouts.",
-        "The forthcoming Hector Trophée 2026 will signify Ofri's fourth venture into this prestigious competition. His continued presence and steadfast dedication, coupled with his discerning eye for golf course artistry, ensure that his journey remains one of keen interest, as he endeavors to translate his profound understanding of the game into a breakthrough triumph."
-    ]
+  "id": "ofri-p",
+  "name": {
+    "first": "Ofri",
+    "last": "Porat"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358504873415"
+  },
+  "club": "GPi",
+  "handicap": 5.5,
+  "misc": [
+    "Lives in Tampere, Finland",
+    "Appreciates the thoughtful course designs of Kosti Kuronen who passed away in 2024"
+  ],
+  "biography": [
+    "Ofri, representing Golf Pirkkala, brings a distinctive blend of competitive spirit and profound appreciation for the architectural nuances of golf course design to the Hector Trophée. Residing in Tampere, Finland, his connection to the sport extends beyond mere play, delving into the very canvas upon which the game is contested.",
+    "Across his three prior participations in this esteemed tournament, Ofri has consistently engaged with both the challenging individual format and the collaborative pair format. Despite his diligent efforts and thoughtful strategizing, the coveted Hector Trophée for the winning pair, and the individual Victor Trophy, have both thus far remained just beyond his grasp.",
+    "This unyielding pursuit of excellence is perhaps influenced by his deep admiration for the late Kosti Kuronen, whose thoughtful course designs, sadly concluded with his passing in 2024, resonate deeply with Ofri’s own analytical approach to the game. He sees each hole as a strategic puzzle, appreciating the intellectual challenge embedded in well-crafted layouts.",
+    "The forthcoming Hector Trophée 2026 will signify Ofri's fourth venture into this prestigious competition. His continued presence and steadfast dedication, coupled with his discerning eye for golf course artistry, ensure that his journey remains one of keen interest, as he endeavors to translate his profound understanding of the game into a breakthrough triumph."
+  ]
 }

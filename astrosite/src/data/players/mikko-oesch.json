@@ -1,22 +1,22 @@
 {
-    "id": "mikko-o",
-    "name": {
-        "first": "Mikko",
-        "last": "Oesch"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": "+358408459339"
-    },
-    "club": "LGV",
-    "handicap": 8.4,
-    "misc": [
-        "Has planted his seeds in four different women in four different decades."
-    ],
-    "biography": [
-        "Mikko, representing Lakeside Golf Vammala, has established himself as a prominent and enduring presence within the annals of the Hector Trophée. His consistent participation over an extended period underscores a deep-seated affinity for this premier golfing event.",
-        "His journey across an impressive eleven previous participations in this prestigious competition has seen him navigate both the challenging individual format and the demanding collaborative pair format with persistent resolve. Despite his consistent efforts and strategic play across more than a decade of involvement, neither the coveted Hector Trophée for the victorious pair nor the individual Victor Trophy has yet graced his collection, marking an ongoing pursuit for a championship title.",
-        "Beyond the fairways, Mikko's biography is imbued with a distinctive zest for life, marked by an uncommon personal legacy: by various accounts, he has contributed to the unfolding of new generations across four separate decades. This singular aspect of his life underscores a remarkable personal vitality and a capacity for enduring presence that extends far beyond the golfing greens, reflecting a multifaceted life experience.",
-        "While Mikko maintains an active involvement within the broader Hector events, he will not be among the field of play at the forthcoming Hector Trophée 2026. Nevertheless, his long-standing dedication and intriguing personal narrative ensure that any future return to the tournament would be met with considerable interest, as he continues his quest for a maiden victory."
-    ]
+  "id": "mikko-o",
+  "name": {
+    "first": "Mikko",
+    "last": "Oesch"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358408459339"
+  },
+  "club": "LGV",
+  "handicap": 8.4,
+  "misc": [
+    "Has planted his seeds in four different women in four different decades."
+  ],
+  "biography": [
+    "Mikko, representing Lakeside Golf Vammala, has established himself as a prominent and enduring presence within the annals of the Hector Trophée. His consistent participation over an extended period underscores a deep-seated affinity for this premier golfing event.",
+    "His journey across an impressive eleven previous participations in this prestigious competition has seen him navigate both the challenging individual format and the demanding collaborative pair format with persistent resolve. Despite his consistent efforts and strategic play across more than a decade of involvement, neither the coveted Hector Trophée for the victorious pair nor the individual Victor Trophy has yet graced his collection, marking an ongoing pursuit for a championship title.",
+    "Beyond the fairways, Mikko's biography is imbued with a distinctive zest for life, marked by an uncommon personal legacy: by various accounts, he has contributed to the unfolding of new generations across four separate decades. This singular aspect of his life underscores a remarkable personal vitality and a capacity for enduring presence that extends far beyond the golfing greens, reflecting a multifaceted life experience.",
+    "While Mikko maintains an active involvement within the broader Hector events, he will not be among the field of play at the forthcoming Hector Trophée 2026. Nevertheless, his long-standing dedication and intriguing personal narrative ensure that any future return to the tournament would be met with considerable interest, as he continues his quest for a maiden victory."
+  ]
 }

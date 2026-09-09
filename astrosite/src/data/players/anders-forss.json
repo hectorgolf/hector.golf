@@ -1,18 +1,18 @@
 {
-    "id": "anders-f",
-    "name": {
-        "first": "Anders",
-        "last": "Forss"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": ""
-    },
-    "club": "VGC",
-    "handicap": 22.1,
-    "biography": [
-        "Anders, representing Vihti Golf Club, made a distinctive, though concise, entry into the competitive history of the Hector Trophée. His single participation in this esteemed annual event established a unique chapter, reflecting a focused engagement with its demanding format.",
-        "During his solitary appearance on the Hector Trophée links, Anders diligently contested for both the revered team championship and the individual Victor Trophy. Despite his earnest efforts and strategic play, ultimate victory in either category remained just beyond his grasp, underscoring the formidable competitive standard upheld by the tournament.",
-        "Presently, Anders is regarded as having concluded his active competitive involvement within Hector events. Consequently, he will not be among the distinguished players contending for accolades at the forthcoming Hector Trophée 2026, his journey remaining a brief yet notable entry in the tournament's enduring chronicles."
-    ]
+  "id": "anders-f",
+  "name": {
+    "first": "Anders",
+    "last": "Forss"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": ""
+  },
+  "club": "VGC",
+  "handicap": 22.1,
+  "biography": [
+    "Anders, representing Vihti Golf Club, made a distinctive, though concise, entry into the competitive history of the Hector Trophée. His single participation in this esteemed annual event established a unique chapter, reflecting a focused engagement with its demanding format.",
+    "During his solitary appearance on the Hector Trophée links, Anders diligently contested for both the revered team championship and the individual Victor Trophy. Despite his earnest efforts and strategic play, ultimate victory in either category remained just beyond his grasp, underscoring the formidable competitive standard upheld by the tournament.",
+    "Presently, Anders is regarded as having concluded his active competitive involvement within Hector events. Consequently, he will not be among the distinguished players contending for accolades at the forthcoming Hector Trophée 2026, his journey remaining a brief yet notable entry in the tournament's enduring chronicles."
+  ]
 }

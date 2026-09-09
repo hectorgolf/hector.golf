@@ -1,1402 +1,1402 @@
 [
-    {
-        "name": "Aavasaksa Golf",
-        "abbreviation": "AaG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "142"
-            }
-        ]
-    },
-    {
-        "name": "Aura Golf",
-        "abbreviation": "AG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "4"
-            }
-        ]
-    },
-    {
-        "name": "Ähtärin Golf",
-        "abbreviation": "ÄG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "93"
-            }
-        ]
-    },
-    {
-        "name": "Anola Golf Club",
-        "abbreviation": "AGC",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "1"
-            }
-        ]
-    },
-    {
-        "name": "Aulangon Golfklubi",
-        "abbreviation": "AGK",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "3"
-            }
-        ]
-    },
-    {
-        "name": "Ålands Golfklubb",
-        "abbreviation": "ÅGK",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "92"
-            }
-        ]
-    },
-    {
-        "name": "Aurinko Golf",
-        "abbreviation": "AGN",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "117"
-            }
-        ]
-    },
-    {
-        "name": "Alastaron Golf",
-        "abbreviation": "AlGo",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "125"
-            }
-        ]
-    },
-    {
-        "name": "Archipelagia Golf Club",
-        "abbreviation": "ArGC",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "74"
-            }
-        ]
-    },
-    {
-        "name": "Botnia Golf",
-        "abbreviation": "BG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "5"
-            }
-        ]
-    },
-    {
-        "name": "Bjärkas Golf & Country Club",
-        "abbreviation": "BGCC",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "147"
-            }
-        ]
-    },
-    {
-        "name": "Eerikkala Golf",
-        "abbreviation": "EeG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "106"
-            }
-        ]
-    },
-    {
-        "name": "Espoon Golfseura",
-        "abbreviation": "EGS",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "6"
-            }
-        ]
-    },
-    {
-        "name": "Eke Golf ry",
-        "abbreviation": "EkeG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "129"
-            }
-        ]
-    },
-    {
-        "name": "Etelä-Pohjanmaan Golf Ry",
-        "abbreviation": "EPG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "8"
-            }
-        ]
-    },
-    {
-        "name": "Espoo Ringside Golf",
-        "abbreviation": "ERG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "7"
-            }
-        ]
-    },
-    {
-        "name": "Gumböle Golf",
-        "abbreviation": "GG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "12"
-            }
-        ]
-    },
-    {
-        "name": "Golf-Porrassalmi",
-        "abbreviation": "GP",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "9"
-            }
-        ]
-    },
-    {
-        "name": "Golf Pirkkala",
-        "abbreviation": "GPi",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "104"
-            }
-        ]
-    },
-    {
-        "name": "Golf Talma",
-        "abbreviation": "GT",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "10"
-            }
-        ]
-    },
-    {
-        "name": "Golf-Virrat",
-        "abbreviation": "GV",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "11"
-            }
-        ]
-    },
-    {
-        "name": "Hattula Golf",
-        "abbreviation": "HaG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "109"
-            }
-        ]
-    },
-    {
-        "name": "Hartolan Golfklubi",
-        "abbreviation": "HaGK",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "14"
-            }
-        ]
-    },
-    {
-        "name": "Holiday Club Golf ry",
-        "abbreviation": "HCGolf",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "132"
-            }
-        ]
-    },
-    {
-        "name": "Hangon Golf",
-        "abbreviation": "HG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "13"
-            }
-        ]
-    },
-    {
-        "name": "Härmä Golf & Academy",
-        "abbreviation": "HGA",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "103"
-            }
-        ]
-    },
-    {
-        "name": "Harjattula Golf & Country Club",
-        "abbreviation": "HGCC",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "73"
-            }
-        ]
-    },
-    {
-        "name": "Helsingin Golfklubi",
-        "abbreviation": "HGK",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "15"
-            }
-        ]
-    },
-    {
-        "name": "Helsingin Golf",
-        "abbreviation": "HGM",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "135"
-            }
-        ]
-    },
-    {
-        "name": "Hiekkaharju Golf",
-        "abbreviation": "HieG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "16"
-            }
-        ]
-    },
-    {
-        "name": "HIFK Golf",
-        "abbreviation": "HIFK",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "123"
-            }
-        ]
-    },
-    {
-        "name": "Hirvihaara Golf Mäntsälä",
-        "abbreviation": "HiGM",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "118"
-            }
-        ]
-    },
-    {
-        "name": "Hirsala Golf",
-        "abbreviation": "HirG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "111"
-            }
-        ]
-    },
-    {
-        "name": "Himos-Patalahti Golf",
-        "abbreviation": "HPG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "136"
-            }
-        ]
-    },
-    {
-        "name": "Hiisi-Golf",
-        "abbreviation": "HSG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "100"
-            }
-        ]
-    },
-    {
-        "name": "Hill Side Golf Club",
-        "abbreviation": "HSGC",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "110"
-            }
-        ]
-    },
-    {
-        "name": "Hyvinkään Golf",
-        "abbreviation": "HyG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "18"
-            }
-        ]
-    },
-    {
-        "name": "Imatran Golf",
-        "abbreviation": "IG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "20"
-            }
-        ]
-    },
-    {
-        "name": "Iitin Golfseura",
-        "abbreviation": "IGS",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "105"
-            }
-        ]
-    },
-    {
-        "name": "Isosaari Golf & Yacht Club",
-        "abbreviation": "IGYC",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "144"
-            }
-        ]
-    },
-    {
-        "name": "Jyväs-Golf",
-        "abbreviation": "JG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "22"
-            }
-        ]
-    },
-    {
-        "name": "Järviseudun Golfseura",
-        "abbreviation": "JGS",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "23"
-            }
-        ]
-    },
-    {
-        "name": "Jakobstads Golf - Pietarsaaren Golf",
-        "abbreviation": "JPG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "57"
-            }
-        ]
-    },
-    {
-        "name": "Kaakon Golf",
-        "abbreviation": "KaaG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "130"
-            }
-        ]
-    },
-    {
-        "name": "Kajaanin Golf",
-        "abbreviation": "KaG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "24"
-            }
-        ]
-    },
-    {
-        "name": "KäkiGolf",
-        "abbreviation": "KäG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "146"
-            }
-        ]
-    },
-    {
-        "name": "Kanavagolf Vääksy",
-        "abbreviation": "KanG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "115"
-            }
-        ]
-    },
-    {
-        "name": "Karelia Golf",
-        "abbreviation": "KarG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "26"
-            }
-        ]
-    },
-    {
-        "name": "Kerigolf",
-        "abbreviation": "KeG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "29"
-            }
-        ]
-    },
-    {
-        "name": "Kymen Golf",
-        "abbreviation": "KG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "35"
-            }
-        ]
-    },
-    {
-        "name": "Kullo Golf Club",
-        "abbreviation": "KGC",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "107"
-            }
-        ]
-    },
-    {
-        "name": "Kultaranta Golf Club Naantali",
-        "abbreviation": "KGCN",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "127"
-            }
-        ]
-    },
-    {
-        "name": "Kemin Golf Klubi",
-        "abbreviation": "KGK",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "40"
-            }
-        ]
-    },
-    {
-        "name": "Kankaisten Golf",
-        "abbreviation": "KGM",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "62"
-            }
-        ]
-    },
-    {
-        "name": "Kartanogolf",
-        "abbreviation": "KGOLF",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "27"
-            }
-        ]
-    },
-    {
-        "name": "Keimola Golf",
-        "abbreviation": "KGV",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "84"
-            }
-        ]
-    },
-    {
-        "name": "Katinkulta Golf",
-        "abbreviation": "KkG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "28"
-            }
-        ]
-    },
-    {
-        "name": "Kalajokilaakson Golf",
-        "abbreviation": "KLG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "25"
-            }
-        ]
-    },
-    {
-        "name": "Kokkolan Golf",
-        "abbreviation": "KoG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "30"
-            }
-        ]
-    },
-    {
-        "name": "Koski-Golf",
-        "abbreviation": "KosG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "32"
-            }
-        ]
-    },
-    {
-        "name": "Koto Golf",
-        "abbreviation": "Koto",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "137"
-            }
-        ]
-    },
-    {
-        "name": "Kuortane Golf",
-        "abbreviation": "KuGo",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "102"
-            }
-        ]
-    },
-    {
-        "name": "Kurk Golf",
-        "abbreviation": "Kurk",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "33"
-            }
-        ]
-    },
-    {
-        "name": "Kuusamo Golf",
-        "abbreviation": "KuuG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "67"
-            }
-        ]
-    },
-    {
-        "name": "Kytäjä Golf",
-        "abbreviation": "KyG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "108"
-            }
-        ]
-    },
-    {
-        "name": "Eckerö Golf/Kyrkoby GK",
-        "abbreviation": "KyGo",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "139"
-            }
-        ]
-    },
-    {
-        "name": "Lampila Golf",
-        "abbreviation": "LaG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "112"
-            }
-        ]
-    },
-    {
-        "name": "Lepaa Golf",
-        "abbreviation": "LeG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "126"
-            }
-        ]
-    },
-    {
-        "name": "Levi Golf",
-        "abbreviation": "LeviG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "122"
-            }
-        ]
-    },
-    {
-        "name": "Lahden Golf",
-        "abbreviation": "LG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "36"
-            }
-        ]
-    },
-    {
-        "name": "Leppävirran Golfseura",
-        "abbreviation": "LGS",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "141"
-            }
-        ]
-    },
-    {
-        "name": "Lakeside Golf Vammala",
-        "abbreviation": "LGV",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "83"
-            }
-        ]
-    },
-    {
-        "name": "Loimijoki Golf",
-        "abbreviation": "LoG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "39"
-            }
-        ]
-    },
-    {
-        "name": "Löfkulla Golf",
-        "abbreviation": "LöG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "140"
-            }
-        ]
-    },
-    {
-        "name": "Laukaan Peurunkagolf",
-        "abbreviation": "LPG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "37"
-            }
-        ]
-    },
-    {
-        "name": "Master Golf Club",
-        "abbreviation": "Master",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "41"
-            }
-        ]
-    },
-    {
-        "name": "Messilän Golf",
-        "abbreviation": "MeG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "44"
-            }
-        ]
-    },
-    {
-        "name": "Mikkelin Golf",
-        "abbreviation": "MG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "45"
-            }
-        ]
-    },
-    {
-        "name": "Muuramen Golfseura",
-        "abbreviation": "MGS",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "64"
-            }
-        ]
-    },
-    {
-        "name": "Meri-Lapin Golfklubi",
-        "abbreviation": "MLGK",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "42"
-            }
-        ]
-    },
-    {
-        "name": "Meri-Teijo Golf",
-        "abbreviation": "MTG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "43"
-            }
-        ]
-    },
-    {
-        "name": "Muu seura / ei seuraa",
-        "abbreviation": "MUU",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "99999"
-            }
-        ]
-    },
-    {
-        "name": "Nakkila Golf",
-        "abbreviation": "NaG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "101"
-            }
-        ]
-    },
-    {
-        "name": "Nevas Golf",
-        "abbreviation": "NG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "46"
-            }
-        ]
-    },
-    {
-        "name": "Nordcenter Golf & Country Club",
-        "abbreviation": "NGCC",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "48"
-            }
-        ]
-    },
-    {
-        "name": "Nurmijärven Golfklubi",
-        "abbreviation": "NGK",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "49"
-            }
-        ]
-    },
-    {
-        "name": "Nokia River Golf",
-        "abbreviation": "NRG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "66"
-            }
-        ]
-    },
-    {
-        "name": "Nivalan Seudun Golf",
-        "abbreviation": "NSG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "95"
-            }
-        ]
-    },
-    {
-        "name": "Oulun Golfkerho",
-        "abbreviation": "OGK",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "50"
-            }
-        ]
-    },
-    {
-        "name": "Outokummun Golfseura",
-        "abbreviation": "OGS",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "51"
-            }
-        ]
-    },
-    {
-        "name": "Oulujokilaakson Golfklubi ry",
-        "abbreviation": "OjlG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "131"
-            }
-        ]
-    },
-    {
-        "name": "Paltamon Golf",
-        "abbreviation": "PaG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "52"
-            }
-        ]
-    },
-    {
-        "name": "Porvoo Golf - Borgå Golf",
-        "abbreviation": "PBG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "65"
-            }
-        ]
-    },
-    {
-        "name": "Peltola Golf",
-        "abbreviation": "PeG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "53"
-            }
-        ]
-    },
-    {
-        "name": "Pielis-Golf",
-        "abbreviation": "PG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "56"
-            }
-        ]
-    },
-    {
-        "name": "Pickala Golf Club",
-        "abbreviation": "PGC",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "55"
-            }
-        ]
-    },
-    {
-        "name": "Pitkäjärvi Golf Club",
-        "abbreviation": "PGCK",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "148"
-            }
-        ]
-    },
-    {
-        "name": "Peuramaa Golf Hjortlandet",
-        "abbreviation": "PGH",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "54"
-            }
-        ]
-    },
-    {
-        "name": "Porin Golfkerho",
-        "abbreviation": "PGK",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "59"
-            }
-        ]
-    },
-    {
-        "name": "Pirkanmaan Golf",
-        "abbreviation": "PirG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "58"
-            }
-        ]
-    },
-    {
-        "name": "Poltinkoski Golf",
-        "abbreviation": "PkG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "19"
-            }
-        ]
-    },
-    {
-        "name": "PuulaGolf",
-        "abbreviation": "PuulaG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "120"
-            }
-        ]
-    },
-    {
-        "name": "Rantasalmi Golf",
-        "abbreviation": "RanG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "71"
-            }
-        ]
-    },
-    {
-        "name": "Revontuli Golf",
-        "abbreviation": "ReG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "113"
-            }
-        ]
-    },
-    {
-        "name": "Rauma Golf",
-        "abbreviation": "RG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "63"
-            }
-        ]
-    },
-    {
-        "name": "Remson Golf Club",
-        "abbreviation": "RGC",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "114"
-            }
-        ]
-    },
-    {
-        "name": "Rock Golf Club",
-        "abbreviation": "ROCK",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "149"
-            }
-        ]
-    },
-    {
-        "name": "Raahentienoon Golf",
-        "abbreviation": "RTG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "61"
-            }
-        ]
-    },
-    {
-        "name": "Ruukkigolf",
-        "abbreviation": "RuG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "68"
-            }
-        ]
-    },
-    {
-        "name": "Salo Golf",
-        "abbreviation": "SaG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "69"
-            }
-        ]
-    },
-    {
-        "name": "Santa Claus Golf Club",
-        "abbreviation": "SantaGC",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "2"
-            }
-        ]
-    },
-    {
-        "name": "Sarfvik Golfklubi",
-        "abbreviation": "SGC",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "70"
-            }
-        ]
-    },
-    {
-        "name": "Sea Golf Rönnäs",
-        "abbreviation": "SGR",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "72"
-            }
-        ]
-    },
-    {
-        "name": "Smart Golf Turku",
-        "abbreviation": "SGT",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "145"
-            }
-        ]
-    },
-    {
-        "name": "Suur-Helsingin Golf",
-        "abbreviation": "SHG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "77"
-            }
-        ]
-    },
-    {
-        "name": "St. Laurence Golf",
-        "abbreviation": "StLG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "76"
-            }
-        ]
-    },
-    {
-        "name": "St. Lake Golf Club",
-        "abbreviation": "StLGC",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "75"
-            }
-        ]
-    },
-    {
-        "name": "Syväri Golf",
-        "abbreviation": "SyG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "143"
-            }
-        ]
-    },
-    {
-        "name": "Tapiola Golf",
-        "abbreviation": "TaG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "134"
-            }
-        ]
-    },
-    {
-        "name": "Tarinagolf",
-        "abbreviation": "Tarina",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "60"
-            }
-        ]
-    },
-    {
-        "name": "Tawast Golf",
-        "abbreviation": "TawG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "79"
-            }
-        ]
-    },
-    {
-        "name": "Tammer-Golf",
-        "abbreviation": "TG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "78"
-            }
-        ]
-    },
-    {
-        "name": "Tuusulan Golfklubi",
-        "abbreviation": "TGK",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "80"
-            }
-        ]
-    },
-    {
-        "name": "Tahko Golf",
-        "abbreviation": "TGS",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "47"
-            }
-        ]
-    },
-    {
-        "name": "Tiirin Golf",
-        "abbreviation": "TiGo",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "128"
-            }
-        ]
-    },
-    {
-        "name": "Uudenkaupungin Golfklubi",
-        "abbreviation": "UGK",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "81"
-            }
-        ]
-    },
-    {
-        "name": "Vaasan Golf",
-        "abbreviation": "VaG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "82"
-            }
-        ]
-    },
-    {
-        "name": "Vantaan Golfpuisto",
-        "abbreviation": "VaGo",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "138"
-            }
-        ]
-    },
-    {
-        "name": "Viipurin Golf",
-        "abbreviation": "VG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "87"
-            }
-        ]
-    },
-    {
-        "name": "Vihti Golf Club",
-        "abbreviation": "VGC",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "96"
-            }
-        ]
-    },
-    {
-        "name": "Vuosaari Golf Helsinki",
-        "abbreviation": "VGH",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "99"
-            }
-        ]
-    },
-    {
-        "name": "Virvik Golf",
-        "abbreviation": "ViG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "88"
-            }
-        ]
-    },
-    {
-        "name": "Virpiniemi Golf Club",
-        "abbreviation": "ViGC",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "124"
-            }
-        ]
-    },
-    {
-        "name": "Vierumäen Golfseura",
-        "abbreviation": "ViGS",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "86"
-            }
-        ]
-    },
-    {
-        "name": "Linna Golf",
-        "abbreviation": "VLG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "116"
-            }
-        ]
-    },
-    {
-        "name": "Vola-Golf",
-        "abbreviation": "VoG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "150"
-            }
-        ]
-    },
-    {
-        "name": "Vörå Golf - Vöyrin Golf",
-        "abbreviation": "VöG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "119"
-            }
-        ]
-    },
-    {
-        "name": "Wiurila Golf & Country Club",
-        "abbreviation": "WGCC",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "89"
-            }
-        ]
-    },
-    {
-        "name": "Yyteri Golf",
-        "abbreviation": "YG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "91"
-            }
-        ]
-    },
-    {
-        "name": "Ylä-Savon Golfseura",
-        "abbreviation": "YSG",
-        "sources": [
-            {
-                "name": "WiseGolf",
-                "id": "90"
-            }
-        ]
-    }
+  {
+    "name": "Aavasaksa Golf",
+    "abbreviation": "AaG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "142"
+      }
+    ]
+  },
+  {
+    "name": "Aura Golf",
+    "abbreviation": "AG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "4"
+      }
+    ]
+  },
+  {
+    "name": "Ähtärin Golf",
+    "abbreviation": "ÄG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "93"
+      }
+    ]
+  },
+  {
+    "name": "Anola Golf Club",
+    "abbreviation": "AGC",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "1"
+      }
+    ]
+  },
+  {
+    "name": "Aulangon Golfklubi",
+    "abbreviation": "AGK",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "3"
+      }
+    ]
+  },
+  {
+    "name": "Ålands Golfklubb",
+    "abbreviation": "ÅGK",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "92"
+      }
+    ]
+  },
+  {
+    "name": "Aurinko Golf",
+    "abbreviation": "AGN",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "117"
+      }
+    ]
+  },
+  {
+    "name": "Alastaron Golf",
+    "abbreviation": "AlGo",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "125"
+      }
+    ]
+  },
+  {
+    "name": "Archipelagia Golf Club",
+    "abbreviation": "ArGC",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "74"
+      }
+    ]
+  },
+  {
+    "name": "Botnia Golf",
+    "abbreviation": "BG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "5"
+      }
+    ]
+  },
+  {
+    "name": "Bjärkas Golf & Country Club",
+    "abbreviation": "BGCC",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "147"
+      }
+    ]
+  },
+  {
+    "name": "Eerikkala Golf",
+    "abbreviation": "EeG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "106"
+      }
+    ]
+  },
+  {
+    "name": "Espoon Golfseura",
+    "abbreviation": "EGS",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "6"
+      }
+    ]
+  },
+  {
+    "name": "Eke Golf ry",
+    "abbreviation": "EkeG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "129"
+      }
+    ]
+  },
+  {
+    "name": "Etelä-Pohjanmaan Golf Ry",
+    "abbreviation": "EPG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "8"
+      }
+    ]
+  },
+  {
+    "name": "Espoo Ringside Golf",
+    "abbreviation": "ERG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "7"
+      }
+    ]
+  },
+  {
+    "name": "Gumböle Golf",
+    "abbreviation": "GG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "12"
+      }
+    ]
+  },
+  {
+    "name": "Golf-Porrassalmi",
+    "abbreviation": "GP",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "9"
+      }
+    ]
+  },
+  {
+    "name": "Golf Pirkkala",
+    "abbreviation": "GPi",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "104"
+      }
+    ]
+  },
+  {
+    "name": "Golf Talma",
+    "abbreviation": "GT",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "10"
+      }
+    ]
+  },
+  {
+    "name": "Golf-Virrat",
+    "abbreviation": "GV",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "11"
+      }
+    ]
+  },
+  {
+    "name": "Hattula Golf",
+    "abbreviation": "HaG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "109"
+      }
+    ]
+  },
+  {
+    "name": "Hartolan Golfklubi",
+    "abbreviation": "HaGK",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "14"
+      }
+    ]
+  },
+  {
+    "name": "Holiday Club Golf ry",
+    "abbreviation": "HCGolf",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "132"
+      }
+    ]
+  },
+  {
+    "name": "Hangon Golf",
+    "abbreviation": "HG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "13"
+      }
+    ]
+  },
+  {
+    "name": "Härmä Golf & Academy",
+    "abbreviation": "HGA",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "103"
+      }
+    ]
+  },
+  {
+    "name": "Harjattula Golf & Country Club",
+    "abbreviation": "HGCC",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "73"
+      }
+    ]
+  },
+  {
+    "name": "Helsingin Golfklubi",
+    "abbreviation": "HGK",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "15"
+      }
+    ]
+  },
+  {
+    "name": "Helsingin Golf",
+    "abbreviation": "HGM",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "135"
+      }
+    ]
+  },
+  {
+    "name": "Hiekkaharju Golf",
+    "abbreviation": "HieG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "16"
+      }
+    ]
+  },
+  {
+    "name": "HIFK Golf",
+    "abbreviation": "HIFK",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "123"
+      }
+    ]
+  },
+  {
+    "name": "Hirvihaara Golf Mäntsälä",
+    "abbreviation": "HiGM",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "118"
+      }
+    ]
+  },
+  {
+    "name": "Hirsala Golf",
+    "abbreviation": "HirG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "111"
+      }
+    ]
+  },
+  {
+    "name": "Himos-Patalahti Golf",
+    "abbreviation": "HPG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "136"
+      }
+    ]
+  },
+  {
+    "name": "Hiisi-Golf",
+    "abbreviation": "HSG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "100"
+      }
+    ]
+  },
+  {
+    "name": "Hill Side Golf Club",
+    "abbreviation": "HSGC",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "110"
+      }
+    ]
+  },
+  {
+    "name": "Hyvinkään Golf",
+    "abbreviation": "HyG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "18"
+      }
+    ]
+  },
+  {
+    "name": "Imatran Golf",
+    "abbreviation": "IG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "20"
+      }
+    ]
+  },
+  {
+    "name": "Iitin Golfseura",
+    "abbreviation": "IGS",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "105"
+      }
+    ]
+  },
+  {
+    "name": "Isosaari Golf & Yacht Club",
+    "abbreviation": "IGYC",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "144"
+      }
+    ]
+  },
+  {
+    "name": "Jyväs-Golf",
+    "abbreviation": "JG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "22"
+      }
+    ]
+  },
+  {
+    "name": "Järviseudun Golfseura",
+    "abbreviation": "JGS",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "23"
+      }
+    ]
+  },
+  {
+    "name": "Jakobstads Golf - Pietarsaaren Golf",
+    "abbreviation": "JPG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "57"
+      }
+    ]
+  },
+  {
+    "name": "Kaakon Golf",
+    "abbreviation": "KaaG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "130"
+      }
+    ]
+  },
+  {
+    "name": "Kajaanin Golf",
+    "abbreviation": "KaG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "24"
+      }
+    ]
+  },
+  {
+    "name": "KäkiGolf",
+    "abbreviation": "KäG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "146"
+      }
+    ]
+  },
+  {
+    "name": "Kanavagolf Vääksy",
+    "abbreviation": "KanG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "115"
+      }
+    ]
+  },
+  {
+    "name": "Karelia Golf",
+    "abbreviation": "KarG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "26"
+      }
+    ]
+  },
+  {
+    "name": "Kerigolf",
+    "abbreviation": "KeG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "29"
+      }
+    ]
+  },
+  {
+    "name": "Kymen Golf",
+    "abbreviation": "KG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "35"
+      }
+    ]
+  },
+  {
+    "name": "Kullo Golf Club",
+    "abbreviation": "KGC",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "107"
+      }
+    ]
+  },
+  {
+    "name": "Kultaranta Golf Club Naantali",
+    "abbreviation": "KGCN",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "127"
+      }
+    ]
+  },
+  {
+    "name": "Kemin Golf Klubi",
+    "abbreviation": "KGK",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "40"
+      }
+    ]
+  },
+  {
+    "name": "Kankaisten Golf",
+    "abbreviation": "KGM",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "62"
+      }
+    ]
+  },
+  {
+    "name": "Kartanogolf",
+    "abbreviation": "KGOLF",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "27"
+      }
+    ]
+  },
+  {
+    "name": "Keimola Golf",
+    "abbreviation": "KGV",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "84"
+      }
+    ]
+  },
+  {
+    "name": "Katinkulta Golf",
+    "abbreviation": "KkG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "28"
+      }
+    ]
+  },
+  {
+    "name": "Kalajokilaakson Golf",
+    "abbreviation": "KLG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "25"
+      }
+    ]
+  },
+  {
+    "name": "Kokkolan Golf",
+    "abbreviation": "KoG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "30"
+      }
+    ]
+  },
+  {
+    "name": "Koski-Golf",
+    "abbreviation": "KosG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "32"
+      }
+    ]
+  },
+  {
+    "name": "Koto Golf",
+    "abbreviation": "Koto",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "137"
+      }
+    ]
+  },
+  {
+    "name": "Kuortane Golf",
+    "abbreviation": "KuGo",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "102"
+      }
+    ]
+  },
+  {
+    "name": "Kurk Golf",
+    "abbreviation": "Kurk",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "33"
+      }
+    ]
+  },
+  {
+    "name": "Kuusamo Golf",
+    "abbreviation": "KuuG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "67"
+      }
+    ]
+  },
+  {
+    "name": "Kytäjä Golf",
+    "abbreviation": "KyG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "108"
+      }
+    ]
+  },
+  {
+    "name": "Eckerö Golf/Kyrkoby GK",
+    "abbreviation": "KyGo",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "139"
+      }
+    ]
+  },
+  {
+    "name": "Lampila Golf",
+    "abbreviation": "LaG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "112"
+      }
+    ]
+  },
+  {
+    "name": "Lepaa Golf",
+    "abbreviation": "LeG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "126"
+      }
+    ]
+  },
+  {
+    "name": "Levi Golf",
+    "abbreviation": "LeviG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "122"
+      }
+    ]
+  },
+  {
+    "name": "Lahden Golf",
+    "abbreviation": "LG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "36"
+      }
+    ]
+  },
+  {
+    "name": "Leppävirran Golfseura",
+    "abbreviation": "LGS",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "141"
+      }
+    ]
+  },
+  {
+    "name": "Lakeside Golf Vammala",
+    "abbreviation": "LGV",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "83"
+      }
+    ]
+  },
+  {
+    "name": "Loimijoki Golf",
+    "abbreviation": "LoG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "39"
+      }
+    ]
+  },
+  {
+    "name": "Löfkulla Golf",
+    "abbreviation": "LöG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "140"
+      }
+    ]
+  },
+  {
+    "name": "Laukaan Peurunkagolf",
+    "abbreviation": "LPG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "37"
+      }
+    ]
+  },
+  {
+    "name": "Master Golf Club",
+    "abbreviation": "Master",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "41"
+      }
+    ]
+  },
+  {
+    "name": "Messilän Golf",
+    "abbreviation": "MeG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "44"
+      }
+    ]
+  },
+  {
+    "name": "Mikkelin Golf",
+    "abbreviation": "MG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "45"
+      }
+    ]
+  },
+  {
+    "name": "Muuramen Golfseura",
+    "abbreviation": "MGS",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "64"
+      }
+    ]
+  },
+  {
+    "name": "Meri-Lapin Golfklubi",
+    "abbreviation": "MLGK",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "42"
+      }
+    ]
+  },
+  {
+    "name": "Meri-Teijo Golf",
+    "abbreviation": "MTG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "43"
+      }
+    ]
+  },
+  {
+    "name": "Muu seura / ei seuraa",
+    "abbreviation": "MUU",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "99999"
+      }
+    ]
+  },
+  {
+    "name": "Nakkila Golf",
+    "abbreviation": "NaG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "101"
+      }
+    ]
+  },
+  {
+    "name": "Nevas Golf",
+    "abbreviation": "NG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "46"
+      }
+    ]
+  },
+  {
+    "name": "Nordcenter Golf & Country Club",
+    "abbreviation": "NGCC",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "48"
+      }
+    ]
+  },
+  {
+    "name": "Nurmijärven Golfklubi",
+    "abbreviation": "NGK",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "49"
+      }
+    ]
+  },
+  {
+    "name": "Nokia River Golf",
+    "abbreviation": "NRG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "66"
+      }
+    ]
+  },
+  {
+    "name": "Nivalan Seudun Golf",
+    "abbreviation": "NSG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "95"
+      }
+    ]
+  },
+  {
+    "name": "Oulun Golfkerho",
+    "abbreviation": "OGK",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "50"
+      }
+    ]
+  },
+  {
+    "name": "Outokummun Golfseura",
+    "abbreviation": "OGS",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "51"
+      }
+    ]
+  },
+  {
+    "name": "Oulujokilaakson Golfklubi ry",
+    "abbreviation": "OjlG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "131"
+      }
+    ]
+  },
+  {
+    "name": "Paltamon Golf",
+    "abbreviation": "PaG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "52"
+      }
+    ]
+  },
+  {
+    "name": "Porvoo Golf - Borgå Golf",
+    "abbreviation": "PBG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "65"
+      }
+    ]
+  },
+  {
+    "name": "Peltola Golf",
+    "abbreviation": "PeG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "53"
+      }
+    ]
+  },
+  {
+    "name": "Pielis-Golf",
+    "abbreviation": "PG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "56"
+      }
+    ]
+  },
+  {
+    "name": "Pickala Golf Club",
+    "abbreviation": "PGC",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "55"
+      }
+    ]
+  },
+  {
+    "name": "Pitkäjärvi Golf Club",
+    "abbreviation": "PGCK",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "148"
+      }
+    ]
+  },
+  {
+    "name": "Peuramaa Golf Hjortlandet",
+    "abbreviation": "PGH",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "54"
+      }
+    ]
+  },
+  {
+    "name": "Porin Golfkerho",
+    "abbreviation": "PGK",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "59"
+      }
+    ]
+  },
+  {
+    "name": "Pirkanmaan Golf",
+    "abbreviation": "PirG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "58"
+      }
+    ]
+  },
+  {
+    "name": "Poltinkoski Golf",
+    "abbreviation": "PkG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "19"
+      }
+    ]
+  },
+  {
+    "name": "PuulaGolf",
+    "abbreviation": "PuulaG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "120"
+      }
+    ]
+  },
+  {
+    "name": "Rantasalmi Golf",
+    "abbreviation": "RanG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "71"
+      }
+    ]
+  },
+  {
+    "name": "Revontuli Golf",
+    "abbreviation": "ReG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "113"
+      }
+    ]
+  },
+  {
+    "name": "Rauma Golf",
+    "abbreviation": "RG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "63"
+      }
+    ]
+  },
+  {
+    "name": "Remson Golf Club",
+    "abbreviation": "RGC",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "114"
+      }
+    ]
+  },
+  {
+    "name": "Rock Golf Club",
+    "abbreviation": "ROCK",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "149"
+      }
+    ]
+  },
+  {
+    "name": "Raahentienoon Golf",
+    "abbreviation": "RTG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "61"
+      }
+    ]
+  },
+  {
+    "name": "Ruukkigolf",
+    "abbreviation": "RuG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "68"
+      }
+    ]
+  },
+  {
+    "name": "Salo Golf",
+    "abbreviation": "SaG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "69"
+      }
+    ]
+  },
+  {
+    "name": "Santa Claus Golf Club",
+    "abbreviation": "SantaGC",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "2"
+      }
+    ]
+  },
+  {
+    "name": "Sarfvik Golfklubi",
+    "abbreviation": "SGC",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "70"
+      }
+    ]
+  },
+  {
+    "name": "Sea Golf Rönnäs",
+    "abbreviation": "SGR",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "72"
+      }
+    ]
+  },
+  {
+    "name": "Smart Golf Turku",
+    "abbreviation": "SGT",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "145"
+      }
+    ]
+  },
+  {
+    "name": "Suur-Helsingin Golf",
+    "abbreviation": "SHG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "77"
+      }
+    ]
+  },
+  {
+    "name": "St. Laurence Golf",
+    "abbreviation": "StLG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "76"
+      }
+    ]
+  },
+  {
+    "name": "St. Lake Golf Club",
+    "abbreviation": "StLGC",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "75"
+      }
+    ]
+  },
+  {
+    "name": "Syväri Golf",
+    "abbreviation": "SyG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "143"
+      }
+    ]
+  },
+  {
+    "name": "Tapiola Golf",
+    "abbreviation": "TaG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "134"
+      }
+    ]
+  },
+  {
+    "name": "Tarinagolf",
+    "abbreviation": "Tarina",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "60"
+      }
+    ]
+  },
+  {
+    "name": "Tawast Golf",
+    "abbreviation": "TawG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "79"
+      }
+    ]
+  },
+  {
+    "name": "Tammer-Golf",
+    "abbreviation": "TG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "78"
+      }
+    ]
+  },
+  {
+    "name": "Tuusulan Golfklubi",
+    "abbreviation": "TGK",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "80"
+      }
+    ]
+  },
+  {
+    "name": "Tahko Golf",
+    "abbreviation": "TGS",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "47"
+      }
+    ]
+  },
+  {
+    "name": "Tiirin Golf",
+    "abbreviation": "TiGo",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "128"
+      }
+    ]
+  },
+  {
+    "name": "Uudenkaupungin Golfklubi",
+    "abbreviation": "UGK",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "81"
+      }
+    ]
+  },
+  {
+    "name": "Vaasan Golf",
+    "abbreviation": "VaG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "82"
+      }
+    ]
+  },
+  {
+    "name": "Vantaan Golfpuisto",
+    "abbreviation": "VaGo",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "138"
+      }
+    ]
+  },
+  {
+    "name": "Viipurin Golf",
+    "abbreviation": "VG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "87"
+      }
+    ]
+  },
+  {
+    "name": "Vihti Golf Club",
+    "abbreviation": "VGC",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "96"
+      }
+    ]
+  },
+  {
+    "name": "Vuosaari Golf Helsinki",
+    "abbreviation": "VGH",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "99"
+      }
+    ]
+  },
+  {
+    "name": "Virvik Golf",
+    "abbreviation": "ViG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "88"
+      }
+    ]
+  },
+  {
+    "name": "Virpiniemi Golf Club",
+    "abbreviation": "ViGC",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "124"
+      }
+    ]
+  },
+  {
+    "name": "Vierumäen Golfseura",
+    "abbreviation": "ViGS",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "86"
+      }
+    ]
+  },
+  {
+    "name": "Linna Golf",
+    "abbreviation": "VLG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "116"
+      }
+    ]
+  },
+  {
+    "name": "Vola-Golf",
+    "abbreviation": "VoG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "150"
+      }
+    ]
+  },
+  {
+    "name": "Vörå Golf - Vöyrin Golf",
+    "abbreviation": "VöG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "119"
+      }
+    ]
+  },
+  {
+    "name": "Wiurila Golf & Country Club",
+    "abbreviation": "WGCC",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "89"
+      }
+    ]
+  },
+  {
+    "name": "Yyteri Golf",
+    "abbreviation": "YG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "91"
+      }
+    ]
+  },
+  {
+    "name": "Ylä-Savon Golfseura",
+    "abbreviation": "YSG",
+    "sources": [
+      {
+        "name": "WiseGolf",
+        "id": "90"
+      }
+    ]
+  }
 ]

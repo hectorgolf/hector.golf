@@ -1,21 +1,21 @@
 {
-    "id": "jari-k",
-    "name": {
-        "first": "Jari",
-        "last": "Kuusela"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": "+358504669916"
-    },
-    "club": "ArGC",
-    "handicap": 1.5,
-    "misc": [
-        "Originally known to many Hector players from his past appearances in Finnkampen events"
-    ],
-    "biography": [
-        "Jari, representing Archipelagia Golf Club, first became known to many within the Hector Trophée community through his commendable performances in prior Finnkampen events. These engagements provided a glimpse into his competitive acumen, foreshadowing the significant contributions he would soon bring to the Hector circuit.",
-        "His inaugural appearance in the prestigious Hector Trophée proved to be exceptionally impactful. In that singular competitive outing, Jari played a pivotal role in securing the coveted Hector Trophée for his pair, achieving immediate team victory. This triumph unequivocally showcased his capacity for collective success; however, the individual Victor Trophy, signifying solo excellence, has yet to be secured.",
-        "As the Hector Trophée 2026 approaches, it will mark Jari's second venture into this celebrated annual event. His return, following such an effective debut that yielded instant team silverware, positions him as a player of keen interest. Spectators will undoubtedly observe his progress closely, eager to see how he will further build upon his unique and successful introduction to the tournament."
-    ]
+  "id": "jari-k",
+  "name": {
+    "first": "Jari",
+    "last": "Kuusela"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358504669916"
+  },
+  "club": "ArGC",
+  "handicap": 1.5,
+  "misc": [
+    "Originally known to many Hector players from his past appearances in Finnkampen events"
+  ],
+  "biography": [
+    "Jari, representing Archipelagia Golf Club, first became known to many within the Hector Trophée community through his commendable performances in prior Finnkampen events. These engagements provided a glimpse into his competitive acumen, foreshadowing the significant contributions he would soon bring to the Hector circuit.",
+    "His inaugural appearance in the prestigious Hector Trophée proved to be exceptionally impactful. In that singular competitive outing, Jari played a pivotal role in securing the coveted Hector Trophée for his pair, achieving immediate team victory. This triumph unequivocally showcased his capacity for collective success; however, the individual Victor Trophy, signifying solo excellence, has yet to be secured.",
+    "As the Hector Trophée 2026 approaches, it will mark Jari's second venture into this celebrated annual event. His return, following such an effective debut that yielded instant team silverware, positions him as a player of keen interest. Spectators will undoubtedly observe his progress closely, eager to see how he will further build upon his unique and successful introduction to the tournament."
+  ]
 }

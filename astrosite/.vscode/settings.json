@@ -5,11 +5,11 @@
   // re-indent files a workflow will only rewrite again.
   "[json]": {
     "editor.formatOnSave": false,
-    "editor.tabSize": 4
+    "editor.tabSize": 2
   },
   "[jsonc]": {
     "editor.formatOnSave": false,
-    "editor.tabSize": 4
+    "editor.tabSize": 2
   },
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true,

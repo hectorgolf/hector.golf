@@ -1,18 +1,18 @@
 {
-    "id": "lauri-p",
-    "name": {
-        "first": "Lauri",
-        "last": "Paatela"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": "+358407700612"
-    },
-    "club": "PGC",
-    "handicap": 12.5,
-    "biography": [
-        "Lauri, representing Pickala Golf Club, has become a consistent and diligent participant in the Hector Trophée. His methodical approach to the game, characterized by a quiet focus and an earnest pursuit of excellence, has seen him navigate the challenging course and formidable competition over several editions of the tournament.",
-        "Across his five previous participations in this esteemed tournament, Lauri has consistently applied himself to both the challenging individual format and the collaborative pair competition. Despite his diligent efforts, success in securing either the coveted Hector Trophée for the winning pair or the individual Victor Trophy has thus far proven elusive. This outcome underscores the profound competitive depth inherent in the event.",
-        "As the Hector Trophée 2026 approaches, it will signify Lauri's sixth appearance, further cementing his dedication to this annual event. His continued presence on the competitive stage, fueled by an unyielding desire for distinction, ensures that his ongoing quest for a championship title remains a compelling subplot for all observers, eager to witness his eventual breakthrough."
-    ]
+  "id": "lauri-p",
+  "name": {
+    "first": "Lauri",
+    "last": "Paatela"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358407700612"
+  },
+  "club": "PGC",
+  "handicap": 12.5,
+  "biography": [
+    "Lauri, representing Pickala Golf Club, has become a consistent and diligent participant in the Hector Trophée. His methodical approach to the game, characterized by a quiet focus and an earnest pursuit of excellence, has seen him navigate the challenging course and formidable competition over several editions of the tournament.",
+    "Across his five previous participations in this esteemed tournament, Lauri has consistently applied himself to both the challenging individual format and the collaborative pair competition. Despite his diligent efforts, success in securing either the coveted Hector Trophée for the winning pair or the individual Victor Trophy has thus far proven elusive. This outcome underscores the profound competitive depth inherent in the event.",
+    "As the Hector Trophée 2026 approaches, it will signify Lauri's sixth appearance, further cementing his dedication to this annual event. His continued presence on the competitive stage, fueled by an unyielding desire for distinction, ensures that his ongoing quest for a championship title remains a compelling subplot for all observers, eager to witness his eventual breakthrough."
+  ]
 }

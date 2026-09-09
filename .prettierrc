@@ -1,8 +1,8 @@
 {
-    "tabWidth": 4,
-    "printWidth": 120,
-    "overrides": [
-        { "files": "*.astro", "options": { "useTabs": true } },
-        { "files": ["*.yml", "*.yaml", "*.md"], "options": { "tabWidth": 2 } }
-    ]
+  "tabWidth": 4,
+  "printWidth": 120,
+  "overrides": [
+    { "files": "*.astro", "options": { "useTabs": true } },
+    { "files": ["*.json", "*.jsonc", "*.yml", "*.yaml", "*.md"], "options": { "tabWidth": 2 } }
+  ]
 }

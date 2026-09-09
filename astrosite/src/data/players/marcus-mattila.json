@@ -1,22 +1,22 @@
 {
-    "id": "marcus-m",
-    "name": {
-        "first": "Marcus",
-        "last": "Mattila"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": "+358400645949"
-    },
-    "club": "Kurk",
-    "handicap": 9.1,
-    "misc": [
-        "Struggles with his gender identity, occasionally participating in events under his female alter-ego, \"Eva\"."
-    ],
-    "biography": [
-        "Marcus, representing Kurk Golf, embodies a profound journey within the Hector Trophée, a narrative uniquely woven with personal introspection and competitive drive. His dedication to the game is unwavering, mirroring a deeper, more personal quest for identity that has, at times, led him to compete under the moniker \"Eva,\" reflecting a fluid and evolving sense of self.",
-        "The forthcoming Hector Trophée 2026 will mark an extraordinary milestone: Marcus's thirteenth appearance in this prestigious event. Such consistent participation across more than a decade underscores an unparalleled commitment to the competition and a steadfast resolve to test his abilities against the tournament's demanding formats.",
-        "Across his twelve prior engagements, Marcus has diligently navigated both the challenging individual contests and the collaborative pair formats. Despite his extensive experience and unwavering effort, neither the esteemed Hector Trophée for the victorious duo nor the individual Victor Trophy has yet graced his collection. This enduring pursuit of a championship title, year after year, speaks volumes about his persistent spirit and enduring ambition.",
-        "As Marcus prepares for his continued presence on the links, his journey remains a compelling narrative for all enthusiasts of the Hector Trophée. His unique personal dimension, combined with his remarkable longevity and unyielding quest for competitive success, ensures he remains a figure of keen interest and respect within the golfing community."
-    ]
+  "id": "marcus-m",
+  "name": {
+    "first": "Marcus",
+    "last": "Mattila"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358400645949"
+  },
+  "club": "Kurk",
+  "handicap": 9.1,
+  "misc": [
+    "Struggles with his gender identity, occasionally participating in events under his female alter-ego, \"Eva\"."
+  ],
+  "biography": [
+    "Marcus, representing Kurk Golf, embodies a profound journey within the Hector Trophée, a narrative uniquely woven with personal introspection and competitive drive. His dedication to the game is unwavering, mirroring a deeper, more personal quest for identity that has, at times, led him to compete under the moniker \"Eva,\" reflecting a fluid and evolving sense of self.",
+    "The forthcoming Hector Trophée 2026 will mark an extraordinary milestone: Marcus's thirteenth appearance in this prestigious event. Such consistent participation across more than a decade underscores an unparalleled commitment to the competition and a steadfast resolve to test his abilities against the tournament's demanding formats.",
+    "Across his twelve prior engagements, Marcus has diligently navigated both the challenging individual contests and the collaborative pair formats. Despite his extensive experience and unwavering effort, neither the esteemed Hector Trophée for the victorious duo nor the individual Victor Trophy has yet graced his collection. This enduring pursuit of a championship title, year after year, speaks volumes about his persistent spirit and enduring ambition.",
+    "As Marcus prepares for his continued presence on the links, his journey remains a compelling narrative for all enthusiasts of the Hector Trophée. His unique personal dimension, combined with his remarkable longevity and unyielding quest for competitive success, ensures he remains a figure of keen interest and respect within the golfing community."
+  ]
 }

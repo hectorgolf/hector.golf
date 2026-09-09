@@ -1,22 +1,22 @@
 {
-    "id": "kristian-h",
-    "name": {
-        "first": "Kristian",
-        "last": "Hiljander"
-    },
-    "privacy": "shorten-last-name",
-    "contact": {
-        "phone": "+358408390767"
-    },
-    "club": "Master",
-    "handicap": 13.9,
-    "misc": [
-        "Making a comeback after a few years' hiatus from Hector Trophée events by returning to Konopiště and competing in Hector Trophée 2026.",
-        "Did participate in the 2025 Matchplay series."
-    ],
-    "biography": [
-        "Kristian, representing Master Golf Club, marks a significant return to the esteemed Hector Trophée 2026, signaling the end of a multi-year hiatus from the tournament's main competitive stage. His presence at Konopiště reintroduces a familiar face to the field, brimming with renewed ambition.",
-        "This forthcoming event will notably mark Kristian's fourth participation in the Hector Trophée. Across his three previous engagements, he has diligently contended in both the challenging individual formats and the collaborative pair competitions. Despite these dedicated efforts, neither the coveted Hector Trophée for the victorious pair nor the individual Victor Trophy has, to date, materialized, setting the stage for an ongoing pursuit of a championship title. His competitive spirit, however, remained alight, as evidenced by his active involvement in the 2025 Matchplay series, demonstrating a continuous commitment to the wider Hector events.",
-        "Kristian's reappearance in the Hector Trophée 2026 injects a compelling narrative of rekindled aspiration into the tournament. Observers will keenly follow his progress, eager to witness whether this return from a period of absence will culminate in a long-awaited breakthrough triumph, adding a new chapter to his competitive journey."
-    ]
+  "id": "kristian-h",
+  "name": {
+    "first": "Kristian",
+    "last": "Hiljander"
+  },
+  "privacy": "shorten-last-name",
+  "contact": {
+    "phone": "+358408390767"
+  },
+  "club": "Master",
+  "handicap": 13.9,
+  "misc": [
+    "Making a comeback after a few years' hiatus from Hector Trophée events by returning to Konopiště and competing in Hector Trophée 2026.",
+    "Did participate in the 2025 Matchplay series."
+  ],
+  "biography": [
+    "Kristian, representing Master Golf Club, marks a significant return to the esteemed Hector Trophée 2026, signaling the end of a multi-year hiatus from the tournament's main competitive stage. His presence at Konopiště reintroduces a familiar face to the field, brimming with renewed ambition.",
+    "This forthcoming event will notably mark Kristian's fourth participation in the Hector Trophée. Across his three previous engagements, he has diligently contended in both the challenging individual formats and the collaborative pair competitions. Despite these dedicated efforts, neither the coveted Hector Trophée for the victorious pair nor the individual Victor Trophy has, to date, materialized, setting the stage for an ongoing pursuit of a championship title. His competitive spirit, however, remained alight, as evidenced by his active involvement in the 2025 Matchplay series, demonstrating a continuous commitment to the wider Hector events.",
+    "Kristian's reappearance in the Hector Trophée 2026 injects a compelling narrative of rekindled aspiration into the tournament. Observers will keenly follow his progress, eager to witness whether this return from a period of absence will culminate in a long-awaited breakthrough triumph, adding a new chapter to his competitive journey."
+  ]
 }

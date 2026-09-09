@@ -1,138 +1,138 @@
 {
-    "id": "HECTOR2022",
-    "name": "Hector Trophée 2022",
-    "format": "hector",
-    "location": "Quellness Golf Resort, Germany",
-    "timing": {
-        "start": "2022-09-14",
-        "end": "2022-09-17"
-    },
-    "courses": [
-        "quellness-porsche",
-        "quellness-beckenbauer"
+  "id": "HECTOR2022",
+  "name": "Hector Trophée 2022",
+  "format": "hector",
+  "location": "Quellness Golf Resort, Germany",
+  "timing": {
+    "start": "2022-09-14",
+    "end": "2022-09-17"
+  },
+  "courses": [
+    "quellness-porsche",
+    "quellness-beckenbauer"
+  ],
+  "participants": [
+    "simo-l",
+    "timo-l",
+    "jarkko-k",
+    "marcus-m",
+    "lasse-k",
+    "okko-p",
+    "mikko-o",
+    "jaakko-s",
+    "pasi-h",
+    "eero-h",
+    "olli-v",
+    "olli-a",
+    "toni-m",
+    "lassi-k",
+    "ossi-l",
+    "janne-v",
+    "sami-h",
+    "harri-v",
+    "martin-s",
+    "kristian-h",
+    "juuso-p",
+    "miso-l",
+    "jussi-a",
+    "pekka-s"
+  ],
+  "results": {
+    "teams": [
+      {
+        "name": "Simo Liukkonen & Timo Lukumaa",
+        "players": [
+          "simo-l",
+          "timo-l"
+        ]
+      },
+      {
+        "name": "Marcus Mattila & Jarkko Kailanto",
+        "players": [
+          "jarkko-k",
+          "marcus-m"
+        ]
+      },
+      {
+        "name": "Okko Pykäläinen & Lasse Koskela",
+        "players": [
+          "lasse-k",
+          "okko-p"
+        ]
+      },
+      {
+        "name": "Mikko Oesch & Jaakko Saarinen",
+        "players": [
+          "mikko-o",
+          "jaakko-s"
+        ]
+      },
+      {
+        "name": "Pasi Halmetoja & Eero Halmetoja",
+        "players": [
+          "pasi-h",
+          "eero-h"
+        ]
+      },
+      {
+        "name": "Olli Varis & Olli Andersson",
+        "players": [
+          "olli-v",
+          "olli-a"
+        ]
+      },
+      {
+        "name": "Toni Marttila & Lassi Koto",
+        "players": [
+          "toni-m",
+          "lassi-k"
+        ]
+      },
+      {
+        "name": "Ossi Laukkanen & Janne Valtakari",
+        "players": [
+          "ossi-l",
+          "janne-v"
+        ]
+      },
+      {
+        "name": "Sami Heikkinen & Harri Vainio",
+        "players": [
+          "sami-h",
+          "harri-v"
+        ]
+      },
+      {
+        "name": "Martin Svedholm & Kristian Hiljander",
+        "players": [
+          "martin-s",
+          "kristian-h"
+        ]
+      },
+      {
+        "name": "Juuso Pihamaa & Miso Lith",
+        "players": [
+          "juuso-p",
+          "miso-l"
+        ]
+      },
+      {
+        "name": "Jussi Allonen & Pekka Saijonmaa",
+        "players": [
+          "jussi-a",
+          "pekka-s"
+        ]
+      }
     ],
-    "participants": [
+    "winners": {
+      "hector": [
         "simo-l",
-        "timo-l",
-        "jarkko-k",
-        "marcus-m",
-        "lasse-k",
-        "okko-p",
-        "mikko-o",
-        "jaakko-s",
-        "pasi-h",
-        "eero-h",
-        "olli-v",
-        "olli-a",
-        "toni-m",
-        "lassi-k",
-        "ossi-l",
-        "janne-v",
-        "sami-h",
-        "harri-v",
-        "martin-s",
-        "kristian-h",
-        "juuso-p",
-        "miso-l",
-        "jussi-a",
-        "pekka-s"
-    ],
-    "results": {
-        "teams": [
-            {
-                "name": "Simo Liukkonen & Timo Lukumaa",
-                "players": [
-                    "simo-l",
-                    "timo-l"
-                ]
-            },
-            {
-                "name": "Marcus Mattila & Jarkko Kailanto",
-                "players": [
-                    "jarkko-k",
-                    "marcus-m"
-                ]
-            },
-            {
-                "name": "Okko Pykäläinen & Lasse Koskela",
-                "players": [
-                    "lasse-k",
-                    "okko-p"
-                ]
-            },
-            {
-                "name": "Mikko Oesch & Jaakko Saarinen",
-                "players": [
-                    "mikko-o",
-                    "jaakko-s"
-                ]
-            },
-            {
-                "name": "Pasi Halmetoja & Eero Halmetoja",
-                "players": [
-                    "pasi-h",
-                    "eero-h"
-                ]
-            },
-            {
-                "name": "Olli Varis & Olli Andersson",
-                "players": [
-                    "olli-v",
-                    "olli-a"
-                ]
-            },
-            {
-                "name": "Toni Marttila & Lassi Koto",
-                "players": [
-                    "toni-m",
-                    "lassi-k"
-                ]
-            },
-            {
-                "name": "Ossi Laukkanen & Janne Valtakari",
-                "players": [
-                    "ossi-l",
-                    "janne-v"
-                ]
-            },
-            {
-                "name": "Sami Heikkinen & Harri Vainio",
-                "players": [
-                    "sami-h",
-                    "harri-v"
-                ]
-            },
-            {
-                "name": "Martin Svedholm & Kristian Hiljander",
-                "players": [
-                    "martin-s",
-                    "kristian-h"
-                ]
-            },
-            {
-                "name": "Juuso Pihamaa & Miso Lith",
-                "players": [
-                    "juuso-p",
-                    "miso-l"
-                ]
-            },
-            {
-                "name": "Jussi Allonen & Pekka Saijonmaa",
-                "players": [
-                    "jussi-a",
-                    "pekka-s"
-                ]
-            }
-        ],
-        "winners": {
-            "hector": [
-                "simo-l",
-                "timo-l"
-            ],
-            "victor": [
-                "lassi-k"
-            ]
-        }
-    },
-    "description": "In 2022, the Quellness Golf Resort in Germany hosted the eclectic Hector Trophée, from September 14-17. This tournament featured a unique mix of stroke play, stableford, best ball, and scramble formats, showcasing the versatility and strategic depth of the world’s elite amateur golfers."
+        "timo-l"
+      ],
+      "victor": [
+        "lassi-k"
+      ]
+    }
+  },
+  "description": "In 2022, the Quellness Golf Resort in Germany hosted the eclectic Hector Trophée, from September 14-17. This tournament featured a unique mix of stroke play, stableford, best ball, and scramble formats, showcasing the versatility and strategic depth of the world’s elite amateur golfers."
 }
