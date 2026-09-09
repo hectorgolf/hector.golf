@@ -723,9 +723,6 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
 - Finnkampen events exist in both the data and the schema, but there is **no `/events/finnkampen/`
   route**. `EventList.astro` warns and skips them, and `linkToEvent()` produces dead URLs for them.
 - The `/golfreport` cover links point at `md5(alt)` paths for which no route exists — every one 404s.
-- `src/workflows/identify-players-clubs.ts` is an unreferenced older variant of
-  `update-player-club-memberships.ts` (it stores the club *name* rather than the abbreviation) and is
-  wired to no npm script or workflow.
 - `backend/backend-functions/src/cli/cli.ts` imports a non-existent `../lib/genai` and cannot run. The `uploadImage`
   branch in `scorecard-detection/genai.ts` reads `process.env.API_KEY`, which is never set.
 - The generated avatars under `src/data/players/images/` are unreferenced — no player JSON sets an
