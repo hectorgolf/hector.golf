@@ -52,6 +52,51 @@ export BUCKET="${PROJECT_ID}-tfstate"
 gcloud config set project "$PROJECT_ID"
 ```
 
+### Point Application Default Credentials at the right account
+
+Do this before anything else, because `gcloud` keeps **two separate credential stores** and it is
+easy to have them on different accounts without noticing:
+
+| Store | Set by | Used by |
+| --- | --- | --- |
+| CLI credentials | `gcloud auth login` | every `gcloud` command |
+| Application Default Credentials (ADC) | `gcloud auth application-default login` | client libraries, and **Terraform** |
+
+Terraform reads only the second one. If you have ever used `gcloud` for work, ADC is probably still
+pointed at that account, and `terraform apply` will try to build Hector's infrastructure as your
+work identity.
+
+```bash
+gcloud auth application-default login
+gcloud auth application-default set-quota-project "$PROJECT_ID"
+```
+
+Check which identity you actually ended up with:
+
+```bash
+curl -s -H "Authorization: Bearer $(gcloud auth application-default print-access-token)" \
+  https://www.googleapis.com/oauth2/v3/userinfo
+```
+
+> **ADC is a single global file.** Logging in here replaces whatever was there before, so anything
+> local that authenticates to another project through ADC will stop working until you log back in
+> for it. To keep two setups side by side, relocate the whole gcloud configuration directory —
+> `CLOUDSDK_CONFIG` moves the ADC file with it:
+>
+> ```bash
+> export CLOUDSDK_CONFIG="$HOME/.config/gcloud-hector"
+> gcloud auth login your.personal@example.com
+> gcloud auth application-default login
+> gcloud config set project hector-golf
+> gcloud auth application-default set-quota-project hector-golf
+> ```
+>
+> Then export that variable in every shell where you work on Hector.
+
+While you are here, check `gcloud config list` for a `[run] region` left over from another project.
+CI is unaffected — [`deploy-admin.yml`](../.github/workflows/deploy-admin.yml) passes `--region`
+explicitly — but a manual `gcloud run deploy` would deploy to the wrong region.
+
 ### Check the free-tier database first
 
 This matters more than it looks. Only **one** Firestore database per project gets the no-cost
@@ -109,11 +154,9 @@ Running this twice is harmless.
 
 There is a chicken-and-egg here worth naming: CI authenticates through a Workload Identity pool and
 a service account that **Terraform creates**. So the first apply cannot run in CI. Run it as
-yourself:
+yourself, using the ADC credentials from "Before you start":
 
 ```bash
-gcloud auth application-default login
-
 cd terraform
 cp terraform.tfvars.example terraform.tfvars
 $EDITOR terraform.tfvars      # put your own email in admin_principals
@@ -246,7 +289,9 @@ Really deleting it takes two deliberate steps: set `delete_protection_state` to
 
 | Symptom | Cause |
 | --- | --- |
-| `Error 403: Permission denied` on the first apply | Step 1 not run, or `gcloud auth application-default login` is pointed at the wrong account. Check `gcloud config get-value project` |
+| `WARNING: Your active project does not match the quota project in your local Application Default Credentials file` | Expected on a fresh project, and benign in itself — but it means ADC has a different project, usually because ADC belongs to a different account. Fix it with the ADC step in "Before you start" rather than ignoring it |
+| `set-quota-project`: `the account in ADC does not have the "serviceusage.services.use" permission on this project` | ADC is authenticated as an account with no access to this project. `gcloud auth list` shows the CLI account; the two are independent. Re-run `gcloud auth application-default login` as the account that owns the project |
+| `Error 403: Permission denied` on the first apply | Step 1 not run, or ADC is pointed at the wrong account — the CLI account being right does not mean ADC is. Check with the `userinfo` command in "Before you start" |
 | `Service account service-…@gcp-sa-iap… does not exist` | Step 3 not run |
 | Browser shows "Your client does not have permission to get URL from this server" | The IAP service agent is missing `roles/run.invoker`. Re-apply; if it persists, redeploy the Cloud Run service — IAP caches the backend |
 | Sign-in succeeds, then 403 | Your address is not in `admin_principals` / `TF_ADMIN_PRINCIPALS` |
