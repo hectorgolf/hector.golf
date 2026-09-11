@@ -26,7 +26,7 @@ const firestore = await checkFirestore()
 		<div class="row">
 			<dt>Firestore</dt>
 			<dd class={firestore.reachable ? 'good' : 'bad'}>
-				{firestore.reachable ? `reachable — ${firestore.databaseId}` : `unreachable — ${firestore.error}`}
+				{firestore.reachable ? `reachable — ${firestore.databaseId}` : `unreachable — ${firestore.reason}`}
 			</dd>
 		</div>
 		<div class="row">
@@ -37,7 +37,10 @@ const firestore = await checkFirestore()
 
 	<p class="note">
 		The timestamp is proof of server rendering: it changes on reload, where a
-		statically built page would not.
+		statically built page would not. When Firestore is unreachable the reason
+		shown is a classification rather than the underlying error — the error
+		itself goes to Cloud Logging, because this page is built to survive being
+		served without IAP in front of it.
 	</p>
 </AdminLayout>
 

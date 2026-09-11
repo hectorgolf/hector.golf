@@ -40,6 +40,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Test
+        run: npm run test --workspace=hector-admin
+
       # `astro check` typechecks the .astro templates as well as the TypeScript,
       # so it covers the shared components as this app uses them.
       - name: Build
