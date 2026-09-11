@@ -7,7 +7,7 @@ _Last reviewed: 2026-09-10_
 hector.golf is the public site for the **Hector Trophée**, an invitational amateur golf series
 (Hector = team competition, Victor = individual, plus Matchplay and Finnkampen formats). It
 publishes event pages, live-ish leaderboards, player profiles with handicap histories, and course
-guides at <https://www.hector.golf>.
+guides at <https://hector.golf>.
 
 The defining architectural property is that **the Git repository is the database**. There is no
 runtime server and no request-time API call anywhere in the delivered site. Instead, scheduled
@@ -50,7 +50,7 @@ graph LR
         DATA["astrosite/src/data/**.json"]
     end
 
-    PAGES["GitHub Pages<br/>www.hector.golf"]
+    PAGES["GitHub Pages<br/>hector.golf"]
     BROWSER["Visitor's browser"]
 
     WG --> WF
@@ -107,7 +107,7 @@ communicate only over HTTPS at data-update time.
 
 Astro 7 with default **static output** — no adapter, no SSR, no `output` setting in
 [`astro.config.mjs`](../astrosite/astro.config.mjs), which is seven lines long and sets only
-`site: 'https://www.hector.golf'` and the React integration. TypeScript 6 (`astro/tsconfigs/strict`),
+`site: 'https://hector.golf'` and the React integration. TypeScript 6 (`astro/tsconfigs/strict`),
 Zod for all schemas, Vitest 4 for tests, Chart.js for the one interactive widget.
 
 `@astrojs/react` and React 19 are installed and registered as an integration, but **no `.tsx` or
@@ -528,7 +528,7 @@ and assigns a club **only when exactly one** club matches.
 | `update-player-club-memberships.yml` | Cron `15 22 15 * *`; manual | Script + `commit-changes.sh` | `contents: write` |
 
 **Deployment target is GitHub Pages**, with the custom domain supplied by
-[`public/CNAME`](../astrosite/public/CNAME) (`www.hector.golf`). The build step passes
+[`public/CNAME`](../astrosite/public/CNAME) (`hector.golf`; `www` 301s to it). The build step passes
 `--site ${{ steps.pages.outputs.origin }} --base ${{ steps.pages.outputs.base_path }}` so the Pages
 environment determines the final URLs, and uses concurrency group `pages` with
 `cancel-in-progress: false`.

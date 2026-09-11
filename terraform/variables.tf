@@ -104,6 +104,22 @@ variable "iap_oauth_client_secret" {
   }
 }
 
+variable "admin_domain" {
+  description = <<-EOT
+    Custom domain for the admin service, e.g. "admin.hector.golf".
+
+    Leave unset until `gcloud domains verify hector.golf` has succeeded for this
+    project — mapping a subdomain requires the base domain to be verified, and an
+    apply before that fails. `gcloud domains list-user-verified` shows whether it
+    has.
+
+    Once applied, `terraform output admin_dns_records` prints the records to add
+    at the registrar.
+  EOT
+  type        = string
+  default     = null
+}
+
 variable "artifact_keep_count" {
   description = <<-EOT
     How many recent image versions Artifact Registry keeps. This is effectively

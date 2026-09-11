@@ -4,6 +4,6 @@ import react from "@astrojs/react";
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://www.hector.golf',
+  site: 'https://hector.golf',
   integrations: [react()]
 });
