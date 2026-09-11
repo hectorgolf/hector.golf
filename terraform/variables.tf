@@ -60,6 +60,39 @@ variable "admin_image" {
   default     = null
 }
 
+variable "iap_oauth_client_id" {
+  description = <<-EOT
+    OAuth client id that IAP authenticates with, from the client created in
+    step 5 of the playbook.
+
+    Leave unset until that client exists: google_iap_settings is then left out
+    of the plan entirely, which is what lets the first apply run before the
+    console work has been done.
+  EOT
+  type        = string
+  default     = null
+}
+
+variable "iap_oauth_client_secret" {
+  description = <<-EOT
+    Secret paired with iap_oauth_client_id.
+
+    Terraform stores this in state as plain text — the provider documents it. The
+    state bucket is private, uniform-access and public-access-prevented, which
+    makes that acceptable rather than harmless; rotate the client if the bucket
+    is ever exposed. Supply it from the gitignored terraform.tfvars locally and
+    from the TF_IAP_OAUTH_CLIENT_SECRET GitHub secret in CI. Never commit it.
+  EOT
+  type        = string
+  default     = null
+  sensitive   = true
+
+  validation {
+    condition     = (var.iap_oauth_client_id == null) == (var.iap_oauth_client_secret == null)
+    error_message = "Set both iap_oauth_client_id and iap_oauth_client_secret, or neither: IAP needs the pair."
+  }
+}
+
 variable "artifact_keep_count" {
   description = <<-EOT
     How many recent image versions Artifact Registry keeps. This is effectively
@@ -77,7 +110,7 @@ variable "enable_budget_alert" {
     permissions on the *billing account* rather than the project, which the
     Terraform CI service account deliberately does not have. Set it true and run
     `terraform apply` locally as yourself once, or create the budget by hand in
-    the console. See docs/gcp-setup-playbook.md, step 8.
+    the console. See docs/gcp-setup-playbook.md, step 10.
   EOT
   type        = bool
   default     = false

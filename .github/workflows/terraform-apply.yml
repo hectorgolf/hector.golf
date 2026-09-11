@@ -61,6 +61,10 @@ jobs:
         run: terraform apply -input=false -auto-approve
         env:
           TF_VAR_admin_principals: ${{ secrets.TF_ADMIN_PRINCIPALS }}
+          # Unset until the OAuth client exists (playbook step 5); the IAP
+          # settings resource is simply absent from the plan until then.
+          TF_VAR_iap_oauth_client_id: ${{ secrets.TF_IAP_OAUTH_CLIENT_ID }}
+          TF_VAR_iap_oauth_client_secret: ${{ secrets.TF_IAP_OAUTH_CLIENT_SECRET }}
 
       - name: Summarise
         run: |

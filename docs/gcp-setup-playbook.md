@@ -214,14 +214,89 @@ image = coalesce(var.admin_image, "${local.admin_image_repo}:latest")
 ```
 
 So the committed configuration always reads as "the admin image", and the placeholder lives in your
-local, gitignored `terraform.tfvars` rather than in the repository. Step 10 removes it.
+local, gitignored `terraform.tfvars` rather than in the repository. Step 11 removes it.
 
 Expect the apply to take a few minutes; enabling APIs and creating the Firestore database are the
 slow parts. Cloud Run comes up running the `hello` container — deliberately, so the service and its
 IAP configuration exist and can be verified before any application code does. It is not exposed
 while it sits there: IAP is in front of it.
 
-## Step 5 — Let CI reach the state bucket
+## Step 5 — Give IAP an OAuth client
+
+The apply in step 4 turned IAP on, but IAP has nothing to authenticate *with* yet, so the service
+answers:
+
+> Empty Google Account OAuth client ID(s)/secret(s).
+
+That is not a misconfiguration to hunt down. Google's rule is that "Google-managed OAuth clients can
+only be used to manage access for internal users that are within an organization", and two separate
+things here put us outside that:
+
+- `hector-golf` is a standalone project, not in a Google Cloud organization, and
+- every Hector admin signs in with a personal Google account, which is an **external** user.
+
+The second is why moving the project into an organization would not help — external users need a
+custom client either way. A custom OAuth client is the correct configuration here, not a workaround.
+
+Neither part can be done from Terraform: the IAP OAuth Admin APIs were shut down in March 2026, and
+`google_iap_brand` requires an organization. Both are console steps, once per project.
+
+### 1. Configure the consent screen
+
+<https://console.cloud.google.com/auth/branding?project=hector-golf>
+
+This page was called "OAuth consent screen" before it moved under **Google Auth Platform**, which is
+why older instructions point at `APIs & Services`. Click **Get started**:
+
+| Field | Value |
+| --- | --- |
+| App name | What the sign-in screen shows, e.g. "Hector Admin" |
+| User support email | Your address |
+| Audience | **External** — Internal is not offered without an organization |
+| Contact information | Your address |
+
+On the **Audience** tab, add each admin as a test user. IAP only asks for basic scopes, so you can
+also publish to Production without going through Google's verification review, which removes the
+"Google hasn't verified this app" interstitial.
+
+### 2. Create the OAuth client
+
+<https://console.cloud.google.com/security/iap?project=hector-golf>
+
+Find `hector-admin` in the Applications list → **More options** → **Settings** → **Custom OAuth** →
+**Auto Generate Credentials**. That creates the client *and* sets its redirect URI in one go. Doing
+it by hand instead means adding this to the client yourself:
+
+```
+https://iap.googleapis.com/v1/oauth/clientIds/YOUR_CLIENT_ID:handleRedirect
+```
+
+Click **Download credentials** for the id and secret, then **Save**. The `hello` page should now
+load behind a Google sign-in.
+
+### 3. Record it in Terraform
+
+Put both values in your gitignored `terraform.tfvars`:
+
+```hcl
+iap_oauth_client_id     = "1234-abcd.apps.googleusercontent.com"
+iap_oauth_client_secret = "GOCSPX-..."
+```
+
+Then `terraform apply`. Expect **`1 to add`** and nothing else: `google_iap_settings` adopts the
+configuration you just made by hand, so a project rebuilt from this directory comes back working
+rather than showing the error above. If the plan proposes anything about the Cloud Run service
+itself, stop and read it.
+
+Setting only one of the two is rejected at plan time rather than half-applied — IAP needs the pair.
+Setting neither leaves the resource out of the plan entirely, which is what let step 4 run before
+this step existed.
+
+> The secret is stored in Terraform state as plain text; the provider documents this. The state
+> bucket is private, uniform-access and public-access-prevented, which makes that acceptable rather
+> than harmless. Rotate the client if the bucket is ever exposed.
+
+## Step 6 — Let CI reach the state bucket
 
 The bucket is not managed by Terraform, so its IAM is not either:
 
@@ -231,7 +306,7 @@ gcloud storage buckets add-iam-policy-binding "gs://${BUCKET}" \
   --role="roles/storage.objectAdmin"
 ```
 
-## Step 6 — Wire up GitHub
+## Step 7 — Wire up GitHub
 
 Read the values out of Terraform:
 
@@ -255,6 +330,8 @@ Under **Secrets**, add one:
 | Secret | Value |
 | --- | --- |
 | `TF_ADMIN_PRINCIPALS` | `["user:you@example.com"]` — a JSON array |
+| `TF_IAP_OAUTH_CLIENT_ID` | The client id from step 5 |
+| `TF_IAP_OAUTH_CLIENT_SECRET` | The client secret from step 5 |
 
 That one is a secret rather than a committed `.tfvars` file because this repository is public and
 those are real people's email addresses. Terraform reads complex variables from `TF_VAR_*` as JSON,
@@ -267,7 +344,7 @@ yourself as a required reviewer. That is the approval gate on `terraform apply`.
 > use `production`, so adding reviewers there would make every site deploy and every PR check wait
 > for a human.
 
-## Step 7 — Verify the handover
+## Step 8 — Verify the handover
 
 Open a pull request that changes something trivial under `terraform/` — a comment will do.
 `terraform-plan.yml` should authenticate without any key, run, and post the plan as a comment. That
@@ -275,20 +352,20 @@ proves Workload Identity Federation, the bucket binding and the variables are al
 
 Merge it and `terraform-apply.yml` should stop and wait for your approval.
 
-## Step 8 — Verify IAP
+## Step 9 — Verify IAP
 
 ```bash
 terraform output -raw admin_url
 ```
 
-Open it in a browser. You should get a Google sign-in, then the `hello` page. If you are prompted to
-configure an OAuth consent screen, do so once — it is a project-level, one-time setup.
+Open it in a browser. You should get a Google sign-in, then the `hello` page. If you instead see
+"Empty Google Account OAuth client ID(s)/secret(s)", step 5 is incomplete.
 
 Then confirm the lock actually works: open the same URL in a private window signed in as an account
 that is not in `admin_principals`. You should be refused. An admin endpoint you have never verified
 rejects a stranger is not an admin endpoint you know anything about.
 
-## Step 9 — The budget alert
+## Step 10 — The budget alert
 
 Do this on day one. Because billing is enabled on the project, Firestore has no hard spending cap
 the way a Spark-plan project does: the free quota is generous, but a runaway write loop in a
@@ -311,7 +388,7 @@ Then revert `enable_budget_alert` to `false` before committing, or grant `terraf
 `roles/billing.costsManager` on the billing account if you would rather CI managed it. Creating the
 budget by hand in the console is an equally good answer.
 
-## Step 10 — After the first real deploy, drop the placeholder
+## Step 11 — After the first real deploy, drop the placeholder
 
 Once [`deploy-admin.yml`](../.github/workflows/deploy-admin.yml) has run once, there is a real image
 in Artifact Registry and the placeholder has done its job. Delete these lines from
@@ -400,6 +477,7 @@ Really deleting it takes two deliberate steps: set `delete_protection_state` to
 | `Error 403: Permission denied` on the first apply | Step 1 not run, or ADC is pointed at the wrong account — the CLI account being right does not mean ADC is. Check with the `userinfo` command in "Before you start" |
 | `Service account service-…@gcp-sa-iap… does not exist` | Step 3 not run |
 | A database you created by hand is not listed in this project | The console was pointed at a different project. Use the cross-project loop in "Check the free-tier database first" to find it |
+| Browser shows "Empty Google Account OAuth client ID(s)/secret(s)" | IAP is on but has no OAuth client. This project is outside an organization and its users are external, so Google's managed client cannot be used — do step 5 |
 | Browser shows "Your client does not have permission to get URL from this server" | The IAP service agent is missing `roles/run.invoker`. Re-apply; if it persists, redeploy the Cloud Run service — IAP caches the backend |
 | Sign-in succeeds, then 403 | Your address is not in `admin_principals` / `TF_ADMIN_PRINCIPALS` |
 | CI: `Permission denied on resource project` | The `GH_TERRAFORM_SA` variable is wrong, or the WIF binding does not cover this ref. Plan runs on `refs/pull/N/merge`, so the Terraform identity is bound to the repository, not to `main` |
