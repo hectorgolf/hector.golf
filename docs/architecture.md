@@ -94,7 +94,7 @@ waiting for a deploy.
 ├── backend/backend-functions/  # GCP Cloud Functions gen2 (Gemini wrappers + leaderboard proxy)
 ├── terraform/                  # The hector-golf GCP project (see docs/gcp-setup-playbook.md)
 ├── .github/workflows/          # Nine workflows
-└── docs/                       # This document and the setup playbook
+└── docs/                       # This document, the setup playbook, and data-ownership.md
 ```
 
 There is **no monorepo tooling**. `astrosite/` and `backend/backend-functions/` are two independent
@@ -346,7 +346,10 @@ files:
 
 - **Current handicap** — `getPlayerHandicapById()` sorts `handicaps.json` by date and takes the last
   entry. `getPlayerById()` then applies `player.handicap || handicapFromHistory`, so the JSON field
-  acts as a manual override of the scraped history.
+  acts as a manual override of the scraped history — except that `update-handicaps.ts` also *writes*
+  that field, so the override is overwritten by what it overrides. See
+  [data-ownership.md](./data-ownership.md), which settles who owns which field and why the fix waits
+  for the Firestore migration.
 - **Projected buckets** — for *future* Hector events only, `populateUpdatedHandicaps()` refreshes the
   stored bucket handicaps from the live history, so "Projected Buckets" stay current between
   scheduled data runs.
