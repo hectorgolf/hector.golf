@@ -6953,5 +6953,15 @@
     "date": "2026-09-09",
     "player": "ofri-p",
     "handicap": 5.5
+  },
+  {
+    "date": "2026-09-10",
+    "player": "lauri-p",
+    "handicap": 11.8
+  },
+  {
+    "date": "2026-09-11",
+    "player": "toni-m",
+    "handicap": 13.7
   }
 ]
