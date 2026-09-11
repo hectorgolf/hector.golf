@@ -119,7 +119,7 @@ variable "enable_budget_alert" {
     permissions on the *billing account* rather than the project, which the
     Terraform CI service account deliberately does not have. Set it true and run
     `terraform apply` locally as yourself once, or create the budget by hand in
-    the console. See docs/gcp-setup-playbook.md, step 10.
+    the console. See docs/gcp-setup-playbook.md, step 9.
   EOT
   type        = bool
   default     = false

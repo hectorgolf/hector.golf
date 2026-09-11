@@ -2,7 +2,7 @@
 # and posts the plan as a comment so the diff is reviewable alongside the code.
 #
 # Formatting and validation need nothing from GCP, so they always run. The plan
-# needs credentials, and before the project has been wired up to GitHub (step 7
+# needs credentials, and before the project has been wired up to GitHub (step 6
 # of the playbook) there are none — on that pull request the honest answer is
 # "there is nothing here I can plan yet", so the plan is skipped rather than
 # failed. Partially configured is a different thing and still fails; see the
@@ -73,7 +73,7 @@ jobs:
           # which is the expected state on the pull request that adds terraform/.
           if [ -z "$WIF_PROVIDER" ] && [ -z "$TERRAFORM_SA" ] && [ -z "$ADMIN_PRINCIPALS" ]; then
             echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::GCP is not wired up to GitHub yet — step 7 of docs/gcp-setup-playbook.md. Skipping the plan; formatting and validation still ran."
+            echo "::notice::GCP is not wired up to GitHub yet — step 6 of docs/gcp-setup-playbook.md. Skipping the plan; formatting and validation still ran."
             exit 0
           fi
 
@@ -82,7 +82,7 @@ jobs:
           # TF_ADMIN_PRINCIPALS reads admin_principals as an empty list, which is
           # an instruction to revoke every IAP binding rather than a no-op.
           echo "::error::Partially configured. Missing:$missing"
-          echo "::error::Finish step 7 of docs/gcp-setup-playbook.md before CI plans anything."
+          echo "::error::Finish step 6 of docs/gcp-setup-playbook.md before CI plans anything."
           exit 1
 
       # Keyless: Actions presents its OIDC token and exchanges it for a

@@ -214,12 +214,28 @@ image = coalesce(var.admin_image, "${local.admin_image_repo}:latest")
 ```
 
 So the committed configuration always reads as "the admin image", and the placeholder lives in your
-local, gitignored `terraform.tfvars` rather than in the repository. Step 11 removes it.
+local, gitignored `terraform.tfvars` rather than in the repository. Step 10 removes it.
 
 Expect the apply to take a few minutes; enabling APIs and creating the Firestore database are the
 slow parts. Cloud Run comes up running the `hello` container — deliberately, so the service and its
 IAP configuration exist and can be verified before any application code does. It is not exposed
 while it sits there: IAP is in front of it.
+
+### Hand CI the state bucket
+
+Do this now rather than later. The apply just created the `terraform-ci` service account, and the
+state bucket is deliberately not managed by Terraform — so its IAM is not either, and nothing else
+in this playbook will grant it:
+
+```bash
+gcloud storage buckets add-iam-policy-binding "gs://${BUCKET}" \
+  --member="serviceAccount:$(terraform output -raw terraform_service_account)" \
+  --role="roles/storage.objectAdmin"
+```
+
+Skip it and CI authenticates perfectly well and then dies at `terraform init` with
+`does not have storage.objects.list access`, which reads like a broken workflow rather than a
+missing grant.
 
 ## Step 5 — Give IAP an OAuth client
 
@@ -296,17 +312,7 @@ this step existed.
 > bucket is private, uniform-access and public-access-prevented, which makes that acceptable rather
 > than harmless. Rotate the client if the bucket is ever exposed.
 
-## Step 6 — Let CI reach the state bucket
-
-The bucket is not managed by Terraform, so its IAM is not either:
-
-```bash
-gcloud storage buckets add-iam-policy-binding "gs://${BUCKET}" \
-  --member="serviceAccount:$(terraform output -raw terraform_service_account)" \
-  --role="roles/storage.objectAdmin"
-```
-
-## Step 7 — Wire up GitHub
+## Step 6 — Wire up GitHub
 
 Read the values out of Terraform:
 
@@ -359,7 +365,7 @@ yourself as a required reviewer. That is the approval gate on `terraform apply`.
 > use `production`, so adding reviewers there would make every site deploy and every PR check wait
 > for a human.
 
-## Step 8 — Verify the handover
+## Step 7 — Verify the handover
 
 Open a pull request that changes something trivial under `terraform/` — a comment will do.
 `terraform-plan.yml` should authenticate without any key, run, and post the plan as a comment. That
@@ -367,7 +373,7 @@ proves Workload Identity Federation, the bucket binding and the variables are al
 
 Merge it and `terraform-apply.yml` should stop and wait for your approval.
 
-## Step 9 — Verify IAP
+## Step 8 — Verify IAP
 
 ```bash
 terraform output -raw admin_url
@@ -380,7 +386,7 @@ Then confirm the lock actually works: open the same URL in a private window sign
 that is not in `admin_principals`. You should be refused. An admin endpoint you have never verified
 rejects a stranger is not an admin endpoint you know anything about.
 
-## Step 10 — The budget alert
+## Step 9 — The budget alert
 
 Do this on day one. Because billing is enabled on the project, Firestore has no hard spending cap
 the way a Spark-plan project does: the free quota is generous, but a runaway write loop in a
@@ -403,7 +409,7 @@ Then revert `enable_budget_alert` to `false` before committing, or grant `terraf
 `roles/billing.costsManager` on the billing account if you would rather CI managed it. Creating the
 budget by hand in the console is an equally good answer.
 
-## Step 11 — After the first real deploy, drop the placeholder
+## Step 10 — After the first real deploy, drop the placeholder
 
 Once [`deploy-admin.yml`](../.github/workflows/deploy-admin.yml) has run once, there is a real image
 in Artifact Registry and the placeholder has done its job. Delete these lines from
@@ -495,7 +501,8 @@ Really deleting it takes two deliberate steps: set `delete_protection_state` to
 | Browser shows "Empty Google Account OAuth client ID(s)/secret(s)" | IAP is on but has no OAuth client. This project is outside an organization and its users are external, so Google's managed client cannot be used — do step 5 |
 | Browser shows "Your client does not have permission to get URL from this server" | The IAP service agent is missing `roles/run.invoker`. Re-apply; if it persists, redeploy the Cloud Run service — IAP caches the backend |
 | Sign-in succeeds, then 403 | Your address is not in `admin_principals` / `TF_ADMIN_PRINCIPALS` |
-| CI: `the GitHub Action workflow must specify exactly one of "workload_identity_provider" or "credentials_json"` | `GH_WIF_PROVIDER` is unset, so it expands to an empty string. The action's message about forks and Dependabot is a red herring — do step 7 |
+| CI: `the GitHub Action workflow must specify exactly one of "workload_identity_provider" or "credentials_json"` | `GH_WIF_PROVIDER` is unset, so it expands to an empty string. The action's message about forks and Dependabot is a red herring — do step 6 |
+| CI: `terraform-ci@… does not have storage.objects.list access to the Google Cloud Storage bucket` | The state bucket grant at the end of step 4 was not run. Authentication is fine; the service account simply cannot read its own state |
 | CI: `Permission denied on resource project` | The `GH_TERRAFORM_SA` variable is wrong, or the WIF binding does not cover this ref. Plan runs on `refs/pull/N/merge`, so the Terraform identity is bound to the repository, not to `main` |
 | CI: `Error acquiring the state lock` | A previous run died holding it. `terraform force-unlock <id>` locally, having first checked no apply is actually running |
 | First apply fails with the revision never becoming ready, or an image pull error | `admin_image` is unset on a project with nothing in Artifact Registry yet. Put the placeholder line back for that one run — see step 4 |
