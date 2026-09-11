@@ -397,22 +397,39 @@ Do this on day one. Because billing is enabled on the project, Firestore has no 
 the way a Spark-plan project does: the free quota is generous, but a runaway write loop in a
 half-finished endpoint bills rather than stops.
 
-Terraform can create it, but only with permissions on the *billing account* rather than the project,
-which `terraform-ci` deliberately does not have. So run this one locally, as yourself:
+Create it with `gcloud`. The billing account is derived rather than typed, so there is nothing to
+look up:
 
 ```bash
-# in terraform.tfvars
-enable_budget_alert = true
-billing_account     = "01ABCD-234567-89EFGH"   # gcloud billing accounts list
+BILLING=$(gcloud billing projects describe hector-golf \
+  --format="value(billingAccountName)" | sed 's|billingAccounts/||')
+
+gcloud billing budgets create \
+  --billing-account="$BILLING" \
+  --display-name="hector.golf - alert above EUR 1/month" \
+  --budget-amount=1EUR \
+  --filter-projects="projects/hector-golf" \
+  --threshold-rule=percent=0.5 \
+  --threshold-rule=percent=1.0 \
+  --threshold-rule=percent=2.0
 ```
 
-```bash
-terraform apply
-```
+Alerts go to the billing account's default recipients. 50% is the "something changed" signal, 100%
+is "look now", 200% is "it is still climbing".
 
-Then revert `enable_budget_alert` to `false` before committing, or grant `terraform-ci`
-`roles/billing.costsManager` on the billing account if you would rather CI managed it. Creating the
-budget by hand in the console is an equally good answer.
+### Why not Terraform
+
+[`budget.tf`](../terraform/budget.tf) describes the same budget and is deliberately off by default,
+because switching it on halfway is the worst of the three states:
+
+| `enable_budget_alert` | What happens |
+| --- | --- |
+| `false` everywhere — the default | The budget is not managed here. Use the `gcloud` command above |
+| `true` locally only | **Do not.** The budget enters state, and CI then reads the default `false` — `terraform.tfvars` is gitignored and never reaches it — so it plans to *destroy* the budget. It cannot even refresh it first, having no billing permissions, so the plan errors instead |
+| `true` everywhere | Works, and costs more than it saves: `TF_VAR_enable_budget_alert` and `TF_VAR_billing_account` have to reach CI, and `terraform-ci` needs `roles/billing.costsManager` on the billing account. That is a CI identity able to rewrite billing, in exchange for managing one resource that is set once and never touched again |
+
+The middle row is not hypothetical; it is the shape of divergence that has already caused two
+incidents in this project, where a plan reads as routine and removes something that was working.
 
 ## Step 10 — After the first real deploy, drop the placeholder
 
