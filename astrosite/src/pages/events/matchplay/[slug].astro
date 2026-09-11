@@ -5,11 +5,11 @@ import Breadcrumb from '@hector/ui/components/Breadcrumb.astro';
 import PageHeader from '@hector/ui/components/PageHeader.astro';
 import CompetitionMark from '@hector/ui/components/CompetitionMark.astro';
 import SingleEliminationBracketV2 from '../../../components/events/SingleEliminationBracketV2.astro';
-import { type MatchplayEvent } from '../../../schemas/events';
-import { type Player } from '../../../schemas/players';
+import { type MatchplayEvent } from '@hector/schemas/src/events.ts';
+import { type Player } from '@hector/schemas/src/players.ts';
 import { getAllEventIds, getEventById } from '../../../code/events';
 import { getPlayerName, getPlayerById } from '../../../code/players';
-import { formatEventDates } from '../../../code/dates';
+import { formatEventDates } from '@hector/schemas/src/dates.ts';
 
 
 export function getStaticPaths() {

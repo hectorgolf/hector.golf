@@ -1,7 +1,7 @@
 import { expect, describe, it } from "vitest";
 import { getPlayerHandicapFromHistory, sortPlayersForBucketing } from "../../src/workflows/update-handicaps";
-import type { HandicapHistoryEntry } from "../../src/schemas/handicaps";
-import type { Player } from "../../src/schemas/players";
+import type { HandicapHistoryEntry } from "@hector/schemas/src/handicaps.ts";
+import type { Player } from "@hector/schemas/src/players.ts";
 
 const history: Array<HandicapHistoryEntry> = [
     // Adam's HCP has been fluctuating back and forth

@@ -6,7 +6,7 @@
  * import, a future scoring engine — can apply these to the same effect.
  */
 
-import type { HectorGameFormatName } from "../schemas/events";
+import type { HectorGameFormatName } from "@hector/schemas/src/events.ts";
 
 /**
  * Which game formats a maximum score per hole is shown as a rule of.

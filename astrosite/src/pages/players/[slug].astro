@@ -4,8 +4,8 @@ import Breadcrumb from '@hector/ui/components/Breadcrumb.astro';
 import PageHeader from '@hector/ui/components/PageHeader.astro';
 import AppearanceCard from '../../components/players/AppearanceCard.astro';
 import HandicapHistoryChart from '../../components/players/HandicapHistoryChart.astro';
-import { type Player } from '../../schemas/players';
-import { type HandicapHistoryEntry } from '../../schemas/handicaps';
+import { type Player } from '@hector/schemas/src/players.ts';
+import { type HandicapHistoryEntry } from '@hector/schemas/src/handicaps.ts';
 import { getEventsOfPlayer, getAllPlayerIds, getPlayerById, getPlayerName, getPlayerHandicapHistoryById, getPlayerHandicapById } from '../../code/players';
 
 

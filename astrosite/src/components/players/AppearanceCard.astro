@@ -1,9 +1,9 @@
 ---
 import CompetitionMark from '@hector/ui/components/CompetitionMark.astro'
 import { linkToEvent } from '../../code/events'
-import { formatEventDates } from '../../code/dates'
-import { type Player } from '../../schemas/players'
-import { type Event, type HectorEvent } from '../../schemas/events'
+import { formatEventDates } from '@hector/schemas/src/dates.ts'
+import { type Player } from '@hector/schemas/src/players.ts'
+import { type Event, type HectorEvent } from '@hector/schemas/src/events.ts'
 
 interface Props {
 	player: Player

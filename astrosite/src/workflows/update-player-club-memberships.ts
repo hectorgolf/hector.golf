@@ -6,7 +6,7 @@ import type { GolfClub, HandicapSource } from "../code/handicaps/handicap-source
 import { createWisegolfSession } from "../code/handicaps/wisegolf-api.ts";
 
 import { playersData } from "../code/data.ts";
-import type { Player } from "../schemas/players.ts";
+import type { Player } from "@hector/schemas/src/players.ts";
 import { getPlayerName, updatePlayerData } from "../code/players.ts";
 
 const getPlayerById = (id: string): Player | undefined => {

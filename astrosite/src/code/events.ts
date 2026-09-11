@@ -6,9 +6,9 @@ import {
     type HectorEvent,
     type FinnkampenEvent,
     EventFormat,
-} from "../schemas/events";
-import { type Course, schema as CourseSchema } from "../schemas/courses";
-import { isoDateToday, compareIsoDates } from "./dates";
+} from "@hector/schemas/src/events.ts";
+import { type Course, schema as CourseSchema } from "@hector/schemas/src/courses.ts";
+import { isoDateToday, compareIsoDates } from "@hector/schemas/src/dates.ts";
 import { eventsData, coursesData, isPastEvent } from "./data";
 import { getPlayerHandicapById } from "./players";
 

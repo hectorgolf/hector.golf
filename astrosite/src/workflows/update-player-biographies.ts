@@ -4,12 +4,12 @@ import { fileURLToPath } from "url";
 
 import { hectorEvents, hasParticipants, isUpcomingEvent, isPastEvent } from "../code/data.ts";
 import { getAllPlayers, getPlayerName, updatePlayerData } from "../code/players.ts";
-import { type Player } from "../schemas/players.ts";
-import { type EventTiming, type HectorEvent } from "../schemas/events.ts";
+import { type Player } from "@hector/schemas/src/players.ts";
+import { type EventTiming, type HectorEvent } from "@hector/schemas/src/events.ts";
 
 import { createWisegolfSession } from "../code/handicaps/wisegolf-api";
 import { type GolfClub, type HandicapSource } from "../code/handicaps/handicap-source-api";
-import { parseIsoDate } from "../code/dates.ts";
+import { parseIsoDate } from "@hector/schemas/src/dates.ts";
 import { writeJsonFile } from "../code/json.ts";
 import { formatForPrinting } from "../code/strings.ts";
 

@@ -9,10 +9,10 @@ import {
     type HectorEvent,
     type MatchplayEvent,
     genericEventSchema as EventSchema,
-} from "../schemas/events";
-import { type Course, schema as CourseSchema } from "../schemas/courses";
-import { type Player, schema as PlayerSchema } from "../schemas/players";
-import { isoDateToday, parseIsoDate } from "../code/dates.ts";
+} from "@hector/schemas/src/events.ts";
+import { type Course, schema as CourseSchema } from "@hector/schemas/src/courses.ts";
+import { type Player, schema as PlayerSchema } from "@hector/schemas/src/players.ts";
+import { isoDateToday, parseIsoDate } from "@hector/schemas/src/dates.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 

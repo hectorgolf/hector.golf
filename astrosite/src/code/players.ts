@@ -1,6 +1,6 @@
-import { type Event } from '../schemas/events';
-import { type Player, schema as PlayerSchema } from '../schemas/players';
-import { type HandicapHistoryEntry } from '../schemas/handicaps';
+import { type Event } from '@hector/schemas/src/events.ts';
+import { type Player, schema as PlayerSchema } from '@hector/schemas/src/players.ts';
+import { type HandicapHistoryEntry } from '@hector/schemas/src/handicaps.ts';
 import { getPlayerHandicapHistoryById as getPlayerHandicapHistoryByIdImplementation } from './handicaps';
 import { getAllEvents } from './events';
 import { playersData, playerDataPath, endDateOfEvent, isHectorEvent, isMatchplayEvent, isFinnkampenEvent } from './data';

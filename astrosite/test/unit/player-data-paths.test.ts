@@ -3,7 +3,7 @@ import { basename } from "path";
 import { glob } from "glob";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { schema as PlayerSchema, type Player } from "../../src/schemas/players.ts";
+import { schema as PlayerSchema, type Player } from "@hector/schemas/src/players.ts";
 
 /**
  * `updatePlayerData` is the only writer of player data, and it must land on the

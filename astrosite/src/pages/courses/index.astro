@@ -5,9 +5,9 @@ import Breadcrumb from '@hector/ui/components/Breadcrumb.astro';
 import PageHeader from '@hector/ui/components/PageHeader.astro';
 import { getCollection } from 'astro:content';
 import { getEventsAtCourse } from '../../code/courses';
-import { compareIsoDates } from '../../code/dates';
-import type { Course } from '../../schemas/courses';
-import type { Event } from '../../schemas/events';
+import { compareIsoDates } from '@hector/schemas/src/dates.ts';
+import type { Course } from '@hector/schemas/src/courses.ts';
+import type { Event } from '@hector/schemas/src/events.ts';
 
 
 function linkToCourse(course: any) {
