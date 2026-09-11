@@ -1,0 +1,30 @@
+# Copy to terraform.tfvars and fill in. terraform.tfvars is gitignored; the
+# values in it are not secrets, but they are per-person and per-environment.
+
+project_id = "hector-golf"
+region     = "europe-north1"
+
+# Everyone who should be able to open the admin UI. IAP is deny by default, so
+# an empty list locks everyone out including you.
+admin_principals = [
+  "user:you@example.com",
+]
+
+# FIRST APPLY ONLY. Cloud Run cannot create a service whose image will not pull,
+# and on a new project nothing has been pushed to Artifact Registry yet. Point at
+# a public placeholder for that one run, then delete these two lines — after the
+# first real deploy the service runs what deploy-admin.yml pushed, and Terraform
+# falls back to <repo>/admin:latest if it ever needs to name an image itself.
+admin_image = "us-docker.pkg.dev/cloudrun/container/hello"
+
+# From the OAuth client created in playbook step 5. Until BOTH are set,
+# google_iap_settings is left out of the plan, which is what lets the first
+# apply run before the console work exists. The secret ends up in Terraform
+# state as plain text — keep it here, never in the repository.
+# iap_oauth_client_id     = "1234-abcd.apps.googleusercontent.com"
+# iap_oauth_client_secret = "GOCSPX-..."
+
+# Optional: the €1/month budget alert. Needs billing-account permissions, so
+# apply this one locally rather than from CI.
+# enable_budget_alert = true
+# billing_account     = "01ABCD-234567-89EFGH"

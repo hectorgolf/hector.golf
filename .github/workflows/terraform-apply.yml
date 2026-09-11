@@ -1,0 +1,117 @@
+# Applies terraform/ after a pull request lands on main.
+#
+# The `infrastructure` environment is the approval gate. IAM cannot cleanly
+# separate plan from apply here, because plan has to run on pull requests where
+# the ref is refs/pull/N/merge, so the terraform-ci service account is bound to
+# the repository rather than to a branch. The gate is therefore this
+# environment: add required reviewers to it in Settings → Environments.
+#
+# Note it is deliberately NOT the existing `production` environment, which
+# deploy.yml and pr-checks.yml already use — putting reviewers on that one would
+# make every site deploy wait for a human.
+name: Terraform apply
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform-apply.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+# One apply at a time, and never cancel one in flight: a half-applied plan with
+# a released state lock is the worst outcome available.
+concurrency:
+  group: "terraform-apply"
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: terraform
+
+jobs:
+  apply:
+    name: Apply
+    runs-on: ubuntu-latest
+    environment: infrastructure
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Check GitHub is wired up to GCP
+        id: guard
+        env:
+          WIF_PROVIDER: ${{ vars.GH_WIF_PROVIDER }}
+          TERRAFORM_SA: ${{ vars.GH_TERRAFORM_SA }}
+          ADMIN_PRINCIPALS: ${{ secrets.TF_ADMIN_PRINCIPALS }}
+        run: |
+          missing=""
+          if [ -z "$WIF_PROVIDER" ]; then missing="$missing GH_WIF_PROVIDER"; fi
+          if [ -z "$TERRAFORM_SA" ]; then missing="$missing GH_TERRAFORM_SA"; fi
+          if [ -z "$ADMIN_PRINCIPALS" ]; then missing="$missing TF_ADMIN_PRINCIPALS"; fi
+
+          if [ -z "$missing" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Nothing set at all means the project has not been bootstrapped yet.
+          # There is nothing to apply, and saying so beats failing every merge
+          # until someone finishes step 6.
+          if [ -z "$WIF_PROVIDER" ] && [ -z "$TERRAFORM_SA" ] && [ -z "$ADMIN_PRINCIPALS" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::GCP is not wired up to GitHub yet - step 6 of docs/gcp-setup-playbook.md. Nothing applied."
+            exit 0
+          fi
+
+          # Some set and some not is the shape that does damage: an apply missing
+          # TF_ADMIN_PRINCIPALS reads admin_principals as an empty list, which
+          # revokes every IAP binding rather than doing nothing.
+          echo "::error::Partially configured. Missing:$missing"
+          echo "::error::Refusing to apply. Finish step 6 of docs/gcp-setup-playbook.md."
+          exit 1
+
+      - name: Authenticate to Google Cloud
+        if: steps.guard.outputs.configured == 'true'
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GH_WIF_PROVIDER }}
+          service_account: ${{ vars.GH_TERRAFORM_SA }}
+
+      - name: Set up Terraform
+        if: steps.guard.outputs.configured == 'true'
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.15.1
+
+      - name: Init
+        if: steps.guard.outputs.configured == 'true'
+        run: terraform init -reconfigure -input=false
+
+      - name: Apply
+        if: steps.guard.outputs.configured == 'true'
+        run: terraform apply -input=false -auto-approve
+        env:
+          TF_VAR_admin_principals: ${{ secrets.TF_ADMIN_PRINCIPALS }}
+          # Unset until the OAuth client exists (playbook step 5); the IAP
+          # settings resource is simply absent from the plan until then.
+          TF_VAR_iap_oauth_client_id: ${{ secrets.TF_IAP_OAUTH_CLIENT_ID }}
+          TF_VAR_iap_oauth_client_secret: ${{ secrets.TF_IAP_OAUTH_CLIENT_SECRET }}
+
+      - name: Summarise
+        if: steps.guard.outputs.configured == 'true'
+        run: |
+          {
+            echo "### Applied"
+            echo
+            echo "| Output | Value |"
+            echo "| --- | --- |"
+            echo "| Admin URL | $(terraform output -raw admin_url) |"
+            echo "| Firestore database | $(terraform output -raw firestore_database) |"
+            echo "| Image repository | $(terraform output -raw admin_image_repository) |"
+          } >> "$GITHUB_STEP_SUMMARY"

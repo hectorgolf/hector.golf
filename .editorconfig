@@ -38,3 +38,8 @@ indent_size = 2
 [*.md]
 # Two trailing spaces are a line break in Markdown.
 trim_trailing_whitespace = false
+
+# Two, because that is what `terraform fmt` writes and it will rewrite anything else.
+[*.tf]
+indent_style = space
+indent_size = 2

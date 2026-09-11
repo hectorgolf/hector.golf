@@ -1,6 +1,6 @@
 # hector.golf — Technical Architecture
 
-_Last reviewed: 2026-09-08_
+_Last reviewed: 2026-09-10_
 
 ## 1. Overview
 
@@ -23,7 +23,8 @@ Three moving parts:
 | --- | --- | --- |
 | Astro site | `astrosite/` | Static site generator, domain logic, committed JSON data, and the workflow scripts |
 | Cloud Functions | `backend/backend-functions/` | Four HTTP-triggered GCP functions: three Google Gemini wrappers plus the leaderboard proxy |
-| CI/CD | `.github/workflows/` | Six workflows: one deploy, one PR check, four scheduled data updates |
+| CI/CD | `.github/workflows/` | Nine workflows: one deploy, one PR check, four scheduled data updates, two Terraform, one admin deploy |
+| Infrastructure | `terraform/` | The `hector-golf` GCP project: Firestore, Cloud Run, IAP, Artifact Registry, CI identities |
 
 ```mermaid
 graph LR
@@ -91,8 +92,9 @@ waiting for a deploy.
 │   ├── scripts/commit-changes.sh
 │   └── test/{unit,astro}/
 ├── backend/backend-functions/  # GCP Cloud Functions gen2 (Gemini wrappers + leaderboard proxy)
-├── .github/workflows/          # Six workflows
-└── docs/                       # This document
+├── terraform/                  # The hector-golf GCP project (see docs/gcp-setup-playbook.md)
+├── .github/workflows/          # Nine workflows
+└── docs/                       # This document and the setup playbook
 ```
 
 There is **no monorepo tooling**. `astrosite/` and `backend/backend-functions/` are two independent
@@ -518,6 +520,9 @@ and assigns a club **only when exactly one** club matches.
 | `deploy.yml` | Push to `main` touching `astrosite/**` or workflows; cron `30 3,12 * * *`; manual | `withastro/action@v6` → `actions/deploy-pages@v5` | `contents: read`, `pages: write`, `id-token: write` |
 | `pr-checks.yml` | PRs targeting `main` | `npm ci` → `npm test` → `npm run build` | `contents: read` |
 | `update-handicaps.yml` | Cron `0 3,13 * * *`; manual | Script + `commit-changes.sh` | `contents: write` |
+| `terraform-plan.yml` | PRs touching `terraform/**` | `fmt` → `init` → `validate` → `plan`, posted as a PR comment | `contents: read`, `id-token: write`, `pull-requests: write` |
+| `terraform-apply.yml` | Push to `main` touching `terraform/**`; manual | `terraform apply`, gated by the `infrastructure` environment | `contents: read`, `id-token: write` |
+| `deploy-admin.yml` | Push to `main` touching `admin/**`; manual | Build, push to Artifact Registry, `gcloud run deploy` | `contents: read`, `id-token: write` |
 | `update-leaderboards.yml` | Cron `15 3,12 * * *`; manual | Script + `commit-changes.sh` | `contents: write` |
 | `update-player-biographies.yml` | Cron `30 2 10,25 * *`; manual | Script + `commit-changes.sh` | `contents: write` |
 | `update-player-club-memberships.yml` | Cron `15 22 15 * *`; manual | Script + `commit-changes.sh` | `contents: write` |

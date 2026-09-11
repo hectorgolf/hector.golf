@@ -1,0 +1,99 @@
+# Builds the admin service and rolls it out to Cloud Run.
+#
+# This workflow is inert until an `admin/` directory with a Dockerfile exists —
+# nothing matches its paths filter before then, so it will not run and will not
+# fail. It is committed alongside the infrastructure so that the deploy path is
+# reviewed once, up front, rather than improvised on the day the app is ready.
+#
+# The image is built in the runner and pushed straight to Artifact Registry.
+# Cloud Build is deliberately not in the path: `gcloud run deploy --source`
+# would auto-create its own `cloud-run-source-deploy` repository, which
+# Terraform does not manage and whose images therefore escape the cleanup
+# policies in terraform/artifact_registry.tf.
+name: Deploy admin service
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - 'admin/**'
+      - '.github/workflows/deploy-admin.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: "deploy-admin"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # A different, weaker identity than Terraform's: it can push images and
+      # roll out revisions, and cannot touch the infrastructure around them.
+      # Reachable only by workflow_dispatch before the app exists. Fail with a
+      # sentence rather than a docker error nobody can read.
+      - name: Check there is an app to deploy
+        run: |
+          if [ ! -f admin/Dockerfile ]; then
+            echo "::error::admin/Dockerfile does not exist yet, so there is nothing to deploy."
+            echo "::error::This workflow starts working once the admin service lands under admin/."
+            exit 1
+          fi
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GH_WIF_PROVIDER }}
+          service_account: ${{ vars.GH_DEPLOYER_SA }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev --quiet
+
+      # Two tags, for two different readers.
+      #
+      # The SHA tag is what actually gets deployed, so every running revision is
+      # traceable to a commit. `latest` is never deployed by this workflow — it
+      # exists so Terraform has a real image to name when it has to supply one
+      # itself, which happens if the service is ever recreated from scratch.
+      #
+      # Both are safe with the cleanup policies: when `latest` moves on, the
+      # previous digest still carries its SHA tag, so it stays TAGGED and
+      # `delete-untagged` leaves it alone. `keep-recent` still governs.
+      - name: Build and push
+        id: image
+        run: |
+          IMAGE="${{ vars.GH_IMAGE_REPO }}:${GITHUB_SHA::12}"
+          LATEST="${{ vars.GH_IMAGE_REPO }}:latest"
+          docker build --tag "$IMAGE" --tag "$LATEST" ./admin
+          docker push "$IMAGE"
+          docker push "$LATEST"
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy hector-admin \
+            --project="${{ vars.GCP_PROJECT_ID }}" \
+            --region="${{ vars.GCP_REGION }}" \
+            --image="${{ steps.image.outputs.image }}" \
+            --quiet
+
+      - name: Summarise
+        run: |
+          {
+            echo "### Deployed"
+            echo
+            echo "- Image: \`${{ steps.image.outputs.image }}\`"
+            echo "- Service: hector-admin in ${{ vars.GCP_REGION }}"
+          } >> "$GITHUB_STEP_SUMMARY"
