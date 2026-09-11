@@ -39,15 +39,28 @@ resource "google_iap_web_cloud_run_service_iam_member" "admins" {
 # Left out of the plan until the credentials exist, so that the first apply on
 # a new project — which necessarily happens before the client does — is not
 # blocked by a chicken-and-egg.
+locals {
+  # An unset GitHub Actions secret expands to an EMPTY STRING, not to nothing, so
+  # TF_VAR_iap_oauth_client_id arrives as "" rather than null. A null check would
+  # therefore read "not configured" as "configured with nothing", keep the
+  # resource in the plan, and propose clearing IAP's OAuth client — which is the
+  # "Empty Google Account OAuth client ID(s)/secret(s)" error, applied on purpose.
+  # Normalising to "" first makes unset mean absent from whichever direction it
+  # arrives.
+  iap_client_id     = var.iap_oauth_client_id == null ? "" : trimspace(var.iap_oauth_client_id)
+  iap_client_secret = var.iap_oauth_client_secret == null ? "" : trimspace(var.iap_oauth_client_secret)
+  iap_configured    = local.iap_client_id != ""
+}
+
 resource "google_iap_settings" "admin" {
-  count = var.iap_oauth_client_id == null ? 0 : 1
+  count = local.iap_configured ? 1 : 0
 
   name = "projects/${data.google_project.this.number}/iap_web/cloud_run-${var.region}/services/${google_cloud_run_v2_service.admin.name}"
 
   access_settings {
     oauth_settings {
-      client_id     = var.iap_oauth_client_id
-      client_secret = var.iap_oauth_client_secret
+      client_id     = local.iap_client_id
+      client_secret = local.iap_client_secret
     }
   }
 

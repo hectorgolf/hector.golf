@@ -97,7 +97,9 @@ variable "iap_oauth_client_secret" {
   sensitive   = true
 
   validation {
-    condition     = (var.iap_oauth_client_id == null) == (var.iap_oauth_client_secret == null)
+    # Compares emptiness rather than nullness for the same reason as iap.tf: in
+    # CI these arrive as "" when the secret is not set, never as null.
+    condition     = ((var.iap_oauth_client_id == null ? "" : trimspace(var.iap_oauth_client_id)) == "") == ((var.iap_oauth_client_secret == null ? "" : trimspace(var.iap_oauth_client_secret)) == "")
     error_message = "Set both iap_oauth_client_id and iap_oauth_client_secret, or neither: IAP needs the pair."
   }
 }
