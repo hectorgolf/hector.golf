@@ -111,6 +111,33 @@ gcloud firestore databases list --project="$PROJECT_ID"
 An empty result is what you want. If it lists a `(default)` database, either point
 `firestore_database_id` at that one, or use a genuinely fresh project.
 
+If you have already created a database by hand and this comes back empty, it went somewhere else.
+The console remembers whichever project you last had selected, and an auto-generated
+`gen-lang-client-*` project — the one Google AI Studio creates alongside a Gemini API key — is an
+easy one to land in without noticing. Look across everything you can see:
+
+```bash
+for p in $(gcloud projects list --format="value(projectId)"); do
+  echo "== $p"
+  gcloud firestore databases list --project="$p" \
+    --format="value(name,locationId,databaseEdition)" 2>/dev/null
+done
+```
+
+Create the real one here anyway rather than adopting the stray. The free tier is per project, so a
+database created in the wrong project has spent *that* project's allowance and cannot lend it to
+this one — there is nothing to rescue by adopting it.
+
+Whether to then delete the stray is a separate question, and the answer is usually no. An empty
+Firestore database costs essentially nothing to keep, and that project now has a free-tier database
+sitting ready should it ever want one. Deleting it may or may not return the allowance for a future
+database there, and there is no reason to find out. Delete it only if you actively want the project
+tidy — turning off delete protection first if it is on:
+
+```bash
+gcloud firestore databases delete --database=DATABASE_ID --project=WRONG_PROJECT
+```
+
 ## Step 1 — Enable the two bootstrap APIs
 
 Terraform enables the rest itself, but it cannot enable the APIs it needs in order to enable APIs.
@@ -263,6 +290,38 @@ Then revert `enable_budget_alert` to `false` before committing, or grant `terraf
 `roles/billing.costsManager` on the billing account if you would rather CI managed it. Creating the
 budget by hand in the console is an equally good answer.
 
+## Adopting something that already exists
+
+If a resource is already there — because it got clicked into being before anyone read this, or
+because you are adopting the Cloud Functions under `backend/` later — do not run `terraform import`
+from a laptop. Use an [`import` block](https://developer.hashicorp.com/terraform/language/import),
+so the adoption is reviewed in a pull request and `terraform plan` says whether the committed config
+matches reality *before* anything is applied.
+
+```hcl
+import {
+  to = google_firestore_database.hector
+  id = "projects/hector-golf/databases/hector"
+}
+```
+
+`google_firestore_database` accepts `projects/{project}/databases/{name}`, `{project}/{name}` or
+just `{name}`. Other resource types have their own accepted formats, listed under "Import" in the
+provider documentation for each.
+
+Then run `terraform plan` and read the summary line. What you want is **`1 to import, 0 to add,
+0 to change`**:
+
+| Plan says | Meaning |
+| --- | --- |
+| `to change` | The config and the real resource disagree on a mutable field. Decide which one is wrong and fix it — for a database created by hand, `delete_protection_state` and `point_in_time_recovery_enablement` are the usual two |
+| `forces replacement` | The real resource cannot be adopted as configured. Terraform would destroy and recreate it. For Firestore this means `location_id`, `type` or `database_edition`, none of which can be changed — so either match the config to reality, or recreate the resource deliberately |
+| `to add` alongside the import | The `id` does not point at anything. Check the project and the resource name |
+
+**Delete the `import` block once the apply has succeeded.** It is a one-shot instruction rather
+than a permanent part of the configuration, and leaving it in means every future plan re-checks an
+import that already happened.
+
 ## The decisions you cannot take back
 
 | Decision | Why it is permanent |
@@ -293,6 +352,7 @@ Really deleting it takes two deliberate steps: set `delete_protection_state` to
 | `set-quota-project`: `the account in ADC does not have the "serviceusage.services.use" permission on this project` | ADC is authenticated as an account with no access to this project. `gcloud auth list` shows the CLI account; the two are independent. Re-run `gcloud auth application-default login` as the account that owns the project |
 | `Error 403: Permission denied` on the first apply | Step 1 not run, or ADC is pointed at the wrong account — the CLI account being right does not mean ADC is. Check with the `userinfo` command in "Before you start" |
 | `Service account service-…@gcp-sa-iap… does not exist` | Step 3 not run |
+| A database you created by hand is not listed in this project | The console was pointed at a different project. Use the cross-project loop in "Check the free-tier database first" to find it |
 | Browser shows "Your client does not have permission to get URL from this server" | The IAP service agent is missing `roles/run.invoker`. Re-apply; if it persists, redeploy the Cloud Run service — IAP caches the backend |
 | Sign-in succeeds, then 403 | Your address is not in `admin_principals` / `TF_ADMIN_PRINCIPALS` |
 | CI: `Permission denied on resource project` | The `GH_TERRAFORM_SA` variable is wrong, or the WIF binding does not cover this ref. Plan runs on `refs/pull/N/merge`, so the Terraform identity is bound to the repository, not to `main` |
