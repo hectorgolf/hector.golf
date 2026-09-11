@@ -1,0 +1,107 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro'
+import PageHeader from '@hector/ui/components/PageHeader.astro'
+import { matchplayEventSchema } from '@hector/schemas/src/events.ts'
+import { eventExists, saveMatchplayEvent } from '../../lib/repository/events.ts'
+import { viewerFromHeaders } from '../../lib/identity.ts'
+
+let error: string | undefined
+// Keeps what was typed when validation fails, so nothing has to be retyped.
+let submitted: Record<string, string> = {}
+
+if (Astro.request.method === 'POST') {
+	const form = await Astro.request.formData()
+	submitted = Object.fromEntries([...form.entries()].map(([k, v]) => [k, String(v)]))
+
+	const candidate = {
+		id: submitted.id?.trim().toUpperCase(),
+		name: submitted.name?.trim(),
+		location: submitted.location?.trim(),
+		timing: { start: submitted.start, end: submitted.end },
+		description: submitted.description?.trim() || undefined,
+		format: 'matchplay' as const,
+		status: 'signup' as const,
+		participants: [],
+	}
+
+	const parsed = matchplayEventSchema.safeParse(candidate)
+	if (!parsed.success) {
+		error = parsed.error.issues.map((i) => `${i.path.join('.') || 'form'}: ${i.message}`).join('; ')
+	} else if (await eventExists(parsed.data.id)) {
+		error = `A tournament with id ${parsed.data.id} already exists.`
+	} else {
+		const viewer = viewerFromHeaders(Astro.request.headers)
+		await saveMatchplayEvent(parsed.data, viewer.email ?? 'unknown')
+		return Astro.redirect(`/matchplay/${parsed.data.id}`)
+	}
+}
+
+const thisYear = new Date().getFullYear()
+---
+
+<AdminLayout title="New tournament">
+	<PageHeader
+		title="New matchplay tournament"
+		lede="It starts in signup, where the field can still change. The bracket is drawn later."
+	/>
+
+	{error && <p class="notice bad">{error}</p>}
+
+	<form method="POST" class="stack">
+		<div class="field">
+			<label for="id">Id</label>
+			<input
+				id="id"
+				name="id"
+				type="text"
+				required
+				value={submitted.id ?? `HECTORMATCHPLAY${thisYear}`}
+			/>
+			<span class="hint">Uppercase, no spaces. Becomes the URL on the public site and cannot be changed later.</span>
+		</div>
+
+		<div class="field">
+			<label for="name">Name</label>
+			<input id="name" name="name" type="text" required value={submitted.name ?? `Hector Matchplay ${thisYear}`} />
+		</div>
+
+		<div class="field">
+			<label for="location">Location</label>
+			<input id="location" name="location" type="text" required value={submitted.location ?? 'Finland'} />
+		</div>
+
+		<div class="pair">
+			<div class="field">
+				<label for="start">First day</label>
+				<input id="start" name="start" type="date" required value={submitted.start ?? ''} />
+			</div>
+			<div class="field">
+				<label for="end">Last day</label>
+				<input id="end" name="end" type="date" required value={submitted.end ?? ''} />
+			</div>
+		</div>
+
+		<div class="field">
+			<label for="description">Description</label>
+			<textarea id="description" name="description" rows="4">{submitted.description ?? ''}</textarea>
+			<span class="hint">Shown on the public event page. Optional.</span>
+		</div>
+
+		<div class="actions">
+			<button type="submit">Create</button>
+			<a href="/matchplay"><button type="button" class="secondary">Cancel</button></a>
+		</div>
+	</form>
+</AdminLayout>
+
+<style>
+	.pair {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+		gap: 1rem;
+	}
+
+	form {
+		max-width: 34rem;
+	}
+</style>
