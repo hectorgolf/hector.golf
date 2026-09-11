@@ -7,6 +7,8 @@ resource "google_iam_workload_identity_pool" "github" {
   workload_identity_pool_id = "github"
   display_name              = "GitHub Actions"
   description               = "Identity pool for hectorgolf/hector.golf workflows"
+  depends_on                = [google_project_service.enabled["iam.googleapis.com"]]
+
 }
 
 resource "google_iam_workload_identity_pool_provider" "github" {
@@ -30,6 +32,8 @@ resource "google_iam_workload_identity_pool_provider" "github" {
   oidc {
     issuer_uri = "https://token.actions.githubusercontent.com"
   }
+  depends_on = [google_project_service.enabled["iam.googleapis.com"]]
+
 }
 
 # Terraform's identity is bound to the repository rather than to a branch,

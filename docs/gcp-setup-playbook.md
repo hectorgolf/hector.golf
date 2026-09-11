@@ -146,6 +146,11 @@ Terraform enables the rest itself, but it cannot enable the APIs it needs in ord
 gcloud services enable cloudresourcemanager.googleapis.com serviceusage.googleapis.com
 ```
 
+Everything else is declared in [`apis.tf`](../terraform/apis.tf), and each resource that needs an
+API says so with `depends_on`. That dependency is not decoration: without it Terraform is free to
+create a service account in the same pass that enables `iam.googleapis.com`, and whether that works
+comes down to which call lands first.
+
 ## Step 2 — Create the state bucket
 
 Versioning is the important flag: a corrupted or truncated state file is only recoverable if older
@@ -502,6 +507,7 @@ Really deleting it takes two deliberate steps: set `delete_protection_state` to
 | Browser shows "Your client does not have permission to get URL from this server" | The IAP service agent is missing `roles/run.invoker`. Re-apply; if it persists, redeploy the Cloud Run service — IAP caches the backend |
 | Sign-in succeeds, then 403 | Your address is not in `admin_principals` / `TF_ADMIN_PRINCIPALS` |
 | CI: `the GitHub Action workflow must specify exactly one of "workload_identity_provider" or "credentials_json"` | `GH_WIF_PROVIDER` is unset, so it expands to an empty string. The action's message about forks and Dependabot is a red herring — do step 6 |
+| `SERVICE_DISABLED`, e.g. `Identity and Access Management (IAM) API has not been used in project … before or it is disabled` | The API is missing from `apis.tf`, or a resource that needs it has no `depends_on` and got created first. Enable it by hand to unblock (`gcloud services enable <api> --project=hector-golf`), then add both so it does not recur |
 | CI: `terraform-ci@… does not have storage.objects.list access to the Google Cloud Storage bucket` | The state bucket grant at the end of step 4 was not run. Authentication is fine; the service account simply cannot read its own state |
 | CI: `Permission denied on resource project` | The `GH_TERRAFORM_SA` variable is wrong, or the WIF binding does not cover this ref. Plan runs on `refs/pull/N/merge`, so the Terraform identity is bound to the repository, not to `main` |
 | CI: `Error acquiring the state lock` | A previous run died holding it. `terraform force-unlock <id>` locally, having first checked no apply is actually running |

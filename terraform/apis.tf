@@ -4,6 +4,7 @@ locals {
     "billingbudgets.googleapis.com",
     "cloudresourcemanager.googleapis.com",
     "firestore.googleapis.com",
+    "iam.googleapis.com",
     "iamcredentials.googleapis.com",
     "iap.googleapis.com",
     "run.googleapis.com",

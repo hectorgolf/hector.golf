@@ -7,6 +7,8 @@ resource "google_service_account" "admin_runtime" {
   account_id   = "hector-admin"
   display_name = "hector.golf admin service (runtime)"
   description  = "Identity the admin Cloud Run service runs as. Reads and writes Firestore; nothing else."
+  depends_on   = [google_project_service.enabled["iam.googleapis.com"]]
+
 }
 
 # datastore.user is read/write on documents but cannot create, delete or
@@ -31,6 +33,8 @@ resource "google_service_account" "terraform_ci" {
   account_id   = "terraform-ci"
   display_name = "Terraform (GitHub Actions)"
   description  = "Plans and applies terraform/ from CI. Authenticates by Workload Identity Federation; holds no key."
+  depends_on   = [google_project_service.enabled["iam.googleapis.com"]]
+
 }
 
 locals {
@@ -70,6 +74,8 @@ resource "google_service_account" "admin_deployer" {
   account_id   = "admin-deployer"
   display_name = "hector.golf admin deploy (GitHub Actions)"
   description  = "Pushes admin images and rolls out Cloud Run revisions. Cannot change infrastructure."
+  depends_on   = [google_project_service.enabled["iam.googleapis.com"]]
+
 }
 
 resource "google_project_iam_member" "admin_deployer_run" {
