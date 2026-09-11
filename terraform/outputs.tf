@@ -35,3 +35,12 @@ output "project_number" {
   description = "Useful when granting roles to Google-managed service agents by hand."
   value       = data.google_project.this.number
 }
+
+output "admin_dns_records" {
+  description = <<-EOT
+    The DNS records to create at the registrar for var.admin_domain, as Google
+    emits them. Read these rather than assuming the value: the mapping is the
+    authoritative source for what the record should be.
+  EOT
+  value       = try(google_cloud_run_domain_mapping.admin[0].status[0].resource_records, [])
+}

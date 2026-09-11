@@ -457,6 +457,46 @@ gcloud run services describe hector-admin --region="$REGION" \
   --format="value(spec.template.spec.containers[0].image)"
 ```
 
+## Optional — a custom domain for the admin service
+
+`admin.hector.golf` instead of the `run.app` URL. Three steps, and the DNS record is the last of
+them, because Google emits the exact record from the mapping rather than it being something to type
+from memory.
+
+**1. Verify the base domain.** Mapping `admin.hector.golf` requires ownership of `hector.golf` to be
+verified for this project. `gcloud domains list-user-verified` shows whether it already is.
+
+```bash
+gcloud domains verify hector.golf
+```
+
+That opens Search Console and asks for a TXT record at the registrar. Terraform cannot do this step,
+which is why the mapping is off by default — an apply before verification fails.
+
+**2. Turn the mapping on.** Set `admin_domain = "admin.hector.golf"` in `terraform.tfvars`, and the
+`TF_ADMIN_DOMAIN` repository variable so CI plans the same thing, then apply.
+
+**3. Add the records it emits.**
+
+```bash
+terraform output admin_dns_records
+```
+
+For a subdomain this is a single CNAME, and at Namecheap it goes in Advanced DNS as Host `admin`,
+Type `CNAME Record`, with the value from that output. The apex and `www` records pointing at GitHub
+Pages are untouched: `admin` is a separate host with no records of its own, so there is no CNAME
+coexistence problem.
+
+Then wait. The Google-managed certificate takes about 15 minutes and can take 24 hours, and until it
+is issued the domain answers with TLS errors — which is the normal state during provisioning rather
+than a misconfiguration.
+
+Two things worth knowing. Cloud Run domain mappings are **Preview**, and Google documents them as
+"not recommended for production" on latency grounds; the alternative it recommends is a global load
+balancer at roughly $18/month, which is eighteen times this project's budget, and the `run.app` URL
+keeps working either way. And IAP is unaffected — it enforces on every hostname the service answers
+to, so the custom domain is protected exactly as the `run.app` one is.
+
 ## Adopting something that already exists
 
 If a resource is already there — because it got clicked into being before anyone read this, or
