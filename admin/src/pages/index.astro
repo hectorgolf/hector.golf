@@ -1,0 +1,87 @@
+---
+import AdminLayout from '../layouts/AdminLayout.astro'
+import PageHeader from '@hector/ui/components/PageHeader.astro'
+import { checkFirestore } from '../lib/firestore'
+import { viewerFromHeaders } from '../lib/identity'
+
+// Rendered per request, which is the point: this page reports the state of the
+// world now rather than at the last build.
+const viewer = viewerFromHeaders(Astro.request.headers)
+const firestore = await checkFirestore()
+---
+
+<AdminLayout title="Status">
+	<PageHeader
+		title="Admin"
+		lede="Nothing is built here yet. This page shows that the deployment works end to end: that IAP put an identity in front of the service, and that the service can reach its database."
+	/>
+
+	<dl class="status">
+		<div class="row">
+			<dt>Signed in as</dt>
+			<dd class={viewer.authenticated ? 'good' : 'bad'}>
+				{viewer.email ?? 'not signed in — no IAP header'}
+			</dd>
+		</div>
+		<div class="row">
+			<dt>Firestore</dt>
+			<dd class={firestore.reachable ? 'good' : 'bad'}>
+				{firestore.reachable ? `reachable — ${firestore.databaseId}` : `unreachable — ${firestore.error}`}
+			</dd>
+		</div>
+		<div class="row">
+			<dt>Rendered</dt>
+			<dd>{new Date().toISOString()}</dd>
+		</div>
+	</dl>
+
+	<p class="note">
+		The timestamp is proof of server rendering: it changes on reload, where a
+		statically built page would not.
+	</p>
+</AdminLayout>
+
+<style>
+	.status {
+		margin: 0;
+		border: 1px solid var(--line);
+		background: var(--surface);
+	}
+
+	.row {
+		display: grid;
+		grid-template-columns: 11rem 1fr;
+		gap: 1rem;
+		padding: 0.8rem 1.15rem;
+	}
+
+	.row + .row {
+		border-top: 1px solid var(--line);
+	}
+
+	dt {
+		margin: 0;
+		color: var(--text-dim);
+		font-size: 0.85rem;
+	}
+
+	dd {
+		margin: 0;
+		font-family: var(--font-num);
+		font-size: 0.85rem;
+		word-break: break-word;
+	}
+
+	dd.good {
+		color: var(--victor);
+	}
+	dd.bad {
+		color: var(--matchplay);
+	}
+
+	.note {
+		color: var(--text-dim);
+		font-size: 0.85rem;
+		margin: 0;
+	}
+</style>

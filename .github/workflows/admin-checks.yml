@@ -1,0 +1,53 @@
+# Typechecks, builds and containerises the admin service on pull requests.
+#
+# Separate from pr-checks.yml, which runs the site's suites: they are different
+# packages with different failure modes, and one workflow each keeps either from
+# going red for the other's reasons. Both install from the one workspace lockfile
+# at the repository root.
+#
+# Nothing here touches GCP or Firestore.
+name: Admin checks
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - 'admin/**'
+      - 'packages/ui/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/admin-checks.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Build and containerise
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # `astro check` typechecks the .astro templates as well as the TypeScript,
+      # so it covers the shared components as this app uses them.
+      - name: Build
+        run: npm run build --workspace=hector-admin
+
+      # Proves the image the deploy workflow will build actually builds, on the
+      # pull request rather than after the merge.
+      - name: Build the container image
+        run: |
+          docker build --build-arg GIT_SHA="${GITHUB_SHA::12}" \
+            --file admin/Dockerfile --tag hector-admin:ci .

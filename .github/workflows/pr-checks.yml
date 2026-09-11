@@ -12,9 +12,6 @@ jobs:
     name: Test and Build
     runs-on: ubuntu-latest
     environment: production
-    defaults:
-      run:
-        working-directory: astrosite
 
     env:
       # Wisegolf credentials
@@ -35,13 +32,16 @@ jobs:
         with:
           node-version-file: astrosite/.node-version
           cache: npm
-          cache-dependency-path: astrosite/package-lock.json
+          cache-dependency-path: package-lock.json
 
+      # One lockfile at the workspace root installs every package.
       - name: Install dependencies
         run: npm ci
 
       - name: Run tests
         run: npm test
+        working-directory: astrosite
 
       - name: Build
         run: npm run build
+        working-directory: astrosite
