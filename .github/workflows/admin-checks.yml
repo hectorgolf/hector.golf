@@ -1,0 +1,53 @@
+# Typechecks, tests and builds the admin service on pull requests.
+#
+# Separate from pr-checks.yml, which runs the Astro site's suites from
+# astrosite/ — these are two independent npm packages with nothing shared, and
+# giving them one workflow each keeps either from failing for the other's reasons.
+#
+# Nothing here touches GCP. The tests mock Firestore precisely so they need no
+# credentials, no network and no emulator.
+name: Admin checks
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - 'admin/**'
+      - '.github/workflows/admin-checks.yml'
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: admin
+
+jobs:
+  check:
+    name: Typecheck, test and build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      # Proves the image the deploy workflow will build actually builds, on the
+      # pull request rather than after the merge.
+      - name: Build the container image
+        run: docker build --build-arg GIT_SHA="${GITHUB_SHA::12}" --tag hector-admin:ci .

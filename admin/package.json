@@ -1,0 +1,27 @@
+{
+  "name": "hector-admin",
+  "private": true,
+  "type": "module",
+  "description": "Admin UI and API for hector.golf. Runs on Cloud Run behind IAP.",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@google-cloud/firestore": "^9.0.1",
+    "@hono/node-server": "^2.1.1",
+    "hono": "^4.13.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.5.0",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.0"
+  }
+}

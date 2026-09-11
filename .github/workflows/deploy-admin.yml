@@ -83,7 +83,8 @@ jobs:
         run: |
           IMAGE="${{ vars.GH_IMAGE_REPO }}:${GITHUB_SHA::12}"
           LATEST="${{ vars.GH_IMAGE_REPO }}:latest"
-          docker build --tag "$IMAGE" --tag "$LATEST" ./admin
+          docker build --build-arg GIT_SHA="${GITHUB_SHA::12}" \
+            --tag "$IMAGE" --tag "$LATEST" ./admin
           docker push "$IMAGE"
           docker push "$LATEST"
           echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
