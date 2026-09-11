@@ -39,11 +39,17 @@ resource "google_service_account" "terraform_ci" {
 
 locals {
   terraform_ci_roles = [
-    "roles/serviceusage.serviceUsageAdmin",  # enable the APIs in apis.tf
-    "roles/datastore.owner",                 # create and configure the Firestore database
-    "roles/artifactregistry.admin",          # the image repo and its cleanup policies
-    "roles/run.admin",                       # the admin Cloud Run service
-    "roles/iap.admin",                       # IAP settings and IAP access bindings
+    "roles/serviceusage.serviceUsageAdmin", # enable the APIs in apis.tf
+    "roles/datastore.owner",                # create and configure the Firestore database
+    "roles/artifactregistry.admin",         # the image repo and its cleanup policies
+    "roles/run.admin",                      # the admin Cloud Run service
+    # These two are not interchangeable and neither implies the other, which is
+    # easy to get wrong because the names suggest otherwise: iap.admin carries
+    # only *.getIamPolicy and *.setIamPolicy (who may sign in), while the
+    # settings on the service itself — the OAuth client in iap.tf — live behind
+    # iap.settingsAdmin's *.getSettings and *.updateSettings.
+    "roles/iap.admin",                       # google_iap_web_cloud_run_service_iam_member
+    "roles/iap.settingsAdmin",               # google_iap_settings
     "roles/iam.serviceAccountAdmin",         # create the service accounts above
     "roles/iam.serviceAccountUser",          # attach the runtime SA to Cloud Run
     "roles/iam.workloadIdentityPoolAdmin",   # keep github_oidc.tf from drifting
