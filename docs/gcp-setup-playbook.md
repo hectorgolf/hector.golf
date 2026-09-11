@@ -29,7 +29,7 @@ directory exists.
 
 ## What this deliberately does not build
 
-- **The public site.** `www.hector.golf` remains a static Astro build on GitHub Pages, deployed by
+- **The public site.** `hector.golf` remains a static Astro build on GitHub Pages, deployed by
   the existing [`deploy.yml`](../.github/workflows/deploy.yml). Nothing here touches it.
 - **The four existing Cloud Functions** in the old project (`GeneratePlayerBiography`,
   `GeneratePlayerAvatar`, `ExtractScorecardInformation`, `TournamentLeaderboard`). They are still
