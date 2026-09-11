@@ -117,11 +117,20 @@ variable "artifact_keep_count" {
 
 variable "enable_budget_alert" {
   description = <<-EOT
-    Whether to create the billing budget alert. Off by default because it needs
-    permissions on the *billing account* rather than the project, which the
-    Terraform CI service account deliberately does not have. Set it true and run
-    `terraform apply` locally as yourself once, or create the budget by hand in
-    the console. See docs/gcp-setup-playbook.md, step 9.
+    Whether to manage the billing budget alert here. Off by default, because it
+    needs permissions on the *billing account* rather than the project, which
+    terraform-ci deliberately does not have.
+
+    Leave it false and create the budget with `gcloud` — step 9 of the playbook
+    has the command. Setting it true *locally only* is the one thing not to do:
+    the budget enters state, CI reads this default because terraform.tfvars is
+    gitignored and never reaches it, and the next plan proposes destroying what
+    you just created — after failing to refresh it for want of billing
+    permissions.
+
+    Managing it here means setting it true in CI too, which means granting
+    terraform-ci roles/billing.costsManager. That is a CI identity able to
+    rewrite billing, in exchange for one resource that is set once.
   EOT
   type        = bool
   default     = false
