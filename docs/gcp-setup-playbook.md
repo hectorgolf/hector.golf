@@ -337,6 +337,14 @@ That one is a secret rather than a committed `.tfvars` file because this reposit
 those are real people's email addresses. Terraform reads complex variables from `TF_VAR_*` as JSON,
 which is why the quoting looks the way it does.
 
+Both Terraform workflows refuse to start until `GH_WIF_PROVIDER`, `GH_TERRAFORM_SA` and
+`TF_ADMIN_PRINCIPALS` are all present, and say which is missing. The first two are just
+"CI cannot reach GCP yet". `TF_ADMIN_PRINCIPALS` is the dangerous one: without it Terraform reads
+`admin_principals` as an empty list, and an empty list is not a no-op — it is an instruction to
+revoke every IAP binding that exists. That would look like an ordinary plan and lock everyone out of
+a service that was working. The variable also rejects an empty list on its own, so the failure is
+loud from either direction.
+
 Finally, under **Settings → Environments**, create an environment called **`infrastructure`** and add
 yourself as a required reviewer. That is the approval gate on `terraform apply`.
 
@@ -480,6 +488,7 @@ Really deleting it takes two deliberate steps: set `delete_protection_state` to
 | Browser shows "Empty Google Account OAuth client ID(s)/secret(s)" | IAP is on but has no OAuth client. This project is outside an organization and its users are external, so Google's managed client cannot be used — do step 5 |
 | Browser shows "Your client does not have permission to get URL from this server" | The IAP service agent is missing `roles/run.invoker`. Re-apply; if it persists, redeploy the Cloud Run service — IAP caches the backend |
 | Sign-in succeeds, then 403 | Your address is not in `admin_principals` / `TF_ADMIN_PRINCIPALS` |
+| CI: `the GitHub Action workflow must specify exactly one of "workload_identity_provider" or "credentials_json"` | `GH_WIF_PROVIDER` is unset, so it expands to an empty string. The action's message about forks and Dependabot is a red herring — do step 7 |
 | CI: `Permission denied on resource project` | The `GH_TERRAFORM_SA` variable is wrong, or the WIF binding does not cover this ref. Plan runs on `refs/pull/N/merge`, so the Terraform identity is bound to the repository, not to `main` |
 | CI: `Error acquiring the state lock` | A previous run died holding it. `terraform force-unlock <id>` locally, having first checked no apply is actually running |
 | First apply fails with the revision never becoming ready, or an image pull error | `admin_image` is unset on a project with nothing in Artifact Registry yet. Put the placeholder line back for that one run — see step 4 |

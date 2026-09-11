@@ -43,6 +43,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      # google-github-actions/auth fails with a message about forks and Dependabot
+      # when these are empty, which points nowhere near the real cause. Say the
+      # real cause instead.
+      - name: Check GitHub is wired up to GCP
+        env:
+          WIF_PROVIDER: ${{ vars.GH_WIF_PROVIDER }}
+          TERRAFORM_SA: ${{ vars.GH_TERRAFORM_SA }}
+          ADMIN_PRINCIPALS: ${{ secrets.TF_ADMIN_PRINCIPALS }}
+        run: |
+          if [ -z "$WIF_PROVIDER" ] || [ -z "$TERRAFORM_SA" ]; then
+            echo "::error::GH_WIF_PROVIDER and GH_TERRAFORM_SA repository variables are not set."
+            echo "::error::CI cannot reach GCP until then — see step 7 of docs/gcp-setup-playbook.md."
+            exit 1
+          fi
+          if [ -z "$ADMIN_PRINCIPALS" ]; then
+            echo "::error::The TF_ADMIN_PRINCIPALS secret is not set."
+            echo "::error::Terraform would read admin_principals as empty and plan the removal of"
+            echo "::error::everyone's IAP access, locking the admin service. Set it — step 7."
+            exit 1
+          fi
+
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v3
         with:

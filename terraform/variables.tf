@@ -40,6 +40,15 @@ variable "admin_principals" {
   EOT
   type        = list(string)
   default     = []
+
+  # Empty is not a harmless default here: applying it revokes the bindings that
+  # exist, locking everyone out of a service that is otherwise running fine. The
+  # realistic way to arrive at empty is CI running without the
+  # TF_ADMIN_PRINCIPALS secret, where it would look like an ordinary plan.
+  validation {
+    condition     = length(var.admin_principals) > 0
+    error_message = "admin_principals must not be empty: IAP is deny by default, so applying an empty list removes everyone's access. In CI this means the TF_ADMIN_PRINCIPALS secret is not set."
+  }
 }
 
 variable "admin_image" {
