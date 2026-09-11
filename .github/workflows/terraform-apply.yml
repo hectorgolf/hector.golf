@@ -43,42 +43,58 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      # google-github-actions/auth fails with a message about forks and Dependabot
-      # when these are empty, which points nowhere near the real cause. Say the
-      # real cause instead.
       - name: Check GitHub is wired up to GCP
+        id: guard
         env:
           WIF_PROVIDER: ${{ vars.GH_WIF_PROVIDER }}
           TERRAFORM_SA: ${{ vars.GH_TERRAFORM_SA }}
           ADMIN_PRINCIPALS: ${{ secrets.TF_ADMIN_PRINCIPALS }}
         run: |
-          if [ -z "$WIF_PROVIDER" ] || [ -z "$TERRAFORM_SA" ]; then
-            echo "::error::GH_WIF_PROVIDER and GH_TERRAFORM_SA repository variables are not set."
-            echo "::error::CI cannot reach GCP until then — see step 7 of docs/gcp-setup-playbook.md."
-            exit 1
-          fi
-          if [ -z "$ADMIN_PRINCIPALS" ]; then
-            echo "::error::The TF_ADMIN_PRINCIPALS secret is not set."
-            echo "::error::Terraform would read admin_principals as empty and plan the removal of"
-            echo "::error::everyone's IAP access, locking the admin service. Set it — step 7."
-            exit 1
+          missing=""
+          if [ -z "$WIF_PROVIDER" ]; then missing="$missing GH_WIF_PROVIDER"; fi
+          if [ -z "$TERRAFORM_SA" ]; then missing="$missing GH_TERRAFORM_SA"; fi
+          if [ -z "$ADMIN_PRINCIPALS" ]; then missing="$missing TF_ADMIN_PRINCIPALS"; fi
+
+          if [ -z "$missing" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
+          # Nothing set at all means the project has not been bootstrapped yet.
+          # There is nothing to apply, and saying so beats failing every merge
+          # until someone finishes step 7.
+          if [ -z "$WIF_PROVIDER" ] && [ -z "$TERRAFORM_SA" ] && [ -z "$ADMIN_PRINCIPALS" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::GCP is not wired up to GitHub yet - step 7 of docs/gcp-setup-playbook.md. Nothing applied."
+            exit 0
+          fi
+
+          # Some set and some not is the shape that does damage: an apply missing
+          # TF_ADMIN_PRINCIPALS reads admin_principals as an empty list, which
+          # revokes every IAP binding rather than doing nothing.
+          echo "::error::Partially configured. Missing:$missing"
+          echo "::error::Refusing to apply. Finish step 7 of docs/gcp-setup-playbook.md."
+          exit 1
+
       - name: Authenticate to Google Cloud
+        if: steps.guard.outputs.configured == 'true'
         uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ vars.GH_WIF_PROVIDER }}
           service_account: ${{ vars.GH_TERRAFORM_SA }}
 
       - name: Set up Terraform
+        if: steps.guard.outputs.configured == 'true'
         uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: 1.15.1
 
       - name: Init
-        run: terraform init -input=false
+        if: steps.guard.outputs.configured == 'true'
+        run: terraform init -reconfigure -input=false
 
       - name: Apply
+        if: steps.guard.outputs.configured == 'true'
         run: terraform apply -input=false -auto-approve
         env:
           TF_VAR_admin_principals: ${{ secrets.TF_ADMIN_PRINCIPALS }}
@@ -88,6 +104,7 @@ jobs:
           TF_VAR_iap_oauth_client_secret: ${{ secrets.TF_IAP_OAUTH_CLIENT_SECRET }}
 
       - name: Summarise
+        if: steps.guard.outputs.configured == 'true'
         run: |
           {
             echo "### Applied"

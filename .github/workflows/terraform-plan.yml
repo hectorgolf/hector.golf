@@ -1,6 +1,13 @@
 # Plans the infrastructure in terraform/ on every pull request that touches it,
 # and posts the plan as a comment so the diff is reviewable alongside the code.
 #
+# Formatting and validation need nothing from GCP, so they always run. The plan
+# needs credentials, and before the project has been wired up to GitHub (step 7
+# of the playbook) there are none — on that pull request the honest answer is
+# "there is nothing here I can plan yet", so the plan is skipped rather than
+# failed. Partially configured is a different thing and still fails; see the
+# guard step for why that case is the dangerous one.
+#
 # This job can read everything and lock the state file, but it never applies —
 # that is terraform-apply.yml, gated by the `infrastructure` environment.
 name: Terraform plan
@@ -30,51 +37,72 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      # Keyless: Actions presents its OIDC token and exchanges it for a
-      # short-lived GCP access token. There is no service account key anywhere.
-      # google-github-actions/auth fails with a message about forks and Dependabot
-      # when these are empty, which points nowhere near the real cause. Say the
-      # real cause instead.
-      - name: Check GitHub is wired up to GCP
-        env:
-          WIF_PROVIDER: ${{ vars.GH_WIF_PROVIDER }}
-          TERRAFORM_SA: ${{ vars.GH_TERRAFORM_SA }}
-          ADMIN_PRINCIPALS: ${{ secrets.TF_ADMIN_PRINCIPALS }}
-        run: |
-          if [ -z "$WIF_PROVIDER" ] || [ -z "$TERRAFORM_SA" ]; then
-            echo "::error::GH_WIF_PROVIDER and GH_TERRAFORM_SA repository variables are not set."
-            echo "::error::CI cannot reach GCP until then — see step 7 of docs/gcp-setup-playbook.md."
-            exit 1
-          fi
-          if [ -z "$ADMIN_PRINCIPALS" ]; then
-            echo "::error::The TF_ADMIN_PRINCIPALS secret is not set."
-            echo "::error::Terraform would read admin_principals as empty and plan the removal of"
-            echo "::error::everyone's IAP access, locking the admin service. Set it — step 7."
-            exit 1
-          fi
-
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v3
-        with:
-          workload_identity_provider: ${{ vars.GH_WIF_PROVIDER }}
-          service_account: ${{ vars.GH_TERRAFORM_SA }}
-
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: 1.15.1
 
+      # These two touch no cloud, so the pull request that introduces terraform/
+      # still gets real checking even though it cannot be planned.
       - name: Check formatting
         run: terraform fmt -check -recursive -diff
 
-      - name: Init
-        run: terraform init -input=false
-
       - name: Validate
-        run: terraform validate -no-color
+        run: |
+          terraform init -backend=false -input=false
+          terraform validate -no-color
+
+      - name: Check GitHub is wired up to GCP
+        id: guard
+        env:
+          WIF_PROVIDER: ${{ vars.GH_WIF_PROVIDER }}
+          TERRAFORM_SA: ${{ vars.GH_TERRAFORM_SA }}
+          ADMIN_PRINCIPALS: ${{ secrets.TF_ADMIN_PRINCIPALS }}
+        run: |
+          missing=""
+          if [ -z "$WIF_PROVIDER" ]; then missing="$missing GH_WIF_PROVIDER"; fi
+          if [ -z "$TERRAFORM_SA" ]; then missing="$missing GH_TERRAFORM_SA"; fi
+          if [ -z "$ADMIN_PRINCIPALS" ]; then missing="$missing TF_ADMIN_PRINCIPALS"; fi
+
+          if [ -z "$missing" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Nothing set at all means the project has not been bootstrapped yet,
+          # which is the expected state on the pull request that adds terraform/.
+          if [ -z "$WIF_PROVIDER" ] && [ -z "$TERRAFORM_SA" ] && [ -z "$ADMIN_PRINCIPALS" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::GCP is not wired up to GitHub yet — step 7 of docs/gcp-setup-playbook.md. Skipping the plan; formatting and validation still ran."
+            exit 0
+          fi
+
+          # Some set and some not is a misconfiguration rather than a not-yet,
+          # and it is the shape that does damage: a plan missing
+          # TF_ADMIN_PRINCIPALS reads admin_principals as an empty list, which is
+          # an instruction to revoke every IAP binding rather than a no-op.
+          echo "::error::Partially configured. Missing:$missing"
+          echo "::error::Finish step 7 of docs/gcp-setup-playbook.md before CI plans anything."
+          exit 1
+
+      # Keyless: Actions presents its OIDC token and exchanges it for a
+      # short-lived GCP access token. There is no service account key anywhere.
+      - name: Authenticate to Google Cloud
+        if: steps.guard.outputs.configured == 'true'
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GH_WIF_PROVIDER }}
+          service_account: ${{ vars.GH_TERRAFORM_SA }}
+
+      # -reconfigure because the validate step above initialised without a
+      # backend, and Terraform otherwise refuses to change backend settings.
+      - name: Init
+        if: steps.guard.outputs.configured == 'true'
+        run: terraform init -reconfigure -input=false
 
       - name: Plan
         id: plan
+        if: steps.guard.outputs.configured == 'true'
         # pipefail matters: GitHub runs steps as `bash -e {0}`, which does not
         # set it, so without this the exit status would be tee's and a failed
         # plan would report success.
@@ -91,7 +119,7 @@ jobs:
           TF_VAR_iap_oauth_client_secret: ${{ secrets.TF_IAP_OAUTH_CLIENT_SECRET }}
 
       - name: Comment the plan on the pull request
-        if: always()
+        if: always() && steps.guard.outputs.configured == 'true'
         uses: actions/github-script@v9
         with:
           script: |

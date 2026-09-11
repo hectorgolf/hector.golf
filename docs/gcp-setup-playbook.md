@@ -337,13 +337,20 @@ That one is a secret rather than a committed `.tfvars` file because this reposit
 those are real people's email addresses. Terraform reads complex variables from `TF_VAR_*` as JSON,
 which is why the quoting looks the way it does.
 
-Both Terraform workflows refuse to start until `GH_WIF_PROVIDER`, `GH_TERRAFORM_SA` and
-`TF_ADMIN_PRINCIPALS` are all present, and say which is missing. The first two are just
-"CI cannot reach GCP yet". `TF_ADMIN_PRINCIPALS` is the dangerous one: without it Terraform reads
-`admin_principals` as an empty list, and an empty list is not a no-op — it is an instruction to
-revoke every IAP binding that exists. That would look like an ordinary plan and lock everyone out of
-a service that was working. The variable also rejects an empty list on its own, so the failure is
-loud from either direction.
+Both Terraform workflows check for `GH_WIF_PROVIDER`, `GH_TERRAFORM_SA` and `TF_ADMIN_PRINCIPALS`
+before they authenticate, and treat two situations differently:
+
+| State | What happens |
+| --- | --- |
+| None of the three set | The project has not been bootstrapped. The plan is **skipped** with a notice and the job passes — formatting and validation still run, so the pull request that introduces `terraform/` is still checked |
+| All three set | Normal operation |
+| Some set, some not | **Hard failure.** This is a misconfiguration rather than a not-yet |
+
+The partial case is singled out because it is the one that does damage. Without
+`TF_ADMIN_PRINCIPALS`, Terraform reads `admin_principals` as an empty list, and an empty list is not
+a no-op — it is an instruction to revoke every IAP binding that exists. That would have produced an
+ordinary-looking plan whose effect was locking everyone out of a working service. The variable also
+rejects an empty list on its own, so the failure is loud from either direction.
 
 Finally, under **Settings → Environments**, create an environment called **`infrastructure`** and add
 yourself as a required reviewer. That is the approval gate on `terraform apply`.
