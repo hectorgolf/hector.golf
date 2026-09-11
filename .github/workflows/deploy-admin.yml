@@ -39,26 +39,32 @@ jobs:
 
       # A different, weaker identity than Terraform's: it can push images and
       # roll out revisions, and cannot touch the infrastructure around them.
-      # Reachable only by workflow_dispatch before the app exists. Fail with a
-      # sentence rather than a docker error nobody can read.
+      # This workflow's own path is in the trigger above, so it fires whenever it
+      # is edited — including the commit that first added it, when there was no
+      # admin/ yet. "Nothing to deploy" is not a failure, so skip and say so.
       - name: Check there is an app to deploy
+        id: guard
         run: |
-          if [ ! -f admin/Dockerfile ]; then
-            echo "::error::admin/Dockerfile does not exist yet, so there is nothing to deploy."
-            echo "::error::This workflow starts working once the admin service lands under admin/."
-            exit 1
+          if [ -f admin/Dockerfile ]; then
+            echo "deployable=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "deployable=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No admin/Dockerfile yet, so there is nothing to deploy. This workflow starts working once the admin service lands under admin/."
           fi
 
       - name: Authenticate to Google Cloud
+        if: steps.guard.outputs.deployable == 'true'
         uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ vars.GH_WIF_PROVIDER }}
           service_account: ${{ vars.GH_DEPLOYER_SA }}
 
       - name: Set up gcloud
+        if: steps.guard.outputs.deployable == 'true'
         uses: google-github-actions/setup-gcloud@v3
 
       - name: Configure Docker for Artifact Registry
+        if: steps.guard.outputs.deployable == 'true'
         run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev --quiet
 
       # Two tags, for two different readers.
@@ -73,6 +79,7 @@ jobs:
       # `delete-untagged` leaves it alone. `keep-recent` still governs.
       - name: Build and push
         id: image
+        if: steps.guard.outputs.deployable == 'true'
         run: |
           IMAGE="${{ vars.GH_IMAGE_REPO }}:${GITHUB_SHA::12}"
           LATEST="${{ vars.GH_IMAGE_REPO }}:latest"
@@ -82,6 +89,7 @@ jobs:
           echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
 
       - name: Deploy to Cloud Run
+        if: steps.guard.outputs.deployable == 'true'
         run: |
           gcloud run deploy hector-admin \
             --project="${{ vars.GCP_PROJECT_ID }}" \
@@ -90,6 +98,7 @@ jobs:
             --quiet
 
       - name: Summarise
+        if: steps.guard.outputs.deployable == 'true'
         run: |
           {
             echo "### Deployed"
