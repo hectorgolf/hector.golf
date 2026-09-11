@@ -1,0 +1,11 @@
+{
+  "name": "@hector/ui",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Components and design tokens shared by the public site and the admin service.",
+  "type": "module",
+  "exports": {
+    "./components/*": "./components/*",
+    "./styles/*": "./styles/*"
+  }
+}

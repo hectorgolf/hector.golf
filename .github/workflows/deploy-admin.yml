@@ -5,7 +5,9 @@
 # fail. It is committed alongside the infrastructure so that the deploy path is
 # reviewed once, up front, rather than improvised on the day the app is ready.
 #
-# The image is built in the runner and pushed straight to Artifact Registry.
+# The build context is the repository root, not admin/, because the app imports
+# @hector/ui through the npm workspace. The image is built in the runner and
+# pushed straight to Artifact Registry.
 # Cloud Build is deliberately not in the path: `gcloud run deploy --source`
 # would auto-create its own `cloud-run-source-deploy` repository, which
 # Terraform does not manage and whose images therefore escape the cleanup
@@ -83,7 +85,9 @@ jobs:
         run: |
           IMAGE="${{ vars.GH_IMAGE_REPO }}:${GITHUB_SHA::12}"
           LATEST="${{ vars.GH_IMAGE_REPO }}:latest"
-          docker build --tag "$IMAGE" --tag "$LATEST" ./admin
+          docker build --build-arg GIT_SHA="${GITHUB_SHA::12}" \
+            --file admin/Dockerfile \
+            --tag "$IMAGE" --tag "$LATEST" .
           docker push "$IMAGE"
           docker push "$LATEST"
           echo "image=$IMAGE" >> "$GITHUB_OUTPUT"

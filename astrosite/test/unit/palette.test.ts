@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { expect, describe, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import {
@@ -11,7 +12,12 @@ import {
 	describeToken,
 } from '../../src/code/palette'
 
-const stylesheet = readFileSync('src/styles/hector.css', 'utf-8')
+// Resolved through the workspace package rather than a path relative to the
+// working directory, so this cannot silently read the wrong file again.
+const stylesheet = readFileSync(
+	fileURLToPath(import.meta.resolve('@hector/ui/styles/hector.css')),
+	'utf-8'
+)
 
 describe('parseRootTokens', () => {
 	it('reads the custom properties out of the real stylesheet', () => {

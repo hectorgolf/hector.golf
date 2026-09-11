@@ -1,8 +1,8 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import CourseCard from '../../components/courses/CourseCard.astro';
-import Breadcrumb from '../../components/Breadcrumb.astro';
-import PageHeader from '../../components/PageHeader.astro';
+import Breadcrumb from '@hector/ui/components/Breadcrumb.astro';
+import PageHeader from '@hector/ui/components/PageHeader.astro';
 import { getCollection } from 'astro:content';
 import { getEventsAtCourse } from '../../code/courses';
 import { compareIsoDates } from '../../code/dates';

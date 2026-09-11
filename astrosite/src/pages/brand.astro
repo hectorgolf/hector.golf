@@ -9,11 +9,11 @@
 import { getCollection } from 'astro:content'
 
 import Layout from '../layouts/Layout.astro'
-import PageHeader from '../components/PageHeader.astro'
-import HectorMark from '../components/HectorMark.astro'
-import CompetitionMark from '../components/CompetitionMark.astro'
+import PageHeader from '@hector/ui/components/PageHeader.astro'
+import HectorMark from '@hector/ui/components/HectorMark.astro'
+import CompetitionMark from '@hector/ui/components/CompetitionMark.astro'
 import WinBadge from '../components/players/icons/WinBadge.astro'
-import stylesheet from '../styles/hector.css?raw'
+import stylesheet from '@hector/ui/styles/hector.css?raw'
 import { parseRootTokens, describeToken, resolveToken } from '../code/palette'
 
 const tokens = parseRootTokens(stylesheet)

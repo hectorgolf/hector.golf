@@ -49,23 +49,37 @@ jobs:
         id: pages
         uses: actions/configure-pages@v6
 
-      # Use `withastro/action` to build the site and upload it as an artifact
-      # that can be deployed to GitHub Pages.
-      - name: Install, build, and upload your site
-        uses: withastro/action@v6
+      # withastro/action runs its own `npm ci` inside `path`, which an npm
+      # workspace cannot satisfy: there is one lockfile and it lives at the
+      # repository root. The steps it wrapped are written out here instead, which
+      # also makes the build visible rather than delegated.
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
         with:
-          path: astrosite  # The root location of your Astro project inside the repository. (optional)
-          node-version: 24 # The specific version of Node that should be used to build your site. (optional)
-          build-cmd: |
-            npx --no-install astro build \
-              --site "${{ steps.pages.outputs.origin }}" \
-              --base "${{ steps.pages.outputs.base_path }}"
+          node-version-file: astrosite/.node-version
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the site
+        working-directory: astrosite
+        run: |
+          npx --no-install astro build \
+            --site "${{ steps.pages.outputs.origin }}" \
+            --base "${{ steps.pages.outputs.base_path }}"
         env:
           WISEGOLF_USERNAME: ${{ secrets.WISEGOLF_USERNAME }}
           WISEGOLF_PASSWORD: ${{ secrets.WISEGOLF_PASSWORD }}
           # Public URL of the leaderboard proxy. Unset simply leaves the live
           # leaderboard off, and every page renders from the last published snapshot.
           PUBLIC_LEADERBOARD_PROXY_URL: ${{ vars.PUBLIC_LEADERBOARD_PROXY_URL }}
+
+      - name: Upload the built site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: astrosite/dist
 
   # This is the deployment step that takes the built site artifact from the
   # previous step and deploys it to GitHub Pages. This step will only run after
