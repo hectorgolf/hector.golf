@@ -10,6 +10,13 @@ admin_principals = [
   "user:you@example.com",
 ]
 
+# FIRST APPLY ONLY. Cloud Run cannot create a service whose image will not pull,
+# and on a new project nothing has been pushed to Artifact Registry yet. Point at
+# a public placeholder for that one run, then delete these two lines — after the
+# first real deploy the service runs what deploy-admin.yml pushed, and Terraform
+# falls back to <repo>/admin:latest if it ever needs to name an image itself.
+admin_image = "us-docker.pkg.dev/cloudrun/container/hello"
+
 # Optional: the €1/month budget alert. Needs billing-account permissions, so
 # apply this one locally rather than from CI.
 # enable_budget_alert = true

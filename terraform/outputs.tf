@@ -17,8 +17,8 @@ output "deployer_service_account" {
 }
 
 output "admin_image_repository" {
-  description = "Value for the GH_IMAGE_REPO repository variable — the Docker path to push to."
-  value       = "${google_artifact_registry_repository.admin.location}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.admin.repository_id}"
+  description = "Value for the GH_IMAGE_REPO repository variable — the full image name to push to, without a tag."
+  value       = local.admin_image_repo
 }
 
 output "admin_url" {

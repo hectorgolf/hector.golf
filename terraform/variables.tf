@@ -44,14 +44,20 @@ variable "admin_principals" {
 
 variable "admin_image" {
   description = <<-EOT
-    Container image for the admin service. The default is Google's public hello
-    image, which exists so that `terraform apply` can create the service before
-    any application code has been written. Once .github/workflows/deploy-admin.yml
-    has run once, the deployed image is whatever it pushed: the service ignores
-    changes to this field (see cloud_run.tf), so Terraform will not roll it back.
+    Overrides the container image for the admin service.
+
+    Leave this unset. The service normally runs whatever deploy-admin.yml last
+    pushed, and cloud_run.tf falls back to `<repo>/admin:latest` when it needs a
+    value of its own — see local.admin_image_repo there.
+
+    The one time to set it is the very first apply on a new project, before any
+    image exists: Cloud Run cannot create a service whose image will not pull, so
+    point it at a public placeholder for that one run and then remove it again:
+
+      admin_image = "us-docker.pkg.dev/cloudrun/container/hello"
   EOT
   type        = string
-  default     = "us-docker.pkg.dev/cloudrun/container/hello"
+  default     = null
 }
 
 variable "artifact_keep_count" {

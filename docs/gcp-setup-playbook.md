@@ -186,19 +186,40 @@ yourself, using the ADC credentials from "Before you start":
 ```bash
 cd terraform
 cp terraform.tfvars.example terraform.tfvars
-$EDITOR terraform.tfvars      # put your own email in admin_principals
+$EDITOR terraform.tfvars      # admin_principals, and keep admin_image for now
 
 terraform init
 terraform plan                # read it
 terraform apply
 ```
 
-If `admin_principals` is empty, IAP will lock out everyone including you, because it is deny by
+Two things in that file matter for this run.
+
+**`admin_principals`.** If it is empty, IAP locks out everyone including you, because it is deny by
 default. Put your address in before applying, not after.
 
+**`admin_image`.** Leave the placeholder line in for this first apply only. Cloud Run cannot create
+a service whose image will not pull, and nothing has been pushed to Artifact Registry yet, so the
+config falls back to a public container for exactly one run:
+
+```hcl
+admin_image = "us-docker.pkg.dev/cloudrun/container/hello"
+```
+
+Normally that variable is unset and [`cloud_run.tf`](../terraform/cloud_run.tf) composes the image
+name itself, from the Artifact Registry resource:
+
+```hcl
+image = coalesce(var.admin_image, "${local.admin_image_repo}:latest")
+```
+
+So the committed configuration always reads as "the admin image", and the placeholder lives in your
+local, gitignored `terraform.tfvars` rather than in the repository. Step 10 removes it.
+
 Expect the apply to take a few minutes; enabling APIs and creating the Firestore database are the
-slow parts. Cloud Run comes up running Google's public `hello` container — that is deliberate, so
-the service and its IAP configuration exist before any application code does.
+slow parts. Cloud Run comes up running the `hello` container — deliberately, so the service and its
+IAP configuration exist and can be verified before any application code does. It is not exposed
+while it sits there: IAP is in front of it.
 
 ## Step 5 — Let CI reach the state bucket
 
@@ -290,6 +311,32 @@ Then revert `enable_budget_alert` to `false` before committing, or grant `terraf
 `roles/billing.costsManager` on the billing account if you would rather CI managed it. Creating the
 budget by hand in the console is an equally good answer.
 
+## Step 10 — After the first real deploy, drop the placeholder
+
+Once [`deploy-admin.yml`](../.github/workflows/deploy-admin.yml) has run once, there is a real image
+in Artifact Registry and the placeholder has done its job. Delete these lines from
+`terraform.tfvars`:
+
+```hcl
+admin_image = "us-docker.pkg.dev/cloudrun/container/hello"
+```
+
+Nothing happens when you next apply, and that is the point. `cloud_run.tf` ignores changes to the
+running image — the deploy workflow owns it, Terraform owns the service around it — so removing the
+override changes no live resource. What it changes is what the configuration *says*: from a
+placeholder nobody should read as real, to `<repo>/admin:latest`, which is true.
+
+That fallback only gets used if Terraform ever has to name an image itself, which means a service
+recreated from scratch. It resolves because the deploy workflow pushes `latest` alongside the SHA
+tag it actually deploys.
+
+To see what is really running, ask the service rather than the configuration:
+
+```bash
+gcloud run services describe hector-admin --region="$REGION" \
+  --format="value(spec.template.spec.containers[0].image)"
+```
+
 ## Adopting something that already exists
 
 If a resource is already there — because it got clicked into being before anyone read this, or
@@ -357,6 +404,7 @@ Really deleting it takes two deliberate steps: set `delete_protection_state` to
 | Sign-in succeeds, then 403 | Your address is not in `admin_principals` / `TF_ADMIN_PRINCIPALS` |
 | CI: `Permission denied on resource project` | The `GH_TERRAFORM_SA` variable is wrong, or the WIF binding does not cover this ref. Plan runs on `refs/pull/N/merge`, so the Terraform identity is bound to the repository, not to `main` |
 | CI: `Error acquiring the state lock` | A previous run died holding it. `terraform force-unlock <id>` locally, having first checked no apply is actually running |
+| First apply fails with the revision never becoming ready, or an image pull error | `admin_image` is unset on a project with nothing in Artifact Registry yet. Put the placeholder line back for that one run — see step 4 |
 | `terraform apply` wants to change the Cloud Run image every time | The `ignore_changes` block in [`cloud_run.tf`](../terraform/cloud_run.tf) was removed. Terraform owns the service; the deploy workflow owns the image |
 | Images accumulating past the cleanup policy | Something pushed to a repository Terraform does not manage — most likely `gcloud run deploy --source`, which creates `cloud-run-source-deploy` behind your back. Build and push explicitly |
 

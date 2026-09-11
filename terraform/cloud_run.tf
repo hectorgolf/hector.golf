@@ -1,3 +1,10 @@
+locals {
+  # The full image name deploy-admin.yml pushes to, derived from the repository
+  # resource so the two cannot drift apart. Exported as the GH_IMAGE_REPO
+  # variable, so the workflow and this file agree by construction.
+  admin_image_repo = "${google_artifact_registry_repository.admin.location}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.admin.repository_id}/admin"
+}
+
 resource "google_cloud_run_v2_service" "admin" {
   project  = var.project_id
   name     = "hector-admin"
@@ -28,7 +35,10 @@ resource "google_cloud_run_v2_service" "admin" {
     }
 
     containers {
-      image = var.admin_image
+      # Normally `<repo>/admin:latest`, which deploy-admin.yml keeps pointed at
+      # the most recent build. var.admin_image overrides it for the first apply
+      # on a new project, when no image exists yet to pull.
+      image = coalesce(var.admin_image, "${local.admin_image_repo}:latest")
 
       env {
         name  = "FIRESTORE_DATABASE_ID"

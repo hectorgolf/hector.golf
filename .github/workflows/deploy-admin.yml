@@ -61,15 +61,24 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev --quiet
 
-      # Tagged by commit SHA, never by a floating tag. That makes every deployed
-      # revision traceable to a commit, and it is why `keep-recent` rather than
-      # `delete-untagged` is the cleanup policy that does the pruning.
+      # Two tags, for two different readers.
+      #
+      # The SHA tag is what actually gets deployed, so every running revision is
+      # traceable to a commit. `latest` is never deployed by this workflow — it
+      # exists so Terraform has a real image to name when it has to supply one
+      # itself, which happens if the service is ever recreated from scratch.
+      #
+      # Both are safe with the cleanup policies: when `latest` moves on, the
+      # previous digest still carries its SHA tag, so it stays TAGGED and
+      # `delete-untagged` leaves it alone. `keep-recent` still governs.
       - name: Build and push
         id: image
         run: |
-          IMAGE="${{ vars.GH_IMAGE_REPO }}/admin:${GITHUB_SHA::12}"
-          docker build --tag "$IMAGE" ./admin
+          IMAGE="${{ vars.GH_IMAGE_REPO }}:${GITHUB_SHA::12}"
+          LATEST="${{ vars.GH_IMAGE_REPO }}:latest"
+          docker build --tag "$IMAGE" --tag "$LATEST" ./admin
           docker push "$IMAGE"
+          docker push "$LATEST"
           echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
 
       - name: Deploy to Cloud Run
