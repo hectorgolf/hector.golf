@@ -2,8 +2,9 @@
  * Write Firestore back out to the committed JSON the site builds from.
  *
  * This is the half of the migration that keeps the public site unchanged. After
- * the one-off import, Firestore is where events and players are authored and
- * `astrosite/src/data/**` is *generated* — the same files, the same build, but
+ * the one-off import, Firestore is where the admin's data is authored and the
+ * matching files under `astrosite/src/data/` are *generated* — same files, same
+ * build, but
  * output rather than input. Two things fall out of that which are worth having:
  * the site build stays hermetic, needing no credentials and working on a fork;
  * and git keeps a reviewable history of every change the admin UI made, so the
@@ -12,6 +13,15 @@
  * Nothing stops a person editing those files by hand and losing the edit at the
  * next export. That was a deliberate choice for a one-developer repository — see
  * docs/data-ownership.md — rather than something nobody thought of.
+ *
+ * It exports only what the admin can author, which today is matchplay events and
+ * nothing else. Firestore holds players and the other event formats too, but as
+ * a mirror the admin reads, not as their source: three scheduled jobs write
+ * player files and two write Hector events, twice a day in the handicaps case.
+ * Exporting those would publish a stale mirror over a fresh scrape and revert it
+ * silently — the scrape's own commit would look like the losing side of a merge
+ * nobody performed. A collection joins this list on the day the admin can author
+ * it and its scheduled writer moves to Firestore, not before.
  *
  *   npm run export                                  # the real database
  *   FIRESTORE_EMULATOR_HOST=localhost:8432 npm run export
@@ -22,9 +32,8 @@ import { fileURLToPath } from 'node:url'
 
 import { glob } from 'glob'
 
-import { genericEventSchema, type Event } from '@hector/schemas/src/events.ts'
+import { EventFormat, genericEventSchema, type Event } from '@hector/schemas/src/events.ts'
 import { serializeJson } from '@hector/schemas/src/json.ts'
-import { schema as playerSchema, type Player } from '@hector/schemas/src/players.ts'
 
 import { firestore, reportingStoreErrors, target } from './store.ts'
 
@@ -63,38 +72,6 @@ async function read<T>(
 const eventPath = (event: Event): string => `events/${event.format}/${event.id}.json`
 
 /**
- * Where each player id already lives, found by reading the files rather than by
- * composing a path out of the id.
- *
- * Not one player file is named after the id it holds — `anders-forss.json` holds
- * `"id": "anders-f"` — so composing `players/${id}.json` writes a second file
- * for a player who already has one. Nothing fails at that moment: the site globs
- * the directory, so it simply loads the player twice under one id.
- * `playerDataPath` in the site takes the same approach for the same reason, and
- * `astrosite/test/unit/player-data-paths.test.ts` pins it.
- */
-async function existingPlayerPaths(): Promise<Map<string, string>> {
-    const byId = new Map<string, string>()
-    for (const rel of await glob('players/**/*.json', { cwd: dataDir })) {
-        const parsed = playerSchema.safeParse(JSON.parse(readFileSync(join(dataDir, rel), 'utf-8')))
-        if (parsed.success && parsed.data) byId.set(parsed.data.id, rel)
-    }
-    return byId
-}
-
-/** Only ever used for a player the repository has no file for yet. */
-function newPlayerPath(player: Player): string {
-    const slug = (part: string) =>
-        part
-            .normalize('NFKD')
-            .replace(/[̀-ͯ]/g, '')
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-|-$/g, '')
-    return `players/${slug(player.name.first)}-${slug(player.name.last)}.json`
-}
-
-/**
  * Writes the set, and removes committed files the store no longer has.
  *
  * Without the removal an event deleted in the admin would live on in the site
@@ -124,23 +101,30 @@ function sync(label: string, files: Map<string, unknown>, existing: string[]): v
 
 console.log(`Exporting from ${target}…`)
 
-const { events, players } = await reportingStoreErrors(async () => ({
-    events: await read<Event>('events', genericEventSchema),
-    players: await read<Player>('players', playerSchema),
-}))
+const events = await reportingStoreErrors(() => read<Event>('events', genericEventSchema))
 
-if (events.length === 0 && players.length === 0) {
-    // An empty store would otherwise delete every committed data file, which is
-    // a very fast way to lose the site to a misconfigured database id.
-    throw new Error('The store is empty. Refusing to export, which would delete every committed data file.')
+/**
+ * The formats the admin can author. Everything else in the store is a mirror it
+ * reads and must not publish over whoever does own it.
+ */
+const OWNED = new Set<string>([EventFormat.Matchplay])
+const owned = events.filter((e) => OWNED.has(e.format))
+
+if (owned.length === 0) {
+    // An empty result would otherwise delete every committed file of these
+    // formats, which is a very fast way to lose them to a misconfigured
+    // database id or a failed import.
+    throw new Error(
+        `The store holds no events of ${[...OWNED].join(', ')}. ` +
+            `Refusing to export, which would delete their committed files.`
+    )
 }
 
-const knownPaths = await existingPlayerPaths()
+// One glob per owned format, never `events/**`: a wider glob would treat every
+// Hector and Finnkampen file as missing from the store and delete it.
+for (const format of OWNED) {
+    const mine = owned.filter((e) => e.format === format)
+    sync(format, new Map(mine.map((e) => [eventPath(e), e])), await glob(`events/${format}/*.json`, { cwd: dataDir }))
+}
 
-sync('events', new Map(events.map((e) => [eventPath(e), e])), await glob('events/**/*.json', { cwd: dataDir }))
-sync(
-    'players',
-    new Map(players.map((p) => [knownPaths.get(p.id) ?? newPlayerPath(p), p])),
-    await glob('players/**/*.json', { cwd: dataDir })
-)
 console.log('Done.')
