@@ -1,6 +1,7 @@
 # Build context is the REPOSITORY ROOT, not admin/ — the app imports @hector/ui
 # through the npm workspace, so the build needs the root package.json, the
-# lockfile and packages/ui. Build it with `docker build -f admin/Dockerfile .`
+# lockfile and the packages/ it depends on. Build it with
+# `docker build -f admin/Dockerfile .`
 # from the root; .dockerignore at the root keeps the context small.
 
 FROM node:24-slim AS build
@@ -9,6 +10,7 @@ WORKDIR /repo
 # Manifests first, so this layer caches until a dependency actually changes.
 COPY package.json package-lock.json ./
 COPY packages/ui/package.json ./packages/ui/
+COPY packages/schemas/package.json ./packages/schemas/
 COPY admin/package.json ./admin/
 # The site is a workspace member the lockfile knows about; its manifest has to be
 # present for `npm ci` to reconcile, but none of its sources are copied.
@@ -16,6 +18,7 @@ COPY astrosite/package.json ./astrosite/
 RUN npm ci --workspace=hector-admin --include-workspace-root
 
 COPY packages/ui ./packages/ui
+COPY packages/schemas ./packages/schemas
 COPY admin ./admin
 RUN npm run build --workspace=hector-admin
 
@@ -26,6 +29,7 @@ WORKDIR /repo
 
 COPY package.json package-lock.json ./
 COPY packages/ui/package.json ./packages/ui/
+COPY packages/schemas/package.json ./packages/schemas/
 COPY admin/package.json ./admin/
 COPY astrosite/package.json ./astrosite/
 RUN npm ci --omit=dev --workspace=hector-admin --include-workspace-root \
