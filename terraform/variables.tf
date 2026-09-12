@@ -108,10 +108,13 @@ variable "admin_domain" {
   description = <<-EOT
     Custom domain for the admin service, e.g. "admin.hector.golf".
 
-    Leave unset until `gcloud domains verify hector.golf` has succeeded for this
-    project — mapping a subdomain requires the base domain to be verified, and an
-    apply before that fails. `gcloud domains list-user-verified` shows whether it
-    has.
+    Leave unset until `gcloud domains verify hector.golf` has succeeded — mapping
+    a subdomain requires the base domain to be verified, and an apply before that
+    fails. `gcloud domains list-user-verified` shows whether it has.
+
+    Verification is per account rather than per project, so the terraform-ci
+    service account also has to be an owner of the domain in Search Console. See
+    the custom domain section of docs/gcp-setup-playbook.md.
 
     Once applied, `terraform output admin_dns_records` prints the records to add
     at the registrar.

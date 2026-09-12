@@ -459,12 +459,12 @@ gcloud run services describe hector-admin --region="$REGION" \
 
 ## Optional — a custom domain for the admin service
 
-`admin.hector.golf` instead of the `run.app` URL. Three steps, and the DNS record is the last of
+`admin.hector.golf` instead of the `run.app` URL. Four steps, and the DNS record is the last of
 them, because Google emits the exact record from the mapping rather than it being something to type
 from memory.
 
 **1. Verify the base domain.** Mapping `admin.hector.golf` requires ownership of `hector.golf` to be
-verified for this project. `gcloud domains list-user-verified` shows whether it already is.
+verified. `gcloud domains list-user-verified` shows whether it already is.
 
 ```bash
 gcloud domains verify hector.golf
@@ -473,10 +473,61 @@ gcloud domains verify hector.golf
 That opens Search Console and asks for a TXT record at the registrar. Terraform cannot do this step,
 which is why the mapping is off by default — an apply before verification fails.
 
-**2. Turn the mapping on.** Set `admin_domain = "admin.hector.golf"` in `terraform.tfvars`, and the
-`TF_ADMIN_DOMAIN` repository variable so CI plans the same thing, then apply.
+One wrinkle at this registrar: a CNAME at the apex shadows TXT records, so the TXT method can fail
+while the DNS is otherwise fine. The HTML file or meta tag method avoids it, and so does removing
+the apex CNAME — but do not remove it casually, because that is what points `hector.golf` at GitHub
+Pages.
 
-**3. Add the records it emits.**
+**2. Add the Terraform service account as a domain owner.** Verification is per *account*, not per
+project: a domain is verified to the user who verified it, and only that user can map it. The apply
+runs in CI as `terraform-ci@PROJECT_ID.iam.gserviceaccount.com`, so verifying the domain in your own
+browser does not let CI map it. Skipping this produces a permission error on apply that reads like
+an IAM problem and is not one — no role grants it, because it is not IAM.
+
+In [Search Console](https://search.google.com/search-console/welcome), click the `hector.golf`
+property, find the **Verified owners** list, click **Add an owner**, and enter the service account's
+address — the field takes a service account id exactly as it takes a person's.
+
+```bash
+gcloud iam service-accounts list --project="$PROJECT_ID" \
+  --filter="email~^terraform-ci@" --format="value(email)"
+```
+
+**Check which property you are on.** Search Console can hold two entries for the same name, and they
+are not the same thing:
+
+| Property | Shown as | Covers |
+| --- | --- | --- |
+| URL prefix | `https://hector.golf` | that prefix only — **not** subdomains |
+| Domain | `hector.golf` | the domain and every subdomain, any protocol |
+
+`admin.hector.golf` is a subdomain, so the owner has to be added to the **Domain** property. Adding
+it to the URL-prefix one succeeds, looks done, and changes nothing about whether the mapping is
+allowed. If only a URL-prefix property exists, create the Domain property — `gcloud domains verify
+hector.golf` again, choosing the domain option — and verify it by DNS TXT.
+
+And not **Users and permissions**, which is the door that looks right and is not: it grants *Full*
+or *Restricted*, and neither is ownership. Only the verified owners list confers what the domain
+mapping checks.
+
+Nothing on the command line confirms this step. `gcloud domains list-user-verified` reports what
+*your* account has verified, prints the bare domain for either property type, and says nothing about
+the service account — so a reassuring answer from it is not evidence the step is done.
+
+All of this is only needed when a service account creates the mapping. Applying from a laptop as the
+person who verified the domain does not need it, which is why it is easy to miss.
+
+**3. Turn the mapping on.** Set `admin_domain = "admin.hector.golf"` in `terraform.tfvars`, and the
+`TF_ADMIN_DOMAIN` repository variable so CI plans the same thing, then apply. A repository variable
+is not a file, so it changes nothing under `terraform/` and will not trigger the apply workflow on
+its own — run it by hand:
+
+```bash
+gh variable set TF_ADMIN_DOMAIN --body "admin.hector.golf"
+gh workflow run "Terraform apply"
+```
+
+**4. Add the records it emits.** The apply's job summary prints them. From a laptop:
 
 ```bash
 terraform output admin_dns_records
@@ -567,6 +618,7 @@ Really deleting it takes two deliberate steps: set `delete_protection_state` to
 | `SERVICE_DISABLED`, e.g. `Identity and Access Management (IAM) API has not been used in project … before or it is disabled` | The API is missing from `apis.tf`, or a resource that needs it has no `depends_on` and got created first. Enable it by hand — `gcloud services enable <api> --project=hector-golf` — then add both to `apis.tf` so it does not recur. Enabling by hand is not optional once the affected resources already exist: `depends_on` orders *creation*, and Terraform refreshes everything in state before it applies anything, so the refresh fails before it can reach the resource that would enable the API. Allow a few minutes for the enablement to propagate before re-running, or you will see the same error against an API that is already on |
 | A plan proposes `client_id = "…" -> null` on `google_iap_settings` | The OAuth secrets are not reaching that run, and applying it would clear IAP's client and lock the service. `TF_IAP_OAUTH_CLIENT_ID` / `TF_IAP_OAUTH_CLIENT_SECRET` are missing or misnamed — an unset GitHub secret arrives as an empty string, so check the names rather than assuming they are unset |
 | CI: `Permission 'iap.webServices.getSettings' denied` | `roles/iap.admin` does not include IAP *settings* — it only carries the getIamPolicy/setIamPolicy pair for who may sign in. `roles/iap.settingsAdmin` is a separate role and `terraform-ci` needs both. As with any role the CI identity is missing, grant it out of band or re-apply locally, because CI cannot grant itself what it needs in order to plan. Give the grant a minute or two to propagate before re-running — like API enablement, an IAM change is not visible to the next request immediately, so an unchanged error does not mean an unapplied grant |
+| `Error waiting to create DomainMapping: … Caller is not authorized to administer the domain admin.hector.golf` | The domain is verified, but not to the account doing the mapping. Verification is per account: CI applies as `terraform-ci@…`, so a browser verification done as yourself does not carry over. Add the service account to the **Verified owners** list of the **Domain** property — step 2 above. Check the property type before concluding it is already done: an owner on the `https://hector.golf` URL-prefix property does not cover a subdomain, and the two properties are easy to mistake for one. No IAM role grants this, so there is nothing to look for in `iam.tf`. Terraform marks the half-created mapping `tainted` and replaces it on the next apply, so there is nothing to clean up by hand; `gcloud beta run domain-mappings list` shows it with an `X` until then |
 | CI: `terraform-ci@… does not have storage.objects.list access to the Google Cloud Storage bucket` | The state bucket grant at the end of step 4 was not run. Authentication is fine; the service account simply cannot read its own state |
 | CI: `Permission denied on resource project` | The `GH_TERRAFORM_SA` variable is wrong, or the WIF binding does not cover this ref. Plan runs on `refs/pull/N/merge`, so the Terraform identity is bound to the repository, not to `main` |
 | CI: `Error acquiring the state lock` | A previous run died holding it. `terraform force-unlock <id>` locally, having first checked no apply is actually running |
