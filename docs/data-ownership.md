@@ -68,7 +68,7 @@ unambiguously means "nobody has taken this over".
 
 ## How the handicap stopgap works, and why it is not a bug
 
-[`players.ts`](../astrosite/src/code/players.ts) resolves a handicap as `handicapOverride ||
+[`players.ts`](../astrosite/src/code/players.ts) resolves a handicap as `handicapOverride ??
 handicapFromAPI`, where `handicapOverride` is a local variable holding `player.handicap`, and
 `update-handicaps.ts` writes that same field. Reading only those two facts, it looks as though CI
 overwrites the thing it is meant to defer to.
