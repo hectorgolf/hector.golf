@@ -89,3 +89,44 @@ it twice. It lands with the migration, and it is written down here so it does no
 - An authored field is just editable.
 - "Regenerate biography" is an explicit action. It clears `biographyLocked` and re-runs generation —
   the scheduled job never takes an edited biography away from you.
+
+## Where the data lives, and which direction it flows
+
+Firestore is where events and players are authored. `astrosite/src/data/**` is **generated from it**
+by `admin/scripts/export.ts`, and the public site builds from those generated files exactly as it
+always has.
+
+The files therefore changed role rather than changing content. They used to be the input; they are
+now the output. Three things follow:
+
+- **Do not hand-edit anything under `astrosite/src/data/events/` or `astrosite/src/data/players/`.**
+  The next export overwrites it without warning. Edit it in the admin UI instead.
+- Deleting an event or a player in the admin deletes its file on the next export. That is deliberate
+  — without it, a deletion would be impossible to express and the site would show the thing forever.
+- The site build stays hermetic: no credentials, no network, and a fork can still build it. Git also
+  keeps a reviewable history of every change the admin made, so the fix for a bad edit is a revert.
+
+`astrosite/src/data/courses/` and `astrosite/src/data/handicaps/` are **not** part of this. Courses
+are hand-maintained and hand-formatted; handicaps are written by the scheduled scrape. Neither is in
+Firestore and neither is exported.
+
+### Nothing enforces the rule
+
+This is a note, not a mechanism. A hand-edit to a generated file is lost silently at the next export,
+and no test, hook or CI check will catch it. That was chosen knowingly for a repository with one
+developer: the alternatives were an export that opens a pull request, which costs a merge every time,
+or a CI check that re-exports and diffs, which would need Firestore credentials on every pull request
+and break builds from forks. If a second person starts editing this data, revisit it — the pull
+request option is the cheap one.
+
+### The first export makes schema defaults explicit
+
+Firestore holds documents as the schema parses them, so the export writes back what Zod produced —
+including defaults the hand-written files left out. The first run adds `"ignore": false` to fifteen
+events and `"maxStrokesOverPar": 4` to twelve of them. No value changes; the site already read those
+defaults.
+
+It has one consequence worth knowing. Those events now carry the value rather than inheriting it, so
+changing a default in `packages/schemas` no longer reaches events that already exist. That is more
+predictable than a default that shifts under committed data, but it is a change, and it is the kind
+that is invisible until it matters.

@@ -2,19 +2,23 @@
 import AdminLayout from '../../layouts/AdminLayout.astro'
 import PageHeader from '@hector/ui/components/PageHeader.astro'
 import { EVENT_FAMILIES } from '../../lib/sections.ts'
-import { listMatchplayEvents } from '../../lib/repository/events.ts'
+import { countEventsByFormat } from '../../lib/repository/events.ts'
 
 /**
- * Counts come from the store rather than being hard-coded, so a family that
+ * Counts come from the store rather than being hard-coded, so a format that
  * reads zero is telling the truth about the database rather than about whether
- * anyone has built the page yet. `undefined` means the store could not be
- * reached; zero means it could and there is nothing there.
+ * anyone has built its page yet. They are shown for formats whose pages do not
+ * exist too — knowing thirteen Hector events are already in the store is the
+ * useful part, and it is what says the import worked.
+ *
+ * An empty object means the store could not be reached; a missing key means it
+ * could and there is nothing of that format in it.
  */
-const counts: Record<string, number | undefined> = {}
+let counts: Record<string, number> = {}
 let error: string | undefined
 
 try {
-	counts.matchplay = (await listMatchplayEvents()).length
+	counts = await countEventsByFormat()
 } catch {
 	// The reason goes to Cloud Logging; the page says only that it failed.
 	error = 'Could not read the events. Check the service logs.'
@@ -39,9 +43,9 @@ try {
 						{!family.available && <span class="pill pill-outline">Not built yet</span>}
 					</h2>
 					<p>{family.blurb}</p>
-					{family.available && counts[family.slug] !== undefined && (
+					{!error && (
 						<p class="count">
-							{counts[family.slug]}{' '}
+							{counts[family.slug] ?? 0}{' '}
 							{counts[family.slug] === 1 ? 'event' : 'events'}
 						</p>
 					)}

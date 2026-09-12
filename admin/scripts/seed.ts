@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url'
 import { Firestore } from '@google-cloud/firestore'
 import { glob } from 'glob'
 
-import { matchplayEventSchema } from '@hector/schemas/src/events.ts'
+import { genericEventSchema } from '@hector/schemas/src/events.ts'
 import { schema as playerSchema } from '@hector/schemas/src/players.ts'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -54,6 +54,6 @@ async function seed(
 }
 
 console.log(`Seeding ${process.env.FIRESTORE_EMULATOR_HOST ?? 'the real database'}…`)
-await seed('events', 'events/matchplay/*.json', matchplayEventSchema)
+await seed('events', 'events/**/*.json', genericEventSchema)
 await seed('players', 'players/*.json', playerSchema)
 console.log('Done.')
