@@ -129,8 +129,16 @@ export function readCookie(header: string | undefined, name: string): string | u
  * is for.
  */
 export function safeContinue(value: string | null | undefined): string {
-    if (!value || !value.startsWith('/') || value.startsWith('//')) return '/'
-    return value
+    if (!value) return '/'
+    try {
+        const base = 'http://localhost'
+        const parsed = new URL(value, base)
+        if (parsed.origin !== base) return '/'
+        if (!value.startsWith('/')) return '/'
+        return `${parsed.pathname}${parsed.search}${parsed.hash}`
+    } catch {
+        return '/'
+    }
 }
 
 /**
