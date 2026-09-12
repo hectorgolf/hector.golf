@@ -548,6 +548,13 @@ balancer at roughly $18/month, which is eighteen times this project's budget, an
 keeps working either way. And IAP is unaffected — it enforces on every hostname the service answers
 to, so the custom domain is protected exactly as the `run.app` one is.
 
+One thing the app has to be told, though: `security.allowedDomains` in `admin/astro.config.mjs`
+lists the hostnames Astro will believe a request arrived at, and it currently covers `**.a.run.app`
+and `**.hector.golf`. A mapping to a domain outside those has to be added there, or Astro rebuilds
+the request URL as `http://localhost:8080`, decides every form POST came from somewhere else, and
+answers `Cross-site POST form submissions are forbidden` with a 403 — pages still render, so it
+looks like only saving is broken.
+
 ## Adopting something that already exists
 
 If a resource is already there — because it got clicked into being before anyone read this, or
