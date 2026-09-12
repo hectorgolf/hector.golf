@@ -71,6 +71,96 @@ body {
 	font-family: var(--font-num);
 	font-size: 0.78rem;
 	color: var(--text-dim);
+	margin-left: auto;
+}
+
+/* ---------- the account menu ---------- */
+
+/*
+ * Who you are, and the one thing you can do about it. A <details> element, so
+ * the disclosure costs no client JavaScript — the trade is that it closes on a
+ * second click or Escape rather than when you click elsewhere on the page.
+ */
+.topbar .account {
+	position: relative;
+	/*
+	 * Held against the right edge even when the topbar wraps onto two rows, which
+	 * it does on a phone. The menu hangs from this element's right edge, so an
+	 * account block sitting at the left of its own row would hang it off the side
+	 * of the screen.
+	 */
+	margin-left: auto;
+}
+
+.topbar .account > summary {
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+	padding: 0.3rem 0.5rem;
+	border-radius: var(--radius-sm);
+	cursor: pointer;
+	/* Both spellings of "no triangle": the standard one and WebKit's. */
+	list-style: none;
+}
+
+.topbar .account > summary::-webkit-details-marker {
+	display: none;
+}
+
+.topbar .account > summary:hover {
+	background: var(--surface-raised);
+	color: var(--text);
+}
+
+/* A caret of our own, since the native marker is gone. Turns when open. */
+.topbar .account > summary::after {
+	content: '';
+	width: 0.35rem;
+	height: 0.35rem;
+	border-right: 1.5px solid currentColor;
+	border-bottom: 1.5px solid currentColor;
+	transform: translateY(-0.1rem) rotate(45deg);
+}
+
+.topbar .account[open] > summary::after {
+	transform: translateY(0.05rem) rotate(-135deg);
+}
+
+.topbar .account-menu {
+	position: absolute;
+	right: 0;
+	top: calc(100% + 0.4rem);
+	z-index: 20;
+	/* Never wider than the screen it drops onto. */
+	width: min(17rem, calc(100vw - 1.5rem));
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	padding: 0.8rem;
+	border: 1px solid var(--line-strong);
+	border-radius: var(--radius);
+	background: var(--surface-raised);
+}
+
+.topbar .account-menu .signout {
+	align-self: flex-start;
+	padding: 0.35rem 0.7rem;
+	border: 1px solid var(--line-strong);
+	border-radius: var(--radius-sm);
+	color: var(--text);
+	text-decoration: none;
+	font-size: 0.9rem;
+}
+
+.topbar .account-menu .signout:hover {
+	background: var(--surface);
+}
+
+.topbar .account-note {
+	margin: 0;
+	font-size: 0.75rem;
+	line-height: 1.45;
+	color: var(--text-dim);
 }
 
 main {

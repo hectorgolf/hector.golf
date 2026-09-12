@@ -4,7 +4,7 @@ import '../styles/admin.css'
 import HectorMark from '@hector/ui/components/HectorMark.astro'
 
 import { SECTIONS, sectionForPath } from '../lib/sections.ts'
-import { viewerFromHeaders } from '../lib/identity.ts'
+import { SIGN_OUT_URL, viewerFromHeaders } from '../lib/identity.ts'
 
 interface Props {
 	title: string
@@ -43,7 +43,27 @@ const viewer = viewerFromHeaders(Astro.request.headers)
 					)
 				}
 			</nav>
-			<span class="who">{viewer.email ?? 'not signed in'}</span>
+			{
+				viewer.authenticated ? (
+					/*
+					 * A <details> rather than a scripted menu: the admin ships no client
+					 * JavaScript at all, and one button behind a disclosure does not need
+					 * to be the thing that changes that.
+					 */
+					<details class="account">
+						<summary class="who">{viewer.email}</summary>
+						<div class="account-menu">
+							<a href={SIGN_OUT_URL} class="signout">Sign out</a>
+							<p class="account-note">
+								Ends this session. Signing in again is where a different account can be
+								chosen — you stay signed in to Google itself.
+							</p>
+						</div>
+					</details>
+				) : (
+					<span class="who">not signed in</span>
+				)
+			}
 		</header>
 
 		<main>
