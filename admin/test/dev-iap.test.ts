@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { viewerFromHeaders } from '../src/lib/identity.ts'
 import {
     accountsFrom,
+    forwardedHeaders,
     identityHeaders,
     JWT_ASSERTION_STAND_IN,
     readCookie,
@@ -72,6 +73,39 @@ describe('an identity a caller tries to hand itself', () => {
 
     it('is stripped whatever case it was sent in', () => {
         expect(withoutSpoofedIdentity({ 'X-Goog-Authenticated-User-Email': 'x' } as never)).toEqual({})
+    })
+})
+
+/**
+ * The host header is the one piece of a forwarded request that must NOT be
+ * helpfully corrected. Astro rebuilds the request URL from it and compares that
+ * to the browser's Origin, so pointing it at the dev server turns every form
+ * POST into "Cross-site POST form submissions are forbidden" — the same failure
+ * `security.allowedDomains` fixes in production, reintroduced by the proxy.
+ */
+describe('what reaches the dev server', () => {
+    it('keeps the host the browser asked for', () => {
+        const forwarded = forwardedHeaders(
+            { host: 'localhost:4321', 'user-agent': 'firefox' },
+            'someone@example.com'
+        )
+
+        expect(forwarded.host).toBe('localhost:4321')
+        expect(forwarded['user-agent']).toBe('firefox')
+    })
+
+    it('replaces an identity the caller supplied with the one it signed in as', () => {
+        const forwarded = forwardedHeaders(
+            {
+                host: 'localhost:4321',
+                'x-goog-authenticated-user-email': 'accounts.google.com:intruder@example.com',
+            },
+            'someone@example.com'
+        )
+
+        expect(forwarded['x-goog-authenticated-user-email']).toBe(
+            'accounts.google.com:someone@example.com'
+        )
     })
 })
 

@@ -170,6 +170,23 @@ export function withoutSpoofedIdentity(headers: IncomingHttpHeaders): IncomingHt
     return kept
 }
 
+/**
+ * The headers to forward upstream: the caller's own, with any identity it tried
+ * to supply replaced by the one it signed in as.
+ *
+ * `host` is deliberately left as the browser sent it. Pointing it at the dev
+ * server's own address is the obvious thing to do and it breaks every form in
+ * the admin: Astro reconstructs the request URL from `Host` and compares it to
+ * the browser's `Origin` header, so a rewritten host makes every POST look
+ * cross-site and returns "Cross-site POST form submissions are forbidden" — the
+ * same failure `security.allowedDomains` exists to fix in production. A real
+ * proxy passes the host through, and so does this. Where to send the bytes is
+ * settled by the socket, not by the header.
+ */
+export function forwardedHeaders(headers: IncomingHttpHeaders, email: string): IncomingHttpHeaders {
+    return { ...withoutSpoofedIdentity(headers), ...identityHeaders(email) }
+}
+
 const escapeHtml = (value: string): string =>
     value.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!)
 
@@ -280,13 +297,14 @@ async function main(): Promise<void> {
     })
 
     const proxy = (req: IncomingMessage, res: ServerResponse, email: string): void => {
-        const headers = {
-            ...withoutSpoofedIdentity(req.headers),
-            ...identityHeaders(email),
-            host: `127.0.0.1:${appPort}`,
-        }
         const upstream = http.request(
-            { host: '127.0.0.1', port: appPort, path: req.url, method: req.method, headers },
+            {
+                host: '127.0.0.1',
+                port: appPort,
+                path: req.url,
+                method: req.method,
+                headers: forwardedHeaders(req.headers, email),
+            },
             (response) => {
                 res.writeHead(response.statusCode ?? 502, response.headers)
                 response.pipe(res)
@@ -336,7 +354,7 @@ async function main(): Promise<void> {
             port: appPort,
             path: req.url,
             method: req.method,
-            headers: { ...withoutSpoofedIdentity(req.headers), ...identityHeaders(email) },
+            headers: forwardedHeaders(req.headers, email),
         })
         upstream.on('upgrade', (response, upstreamSocket, upstreamHead) => {
             const lines = Object.entries(response.headers).map(([name, value]) => `${name}: ${value}`)
