@@ -1,0 +1,54 @@
+---
+/**
+ * The name, place, dates and description of a tournament, as form fields.
+ *
+ * One component so that creating a tournament and correcting one later offer the
+ * same boxes in the same order, with the same hints. It renders the fields only:
+ * the form, the submit buttons and whatever else a page needs around them belong
+ * to the page.
+ */
+interface Props {
+	name?: string
+	location?: string
+	start?: string
+	end?: string
+	description?: string
+}
+
+const { name = '', location = '', start = '', end = '', description = '' } = Astro.props
+---
+
+<div class="field">
+	<label for="name">Name</label>
+	<input id="name" name="name" type="text" required value={name} />
+</div>
+
+<div class="field">
+	<label for="location">Location</label>
+	<input id="location" name="location" type="text" required value={location} />
+</div>
+
+<div class="pair">
+	<div class="field">
+		<label for="start">First day</label>
+		<input id="start" name="start" type="date" required value={start} />
+	</div>
+	<div class="field">
+		<label for="end">Last day</label>
+		<input id="end" name="end" type="date" required value={end} />
+	</div>
+</div>
+
+<div class="field">
+	<label for="description">Description</label>
+	<textarea id="description" name="description" rows="4">{description}</textarea>
+	<span class="hint">Shown on the public event page. Optional.</span>
+</div>
+
+<style>
+	.pair {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+		gap: 1rem;
+	}
+</style>

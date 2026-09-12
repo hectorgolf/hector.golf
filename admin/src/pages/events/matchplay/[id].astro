@@ -27,7 +27,10 @@ if (!event) return new Response('Tournament not found', { status: 404 })
 
 const players = await listPlayers()
 let error: string | undefined
-let flash: string | undefined
+// The edit page saves and redirects here, so its confirmation arrives as a query
+// parameter rather than as the result of this page's own POST.
+let flash: string | undefined =
+	Astro.url.searchParams.get('saved') === 'details' ? 'Tournament details saved.' : undefined
 
 if (Astro.request.method === 'POST') {
 	const form = await Astro.request.formData()
@@ -97,9 +100,12 @@ const champion = event.results?.bracket ? championOf(event.results.bracket) : un
 			eyebrow="Matchplay"
 			meta={[formatEventDates(event), event.location, `${fieldSize} players`]}
 		/>
-		<span class:list={['pill', status === 'started' ? 'pill-matchplay' : status === 'complete' ? 'pill-violet' : 'pill-outline']}>
-			{status}
-		</span>
+		<div class="heading-actions">
+			<span class:list={['pill', status === 'started' ? 'pill-matchplay' : status === 'complete' ? 'pill-violet' : 'pill-outline']}>
+				{status}
+			</span>
+			<a href={`/events/matchplay/${event.id}/edit`}><button type="button" class="secondary">Edit details</button></a>
+		</div>
 	</div>
 
 	{error && <p class="notice bad">{error}</p>}
@@ -178,5 +184,12 @@ const champion = event.results?.bracket ? championOf(event.results.bracket) : un
 	.hint {
 		font-size: 0.8rem;
 		color: var(--text-dim);
+	}
+
+	/* The status and the way to change what it is about, kept together. */
+	.heading-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
 	}
 </style>

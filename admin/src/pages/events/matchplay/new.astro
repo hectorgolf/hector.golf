@@ -2,8 +2,10 @@
 import AdminLayout from '../../../layouts/AdminLayout.astro'
 import PageHeader from '@hector/ui/components/PageHeader.astro'
 import Breadcrumb from '@hector/ui/components/Breadcrumb.astro'
+import EventDetailsFields from '../../../components/EventDetailsFields.astro'
 import { matchplayEventSchema } from '@hector/schemas/src/events.ts'
 import { eventExists, saveMatchplayEvent } from '../../../lib/repository/events.ts'
+import { detailsFromForm } from '../../../lib/matchplay/details.ts'
 import { viewerFromHeaders } from '../../../lib/identity.ts'
 
 let error: string | undefined
@@ -15,11 +17,8 @@ if (Astro.request.method === 'POST') {
 	submitted = Object.fromEntries([...form.entries()].map(([k, v]) => [k, String(v)]))
 
 	const candidate = {
+		...detailsFromForm(submitted),
 		id: submitted.id?.trim().toUpperCase(),
-		name: submitted.name?.trim(),
-		location: submitted.location?.trim(),
-		timing: { start: submitted.start, end: submitted.end },
-		description: submitted.description?.trim() || undefined,
 		format: 'matchplay' as const,
 		status: 'signup' as const,
 		participants: [],
@@ -63,32 +62,13 @@ const thisYear = new Date().getFullYear()
 			<span class="hint">Uppercase, no spaces. Becomes the URL on the public site and cannot be changed later.</span>
 		</div>
 
-		<div class="field">
-			<label for="name">Name</label>
-			<input id="name" name="name" type="text" required value={submitted.name ?? `Hector Matchplay ${thisYear}`} />
-		</div>
-
-		<div class="field">
-			<label for="location">Location</label>
-			<input id="location" name="location" type="text" required value={submitted.location ?? 'Finland'} />
-		</div>
-
-		<div class="pair">
-			<div class="field">
-				<label for="start">First day</label>
-				<input id="start" name="start" type="date" required value={submitted.start ?? ''} />
-			</div>
-			<div class="field">
-				<label for="end">Last day</label>
-				<input id="end" name="end" type="date" required value={submitted.end ?? ''} />
-			</div>
-		</div>
-
-		<div class="field">
-			<label for="description">Description</label>
-			<textarea id="description" name="description" rows="4">{submitted.description ?? ''}</textarea>
-			<span class="hint">Shown on the public event page. Optional.</span>
-		</div>
+		<EventDetailsFields
+			name={submitted.name ?? `Hector Matchplay ${thisYear}`}
+			location={submitted.location ?? 'Finland'}
+			start={submitted.start}
+			end={submitted.end}
+			description={submitted.description}
+		/>
 
 		<div class="actions">
 			<button type="submit">Create</button>
@@ -98,12 +78,6 @@ const thisYear = new Date().getFullYear()
 </AdminLayout>
 
 <style>
-	.pair {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-		gap: 1rem;
-	}
-
 	form {
 		max-width: 34rem;
 	}
