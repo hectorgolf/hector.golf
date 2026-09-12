@@ -192,13 +192,13 @@ button:disabled {
 
 /* ---------- tables ---------- */
 
-.grid {
+.datagrid {
 	width: 100%;
 	border-collapse: collapse;
 	font-size: 0.92rem;
 }
 
-.grid th {
+.datagrid th {
 	font-family: var(--font-score);
 	text-transform: uppercase;
 	letter-spacing: 0.08em;
@@ -209,13 +209,13 @@ button:disabled {
 	border-bottom: 1px solid var(--line-strong);
 }
 
-.grid td {
+.datagrid td {
 	padding: 0.55rem 0.7rem;
 	border-bottom: 1px solid var(--line);
 	vertical-align: middle;
 }
 
-.grid tr:last-child td {
+.datagrid tr:last-child td {
 	border-bottom: none;
 }
 
