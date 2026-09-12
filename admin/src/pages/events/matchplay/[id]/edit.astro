@@ -1,0 +1,95 @@
+---
+import AdminLayout from '../../../../layouts/AdminLayout.astro'
+import PageHeader from '@hector/ui/components/PageHeader.astro'
+import Breadcrumb from '@hector/ui/components/Breadcrumb.astro'
+import EventDetailsFields from '../../../../components/EventDetailsFields.astro'
+
+import { matchplayEventSchema } from '@hector/schemas/src/events.ts'
+import { getMatchplayEvent, saveMatchplayEvent } from '../../../../lib/repository/events.ts'
+import { detailsFromForm } from '../../../../lib/matchplay/details.ts'
+import { viewerFromHeaders } from '../../../../lib/identity.ts'
+
+const { id } = Astro.params
+if (!id) return Astro.redirect('/events/matchplay')
+
+const event = await getMatchplayEvent(id)
+if (!event) return new Response('Tournament not found', { status: 404 })
+
+let error: string | undefined
+
+// What the boxes show: the stored tournament, replaced by whatever was typed if
+// the edit failed to validate, so a rejected save does not have to be retyped.
+let submitted: Record<string, string> = {
+	name: event.name,
+	location: event.location,
+	start: event.timing.start,
+	end: event.timing.end,
+	description: event.description ?? '',
+}
+
+if (Astro.request.method === 'POST') {
+	const form = await Astro.request.formData()
+	submitted = Object.fromEntries([...form.entries()].map(([k, v]) => [k, String(v)]))
+
+	// The whole event rather than the four changed fields. The chronology rule
+	// lives on the timing pair and only fires when both dates are present, and a
+	// tournament that has been played carries a bracket that has to survive the
+	// round trip intact.
+	const parsed = matchplayEventSchema.safeParse({ ...event, ...detailsFromForm(submitted) })
+	if (!parsed.success) {
+		error = parsed.error.issues.map((i) => `${i.path.join('.') || 'form'}: ${i.message}`).join('; ')
+	} else {
+		const viewer = viewerFromHeaders(Astro.request.headers)
+		await saveMatchplayEvent(parsed.data, viewer.email ?? 'unknown')
+		return Astro.redirect(`/events/matchplay/${event.id}?saved=details`)
+	}
+}
+---
+
+<AdminLayout title={`Edit ${event.name}`}>
+	<Breadcrumb title={event.name} href={`/events/matchplay/${event.id}`} />
+
+	<PageHeader
+		title="Edit tournament details"
+		eyebrow="Matchplay"
+		lede="A tournament's name, place, dates and description can be corrected at any point, finished ones included. The field and the bracket are edited on the tournament page."
+	/>
+
+	{error && <p class="notice bad">{error}</p>}
+
+	<form method="POST" class="stack">
+		<div class="field">
+			<label for="id">Id</label>
+			<input id="id" type="text" value={event.id} disabled />
+			<span class="hint">
+				The tournament's address on the public site, fixed when it was created. Changing it would
+				break every link to this tournament.
+			</span>
+		</div>
+
+		<EventDetailsFields
+			name={submitted.name}
+			location={submitted.location}
+			start={submitted.start}
+			end={submitted.end}
+			description={submitted.description}
+		/>
+
+		<div class="actions">
+			<button type="submit">Save changes</button>
+			<a href={`/events/matchplay/${event.id}`}><button type="button" class="secondary">Cancel</button></a>
+		</div>
+	</form>
+</AdminLayout>
+
+<style>
+	form {
+		max-width: 34rem;
+	}
+
+	input:disabled {
+		color: var(--text-dim);
+		background: var(--surface);
+		cursor: not-allowed;
+	}
+</style>
