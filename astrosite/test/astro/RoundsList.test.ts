@@ -1,7 +1,7 @@
 import { experimental_AstroContainer as AstroContainer } from 'astro/container'
 import { expect, describe, it } from 'vitest'
 import RoundsList from '../../src/components/events/RoundsList.astro'
-import { hectorEventSchema } from '../../src/schemas/events'
+import { hectorEventSchema } from '@hector/schemas/src/events.ts'
 
 
 /**

@@ -6,7 +6,7 @@ import PageHeader from '@hector/ui/components/PageHeader.astro';
 import { getAllPlayers, getEventsOfPlayer, getPlayerHandicapById, getPlayerName } from '../../code/players';
 import { yearOfEvent } from '../../code/data';
 import { getTotalWinsByPlayer, getEventsWonByPlayer, getHectorWinsByPlayer, getVictorWinsByPlayer, getMatchplayWinsByPlayer } from '../../code/stats';
-import type { HectorEvent, MatchplayEvent, FinnkampenEvent } from '../../schemas/events';
+import type { HectorEvent, MatchplayEvent, FinnkampenEvent } from '@hector/schemas/src/events.ts';
 
 
 function linkToPlayer(player: any): string {

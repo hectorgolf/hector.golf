@@ -9,7 +9,7 @@ import {
     maxStrokesOverParFor,
 } from "../../src/code/scoring.ts";
 import { stablefordPoints, totalStableford } from "../../src/code/mscorecard/scoring.ts";
-import { hectorEventSchema } from "../../src/schemas/events.ts";
+import { hectorEventSchema } from "@hector/schemas/src/events.ts";
 
 describe("Maximum score per hole", () => {
     describe("the cap itself", () => {

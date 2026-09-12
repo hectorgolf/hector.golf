@@ -8,17 +8,21 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "start": "node ./dist/server/entry.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",
     "@astrojs/node": "^11.1.5",
     "@google-cloud/firestore": "^9.0.1",
+    "@hector/schemas": "*",
     "@hector/ui": "*",
     "astro": "^7.2.9",
     "typescript": "^6.0.3"
   },
   "devDependencies": {
+    "glob": "^13.0.6",
+    "tsx": "^4.23.13",
     "vitest": "^4.1.11"
   }
 }

@@ -5,8 +5,8 @@ import HectorMark from '@hector/ui/components/HectorMark.astro'
 import EventCard from '../components/events/EventCard.astro'
 import MatchplayEventCard from '../components/events/MatchplayEventCard.astro'
 import { getAllEventsGroupedByChronology, linkToEvent } from '../code/events'
-import { EventFormat } from '../schemas/events'
-import { formatEventDates } from '../code/dates'
+import { EventFormat } from '@hector/schemas/src/events.ts'
+import { formatEventDates } from '@hector/schemas/src/dates.ts'
 
 const { ongoing, upcoming } = getAllEventsGroupedByChronology()
 const featured = [...ongoing, ...upcoming].slice(0, 3)

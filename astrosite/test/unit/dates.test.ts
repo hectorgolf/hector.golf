@@ -8,7 +8,7 @@ import {
     isoDate,
     parseIsoDate,
     weekdayOf,
-} from '../../src/code/dates';
+} from '@hector/schemas/src/dates.ts';
 
 describe('Dates', () => {
 

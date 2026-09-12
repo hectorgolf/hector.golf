@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import type { GoogleSheetIndividualLeaderboard, GoogleSheetTeamLeaderboard } from './types';
-import { type Player } from '../../schemas/players'
+import { type Player } from '@hector/schemas/src/players.ts'
 import { getAllPlayers, getPlayerName, getPlayerAliases } from '../../code/players'
 import { splitCompetitorNames, throughLabel } from './presentation'
 

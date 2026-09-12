@@ -1,5 +1,5 @@
-import { type Event, genericEventSchema as GenericEventSchema, type HectorEvent } from '../schemas/events';
-import { type Course, schema as CourseSchema } from '../schemas/courses';
+import { type Event, genericEventSchema as GenericEventSchema, type HectorEvent } from '@hector/schemas/src/events.ts';
+import { type Course, schema as CourseSchema } from '@hector/schemas/src/courses.ts';
 import { eventsData, coursesData } from './data';
 
 

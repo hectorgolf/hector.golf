@@ -5,12 +5,12 @@ import { fileURLToPath } from "url";
 import type { HandicapSource } from "../code/handicaps/handicap-source-api.ts";
 import { createWisegolfSession } from "../code/handicaps/wisegolf-api.ts";
 
-import { formatEventDates, isoDateToday } from "../code/dates.ts";
+import { formatEventDates, isoDateToday } from "@hector/schemas/src/dates.ts";
 import { writeJsonFile } from "../code/json.ts";
 
 import { playersData, hectorEvents, hasParticipants, isUpcomingEvent, pathToEventJson } from "../code/data.ts";
 import { getPlayerName, updatePlayerData } from "../code/players.ts";
-import type { Player } from "../schemas/players.ts";
+import type { Player } from "@hector/schemas/src/players.ts";
 
 /**
  * Get the player's handicap from their history.

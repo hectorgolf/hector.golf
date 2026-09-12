@@ -1,5 +1,5 @@
-import { type Event, type FinnkampenEvent, type HectorEvent, type MatchplayEvent } from '../schemas/events';
-import { type Player } from '../schemas/players';
+import { type Event, type FinnkampenEvent, type HectorEvent, type MatchplayEvent } from '@hector/schemas/src/events.ts';
+import { type Player } from '@hector/schemas/src/players.ts';
 import { isFinnkampenEvent, isHectorEvent, isMatchplayEvent } from './data'
 import { getEventsOfPlayer } from './players';
 

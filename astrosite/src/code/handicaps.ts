@@ -1,6 +1,6 @@
-import { type Player } from "../schemas/players";
+import { type Player } from "@hector/schemas/src/players.ts";
 import { type HandicapSource } from "./handicaps/handicap-source-api";
-import { type HandicapHistoryEntry, schema as HandicapHistoryEntrySchema } from "../schemas/handicaps";
+import { type HandicapHistoryEntry, schema as HandicapHistoryEntrySchema } from "@hector/schemas/src/handicaps.ts";
 import { createWisegolfSession } from "./handicaps/wisegolf-api";
 
 import handicapData from "../data/handicaps.json";

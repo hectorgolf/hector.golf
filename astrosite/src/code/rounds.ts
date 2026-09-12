@@ -1,4 +1,4 @@
-import { addDays, weekdayOf, type IsoDate } from "./dates";
+import { addDays, weekdayOf, type IsoDate } from "@hector/schemas/src/dates.ts";
 
 /** What an event has to tell us to place a round on the calendar. */
 type ScheduledEvent = {

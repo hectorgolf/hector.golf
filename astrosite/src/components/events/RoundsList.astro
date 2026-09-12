@@ -1,9 +1,9 @@
 ---
-import { type HectorEvent } from '../../schemas/events'
+import { type HectorEvent } from '@hector/schemas/src/events.ts'
 import { getCourseById } from '../../code/courses'
 import { hasMaximumScorePerHole, maxStrokesOverParFor } from '../../code/scoring'
 import { titleOfRound } from '../../code/rounds'
-import type { Course } from '../../schemas/courses'
+import type { Course } from '@hector/schemas/src/courses.ts'
 
 interface Props {
 	event: HectorEvent;

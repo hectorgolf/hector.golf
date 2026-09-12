@@ -1,5 +1,5 @@
-import { type HectorEvent } from "../schemas/events.ts";
-import { isoDateToday } from "../code/dates.ts";
+import { type HectorEvent } from "@hector/schemas/src/events.ts";
+import { isoDateToday } from "@hector/schemas/src/dates.ts";
 import { playersData, eventsData, pathToEventJson, isHectorEvent } from "../code/data.ts";
 import { redact } from "../code/strings.ts";
 import { fetchHectorLeaderboardData, fetchVictorLeaderboardData } from "../code/leaderboards/google-sheets.ts";

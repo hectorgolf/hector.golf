@@ -1,0 +1,179 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro'
+import PageHeader from '@hector/ui/components/PageHeader.astro'
+import Roster from '../../components/Roster.astro'
+import BracketBoard from '../../components/BracketBoard.astro'
+
+import { matchplayStatus, type MatchplayEvent } from '@hector/schemas/src/events.ts'
+import { formatEventDates } from '@hector/schemas/src/dates.ts'
+import { getMatchplayEvent, listPlayers, saveMatchplayEvent } from '../../lib/repository/events.ts'
+import { viewerFromHeaders } from '../../lib/identity.ts'
+import { nameById } from '../../lib/players.ts'
+import {
+	championOf,
+	drawBracket,
+	isDrawableFieldSize,
+	nextDrawableSize,
+	orderForDraw,
+	recordResult,
+} from '../../lib/matchplay/bracket.ts'
+
+const { id } = Astro.params
+if (!id) return Astro.redirect('/matchplay')
+
+let event: MatchplayEvent | undefined = await getMatchplayEvent(id)
+if (!event) return new Response('Tournament not found', { status: 404 })
+
+const players = await listPlayers()
+let error: string | undefined
+let flash: string | undefined
+
+if (Astro.request.method === 'POST') {
+	const form = await Astro.request.formData()
+	const action = String(form.get('action') ?? '')
+	const viewer = viewerFromHeaders(Astro.request.headers)
+	const by = viewer.email ?? 'unknown'
+
+	try {
+		if (action === 'add-player') {
+			const playerId = String(form.get('playerId'))
+			if (!event.participants.includes(playerId)) {
+				event = { ...event, participants: [...event.participants, playerId] }
+				await saveMatchplayEvent(event, by)
+			}
+		} else if (action === 'remove-player') {
+			const playerId = String(form.get('playerId'))
+			event = { ...event, participants: event.participants.filter((p) => p !== playerId) }
+			await saveMatchplayEvent(event, by)
+		} else if (action === 'draw') {
+			const bracket = drawBracket(orderForDraw(event.participants))
+			event = {
+				...event,
+				status: 'started',
+				results: { winners: {}, bracket },
+			}
+			await saveMatchplayEvent(event, by)
+			flash = 'Bracket drawn. The tournament is now started.'
+		} else if (action === 'record') {
+			const bracket = recordResult(event.results?.bracket ?? [], {
+				matchId: String(form.get('matchId')),
+				score: String(form.get('score')).trim(),
+				winner: String(form.get('winner')),
+			})
+			const champion = championOf(bracket)
+			event = {
+				...event,
+				status: champion ? 'complete' : 'started',
+				results: { winners: champion ? { matchplay: champion } : {}, bracket },
+			}
+			await saveMatchplayEvent(event, by)
+			flash = champion ? 'Result recorded. That was the final.' : 'Result recorded.'
+		} else if (action === 'reopen-signup') {
+			// Deliberate and reversible: a draw made too early should not be a
+			// one-way door. The bracket is discarded, the field is not.
+			event = { ...event, status: 'signup', results: undefined }
+			await saveMatchplayEvent(event, by)
+			flash = 'Back in signup. The bracket was discarded; the field was kept.'
+		}
+	} catch (e) {
+		error = e instanceof Error ? e.message : String(e)
+	}
+}
+
+const status = matchplayStatus(event)
+const names = nameById(players)
+const fieldSize = event.participants.length
+const canDraw = isDrawableFieldSize(fieldSize)
+const champion = event.results?.bracket ? championOf(event.results.bracket) : undefined
+---
+
+<AdminLayout title={event.name}>
+	<div class="row-between">
+		<PageHeader
+			title={event.name}
+			eyebrow="Matchplay"
+			meta={[formatEventDates(event), event.location, `${fieldSize} players`]}
+		/>
+		<span class:list={['pill', status === 'started' ? 'pill-matchplay' : status === 'complete' ? 'pill-violet' : 'pill-outline']}>
+			{status}
+		</span>
+	</div>
+
+	{error && <p class="notice bad">{error}</p>}
+	{flash && <p class="notice good">{flash}</p>}
+
+	{
+		status === 'signup' && (
+			<>
+				<Roster event={event} players={players} names={names} />
+
+				<section class="stack draw">
+					<h2>Draw the bracket</h2>
+					{!canDraw ? (
+						<p class="notice">
+							A bracket needs a field that halves cleanly. There {fieldSize === 1 ? 'is' : 'are'}{' '}
+							{fieldSize} {fieldSize === 1 ? 'player' : 'players'}; the nearest workable size is{' '}
+							{nextDrawableSize(fieldSize)}.
+						</p>
+					) : (
+						<form method="POST" class="stack">
+							<input type="hidden" name="action" value="draw" />
+							<p class="hint">
+								The field is shuffled and paired off at random. Handicaps play no part, so everyone
+								draws the same way whether or not theirs is on record.
+							</p>
+							<div class="actions">
+								<button type="submit">Draw and start</button>
+								<span class="hint">
+									This locks the field of {fieldSize} and moves the tournament to started. It can be
+									undone.
+								</span>
+							</div>
+						</form>
+					)}
+				</section>
+			</>
+		)
+	}
+
+	{
+		status !== 'signup' && event.results?.bracket && (
+			<>
+				{champion && (
+					<p class="notice good">
+						<strong>{names.get(champion) ?? champion}</strong> won the tournament.
+					</p>
+				)}
+				<BracketBoard bracket={event.results.bracket} names={names} readonly={status === 'complete'} />
+				<form method="POST" class="actions reopen">
+					<input type="hidden" name="action" value="reopen-signup" />
+					<button type="submit" class="danger">Discard bracket and reopen signup</button>
+					<span class="hint">Keeps the field. Use this if the draw was made too early.</span>
+				</form>
+			</>
+		)
+	}
+</AdminLayout>
+
+<style>
+	h2 {
+		margin: 0;
+		font-family: var(--font-serif);
+		font-size: 1.2rem;
+	}
+
+	.draw {
+		border-top: 1px solid var(--line);
+		padding-top: 1.5rem;
+	}
+
+	.reopen {
+		border-top: 1px solid var(--line);
+		padding-top: 1.5rem;
+	}
+
+	.hint {
+		font-size: 0.8rem;
+		color: var(--text-dim);
+	}
+</style>

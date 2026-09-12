@@ -1,0 +1,109 @@
+---
+import type { MatchplayEvent } from '@hector/schemas/src/events.ts'
+import type { Player } from '@hector/schemas/src/players.ts'
+import { fullName } from '../lib/players.ts'
+
+interface Props {
+	event: MatchplayEvent
+	players: Player[]
+	names: Map<string, string>
+}
+
+const { event, players, names } = Astro.props
+
+const inField = event.participants
+const available = players
+	.filter((p) => !inField.includes(p.id))
+	.sort((a, b) => fullName(a).localeCompare(fullName(b)))
+---
+
+<section class="stack">
+	<div class="row-between">
+		<h2>Field</h2>
+		<span class="meta">{inField.length} {inField.length === 1 ? 'player' : 'players'}</span>
+	</div>
+
+	{inField.length === 0 && <p class="notice">Nobody has been added yet.</p>}
+
+	{
+		inField.length > 0 && (
+			<div class="tablewrap">
+				<table class="grid">
+					<thead>
+						<tr>
+							<th>Player</th>
+							<th>Handicap</th>
+							<th />
+						</tr>
+					</thead>
+					<tbody>
+						{inField.map((pid) => {
+							const player = players.find((p) => p.id === pid)
+							return (
+								<tr>
+									<td>{names.get(pid) ?? pid}</td>
+									<td class="num">{player?.handicap ?? '—'}</td>
+									<td class="right">
+										<form method="POST">
+											<input type="hidden" name="action" value="remove-player" />
+											<input type="hidden" name="playerId" value={pid} />
+											<button type="submit" class="secondary">Remove</button>
+										</form>
+									</td>
+								</tr>
+							)
+						})}
+					</tbody>
+				</table>
+			</div>
+		)
+	}
+
+	{
+		available.length > 0 && (
+			<form method="POST" class="add">
+				<input type="hidden" name="action" value="add-player" />
+				<div class="field">
+					<label for="playerId">Add a player</label>
+					<select id="playerId" name="playerId">
+						{available.map((p) => (
+							<option value={p.id}>
+								{fullName(p)}
+								{p.handicap !== undefined ? ` (${p.handicap})` : ''}
+							</option>
+						))}
+					</select>
+				</div>
+				<button type="submit">Add</button>
+			</form>
+		)
+	}
+</section>
+
+<style>
+	h2 {
+		margin: 0;
+		font-family: var(--font-serif);
+		font-size: 1.2rem;
+	}
+
+	.right {
+		text-align: right;
+	}
+
+	.right form {
+		display: inline;
+	}
+
+	.add {
+		display: flex;
+		gap: 0.75rem;
+		align-items: flex-end;
+		flex-wrap: wrap;
+	}
+
+	.add .field {
+		flex: 1;
+		min-width: 16rem;
+	}
+</style>

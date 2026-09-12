@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { isValidIsoDate } from "../code/dates";
+import { isValidIsoDate } from "./dates.ts";
 
 const matchplayMatchSchema = z.object({
     id: z.string(),
@@ -223,8 +223,18 @@ export const finnkampenEventSchema = BaseEventSchema.extend({
     results: finnkampenResultsSchema.optional(),
 });
 
+/**
+ * Where a matchplay tournament is in its life.
+ *
+ * Optional, because the three events that predate the admin UI do not carry it.
+ * `matchplayStatus()` derives it from the data for those, so nothing had to be
+ * backfilled and no existing file became invalid.
+ */
+export const matchplayStatusSchema = z.enum(["signup", "started", "complete"]);
+
 export const matchplayEventSchema = BaseEventSchema.extend({
     format: z.literal(EventFormat.Matchplay),
+    status: matchplayStatusSchema.optional(),
     results: matchplayResultsSchema.optional(),
 });
 
@@ -245,6 +255,21 @@ export type HectorGameFormatName = z.infer<typeof gameFormatSchema>["format"];
 export type MatchplayMatch = z.infer<typeof matchplayMatchSchema>;
 export type MatchplayResults = z.infer<typeof matchplayResultsSchema>;
 export type MatchplayEvent = z.infer<typeof matchplayEventSchema>;
+export type MatchplayStatus = z.infer<typeof matchplayStatusSchema>;
+
+/**
+ * A matchplay event's status, derived when the field is absent.
+ *
+ * Recorded winner means complete; a drawn bracket means started; anything else
+ * is still taking signups. Written status always wins, so the admin UI can move
+ * an event backwards if a draw was made too early.
+ */
+export function matchplayStatus(event: MatchplayEvent): MatchplayStatus {
+    if (event.status) return event.status;
+    if (event.results?.winners?.matchplay) return "complete";
+    if ((event.results?.bracket?.length ?? 0) > 0) return "started";
+    return "signup";
+}
 export type HectorEvent = z.infer<typeof hectorEventSchema>;
 export type HectorResults = z.infer<typeof hectorResultsSchema>;
 export type FinnkampenEvent = z.infer<typeof finnkampenEventSchema>;

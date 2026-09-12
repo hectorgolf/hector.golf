@@ -1,0 +1,68 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro'
+import PageHeader from '@hector/ui/components/PageHeader.astro'
+import { matchplayStatus } from '@hector/schemas/src/events.ts'
+import { listMatchplayEvents } from '../../lib/repository/events.ts'
+import { formatEventDates } from '@hector/schemas/src/dates.ts'
+
+let events: Awaited<ReturnType<typeof listMatchplayEvents>> = []
+let error: string | undefined
+
+try {
+	events = await listMatchplayEvents()
+} catch {
+	// The reason goes to Cloud Logging; the page says only that it failed.
+	error = 'Could not read the tournaments. Check the service logs.'
+}
+
+const STATUS_PILL = {
+	signup: 'pill-outline',
+	started: 'pill-matchplay',
+	complete: 'pill-violet',
+} as const
+---
+
+<AdminLayout title="Matchplay">
+	<div class="row-between">
+		<PageHeader title="Matchplay" lede="Every Hector Matchplay tournament." />
+		<a href="/matchplay/new"><button>New tournament</button></a>
+	</div>
+
+	{error && <p class="notice bad">{error}</p>}
+
+	{
+		!error && events.length === 0 && (
+			<p class="notice">No tournaments yet. Create one to get started.</p>
+		)
+	}
+
+	{
+		events.length > 0 && (
+			<div class="tablewrap">
+				<table class="grid">
+					<thead>
+						<tr>
+							<th>Tournament</th>
+							<th>When</th>
+							<th>Field</th>
+							<th>Status</th>
+						</tr>
+					</thead>
+					<tbody>
+						{events.map((event) => {
+							const status = matchplayStatus(event)
+							return (
+								<tr>
+									<td><a href={`/matchplay/${event.id}`}>{event.name}</a></td>
+									<td class="num">{formatEventDates(event)}</td>
+									<td class="num">{event.participants.length}</td>
+									<td><span class:list={['pill', STATUS_PILL[status]]}>{status}</span></td>
+								</tr>
+							)
+						})}
+					</tbody>
+				</table>
+			</div>
+		)
+	}
+</AdminLayout>

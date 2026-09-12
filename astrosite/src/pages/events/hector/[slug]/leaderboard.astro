@@ -5,16 +5,16 @@ import RoundsList from '../../../../components/events/RoundsList.astro'
 import LeaderboardTable from '../../../../components/events/LeaderboardTable.astro'
 import PageHeader from '@hector/ui/components/PageHeader.astro'
 
-import { type Player } from '../../../../schemas/players'
+import { type Player } from '@hector/schemas/src/players.ts'
 import { getAllPlayers, getPlayerName, getPlayerAliases } from '../../../../code/players'
 
-import { type HectorEvent } from '../../../../schemas/events'
+import { type HectorEvent } from '@hector/schemas/src/events.ts'
 import { getAllEventIds, getEventById, eventHasEnded, eventHasStarted } from '../../../../code/events'
 
 import { getLeaderboardsByEventId, getEventsWithLeaderboards } from '../../../../code/leaderboards/leaderboards'
 import { appEventIdFromLeaderboardUrl, isAppHectorGolfLeaderboard } from '../../../../code/leaderboards/sources'
 import LiveLeaderboard from '../../../../components/events/LiveLeaderboard.astro'
-import { formatEventDates, parseIsoDate, addDays } from '../../../../code/dates'
+import { formatEventDates, parseIsoDate, addDays } from '@hector/schemas/src/dates.ts'
 
 
 export function getStaticPaths() {

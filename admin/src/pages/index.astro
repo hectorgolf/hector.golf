@@ -1,90 +1,57 @@
 ---
 import AdminLayout from '../layouts/AdminLayout.astro'
 import PageHeader from '@hector/ui/components/PageHeader.astro'
-import { checkFirestore } from '../lib/firestore'
-import { viewerFromHeaders } from '../lib/identity'
-
-// Rendered per request, which is the point: this page reports the state of the
-// world now rather than at the last build.
-const viewer = viewerFromHeaders(Astro.request.headers)
-const firestore = await checkFirestore()
+import { SECTIONS } from '../lib/sections.ts'
 ---
 
-<AdminLayout title="Status">
-	<PageHeader
-		title="Admin"
-		lede="Nothing is built here yet. This page shows that the deployment works end to end: that IAP put an identity in front of the service, and that the service can reach its database."
-	/>
+<AdminLayout title="Dashboard">
+	<PageHeader title="Admin" lede="Manage the data behind hector.golf." />
 
-	<dl class="status">
-		<div class="row">
-			<dt>Signed in as</dt>
-			<dd class={viewer.authenticated ? 'good' : 'bad'}>
-				{viewer.email ?? 'not signed in — no IAP header'}
-			</dd>
-		</div>
-		<div class="row">
-			<dt>Firestore</dt>
-			<dd class={firestore.reachable ? 'good' : 'bad'}>
-				{firestore.reachable ? `reachable — ${firestore.databaseId}` : `unreachable — ${firestore.reason}`}
-			</dd>
-		</div>
-		<div class="row">
-			<dt>Rendered</dt>
-			<dd>{new Date().toISOString()}</dd>
-		</div>
-	</dl>
-
-	<p class="note">
-		The timestamp is proof of server rendering: it changes on reload, where a
-		statically built page would not. When Firestore is unreachable the reason
-		shown is a classification rather than the underlying error — the error
-		itself goes to Cloud Logging, because this page is built to survive being
-		served without IAP in front of it.
-	</p>
+	<div class="sections">
+		{
+			SECTIONS.map((section) => (
+				<article class:list={['card', 'section-card', { soon: !section.available }]}>
+					<h2>
+						{section.available ? <a href={`/${section.slug}`}>{section.label}</a> : section.label}
+						{!section.available && <span class="pill pill-outline">Not built yet</span>}
+					</h2>
+					<p>{section.blurb}</p>
+				</article>
+			))
+		}
+	</div>
 </AdminLayout>
 
 <style>
-	.status {
-		margin: 0;
-		border: 1px solid var(--line);
-		background: var(--surface);
-	}
-
-	.row {
+	.sections {
 		display: grid;
-		grid-template-columns: 11rem 1fr;
+		grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
 		gap: 1rem;
-		padding: 0.8rem 1.15rem;
 	}
 
-	.row + .row {
-		border-top: 1px solid var(--line);
+	.section-card {
+		padding: 1.1rem 1.25rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
 	}
 
-	dt {
+	.section-card h2 {
 		margin: 0;
-		color: var(--text-dim);
-		font-size: 0.85rem;
+		font-size: 1.05rem;
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		flex-wrap: wrap;
 	}
 
-	dd {
+	.section-card p {
 		margin: 0;
-		font-family: var(--font-num);
-		font-size: 0.85rem;
-		word-break: break-word;
+		color: var(--text-muted);
+		font-size: 0.9rem;
 	}
 
-	dd.good {
-		color: var(--victor);
-	}
-	dd.bad {
-		color: var(--matchplay);
-	}
-
-	.note {
-		color: var(--text-dim);
-		font-size: 0.85rem;
-		margin: 0;
+	.section-card.soon {
+		opacity: 0.6;
 	}
 </style>
