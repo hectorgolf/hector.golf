@@ -129,9 +129,14 @@ variable "artifact_keep_count" {
     the Cloud Run rollback window: the admin service scales to zero and pulls
     its image on every cold start, so deleting the image a live revision points
     at breaks that revision the next time it wakes up, not at deploy time.
+
+    Two means the running build and the one before it. A rollback goes exactly
+    one deploy back; two deploys back is a rebuild from the tag, not a traffic
+    split. That is the intended trade — this is a site two people administer a
+    few times a month, and storage is billed against a budget of about a euro.
   EOT
   type        = number
-  default     = 5
+  default     = 2
 }
 
 variable "enable_budget_alert" {
