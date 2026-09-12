@@ -4,6 +4,7 @@ import PageHeader from '@hector/ui/components/PageHeader.astro'
 import Breadcrumb from '@hector/ui/components/Breadcrumb.astro'
 import Roster from '../../../components/Roster.astro'
 import BracketBoard from '../../../components/BracketBoard.astro'
+import EventDescription from '@hector/ui/components/EventDescription.astro'
 
 import { matchplayStatus, type MatchplayEvent } from '@hector/schemas/src/events.ts'
 import { formatEventDates } from '@hector/schemas/src/dates.ts'
@@ -110,6 +111,8 @@ const champion = event.results?.bracket ? championOf(event.results.bracket) : un
 
 	{error && <p class="notice bad">{error}</p>}
 	{flash && <p class="notice good">{flash}</p>}
+
+	<EventDescription text={event.description} />
 
 	{
 		status === 'signup' && (

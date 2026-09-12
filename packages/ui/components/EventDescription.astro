@@ -1,0 +1,42 @@
+---
+/**
+ * An event's description, rendered from the Markdown it is written in.
+ *
+ * Shared rather than written twice because the admin is where this text is
+ * typed and the public page is where it lands, and the whole point of looking at
+ * it in the admin is to see what the site will show. Two renderers would answer
+ * that question differently the first time anyone used a syntax only one of them
+ * knew — `HECTORMATCHPLAY2026` already leans on strikethrough, which reads as
+ * `~~Fifteen~~` in plain text and as a correction being made in Markdown.
+ *
+ * Raw HTML in the source stays escaped: markdown-it's `html` option is off by
+ * default and is deliberately left off. Nobody needs a `<script>` in an event
+ * description, and the people who can write one are exactly the people whose
+ * session is worth stealing.
+ *
+ * Renders nothing at all for an event without a description, so a caller can
+ * hand it `event.description` without checking first.
+ */
+import markdownit from 'markdown-it'
+
+interface Props {
+	text?: string
+}
+
+const { text } = Astro.props
+
+const html = text?.trim() ? markdownit().render(text) : undefined
+---
+
+{html && <div class="event-description" set:html={html} />}
+
+<style>
+	/*
+	 * Colour only. Paragraph spacing is hector.css's `p` rule, which both apps
+	 * load and which already ends the last paragraph flush — repeating it here
+	 * would silently restyle the public page this component was factored out of.
+	 */
+	.event-description {
+		color: var(--text-muted);
+	}
+</style>
