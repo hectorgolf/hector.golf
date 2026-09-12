@@ -1,0 +1,126 @@
+# Publish what the admin UI authored into the committed data files the site
+# builds from, and let the existing deploy workflow take it from there.
+#
+# This is the step that makes the admin usable without a laptop. Firestore is
+# where a matchplay tournament is edited; `astrosite/src/data/events/matchplay/`
+# is generated from it; and deploy.yml already rebuilds the site on any push to
+# main touching `astrosite/**`. Running this is therefore the whole publish.
+#
+# Manual rather than scheduled, deliberately. An export is the act of publishing
+# an edit, and a schedule would publish half-finished ones — a bracket drawn but
+# not yet corrected, a result typed into the wrong match. The admin is used a
+# handful of times a month by two people, so "press the button when you mean it"
+# is the right amount of ceremony. It is also why there is no automatic export
+# after every write.
+#
+# What it exports is decided in admin/scripts/export.ts, not here: matchplay
+# events only, because that is all the admin can author. See
+# docs/data-ownership.md for why publishing the rest would revert the scrape.
+name: Export admin data
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+# One at a time, and never cancel one in flight: a cancelled export can leave
+# some files written and others not, and the difference is invisible until the
+# next run.
+concurrency:
+  group: "export-admin-data"
+  cancel-in-progress: false
+
+jobs:
+  export:
+    name: Export
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Nothing here works until the GCP variables exist. Skip rather than fail,
+      # so a fork or a half-configured repository says why instead of going red.
+      - name: Check the project is configured
+        id: guard
+        run: |
+          if [ -n "${{ vars.GH_WIF_PROVIDER }}" ] && [ -n "${{ vars.GH_DEPLOYER_SA }}" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::GH_WIF_PROVIDER or GH_DEPLOYER_SA is unset, so there is no project to export from. See docs/gcp-setup-playbook.md."
+          fi
+
+      - name: Setup Node
+        if: steps.guard.outputs.configured == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        if: steps.guard.outputs.configured == 'true'
+        run: npm ci
+
+      - name: Authenticate to Google Cloud
+        if: steps.guard.outputs.configured == 'true'
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GH_WIF_PROVIDER }}
+          service_account: ${{ vars.GH_DEPLOYER_SA }}
+
+      - name: Export
+        if: steps.guard.outputs.configured == 'true'
+        run: npm run export
+        working-directory: admin
+        env:
+          # The database id is left to the script's default, which is the one
+          # Terraform creates. The project is a variable because it already is
+          # one everywhere else.
+          GOOGLE_CLOUD_PROJECT: ${{ vars.GCP_PROJECT_ID }}
+
+      - name: Commit what changed
+        if: steps.guard.outputs.configured == 'true'
+        run: |
+          git config user.name "export-admin-data.yml"
+          git config user.email "${{ secrets.GIT_COMMITTER_EMAIL }}"
+
+          # -A rather than a list of modified files: a new tournament is an added
+          # file and a deleted one is a removal, and both are ordinary results of
+          # an export. astrosite/scripts/commit-changes.sh stages only modified
+          # files, which is fine for the scrapes — they never create or delete —
+          # and would silently drop the most common thing done here.
+          git add -A astrosite/src/data/events/matchplay
+
+          if git diff --cached --quiet; then
+            echo "Nothing to publish: the committed files already match the store."
+            exit 0
+          fi
+
+          git diff --cached --name-status | sed 's/^/  /'
+
+          {
+            echo "Publish admin edits to the committed data files"
+            echo
+            echo "Github Action:      $GITHUB_WORKFLOW"
+            echo "GITHUB_RUN_NUMBER:  $GITHUB_RUN_NUMBER"
+            echo
+            echo "Exported from Firestore by admin/scripts/export.ts:"
+            git diff --cached --name-status | sed 's/^/- /'
+          } > /tmp/export-commit-message
+
+          git commit -F /tmp/export-commit-message
+          git pull -r
+          git push
+
+      - name: Summarise
+        if: steps.guard.outputs.configured == 'true'
+        run: |
+          {
+            echo "### Exported"
+            echo
+            echo "Pushing to \`main\` under \`astrosite/\` triggers the site deploy, so the"
+            echo "public site picks this up without another button."
+          } >> "$GITHUB_STEP_SUMMARY"
