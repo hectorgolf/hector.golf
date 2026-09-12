@@ -43,6 +43,29 @@ export function viewerFromHeaders(headers: Headers): Viewer {
     return email ? { email, authenticated: true } : { authenticated: false }
 }
 
+/**
+ * Where the sign-out link goes.
+ *
+ * Signing out is IAP's to do rather than this application's, for the same reason
+ * signing in is: the session is a cookie IAP issued for this service, and this
+ * process never sees it. `gcp-iap-mode=CLEAR_LOGIN_COOKIE` is IAP's documented
+ * way to clear those cookies and send the browser back to the app, which is also
+ * how a different account gets chosen — IAP asks again on the way back in.
+ *
+ * It clears the session with *this service*, not the Google session behind it.
+ * Somebody signed into one Google account is likely to be let straight back in;
+ * somebody signed into several is asked which one. Signing out of Google itself
+ * is a thing only Google can offer, and this link deliberately does not pretend
+ * to.
+ *
+ * The parameter is read by the proxy and never reaches this process, so the link
+ * does nothing on a laptop, where there is no proxy in front. Nothing renders it
+ * there either: without IAP's header there is no viewer to sign out.
+ *
+ * https://cloud.google.com/iap/docs/query-parameters-and-headers-howto
+ */
+export const SIGN_OUT_URL = '/?gcp-iap-mode=CLEAR_LOGIN_COOKIE'
+
 export function can(permissions: readonly Permission[], needed: Permission): boolean {
     return permissions.includes(needed)
 }
