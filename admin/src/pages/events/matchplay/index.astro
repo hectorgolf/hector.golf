@@ -1,8 +1,9 @@
 ---
-import AdminLayout from '../../layouts/AdminLayout.astro'
+import AdminLayout from '../../../layouts/AdminLayout.astro'
 import PageHeader from '@hector/ui/components/PageHeader.astro'
+import Breadcrumb from '@hector/ui/components/Breadcrumb.astro'
 import { matchplayStatus } from '@hector/schemas/src/events.ts'
-import { listMatchplayEvents } from '../../lib/repository/events.ts'
+import { listMatchplayEvents } from '../../../lib/repository/events.ts'
 import { formatEventDates } from '@hector/schemas/src/dates.ts'
 
 let events: Awaited<ReturnType<typeof listMatchplayEvents>> = []
@@ -23,9 +24,11 @@ const STATUS_PILL = {
 ---
 
 <AdminLayout title="Matchplay">
+	<Breadcrumb title="Events" href="/events" />
+
 	<div class="row-between">
 		<PageHeader title="Matchplay" lede="Every Hector Matchplay tournament." />
-		<a href="/matchplay/new"><button>New tournament</button></a>
+		<a href="/events/matchplay/new"><button>New tournament</button></a>
 	</div>
 
 	{error && <p class="notice bad">{error}</p>}
@@ -53,7 +56,7 @@ const STATUS_PILL = {
 							const status = matchplayStatus(event)
 							return (
 								<tr>
-									<td><a href={`/matchplay/${event.id}`}>{event.name}</a></td>
+									<td><a href={`/events/matchplay/${event.id}`}>{event.name}</a></td>
 									<td class="num">{formatEventDates(event)}</td>
 									<td class="num">{event.participants.length}</td>
 									<td><span class:list={['pill', STATUS_PILL[status]]}>{status}</span></td>

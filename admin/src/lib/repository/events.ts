@@ -1,5 +1,8 @@
 import {
+    EventFormat,
+    genericEventSchema,
     matchplayEventSchema,
+    type Event,
     type MatchplayEvent,
 } from '@hector/schemas/src/events.ts'
 import { schema as playerSchema, type Player } from '@hector/schemas/src/players.ts'
@@ -43,17 +46,46 @@ function parse<T>(schema: { safeParse: (v: unknown) => { success: boolean; data?
     return result.data
 }
 
-export async function listMatchplayEvents(): Promise<MatchplayEvent[]> {
+/**
+ * Every event, whatever format it is played in.
+ *
+ * Parsed through the discriminated union rather than through one format's
+ * schema, because the collection holds all three. Reading it as matchplay would
+ * make thirteen Hector events look like thirteen corrupt documents and log an
+ * error for each on every page load.
+ */
+export async function listEvents(): Promise<Event[]> {
     const snapshot = await firestore().collection(EVENTS).get()
     return snapshot.docs
-        .map((d) => parse<MatchplayEvent>(matchplayEventSchema, d.data(), d.id))
-        .filter((e): e is MatchplayEvent => e !== undefined)
+        .map((d) => parse<Event>(genericEventSchema, d.data(), d.id))
+        .filter((e): e is Event => e !== undefined)
         .sort((a, b) => b.timing.start.localeCompare(a.timing.start))
 }
 
+/** How many events of each format the store holds, for the Events landing page. */
+export async function countEventsByFormat(): Promise<Record<string, number>> {
+    const counts: Record<string, number> = {}
+    for (const event of await listEvents()) {
+        counts[event.format] = (counts[event.format] ?? 0) + 1
+    }
+    return counts
+}
+
+export async function listMatchplayEvents(): Promise<MatchplayEvent[]> {
+    const events = await listEvents()
+    return events.filter((e): e is MatchplayEvent => e.format === EventFormat.Matchplay)
+}
+
+/**
+ * Undefined for an id that is not a matchplay event, the same as for one that
+ * does not exist: a caller holding a matchplay route has no use for a Hector
+ * event, and conflating the two here would push the check into every page.
+ */
 export async function getMatchplayEvent(id: string): Promise<MatchplayEvent | undefined> {
     const doc = await firestore().collection(EVENTS).doc(id).get()
-    return doc.exists ? parse<MatchplayEvent>(matchplayEventSchema, doc.data(), id) : undefined
+    if (!doc.exists) return undefined
+    const event = parse<Event>(genericEventSchema, doc.data(), id)
+    return event?.format === EventFormat.Matchplay ? event : undefined
 }
 
 /**

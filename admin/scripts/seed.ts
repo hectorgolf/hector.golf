@@ -6,25 +6,22 @@
  * writes with, so a file that would not survive a round trip fails here rather
  * than at render time.
  *
- *   FIRESTORE_EMULATOR_HOST=localhost:8080 npx tsx scripts/seed.ts
+ *   npm run seed                                    # the real database
+ *   FIRESTORE_EMULATOR_HOST=localhost:8432 npm run seed
  */
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { Firestore } from '@google-cloud/firestore'
 import { glob } from 'glob'
 
-import { matchplayEventSchema } from '@hector/schemas/src/events.ts'
+import { genericEventSchema } from '@hector/schemas/src/events.ts'
 import { schema as playerSchema } from '@hector/schemas/src/players.ts'
+import { firestore, reportingStoreErrors, target } from './store.ts'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const dataDir = join(here, '../../astrosite/src/data')
 
-const firestore = new Firestore({
-    projectId: process.env.GOOGLE_CLOUD_PROJECT ?? 'hector-golf',
-    databaseId: process.env.FIRESTORE_DATABASE_ID ?? '(default)',
-})
 
 async function seed(
     collection: string,
@@ -53,7 +50,9 @@ async function seed(
     console.log(`  ${collection}: ${written} written${skipped ? `, ${skipped} skipped` : ''}`)
 }
 
-console.log(`Seeding ${process.env.FIRESTORE_EMULATOR_HOST ?? 'the real database'}…`)
-await seed('events', 'events/matchplay/*.json', matchplayEventSchema)
-await seed('players', 'players/*.json', playerSchema)
+console.log(`Seeding ${target}…`)
+await reportingStoreErrors(async () => {
+    await seed('events', 'events/**/*.json', genericEventSchema)
+    await seed('players', 'players/*.json', playerSchema)
+})
 console.log('Done.')

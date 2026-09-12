@@ -1,9 +1,10 @@
 ---
-import AdminLayout from '../../layouts/AdminLayout.astro'
+import AdminLayout from '../../../layouts/AdminLayout.astro'
 import PageHeader from '@hector/ui/components/PageHeader.astro'
+import Breadcrumb from '@hector/ui/components/Breadcrumb.astro'
 import { matchplayEventSchema } from '@hector/schemas/src/events.ts'
-import { eventExists, saveMatchplayEvent } from '../../lib/repository/events.ts'
-import { viewerFromHeaders } from '../../lib/identity.ts'
+import { eventExists, saveMatchplayEvent } from '../../../lib/repository/events.ts'
+import { viewerFromHeaders } from '../../../lib/identity.ts'
 
 let error: string | undefined
 // Keeps what was typed when validation fails, so nothing has to be retyped.
@@ -32,7 +33,7 @@ if (Astro.request.method === 'POST') {
 	} else {
 		const viewer = viewerFromHeaders(Astro.request.headers)
 		await saveMatchplayEvent(parsed.data, viewer.email ?? 'unknown')
-		return Astro.redirect(`/matchplay/${parsed.data.id}`)
+		return Astro.redirect(`/events/matchplay/${parsed.data.id}`)
 	}
 }
 
@@ -40,6 +41,8 @@ const thisYear = new Date().getFullYear()
 ---
 
 <AdminLayout title="New tournament">
+	<Breadcrumb title="Matchplay" href="/events/matchplay" />
+
 	<PageHeader
 		title="New matchplay tournament"
 		lede="It starts in signup, where the field can still change. The bracket is drawn later."
@@ -89,7 +92,7 @@ const thisYear = new Date().getFullYear()
 
 		<div class="actions">
 			<button type="submit">Create</button>
-			<a href="/matchplay"><button type="button" class="secondary">Cancel</button></a>
+			<a href="/events/matchplay"><button type="button" class="secondary">Cancel</button></a>
 		</div>
 	</form>
 </AdminLayout>

@@ -1,14 +1,15 @@
 ---
-import AdminLayout from '../../layouts/AdminLayout.astro'
+import AdminLayout from '../../../layouts/AdminLayout.astro'
 import PageHeader from '@hector/ui/components/PageHeader.astro'
-import Roster from '../../components/Roster.astro'
-import BracketBoard from '../../components/BracketBoard.astro'
+import Breadcrumb from '@hector/ui/components/Breadcrumb.astro'
+import Roster from '../../../components/Roster.astro'
+import BracketBoard from '../../../components/BracketBoard.astro'
 
 import { matchplayStatus, type MatchplayEvent } from '@hector/schemas/src/events.ts'
 import { formatEventDates } from '@hector/schemas/src/dates.ts'
-import { getMatchplayEvent, listPlayers, saveMatchplayEvent } from '../../lib/repository/events.ts'
-import { viewerFromHeaders } from '../../lib/identity.ts'
-import { nameById } from '../../lib/players.ts'
+import { getMatchplayEvent, listPlayers, saveMatchplayEvent } from '../../../lib/repository/events.ts'
+import { viewerFromHeaders } from '../../../lib/identity.ts'
+import { nameById } from '../../../lib/players.ts'
 import {
 	championOf,
 	drawBracket,
@@ -16,10 +17,10 @@ import {
 	nextDrawableSize,
 	orderForDraw,
 	recordResult,
-} from '../../lib/matchplay/bracket.ts'
+} from '../../../lib/matchplay/bracket.ts'
 
 const { id } = Astro.params
-if (!id) return Astro.redirect('/matchplay')
+if (!id) return Astro.redirect('/events/matchplay')
 
 let event: MatchplayEvent | undefined = await getMatchplayEvent(id)
 if (!event) return new Response('Tournament not found', { status: 404 })
@@ -88,6 +89,8 @@ const champion = event.results?.bracket ? championOf(event.results.bracket) : un
 ---
 
 <AdminLayout title={event.name}>
+	<Breadcrumb title="Matchplay" href="/events/matchplay" />
+
 	<div class="row-between">
 		<PageHeader
 			title={event.name}
