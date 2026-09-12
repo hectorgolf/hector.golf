@@ -488,17 +488,34 @@ In [Search Console](https://search.google.com/search-console/welcome), click the
 property, find the **Verified owners** list, click **Add an owner**, and enter the service account's
 address — the field takes a service account id exactly as it takes a person's.
 
-Not **Users and permissions**, which is the door that looks right and is not: it grants *Full* or
-*Restricted*, and neither is ownership. Only the verified owners list confers what the domain
-mapping checks.
-
 ```bash
 gcloud iam service-accounts list --project="$PROJECT_ID" \
   --filter="email~^terraform-ci@" --format="value(email)"
 ```
 
-This is only needed when a service account creates the mapping. Applying from a laptop as the person
-who verified the domain does not need it, which is why it is easy to miss.
+**Check which property you are on.** Search Console can hold two entries for the same name, and they
+are not the same thing:
+
+| Property | Shown as | Covers |
+| --- | --- | --- |
+| URL prefix | `https://hector.golf` | that prefix only — **not** subdomains |
+| Domain | `hector.golf` | the domain and every subdomain, any protocol |
+
+`admin.hector.golf` is a subdomain, so the owner has to be added to the **Domain** property. Adding
+it to the URL-prefix one succeeds, looks done, and changes nothing about whether the mapping is
+allowed. If only a URL-prefix property exists, create the Domain property — `gcloud domains verify
+hector.golf` again, choosing the domain option — and verify it by DNS TXT.
+
+And not **Users and permissions**, which is the door that looks right and is not: it grants *Full*
+or *Restricted*, and neither is ownership. Only the verified owners list confers what the domain
+mapping checks.
+
+Nothing on the command line confirms this step. `gcloud domains list-user-verified` reports what
+*your* account has verified, prints the bare domain for either property type, and says nothing about
+the service account — so a reassuring answer from it is not evidence the step is done.
+
+All of this is only needed when a service account creates the mapping. Applying from a laptop as the
+person who verified the domain does not need it, which is why it is easy to miss.
 
 **3. Turn the mapping on.** Set `admin_domain = "admin.hector.golf"` in `terraform.tfvars`, and the
 `TF_ADMIN_DOMAIN` repository variable so CI plans the same thing, then apply. A repository variable
@@ -601,7 +618,7 @@ Really deleting it takes two deliberate steps: set `delete_protection_state` to
 | `SERVICE_DISABLED`, e.g. `Identity and Access Management (IAM) API has not been used in project … before or it is disabled` | The API is missing from `apis.tf`, or a resource that needs it has no `depends_on` and got created first. Enable it by hand — `gcloud services enable <api> --project=hector-golf` — then add both to `apis.tf` so it does not recur. Enabling by hand is not optional once the affected resources already exist: `depends_on` orders *creation*, and Terraform refreshes everything in state before it applies anything, so the refresh fails before it can reach the resource that would enable the API. Allow a few minutes for the enablement to propagate before re-running, or you will see the same error against an API that is already on |
 | A plan proposes `client_id = "…" -> null` on `google_iap_settings` | The OAuth secrets are not reaching that run, and applying it would clear IAP's client and lock the service. `TF_IAP_OAUTH_CLIENT_ID` / `TF_IAP_OAUTH_CLIENT_SECRET` are missing or misnamed — an unset GitHub secret arrives as an empty string, so check the names rather than assuming they are unset |
 | CI: `Permission 'iap.webServices.getSettings' denied` | `roles/iap.admin` does not include IAP *settings* — it only carries the getIamPolicy/setIamPolicy pair for who may sign in. `roles/iap.settingsAdmin` is a separate role and `terraform-ci` needs both. As with any role the CI identity is missing, grant it out of band or re-apply locally, because CI cannot grant itself what it needs in order to plan. Give the grant a minute or two to propagate before re-running — like API enablement, an IAM change is not visible to the next request immediately, so an unchanged error does not mean an unapplied grant |
-| `Error waiting to create DomainMapping: … Caller is not authorized to administer the domain admin.hector.golf` | The domain is verified, but not to the account doing the mapping. Verification is per account: CI applies as `terraform-ci@…`, so a browser verification done as yourself does not carry over. Add the service account to the **Verified owners** list — step 2 above. No IAM role grants this, so there is nothing to look for in `iam.tf`. Terraform marks the half-created mapping `tainted` and replaces it on the next apply, so there is nothing to clean up by hand; `gcloud beta run domain-mappings list` shows it with an `X` until then |
+| `Error waiting to create DomainMapping: … Caller is not authorized to administer the domain admin.hector.golf` | The domain is verified, but not to the account doing the mapping. Verification is per account: CI applies as `terraform-ci@…`, so a browser verification done as yourself does not carry over. Add the service account to the **Verified owners** list of the **Domain** property — step 2 above. Check the property type before concluding it is already done: an owner on the `https://hector.golf` URL-prefix property does not cover a subdomain, and the two properties are easy to mistake for one. No IAM role grants this, so there is nothing to look for in `iam.tf`. Terraform marks the half-created mapping `tainted` and replaces it on the next apply, so there is nothing to clean up by hand; `gcloud beta run domain-mappings list` shows it with an `X` until then |
 | CI: `terraform-ci@… does not have storage.objects.list access to the Google Cloud Storage bucket` | The state bucket grant at the end of step 4 was not run. Authentication is fine; the service account simply cannot read its own state |
 | CI: `Permission denied on resource project` | The `GH_TERRAFORM_SA` variable is wrong, or the WIF binding does not cover this ref. Plan runs on `refs/pull/N/merge`, so the Terraform identity is bound to the repository, not to `main` |
 | CI: `Error acquiring the state lock` | A previous run died holding it. `terraform force-unlock <id>` locally, having first checked no apply is actually running |
