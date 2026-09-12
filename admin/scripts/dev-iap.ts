@@ -31,7 +31,7 @@
  *
  * ## What it is faithful about, and what it is not
  *
- * It sets both identity headers IAP sets, with the `accounts.google.com:` prefix
+ * It sets the identity headers IAP sets, with the `accounts.google.com:` prefix
  * the real thing uses, and it strips those headers off incoming requests exactly
  * as IAP does — a caller cannot hand itself an identity through this any more
  * than through the real proxy.
@@ -41,9 +41,19 @@
  * on the way back in, and the second one is the one that looks like a broken
  * button unless you have seen it.
  *
- * It does **not** issue `x-goog-iap-jwt-assertion`. Nothing verifies that today;
- * the day something does, this needs a keypair and a JWKS endpoint, and a fake
- * unsigned token in the meantime would only teach the verifier to accept one.
+ * It sets `x-goog-iap-jwt-assertion` to a sentence rather than a token. Omitting
+ * it would have been the cautious-looking choice and is the worse one: a request
+ * that carries the header in production and not locally is a difference a future
+ * verifier meets as "header missing", and the tempting local fix for that is to
+ * stop requiring it. Presence is therefore faithful and only the value is not —
+ * and the value cannot be mistaken for one, since it does not parse as a JWT in
+ * any library and says in plain English what it is and where it came from. A
+ * verifier that meets it fails with that sentence in the error, which is a
+ * better first clue than "invalid signature".
+ *
+ * What it deliberately is not is a *signed* token. A fake one that verified
+ * would teach the verifier to accept fakes; the day a real assertion is needed
+ * locally, this needs a keypair and a JWKS endpoint, and that is the honest cost.
  *
  * ## Where it may run
  *
@@ -66,6 +76,16 @@ const PROVIDER = 'accounts.google.com'
 
 /** Where the chosen account is kept. Named for what it is, so it is never mistaken for IAP's own. */
 export const COOKIE = 'dev_iap_user'
+
+/**
+ * What goes in `x-goog-iap-jwt-assertion` instead of a token.
+ *
+ * Not a JWT and not shaped like one: no dots, no base64url, nothing any library
+ * will take apart and nothing that can be made to verify. What it is instead is
+ * legible — a verifier that meets it reports this sentence, which says both what
+ * happened and which file to go and read.
+ */
+export const JWT_ASSERTION_STAND_IN = '<OMITTED WHEN RUNNING LOCALLY - dev-iap stand-in, not a JWT>'
 
 /** Under this prefix the stand-in answers for itself; everything else is proxied. */
 export const SIGN_IN_PATH = '/_dev_iap/sign-in'
@@ -119,12 +139,16 @@ export function safeContinue(value: string | null | undefined): string {
  * The id is derived from the address rather than random so that it is stable
  * across restarts, the way a real subject id is. It is not a Google subject id
  * and is not meant to pass for one; nothing reads it today.
+ *
+ * All three headers IAP sets are here, the assertion included — see
+ * `JWT_ASSERTION_STAND_IN` for why it carries a sentence rather than a token.
  */
 export function identityHeaders(email: string): Record<string, string> {
     const digest = createHash('sha256').update(email).digest('hex').slice(0, 15)
     return {
         'x-goog-authenticated-user-email': `${PROVIDER}:${email}`,
         'x-goog-authenticated-user-id': `${PROVIDER}:${BigInt(`0x${digest}`)}`,
+        'x-goog-iap-jwt-assertion': JWT_ASSERTION_STAND_IN,
     }
 }
 

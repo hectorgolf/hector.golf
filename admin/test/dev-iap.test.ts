@@ -4,6 +4,7 @@ import { viewerFromHeaders } from '../src/lib/identity.ts'
 import {
     accountsFrom,
     identityHeaders,
+    JWT_ASSERTION_STAND_IN,
     readCookie,
     safeContinue,
     withoutSpoofedIdentity,
@@ -24,6 +25,24 @@ describe('the headers the stand-in sets', () => {
         // compared against a string this file also wrote.
         expect(viewer).toEqual({ email: 'someone@example.com', authenticated: true })
         expect(headers['x-goog-authenticated-user-id']).toMatch(/^accounts\.google\.com:\d+$/)
+    })
+
+    /**
+     * The assertion is present because production's requests carry it, and a
+     * verifier written later should meet the same shape of request locally as it
+     * will in the cloud — "header missing" is a difference whose tempting local
+     * fix is to stop requiring the header at all. The value is the part that
+     * cannot be faithful, so it is made unmistakable instead.
+     */
+    it('carry a JWT assertion that no library could take for a token', () => {
+        const assertion = identityHeaders('someone@example.com')['x-goog-iap-jwt-assertion']
+
+        expect(assertion).toBe(JWT_ASSERTION_STAND_IN)
+        // Three dot-separated base64url segments is the whole of a JWT's shape.
+        expect(assertion).not.toMatch(/^[\w-]+\.[\w-]+\.[\w-]*$/)
+        expect(assertion).toContain('not a JWT')
+        // Legal in a header value, which is the one way this could fail at runtime.
+        expect(() => new Headers(identityHeaders('someone@example.com'))).not.toThrow()
     })
 
     it('give an account the same id every time, the way a subject id is stable', () => {
