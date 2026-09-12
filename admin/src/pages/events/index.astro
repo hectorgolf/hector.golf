@@ -1,0 +1,93 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro'
+import PageHeader from '@hector/ui/components/PageHeader.astro'
+import { EVENT_FAMILIES } from '../../lib/sections.ts'
+import { listMatchplayEvents } from '../../lib/repository/events.ts'
+
+/**
+ * Counts come from the store rather than being hard-coded, so a family that
+ * reads zero is telling the truth about the database rather than about whether
+ * anyone has built the page yet. `undefined` means the store could not be
+ * reached; zero means it could and there is nothing there.
+ */
+const counts: Record<string, number | undefined> = {}
+let error: string | undefined
+
+try {
+	counts.matchplay = (await listMatchplayEvents()).length
+} catch {
+	// The reason goes to Cloud Logging; the page says only that it failed.
+	error = 'Could not read the events. Check the service logs.'
+}
+---
+
+<AdminLayout title="Events">
+	<PageHeader title="Events" lede="Every event Hector has run, by the format it was played in." />
+
+	{error && <p class="notice bad">{error}</p>}
+
+	<div class="families">
+		{
+			EVENT_FAMILIES.map((family) => (
+				<article class:list={['card', 'family-card', { soon: !family.available }]}>
+					<h2>
+						{family.available ? (
+							<a href={`/events/${family.slug}`}>{family.label}</a>
+						) : (
+							family.label
+						)}
+						{!family.available && <span class="pill pill-outline">Not built yet</span>}
+					</h2>
+					<p>{family.blurb}</p>
+					{family.available && counts[family.slug] !== undefined && (
+						<p class="count">
+							{counts[family.slug]}{' '}
+							{counts[family.slug] === 1 ? 'event' : 'events'}
+						</p>
+					)}
+				</article>
+			))
+		}
+	</div>
+</AdminLayout>
+
+<style>
+	.families {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+		gap: 1rem;
+	}
+
+	.family-card {
+		padding: 1.1rem 1.25rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+	}
+
+	.family-card h2 {
+		margin: 0;
+		font-size: 1.05rem;
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		flex-wrap: wrap;
+	}
+
+	.family-card p {
+		margin: 0;
+		color: var(--text-muted);
+		font-size: 0.9rem;
+	}
+
+	.family-card .count {
+		margin-top: auto;
+		padding-top: 0.4rem;
+		font-variant-numeric: tabular-nums;
+		color: var(--text);
+	}
+
+	.family-card.soon {
+		opacity: 0.6;
+	}
+</style>
