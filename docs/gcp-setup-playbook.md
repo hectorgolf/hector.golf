@@ -459,12 +459,12 @@ gcloud run services describe hector-admin --region="$REGION" \
 
 ## Optional — a custom domain for the admin service
 
-`admin.hector.golf` instead of the `run.app` URL. Three steps, and the DNS record is the last of
+`admin.hector.golf` instead of the `run.app` URL. Four steps, and the DNS record is the last of
 them, because Google emits the exact record from the mapping rather than it being something to type
 from memory.
 
 **1. Verify the base domain.** Mapping `admin.hector.golf` requires ownership of `hector.golf` to be
-verified for this project. `gcloud domains list-user-verified` shows whether it already is.
+verified. `gcloud domains list-user-verified` shows whether it already is.
 
 ```bash
 gcloud domains verify hector.golf
@@ -473,10 +473,40 @@ gcloud domains verify hector.golf
 That opens Search Console and asks for a TXT record at the registrar. Terraform cannot do this step,
 which is why the mapping is off by default — an apply before verification fails.
 
-**2. Turn the mapping on.** Set `admin_domain = "admin.hector.golf"` in `terraform.tfvars`, and the
-`TF_ADMIN_DOMAIN` repository variable so CI plans the same thing, then apply.
+One wrinkle at this registrar: a CNAME at the apex shadows TXT records, so the TXT method can fail
+while the DNS is otherwise fine. The HTML file or meta tag method avoids it, and so does removing
+the apex CNAME — but do not remove it casually, because that is what points `hector.golf` at GitHub
+Pages.
 
-**3. Add the records it emits.**
+**2. Add the Terraform service account as a domain owner.** Verification is per *account*, not per
+project: a domain is verified to the user who verified it, and only that user can map it. The apply
+runs in CI as `terraform-ci@PROJECT_ID.iam.gserviceaccount.com`, so verifying the domain in your own
+browser does not let CI map it. Skipping this produces a permission error on apply that reads like
+an IAM problem and is not one — no role grants it, because it is not IAM.
+
+In [Search Console](https://search.google.com/search-console), open the `hector.golf` property →
+**Settings** → **Users and permissions** → **Add user**. Enter the service account's address and
+give it **Owner**; the field takes a service account id exactly as it takes a person's.
+
+```bash
+gcloud iam service-accounts list --project="$PROJECT_ID" \
+  --filter="email~^terraform-ci@" --format="value(email)"
+```
+
+This is only needed when a service account creates the mapping. Applying from a laptop as the person
+who verified the domain does not need it, which is why it is easy to miss.
+
+**3. Turn the mapping on.** Set `admin_domain = "admin.hector.golf"` in `terraform.tfvars`, and the
+`TF_ADMIN_DOMAIN` repository variable so CI plans the same thing, then apply. A repository variable
+is not a file, so it changes nothing under `terraform/` and will not trigger the apply workflow on
+its own — run it by hand:
+
+```bash
+gh variable set TF_ADMIN_DOMAIN --body "admin.hector.golf"
+gh workflow run "Terraform apply"
+```
+
+**4. Add the records it emits.** The apply's job summary prints them. From a laptop:
 
 ```bash
 terraform output admin_dns_records

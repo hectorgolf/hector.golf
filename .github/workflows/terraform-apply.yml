@@ -117,4 +117,21 @@ jobs:
             echo "| Admin URL | $(terraform output -raw admin_url) |"
             echo "| Firestore database | $(terraform output -raw firestore_database) |"
             echo "| Image repository | $(terraform output -raw admin_image_repository) |"
+
+            # The domain mapping is the authoritative source for what the DNS
+            # record should be, and reading it used to mean running Terraform on
+            # a laptop. Empty whenever admin_domain is unset, which is the
+            # ordinary case.
+            records="$(terraform output -json admin_dns_records)"
+            if [ "$(jq 'length' <<<"$records")" -gt 0 ]; then
+              echo
+              echo "### DNS records to create at the registrar"
+              echo
+              echo "| Host | Type | Value |"
+              echo "| --- | --- | --- |"
+              jq -r '.[] | "| \(.name // "@") | \(.type) | \(.rrdata) |"' <<<"$records"
+              echo
+              echo "The Google-managed certificate is issued once these resolve:"
+              echo "about 15 minutes, and up to 24 hours."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
