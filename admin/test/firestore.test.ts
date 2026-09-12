@@ -55,3 +55,29 @@ describe('checkFirestore', () => {
         expect(error?.message).toContain('PERMISSION_DENIED')
     })
 })
+
+/**
+ * The service and the scripts have to agree on which database they mean.
+ *
+ * They did not: the library defaulted to `(default)` and the scripts to
+ * `hector`, so on a laptop `npm run seed` filled one database and `npm run dev`
+ * read the other — and the symptom was the admin cheerfully reporting "No
+ * tournaments yet" rather than an error, because a read against a database that
+ * is not there comes back empty.
+ *
+ * Importing the constant is what actually makes them agree; this pins the value
+ * so that a literal reintroduced in either place fails here.
+ */
+describe('the database everything in this workspace talks to', () => {
+    it('is the one Terraform creates, not the default that does not exist', async () => {
+        const { databaseId } = await import('../src/lib/firestore.ts')
+        expect(databaseId).toBe('hector')
+        expect(databaseId).not.toBe('(default)')
+    })
+
+    it('is the same one the scripts write to', async () => {
+        const { databaseId } = await import('../src/lib/firestore.ts')
+        const { target } = await import('../scripts/store.ts')
+        expect(target).toContain(databaseId)
+    })
+})
