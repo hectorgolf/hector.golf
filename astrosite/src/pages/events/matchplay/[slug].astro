@@ -1,9 +1,9 @@
 ---
-import markdownit from 'markdown-it';
 import Layout from '../../../layouts/Layout.astro';
 import Breadcrumb from '@hector/ui/components/Breadcrumb.astro';
 import PageHeader from '@hector/ui/components/PageHeader.astro';
 import CompetitionMark from '@hector/ui/components/CompetitionMark.astro';
+import EventDescription from '@hector/ui/components/EventDescription.astro';
 import SingleEliminationBracketV2 from '../../../components/events/SingleEliminationBracketV2.astro';
 import { type MatchplayEvent } from '@hector/schemas/src/events.ts';
 import { type Player } from '@hector/schemas/src/players.ts';
@@ -29,9 +29,6 @@ const field: Array<Player> = event.participants
     .map(id => getPlayerById(id))
     .filter(p => !!p)
     .sort((p1, p2) => p1!.name.last.localeCompare(p2!.name.last)) as Array<Player> || []
-
-const md = markdownit()
-const eventDescriptionHtml = event.description ? md.render(event.description) : '';
 ---
 
 <Layout title={event.name} section="events">
@@ -50,7 +47,7 @@ const eventDescriptionHtml = event.description ? md.render(event.description) : 
             </figure>
         )}
 
-        <div class="description" set:html={eventDescriptionHtml} />
+        <EventDescription text={event.description} />
 
         {event.results?.winners?.matchplay && getPlayerById(event.results.winners.matchplay) && (
             <section class="section">
@@ -108,10 +105,6 @@ const eventDescriptionHtml = event.description ? md.render(event.description) : 
 
     .event-hero img {
         max-height: 320px;
-    }
-
-    .description {
-        color: var(--text-muted);
     }
 
     .champion {
