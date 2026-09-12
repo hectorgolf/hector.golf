@@ -7,18 +7,9 @@
  */
 import { Firestore } from '@google-cloud/firestore'
 
-const PROJECT = process.env.GOOGLE_CLOUD_PROJECT ?? 'hector-golf'
+import { databaseId as DATABASE } from '../src/lib/firestore.ts'
 
-/**
- * Not `(default)`.
- *
- * Terraform names this project's database `hector`, and there is no default
- * database in the project at all — so `(default)` is not a safe fallback here,
- * it is a guaranteed failure. It also fails badly: Firestore answers a read on a
- * database that does not exist with `5 NOT_FOUND` and an empty message, which
- * reads like an empty collection rather than the wrong database.
- */
-const DATABASE = process.env.FIRESTORE_DATABASE_ID ?? 'hector'
+const PROJECT = process.env.GOOGLE_CLOUD_PROJECT ?? 'hector-golf'
 
 /** Printed before anything happens, so the wrong target is visible immediately. */
 export const target = process.env.FIRESTORE_EMULATOR_HOST

@@ -1,12 +1,22 @@
 import { Firestore } from '@google-cloud/firestore'
 
 /**
- * Which database to talk to. Set by `terraform/cloud_run.tf` from the database
- * resource, so the deployed service and the Terraform that created the database
- * cannot disagree. Unset locally, where the client falls back to `(default)` —
- * a *different* database, and one this project has no free tier left to spare.
+ * Which database to talk to, for everything in this workspace — the service and
+ * the scripts both, which is the point.
+ *
+ * Deployed, `terraform/cloud_run.tf` sets FIRESTORE_DATABASE_ID from the
+ * database resource, so the service and the Terraform that created the database
+ * cannot disagree. The default below is what a laptop uses.
+ *
+ * It is `hector` and not `(default)` because this project has no default
+ * database — Terraform creates exactly one and names it. `(default)` is not a
+ * safe fallback here, it is a guaranteed miss, and it misses quietly: reads come
+ * back empty rather than failing, so the admin renders "No tournaments yet"
+ * about a database that does not exist. `scripts/store.ts` imports this rather
+ * than repeating it, because when the two disagreed `npm run seed` filled one
+ * database while `npm run dev` read the other.
  */
-export const databaseId = process.env.FIRESTORE_DATABASE_ID ?? '(default)'
+export const databaseId = process.env.FIRESTORE_DATABASE_ID ?? 'hector'
 
 /**
  * Built on first use, not at import time: constructing it resolves credentials,
