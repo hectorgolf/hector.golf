@@ -49,6 +49,7 @@ async function seed(
 ): Promise<void> {
     const files = await glob(pattern, { cwd: dataDir, absolute: true })
     let written = 0
+    let unchanged = 0
     let skipped = 0
 
     for (const file of files) {
@@ -58,15 +59,29 @@ async function seed(
             skipped += 1
             continue
         }
-        await firestore.collection(collection).doc(parsed.data.id).set({
-            doc: JSON.stringify(parsed.data),
-            updatedAt: new Date().toISOString(),
-            updatedBy: 'seed',
-        })
+
+        const doc = JSON.stringify(parsed.data)
+        const ref = firestore.collection(collection).doc(parsed.data.id)
+
+        // Read before writing, so a document that has not changed is left alone.
+        // This runs twice a day on a schedule: writing all sixty every time would
+        // burn the free tier's write quota on nothing, and — worse — make
+        // `updatedAt` mean "when the seed last ran" rather than "when this last
+        // changed", which is the field the ownership rules will lean on.
+        const existing = (await ref.get()).data() as { doc?: string } | undefined
+        if (existing?.doc === doc) {
+            unchanged += 1
+            continue
+        }
+
+        await ref.set({ doc, updatedAt: new Date().toISOString(), updatedBy: 'seed' })
         written += 1
     }
 
-    console.log(`  ${label}: ${written} written${skipped ? `, ${skipped} skipped` : ''}`)
+    const parts = [`${written} written`]
+    if (unchanged) parts.push(`${unchanged} unchanged`)
+    if (skipped) parts.push(`${skipped} skipped`)
+    console.log(`  ${label}: ${parts.join(', ')}`)
 }
 
 const bootstrap = process.argv.includes('--bootstrap')

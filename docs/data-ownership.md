@@ -140,12 +140,21 @@ destroys whichever edit is younger — silently, in whichever direction was run 
 | `npm run export` | Firestore → committed files | matchplay |
 | `npm run seed` | committed files → Firestore | everything *except* matchplay |
 
+The seed reads each document before writing it and leaves the unchanged ones alone, so a quiet run
+costs no writes and `updatedAt` keeps meaning "when this last changed" rather than "when the seed
+last ran".
+
 `admin/src/lib/ownership.ts` holds the one list both read, with the mirrored set derived from the
 owned set rather than restated, so a format cannot be added to one and forgotten in the other.
 
-`npm run seed` is the repair for a stale mirror, and nothing refreshes it automatically — after a
-scrape the admin's roster shows the handicaps it had at the last seed. That is exactly why the seed
-must not touch matchplay: the routine repair would otherwise revert an unexported tournament.
+The mirror refreshes itself. **Refresh the admin's mirror** runs `npm run seed` whenever one of the
+four scrapes finishes, on `workflow_run` rather than a clock — a cron would be a guess at how long a
+scrape takes, and it would be wrong on the day the scrape is slow, which is the day the data moved
+most. So the roster shows the handicaps WiseGolf last reported, not the ones current when somebody
+last ran the seed by hand.
+
+That is also why the seed must not touch matchplay. It now runs unattended, twice a day: if it wrote
+the owned formats it would revert an unexported tournament without anybody having typed a command.
 
 For a new project where Firestore holds nothing, `npm run seed -- --bootstrap` imports the owned
 formats as well. It refuses if any event it would overwrite was last written by someone other than

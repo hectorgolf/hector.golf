@@ -100,22 +100,24 @@ resource "google_artifact_registry_repository_iam_member" "admin_deployer_push" 
 
 # Deploying a service that runs as another identity means acting as it. Scoped
 # to the one runtime service account rather than granted project-wide.
-# Read-only Firestore, for the export workflow that publishes admin edits into
-# the committed data files.
+# Firestore documents, for the two workflows that move data in and out:
+# export-admin-data.yml reads, and refresh-admin-mirror.yml writes the scraped
+# players and Hector events back into the mirror the admin UI reads.
 #
-# On this service account rather than a fourth identity, because the separation
-# would be decorative: admin_deployer already holds roles/run.developer over a
-# service whose runtime identity has roles/datastore.user, so it can already read
-# every document by deploying a container that does. A direct viewer grant adds
-# no reach it does not have, and it avoids a third CI identity with its own
-# workload-identity binding and repository variable for the one person setting
-# this up.
+# This was datastore.viewer when only the export existed. The refresh needs to
+# write, so it is datastore.user now — read and write documents, but not create,
+# delete or reconfigure a database, the same ceiling the runtime identity has.
 #
-# datastore.viewer, not user: the export publishes what the admin wrote and has
-# no business writing back.
-resource "google_project_iam_member" "admin_deployer_firestore_read" {
+# On this service account rather than a separate one, because the separation
+# would be decorative rather than real: admin_deployer holds run.developer over
+# the admin service and serviceAccountUser over its runtime identity, which has
+# datastore.user. It can therefore already write any document by deploying a
+# container that does. Granting it directly adds convenience, not reach. If that
+# stops being true — if the deployer ever loses the ability to act as the runtime
+# identity — this should become its own service account.
+resource "google_project_iam_member" "admin_deployer_firestore" {
   project = var.project_id
-  role    = "roles/datastore.viewer"
+  role    = "roles/datastore.user"
   member  = google_service_account.admin_deployer.member
 }
 

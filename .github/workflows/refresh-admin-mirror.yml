@@ -1,0 +1,92 @@
+# Bring Firestore's copy of the scraped data up to date with the committed files.
+#
+# The admin reads players and Hector events out of Firestore, but it does not
+# own them: the scheduled scrapes write those files, and Firestore holds a mirror
+# for the UI to read. Nothing refreshed that mirror, so the admin's roster showed
+# whatever handicaps were current the last time somebody ran the seed by hand —
+# frozen, while the real ones moved twice a day.
+#
+# It runs when a scrape finishes rather than on a clock of its own. A cron would
+# be a guess about how long the scrape takes, and the guess would be wrong on the
+# day the scrape is slow — which is exactly the day the data changed most.
+#
+# This never touches matchplay. The seed refuses to, because that is the one
+# thing the admin authors and Firestore is its only copy until it is exported.
+# See docs/data-ownership.md.
+name: Refresh the admin's mirror
+
+on:
+  workflow_run:
+    workflows:
+      - "Update players' official handicaps"
+      - "Update tournament leaderboards"
+      - "Update players' biographies"
+      - "Update club memberships"
+    types:
+      - completed
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+# One at a time. Two of these can otherwise overlap when two scrapes finish
+# together, and they would race to write the same documents.
+concurrency:
+  group: "refresh-admin-mirror"
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    name: Refresh
+    runs-on: ubuntu-latest
+    # A scrape that failed may have written nothing, or written half of what it
+    # meant to. Mirroring that is not useful, and the next successful run will
+    # bring everything across anyway.
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Checkout
+        # A workflow_run job checks out the default branch by default, which is
+        # what we want: the scrape has already committed and pushed there. Being
+        # explicit so that is a decision rather than a default someone inherits.
+        uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - name: Check the project is configured
+        id: guard
+        run: |
+          if [ -n "${{ vars.GH_WIF_PROVIDER }}" ] && [ -n "${{ vars.GH_DEPLOYER_SA }}" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::GH_WIF_PROVIDER or GH_DEPLOYER_SA is unset, so there is no project to refresh. See docs/gcp-setup-playbook.md."
+          fi
+
+      - name: Setup Node
+        if: steps.guard.outputs.configured == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        if: steps.guard.outputs.configured == 'true'
+        run: npm ci
+
+      - name: Authenticate to Google Cloud
+        if: steps.guard.outputs.configured == 'true'
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GH_WIF_PROVIDER }}
+          service_account: ${{ vars.GH_DEPLOYER_SA }}
+
+      - name: Refresh
+        if: steps.guard.outputs.configured == 'true'
+        id: refresh
+        run: npm run seed | tee "$GITHUB_STEP_SUMMARY"
+        working-directory: admin
+        env:
+          GOOGLE_CLOUD_PROJECT: ${{ vars.GCP_PROJECT_ID }}
