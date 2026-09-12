@@ -30,11 +30,18 @@ export function getPlayerById(id: string): Player|undefined {
         return undefined
     }
     const player = PlayerSchema.parse(_record);
-    // TODO: update handicap from handicap history, allowing the player data ("src/data/players/{id}.json")
-    // to manually override the history data:
+    // A hand-set handicap is a stopgap for a player WiseGolf has no figure for,
+    // and `update-handicaps.ts` replaces it as soon as there is a real one — see
+    // docs/data-ownership.md. So the stored value wins here only because CI has
+    // not overwritten it yet, which is the intended precedence.
+    //
+    // `??` and not `||`: a scratch player's handicap is 0, and 0 is falsy, so
+    // `||` discarded it and fell through to the history — leaving `undefined`
+    // when the history was empty, which is precisely the case a stopgap exists
+    // to cover. `events.ts` already resolves the same pair with `??`.
     const handicapFromAPI = getPlayerHandicapById(player.id)
     const handicapOverride = player.handicap
-    player.handicap = handicapOverride || handicapFromAPI
+    player.handicap = handicapOverride ?? handicapFromAPI
     return player
 }
 
