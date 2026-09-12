@@ -130,6 +130,20 @@ now the output. Three things follow:
 `astrosite/src/data/courses/` and `handicaps.json` are further out still: hand-maintained and
 scrape-written respectively, not in Firestore at all, and not seeded.
 
+### Publishing an edit
+
+An edit made in the admin UI lives in Firestore and nowhere else until it is exported. To publish it,
+run the **Export admin data** workflow from the Actions tab. It exports, commits what changed, and
+pushes; the push lands under `astrosite/`, which is what `deploy.yml` watches, so the public site
+rebuilds without a second button.
+
+From a laptop the same thing is `cd admin && npm run export`, then commit the result yourself.
+
+It is manual on purpose. An export publishes whatever is in the store at that moment, so a schedule
+would eventually publish a bracket drawn but not yet corrected, or a result typed into the wrong
+match. Pressing a button when you mean it is the right amount of ceremony for a tournament that runs
+a few times a month.
+
 ### Nothing enforces the rule
 
 This is a note, not a mechanism. A hand-edit to a generated file is lost silently at the next export,

@@ -100,6 +100,25 @@ resource "google_artifact_registry_repository_iam_member" "admin_deployer_push" 
 
 # Deploying a service that runs as another identity means acting as it. Scoped
 # to the one runtime service account rather than granted project-wide.
+# Read-only Firestore, for the export workflow that publishes admin edits into
+# the committed data files.
+#
+# On this service account rather than a fourth identity, because the separation
+# would be decorative: admin_deployer already holds roles/run.developer over a
+# service whose runtime identity has roles/datastore.user, so it can already read
+# every document by deploying a container that does. A direct viewer grant adds
+# no reach it does not have, and it avoids a third CI identity with its own
+# workload-identity binding and repository variable for the one person setting
+# this up.
+#
+# datastore.viewer, not user: the export publishes what the admin wrote and has
+# no business writing back.
+resource "google_project_iam_member" "admin_deployer_firestore_read" {
+  project = var.project_id
+  role    = "roles/datastore.viewer"
+  member  = google_service_account.admin_deployer.member
+}
+
 resource "google_service_account_iam_member" "admin_deployer_act_as" {
   service_account_id = google_service_account.admin_runtime.name
   role               = "roles/iam.serviceAccountUser"
