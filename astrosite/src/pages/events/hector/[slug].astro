@@ -5,6 +5,7 @@ import CourseCard from '../../../components/courses/CourseCard.astro'
 import RoundsList from '../../../components/events/RoundsList.astro'
 import PageHeader from '@hector/ui/components/PageHeader.astro'
 import CompetitionMark from '@hector/ui/components/CompetitionMark.astro'
+import EventDescription from '@hector/ui/components/EventDescription.astro'
 import { type HectorEvent } from '@hector/schemas/src/events.ts'
 import { type Course } from '@hector/schemas/src/courses.ts'
 import { type Player } from '@hector/schemas/src/players.ts'
@@ -83,8 +84,6 @@ const allThrough = Math.min(...(leaderboards.hector || [])
     .map(through => parseInt(through.split('/')[0] || '0')))
 
 const fieldAndBucketsTitle = eventHasStarted(event) ? 'Field and buckets' : 'Field and Projected Buckets'
-
-const description = event.description ? event.description.split(/\n+/) : []
 ---
 
 <Layout title={event.name} section="events">
@@ -107,13 +106,7 @@ const description = event.description ? event.description.split(/\n+/) : []
             </figure>
         )}
 
-        {description.length > 0 && (
-            <div class="description">
-                {description.map((paragraph) => (
-                    <p>{paragraph}</p>
-                ))}
-            </div>
-        )}
+        <EventDescription text={event.description} />
 
         {(hectorWinners.length > 0 || victorWinners.length > 0) && (
             <section class="section">
@@ -267,10 +260,6 @@ const description = event.description ? event.description.split(/\n+/) : []
 
     .event-hero img {
         max-height: 320px;
-    }
-
-    .description {
-        color: var(--text-muted);
     }
 
     .champions {
