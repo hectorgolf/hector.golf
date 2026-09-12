@@ -5,6 +5,7 @@
   "description": "Admin UI and API for hector.golf. Astro SSR on Cloud Run, behind IAP.",
   "scripts": {
     "dev": "astro dev",
+    "dev:iap": "tsx scripts/dev-iap.ts",
     "build": "astro check && astro build",
     "preview": "astro preview",
     "start": "node ./dist/server/entry.mjs",
