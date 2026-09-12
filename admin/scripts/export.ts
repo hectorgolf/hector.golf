@@ -20,20 +20,17 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { Firestore } from '@google-cloud/firestore'
 import { glob } from 'glob'
 
 import { genericEventSchema, type Event } from '@hector/schemas/src/events.ts'
 import { serializeJson } from '@hector/schemas/src/json.ts'
 import { schema as playerSchema, type Player } from '@hector/schemas/src/players.ts'
 
+import { firestore, reportingStoreErrors, target } from './store.ts'
+
 const here = dirname(fileURLToPath(import.meta.url))
 const dataDir = join(here, '../../astrosite/src/data')
 
-const firestore = new Firestore({
-    projectId: process.env.GOOGLE_CLOUD_PROJECT ?? 'hector-golf',
-    databaseId: process.env.FIRESTORE_DATABASE_ID ?? '(default)',
-})
 
 /**
  * Reads a collection and validates every document on the way out.
@@ -125,10 +122,12 @@ function sync(label: string, files: Map<string, unknown>, existing: string[]): v
     for (const rel of removed) console.log(`    removed ${rel}`)
 }
 
-console.log(`Exporting from ${process.env.FIRESTORE_EMULATOR_HOST ?? 'the real database'}…`)
+console.log(`Exporting from ${target}…`)
 
-const events = await read<Event>('events', genericEventSchema)
-const players = await read<Player>('players', playerSchema)
+const { events, players } = await reportingStoreErrors(async () => ({
+    events: await read<Event>('events', genericEventSchema),
+    players: await read<Player>('players', playerSchema),
+}))
 
 if (events.length === 0 && players.length === 0) {
     // An empty store would otherwise delete every committed data file, which is
