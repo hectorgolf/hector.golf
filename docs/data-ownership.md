@@ -92,23 +92,43 @@ it twice. It lands with the migration, and it is written down here so it does no
 
 ## Where the data lives, and which direction it flows
 
-Firestore is where events and players are authored. `astrosite/src/data/**` is **generated from it**
-by `admin/scripts/export.ts`, and the public site builds from those generated files exactly as it
-always has.
+Firestore is where the admin's data is authored, and the matching files under
+`astrosite/src/data/` are **generated from it** by `admin/scripts/export.ts`. The public site builds
+from those generated files exactly as it always has.
+
+**The export writes only what the admin can author.** Today that is matchplay events and nothing
+else. Firestore holds players and the other event formats too, but as a mirror the admin reads —
+refreshed by `npm run seed` — rather than as their source:
+
+| Data | Authored by | In Firestore | Exported |
+| --- | --- | --- | --- |
+| `events/matchplay/` | the admin UI | source of truth | yes |
+| `events/hector/` | `update-handicaps`, `update-leaderboards` | mirror, for reading | no |
+| `events/finnkampen/` | by hand | mirror, for reading | no |
+| `players/` | `update-handicaps`, `update-player-biographies`, `update-player-club-memberships` | mirror, for reading | no |
+| `handicaps.json`, `courses/` | the scrape / by hand | not in Firestore | no |
+
+Exporting a mirror would publish stale data over a fresh scrape and revert it silently — and because
+the scrape commits its own work, the loss would look like the losing side of a merge nobody
+performed. `update-handicaps` runs twice a day, so that window is hours, not months.
+
+A collection moves into the exported column on the day the admin can author it **and** its scheduled
+writer has been moved to Firestore. Those two things have to happen together: either one alone
+recreates the conflict in the other direction.
 
 The files therefore changed role rather than changing content. They used to be the input; they are
 now the output. Three things follow:
 
-- **Do not hand-edit anything under `astrosite/src/data/events/` or `astrosite/src/data/players/`.**
-  The next export overwrites it without warning. Edit it in the admin UI instead.
+- **Do not hand-edit anything under `astrosite/src/data/events/matchplay/`.** The next export
+  overwrites it without warning. Edit it in the admin UI instead. The other directories are still
+  hand- and scrape-owned, and the export leaves them alone.
 - Deleting an event or a player in the admin deletes its file on the next export. That is deliberate
   — without it, a deletion would be impossible to express and the site would show the thing forever.
 - The site build stays hermetic: no credentials, no network, and a fork can still build it. Git also
   keeps a reviewable history of every change the admin made, so the fix for a bad edit is a revert.
 
-`astrosite/src/data/courses/` and `astrosite/src/data/handicaps/` are **not** part of this. Courses
-are hand-maintained and hand-formatted; handicaps are written by the scheduled scrape. Neither is in
-Firestore and neither is exported.
+`astrosite/src/data/courses/` and `handicaps.json` are further out still: hand-maintained and
+scrape-written respectively, not in Firestore at all, and not seeded.
 
 ### Nothing enforces the rule
 
