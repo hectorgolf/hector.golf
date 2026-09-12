@@ -1,15 +1,13 @@
 {
   "id": "HECTOR2014",
+  "ignore": false,
   "name": "Hector Trophée I",
-  "format": "hector",
   "location": "Pickala Golf, Finland",
   "timing": {
     "start": "2014-08-22",
     "end": "2014-08-22"
   },
-  "courses": [
-    "pickala-forest"
-  ],
+  "description": "The inaugural Hector Trophée competition was held in 2014 at Pickala Golf's Forest Course, marking the beginning of a prestigious amateur golf event that would grow in popularity and reputation over the years. While a markedly small event featuring a somewhat questionable field and a plethora of suspected rules violations, the first Hector Trophée set the stage for future tournaments, showcasing the talent and competitive spirit of amateur golfers from around the world.",
   "participants": [
     "marcus-m",
     "mikko-o",
@@ -23,6 +21,11 @@
     "panu-l",
     "toni-m",
     "tomas-d"
+  ],
+  "format": "hector",
+  "maxStrokesOverPar": 4,
+  "courses": [
+    "pickala-forest"
   ],
   "results": {
     "teams": [
@@ -75,6 +78,5 @@
         "joni-v"
       ]
     }
-  },
-  "description": "The inaugural Hector Trophée competition was held in 2014 at Pickala Golf's Forest Course, marking the beginning of a prestigious amateur golf event that would grow in popularity and reputation over the years. While a markedly small event featuring a somewhat questionable field and a plethora of suspected rules violations, the first Hector Trophée set the stage for future tournaments, showcasing the talent and competitive spirit of amateur golfers from around the world."
+  }
 }

@@ -1,16 +1,12 @@
 {
   "id": "HECTOR2024",
+  "ignore": false,
   "name": "Hector Trophée 2024",
-  "format": "hector",
   "location": "La Finca Golf, Spain",
   "timing": {
     "start": "2024-09-25",
     "end": "2024-09-28"
   },
-  "courses": [
-    "lafinca",
-    "villamartin"
-  ],
   "description": "The world's best amateur golfers will once again face off with each other in Hector Trophée 2024. The tournament will be played at La Finca and Villamartin. The tournament will be played in the classic 4-day stroke play format and the proud winners will be awarded with the prestigious Hector Trophée.",
   "participants": [
     "tommy-g",
@@ -38,6 +34,12 @@
     "pekka-s",
     "janne-v"
   ],
+  "format": "hector",
+  "maxStrokesOverPar": 4,
+  "courses": [
+    "lafinca",
+    "villamartin"
+  ],
   "rounds": [
     {
       "day": 1,
@@ -47,11 +49,11 @@
       "gameFormats": [
         {
           "format": "Stableford NET",
-          "handicapAllowance": 1,
           "competition": [
             "hector",
             "victor"
-          ]
+          ],
+          "handicapAllowance": 1
         },
         {
           "format": "Stroke Play SCR",
@@ -67,17 +69,17 @@
       "gameFormats": [
         {
           "format": "Stroke Play NET",
-          "handicapAllowance": 1,
           "competition": [
             "hector"
-          ]
+          ],
+          "handicapAllowance": 1
         },
         {
           "format": "Stableford NET",
-          "handicapAllowance": 1,
           "competition": [
             "victor"
-          ]
+          ],
+          "handicapAllowance": 1
         }
       ]
     },
@@ -89,17 +91,17 @@
       "gameFormats": [
         {
           "format": "Better Ball Stroke Play NET",
-          "handicapAllowance": 1,
           "competition": [
             "hector"
-          ]
+          ],
+          "handicapAllowance": 1
         },
         {
           "format": "Stableford NET",
-          "handicapAllowance": 1,
           "competition": [
             "victor"
-          ]
+          ],
+          "handicapAllowance": 1
         }
       ]
     },
@@ -111,17 +113,17 @@
       "gameFormats": [
         {
           "format": "Better Ball Stroke Play NET",
-          "handicapAllowance": 1,
           "competition": [
             "hector"
-          ]
+          ],
+          "handicapAllowance": 1
         },
         {
           "format": "Stableford NET",
-          "handicapAllowance": 1,
           "competition": [
             "victor"
-          ]
+          ],
+          "handicapAllowance": 1
         }
       ]
     },
@@ -133,13 +135,13 @@
       "gameFormats": [
         {
           "format": "Scramble Stroke Play NET",
+          "competition": [
+            "hector"
+          ],
           "handicapAllowance": 0.2,
           "openingShotsRequirement": {
             "minimumPerPlayer": 6
-          },
-          "competition": [
-            "hector"
-          ]
+          }
         }
       ]
     },
@@ -151,20 +153,19 @@
       "gameFormats": [
         {
           "format": "Scramble Stroke Play NET",
-          "handicapAllowance": 0.2,
-          "openingShotsRequirement": {
-            "minimumPerPlayer": 6
-          },
           "competition": [
             "hector"
           ],
+          "handicapAllowance": 0.2,
           "birdieBonus": 0.5,
-          "eagleBonus": 1
+          "eagleBonus": 1,
+          "openingShotsRequirement": {
+            "minimumPerPlayer": 6
+          }
         }
       ]
     }
   ],
-  "leaderboardSheet": "https://docs.google.com/spreadsheets/d/1-TPy0oFWMK03q8nPDED2Dh3Thd-uTRCmmhIKIdWlUL8/edit",
   "buckets": [
     [
       {
@@ -364,5 +365,6 @@
         "toni-m"
       ]
     }
-  }
+  },
+  "leaderboardSheet": "https://docs.google.com/spreadsheets/d/1-TPy0oFWMK03q8nPDED2Dh3Thd-uTRCmmhIKIdWlUL8/edit"
 }

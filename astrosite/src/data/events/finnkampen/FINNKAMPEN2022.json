@@ -1,16 +1,12 @@
 {
-  "ignore": true,
   "id": "FINNKAMPEN2022",
+  "ignore": true,
   "name": "Finnkampen 2022",
-  "format": "finnkampen",
   "location": "Kurk Golf, Finland",
   "timing": {
     "start": "2022-10-22",
     "end": "2022-10-22"
   },
-  "courses": [
-    "kurk-golf"
-  ],
   "description": "",
   "participants": [
     "jussi-allonen-hcp070",
@@ -31,6 +27,10 @@
     "marcus-mattila-hcp090",
     "martin-svedholm-hcp089",
     "harri-vainio-hcp110"
+  ],
+  "format": "finnkampen",
+  "courses": [
+    "kurk-golf"
   ],
   "results": {
     "teams": [

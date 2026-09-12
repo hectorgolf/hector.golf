@@ -1,15 +1,13 @@
 {
   "id": "HECTOR2018",
+  "ignore": false,
   "name": "Hector Trophée V",
-  "format": "hector",
   "location": "Sand Valley Golf Resort, Poland",
   "timing": {
     "start": "2018-08-03",
     "end": "2018-08-05"
   },
-  "courses": [
-    "sandvalley"
-  ],
+  "description": "At Sand Valley in Poland, the Hector Trophée VI in 2018 unfolded over August 3-5, featuring a combination of stroke play, stableford, best ball, and scramble. This variety in formats heightened the competitive spirit and showcased the participants’ strategic acumen and resilience towards high levels of alcohol in their blood.",
   "participants": [
     "simo-l",
     "toni-m",
@@ -27,6 +25,11 @@
     "timo-l",
     "miso-l",
     "mikko-o"
+  ],
+  "format": "hector",
+  "maxStrokesOverPar": 4,
+  "courses": [
+    "sandvalley"
   ],
   "results": {
     "teams": [
@@ -93,6 +96,5 @@
         "toni-m"
       ]
     }
-  },
-  "description": "At Sand Valley in Poland, the Hector Trophée VI in 2018 unfolded over August 3-5, featuring a combination of stroke play, stableford, best ball, and scramble. This variety in formats heightened the competitive spirit and showcased the participants’ strategic acumen and resilience towards high levels of alcohol in their blood."
+  }
 }

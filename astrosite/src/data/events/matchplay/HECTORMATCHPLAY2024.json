@@ -1,7 +1,7 @@
 {
   "id": "HECTORMATCHPLAY2024",
+  "ignore": false,
   "name": "Hector Matchplay 2024",
-  "format": "matchplay",
   "location": "Finland",
   "timing": {
     "start": "2024-06-19",
@@ -26,6 +26,7 @@
     "toni-m",
     "ossi-l"
   ],
+  "format": "matchplay",
   "results": {
     "winners": {
       "matchplay": "simo-l"

@@ -1,15 +1,13 @@
 {
   "id": "HECTOR2017",
+  "ignore": false,
   "name": "Hector Trophée IV",
-  "format": "hector",
   "location": "Pickala Golf, Finland",
   "timing": {
     "start": "2017-07-28",
     "end": "2017-07-28"
   },
-  "courses": [
-    "pickala-forest"
-  ],
+  "description": "On July 28, 2017, Hector Trophée returned to Pickala Golf for Hector Trophée V. Incorporating multiple formats into a one-day competitive golf outing, Hector Trophée V is considered by many to have been the last great event before a three-year drop in quality as some of the top players took a hiatus from participating in Hector events through 2018-2019. This format diversity highlighted the players’ tactical skills and endurance.",
   "participants": [
     "toni-m",
     "panu-l",
@@ -27,6 +25,11 @@
     "lauri-s",
     "janne-v",
     "mikael-l"
+  ],
+  "format": "hector",
+  "maxStrokesOverPar": 4,
+  "courses": [
+    "pickala-forest"
   ],
   "results": {
     "teams": [
@@ -93,6 +96,5 @@
         "panu-l"
       ]
     }
-  },
-  "description": "On July 28, 2017, Hector Trophée returned to Pickala Golf for Hector Trophée V. Incorporating multiple formats into a one-day competitive golf outing, Hector Trophée V is considered by many to have been the last great event before a three-year drop in quality as some of the top players took a hiatus from participating in Hector events through 2018-2019. This format diversity highlighted the players’ tactical skills and endurance."
+  }
 }

@@ -35,6 +35,7 @@
     "okko-p"
   ],
   "format": "hector",
+  "maxStrokesOverPar": 4,
   "courses": [
     "emporda-forest",
     "emporda-dunes"
@@ -135,13 +136,13 @@
             "hector"
           ],
           "handicapAllowance": 0.2,
-          "openingShotsRequirement": {
-            "minimumPerPlayer": 6
-          },
           "contribution": {
             "hector": 0.5
           },
-          "teamContribution": "team"
+          "teamContribution": "team",
+          "openingShotsRequirement": {
+            "minimumPerPlayer": 6
+          }
         }
       ]
     },
@@ -189,12 +190,12 @@
           "contribution": {
             "hector": 1
           },
-          "openingShotsRequirement": {
-            "minimumPerPlayer": 6
-          },
           "teamContribution": "team",
           "birdieBonus": 0.5,
-          "eagleBonus": 1
+          "eagleBonus": 1,
+          "openingShotsRequirement": {
+            "minimumPerPlayer": 6
+          }
         }
       ]
     }

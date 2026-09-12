@@ -1,16 +1,13 @@
 {
   "id": "HECTOR2021",
+  "ignore": false,
   "name": "Hector Trophée 2021",
-  "format": "hector",
   "location": "Penati Golf Resort, Slovakia",
   "timing": {
     "start": "2021-09-01",
     "end": "2021-09-04"
   },
-  "courses": [
-    "penati-legend",
-    "penati-heritage"
-  ],
+  "description": "The Hector Trophée 2021, held at the Penati Golf Resort in Slovakia from September 1-4, offered a diverse competition format including stroke play, stableford, best ball, and scramble. This format tested the golfers' adaptability and skill, making for an engaging and multifaceted event.",
   "participants": [
     "pasi-h",
     "olli-a",
@@ -32,6 +29,12 @@
     "miso-l",
     "mikko-o",
     "lasse-k"
+  ],
+  "format": "hector",
+  "maxStrokesOverPar": 4,
+  "courses": [
+    "penati-legend",
+    "penati-heritage"
   ],
   "results": {
     "teams": [
@@ -115,6 +118,5 @@
         "toni-m"
       ]
     }
-  },
-  "description": "The Hector Trophée 2021, held at the Penati Golf Resort in Slovakia from September 1-4, offered a diverse competition format including stroke play, stableford, best ball, and scramble. This format tested the golfers' adaptability and skill, making for an engaging and multifaceted event."
+  }
 }

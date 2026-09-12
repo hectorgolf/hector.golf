@@ -1,16 +1,13 @@
 {
   "id": "HECTOR2022",
+  "ignore": false,
   "name": "Hector Trophée 2022",
-  "format": "hector",
   "location": "Quellness Golf Resort, Germany",
   "timing": {
     "start": "2022-09-14",
     "end": "2022-09-17"
   },
-  "courses": [
-    "quellness-porsche",
-    "quellness-beckenbauer"
-  ],
+  "description": "In 2022, the Quellness Golf Resort in Germany hosted the eclectic Hector Trophée, from September 14-17. This tournament featured a unique mix of stroke play, stableford, best ball, and scramble formats, showcasing the versatility and strategic depth of the world’s elite amateur golfers.",
   "participants": [
     "simo-l",
     "timo-l",
@@ -36,6 +33,12 @@
     "miso-l",
     "jussi-a",
     "pekka-s"
+  ],
+  "format": "hector",
+  "maxStrokesOverPar": 4,
+  "courses": [
+    "quellness-porsche",
+    "quellness-beckenbauer"
   ],
   "results": {
     "teams": [
@@ -133,6 +136,5 @@
         "lassi-k"
       ]
     }
-  },
-  "description": "In 2022, the Quellness Golf Resort in Germany hosted the eclectic Hector Trophée, from September 14-17. This tournament featured a unique mix of stroke play, stableford, best ball, and scramble formats, showcasing the versatility and strategic depth of the world’s elite amateur golfers."
+  }
 }
