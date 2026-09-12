@@ -52,6 +52,41 @@ resource "google_cloud_run_v2_service" "admin" {
         }
         cpu_idle = true
       }
+
+      # Both probes hit /livez, which touches nothing. Pointing them at /readyz
+      # instead would mean an unreachable Firestore stops the service from
+      # starting and then restarts it in a loop — turning a dependency being
+      # down into this service being down too. /readyz stays a thing a human
+      # asks, not a thing that can kill the container.
+      #
+      # Not /healthz: Google's frontend reserves the internal z-page names and
+      # answers them with its own 404 before the container sees them.
+      startup_probe {
+        # failure_threshold * period_seconds is the startup budget and cannot
+        # exceed 240s. 30s is generous for a Node server that binds in under a
+        # second, and the cost of being wrong here is a container shut down
+        # mid-start.
+        period_seconds    = 3
+        timeout_seconds   = 2
+        failure_threshold = 10
+
+        http_get {
+          path = "/livez"
+        }
+      }
+
+      liveness_probe {
+        # ~90s of consecutive failure before a restart. Deliberately slack: the
+        # only thing a restart fixes is a wedged process, and a restart loop on
+        # a service this small is worse than a slow recovery.
+        period_seconds    = 30
+        timeout_seconds   = 3
+        failure_threshold = 3
+
+        http_get {
+          path = "/livez"
+        }
+      }
     }
   }
 
