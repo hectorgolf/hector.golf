@@ -32,8 +32,10 @@ import { fileURLToPath } from 'node:url'
 
 import { glob } from 'glob'
 
-import { EventFormat, genericEventSchema, type Event } from '@hector/schemas/src/events.ts'
+import { genericEventSchema, type Event } from '@hector/schemas/src/events.ts'
 import { serializeJson } from '@hector/schemas/src/json.ts'
+
+import { OWNED_FORMATS } from '../src/lib/ownership.ts'
 
 import { firestore, reportingStoreErrors, target } from './store.ts'
 
@@ -103,11 +105,10 @@ console.log(`Exporting from ${target}…`)
 
 const events = await reportingStoreErrors(() => read<Event>('events', genericEventSchema))
 
-/**
- * The formats the admin can author. Everything else in the store is a mirror it
- * reads and must not publish over whoever does own it.
- */
-const OWNED = new Set<string>([EventFormat.Matchplay])
+// The formats the admin can author. Everything else in the store is a mirror it
+// reads and must not publish over whoever does own it. The seed reads the same
+// list from the other side, so the two cannot start overlapping.
+const OWNED = OWNED_FORMATS
 const owned = events.filter((e) => OWNED.has(e.format))
 
 if (owned.length === 0) {

@@ -130,6 +130,27 @@ now the output. Three things follow:
 `astrosite/src/data/courses/` and `handicaps.json` are further out still: hand-maintained and
 scrape-written respectively, not in Firestore at all, and not seeded.
 
+### The two scripts are complements
+
+They move data in opposite directions and must never cover the same thing, or they form a loop that
+destroys whichever edit is younger — silently, in whichever direction was run last.
+
+| | Direction | Covers |
+| --- | --- | --- |
+| `npm run export` | Firestore → committed files | matchplay |
+| `npm run seed` | committed files → Firestore | everything *except* matchplay |
+
+`admin/src/lib/ownership.ts` holds the one list both read, with the mirrored set derived from the
+owned set rather than restated, so a format cannot be added to one and forgotten in the other.
+
+`npm run seed` is the repair for a stale mirror, and nothing refreshes it automatically — after a
+scrape the admin's roster shows the handicaps it had at the last seed. That is exactly why the seed
+must not touch matchplay: the routine repair would otherwise revert an unexported tournament.
+
+For a new project where Firestore holds nothing, `npm run seed -- --bootstrap` imports the owned
+formats as well. It refuses if any event it would overwrite was last written by someone other than
+the seed, because Firestore is the only copy of those.
+
 ### Publishing an edit
 
 An edit made in the admin UI lives in Firestore and nowhere else until it is exported. To publish it,
