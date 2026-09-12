@@ -8,11 +8,9 @@ import {
     orderForDraw,
     playableMatches,
     recordResult,
-    type Seed,
 } from '../src/lib/matchplay/bracket'
 
-const field = (n: number): Seed[] =>
-    Array.from({ length: n }, (_, i) => ({ id: `p${i + 1}`, handicap: i + 1 }))
+const field = (n: number): string[] => Array.from({ length: n }, (_, i) => `p${i + 1}`)
 
 describe('field sizes', () => {
     it('accepts only powers of two, because anything else leaves a player unpaired', () => {
@@ -26,32 +24,21 @@ describe('field sizes', () => {
     })
 })
 
-describe('seeding', () => {
-    const seeds: Seed[] = [
-        { id: 'scratch', handicap: 0 },
-        { id: 'mid', handicap: 12 },
-        { id: 'high', handicap: 28 },
-        { id: 'low', handicap: 4 },
-    ]
-
-    it('pairs neighbours when asked for similar handicaps', () => {
-        expect(orderForDraw(seeds, 'similar').map((s) => s.id)).toEqual(['scratch', 'low', 'mid', 'high'])
+describe('ordering the field', () => {
+    it('uses the injected shuffle, so a draw can be reproduced', () => {
+        const reverse = (xs: string[]) => [...xs].reverse()
+        expect(orderForDraw(field(4), reverse)).toEqual(['p4', 'p3', 'p2', 'p1'])
     })
 
-    it('folds the field when asked for lowest against highest', () => {
-        expect(orderForDraw(seeds, 'contrast').map((s) => s.id)).toEqual(['scratch', 'high', 'low', 'mid'])
+    it('keeps the whole field, once each, however it shuffles', () => {
+        const ordered = orderForDraw(field(16))
+        expect([...ordered].sort()).toEqual([...field(16)].sort())
     })
 
-    it('sorts a player with no handicap last rather than treating them as scratch', () => {
-        const withUnknown: Seed[] = [{ id: 'unknown' }, { id: 'scratch', handicap: 0 }]
-        expect(orderForDraw(withUnknown, 'similar').map((s) => s.id)).toEqual(['scratch', 'unknown'])
-    })
-
-    it('uses the injected shuffle for random, so a draw can be reproduced', () => {
-        const reverse = (xs: Seed[]) => [...xs].reverse()
-        expect(orderForDraw(seeds, 'random', reverse).map((s) => s.id)).toEqual([
-            'low', 'high', 'mid', 'scratch',
-        ])
+    it('leaves the caller\'s field alone', () => {
+        const original = field(8)
+        orderForDraw(original)
+        expect(original).toEqual(field(8))
     })
 })
 

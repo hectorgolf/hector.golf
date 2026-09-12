@@ -16,8 +16,6 @@ import {
 	nextDrawableSize,
 	orderForDraw,
 	recordResult,
-	type DrawStrategy,
-	type Seed,
 } from '../../lib/matchplay/bracket.ts'
 
 const { id } = Astro.params
@@ -48,12 +46,7 @@ if (Astro.request.method === 'POST') {
 			event = { ...event, participants: event.participants.filter((p) => p !== playerId) }
 			await saveMatchplayEvent(event, by)
 		} else if (action === 'draw') {
-			const strategy = String(form.get('strategy')) as DrawStrategy
-			const seeds: Seed[] = event.participants.map((pid) => ({
-				id: pid,
-				handicap: players.find((p) => p.id === pid)?.handicap,
-			}))
-			const bracket = drawBracket(orderForDraw(seeds, strategy))
+			const bracket = drawBracket(orderForDraw(event.participants))
 			event = {
 				...event,
 				status: 'started',
@@ -125,14 +118,10 @@ const champion = event.results?.bracket ? championOf(event.results.bracket) : un
 					) : (
 						<form method="POST" class="stack">
 							<input type="hidden" name="action" value="draw" />
-							<div class="field">
-								<label for="strategy">Pairing</label>
-								<select id="strategy" name="strategy">
-									<option value="random">Random — shuffle the field and pair them off</option>
-									<option value="similar">Similar handicaps — pair neighbours, so matches are close</option>
-									<option value="contrast">Lowest against highest — fold the field</option>
-								</select>
-							</div>
+							<p class="hint">
+								The field is shuffled and paired off at random. Handicaps play no part, so everyone
+								draws the same way whether or not theirs is on record.
+							</p>
 							<div class="actions">
 								<button type="submit">Draw and start</button>
 								<span class="hint">

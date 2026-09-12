@@ -8,23 +8,7 @@ import type { MatchplayMatch, MatchplayResults } from '@hector/schemas/src/event
  * able to test exhaustively without standing anything up.
  */
 
-export type Seed = { id: string; handicap?: number }
-
-export type DrawStrategy = 'random' | 'similar' | 'contrast'
-
-export const DRAW_STRATEGIES: { value: DrawStrategy; label: string; description: string }[] = [
-    { value: 'random', label: 'Random', description: 'Shuffle the field and pair them off.' },
-    {
-        value: 'similar',
-        label: 'Similar handicaps',
-        description: 'Sort by handicap and pair neighbours, so first-round matches are close.',
-    },
-    {
-        value: 'contrast',
-        label: 'Lowest against highest',
-        description: 'Sort by handicap and pair the top of the field against the bottom.',
-    },
-]
+export type PlayerId = string
 
 /** A field must halve cleanly all the way down, or some players get no match. */
 export function isDrawableFieldSize(size: number): boolean {
@@ -44,52 +28,24 @@ function matchId(index: number): string {
 }
 
 /**
- * A player with no handicap sorts last rather than first. An unknown handicap is
- * missing information, and treating it as scratch would seed a newcomer as the
- * strongest player in the field.
- */
-function byHandicap(a: Seed, b: Seed): number {
-    const ah = a.handicap ?? Number.POSITIVE_INFINITY
-    const bh = b.handicap ?? Number.POSITIVE_INFINITY
-    return ah === bh ? a.id.localeCompare(b.id) : ah - bh
-}
-
-/**
  * Order the field into first-round pairs: the list is read two at a time, so
  * positions 0 and 1 meet, 2 and 3 meet, and so on.
  *
- * `random` takes an injected shuffle so a caller — a test — can make it
- * deterministic without the strategy needing to know it is being tested.
+ * The draw is random for everyone, so it takes ids rather than players. A
+ * handicap is not something it can weigh even by accident, and a player whose
+ * handicap nobody has recorded draws like anybody else.
+ *
+ * The shuffle is injected so a caller — a test — can make it deterministic
+ * without the draw needing to know it is being tested.
  */
 export function orderForDraw(
-    seeds: readonly Seed[],
-    strategy: DrawStrategy,
-    shuffle: (xs: Seed[]) => Seed[] = defaultShuffle
-): Seed[] {
-    const sorted = [...seeds].sort(byHandicap)
-
-    switch (strategy) {
-        case 'random':
-            return shuffle([...seeds])
-        case 'similar':
-            // Already adjacent by handicap, so reading it in pairs gives close matches.
-            return sorted
-        case 'contrast': {
-            // Fold the sorted list: best v worst, second-best v second-worst.
-            const out: Seed[] = []
-            let low = 0
-            let high = sorted.length - 1
-            while (low < high) {
-                out.push(sorted[low]!, sorted[high]!)
-                low += 1
-                high -= 1
-            }
-            return out
-        }
-    }
+    ids: readonly PlayerId[],
+    shuffle: (xs: PlayerId[]) => PlayerId[] = defaultShuffle
+): PlayerId[] {
+    return shuffle([...ids])
 }
 
-function defaultShuffle(xs: Seed[]): Seed[] {
+function defaultShuffle(xs: PlayerId[]): PlayerId[] {
     for (let i = xs.length - 1; i > 0; i -= 1) {
         const j = Math.floor(Math.random() * (i + 1))
         ;[xs[i], xs[j]] = [xs[j]!, xs[i]!]
@@ -105,7 +61,7 @@ function defaultShuffle(xs: Seed[]): Seed[] {
  * players until those are decided — which is the shape the existing events use
  * and what lets the public bracket render before anything has been played.
  */
-export function drawBracket(ordered: readonly Seed[]): MatchplayResults['bracket'] {
+export function drawBracket(ordered: readonly PlayerId[]): MatchplayResults['bracket'] {
     if (!isDrawableFieldSize(ordered.length)) {
         throw new Error(
             `A bracket needs a power-of-two field; got ${ordered.length}. ` +
@@ -130,8 +86,8 @@ export function drawBracket(ordered: readonly Seed[]): MatchplayResults['bracket
                 id,
                 leftSource: isFirstRound ? null : (previousRoundIds[i * 2] ?? null),
                 rightSource: isFirstRound ? null : (previousRoundIds[i * 2 + 1] ?? null),
-                left: isFirstRound ? (ordered[i * 2]?.id ?? null) : null,
-                right: isFirstRound ? (ordered[i * 2 + 1]?.id ?? null) : null,
+                left: isFirstRound ? (ordered[i * 2] ?? null) : null,
+                right: isFirstRound ? (ordered[i * 2 + 1] ?? null) : null,
                 score: null,
                 winner: null,
             })
