@@ -377,7 +377,7 @@ async function main(): Promise<void> {
     await waitForPort(appPort)
     server.listen(port, '127.0.0.1', () => {
         console.log(`\nIAP stand-in on http://localhost:${port} — astro dev behind it on ${appPort}`)
-        console.log(`Accounts: ${accounts.join(', ')}`)
+        console.log(`Accounts configured: ${accounts.length}`)
         console.log('Sign out from the admin itself; it clears the cookie and asks again.\n')
     })
 }
