@@ -352,7 +352,9 @@ files:
   for the Firestore migration.
 - **Projected buckets** — for *future* Hector events only, `populateUpdatedHandicaps()` refreshes the
   stored bucket handicaps from the live history, so "Projected Buckets" stay current between
-  scheduled data runs.
+  scheduled data runs. "Future" here means before 08:00 on the first morning in the event's own time
+  zone (`bucketsAreOpen` in `data.ts`), not before the first date: the Draft after round one reads
+  these, so they must not move once play has begun.
 - **Participant back-fill** — if `participants` is empty, `populateMissingParticipants()`
   reconstructs it from `results.teams[].players` or from the matchplay bracket's `left`/`right`.
 - **Winner inference** — `events/hector/[slug].astro` promotes the top leaderboard row to

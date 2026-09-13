@@ -5,7 +5,8 @@
   "location": "Diamond Country Club, Austria",
   "timing": {
     "start": "2023-09-23",
-    "end": "2023-09-26"
+    "end": "2023-09-26",
+    "timezone": "Europe/Vienna"
   },
   "description": "The world's top amateur golfers gathered to compete in the prestigious Hector Trophée 2023. Hosted at the scenic Diamond Country Club in Austria from September 23-26, this annual event showcased a thrilling 4-day stroke play format. The elite competitors battled for the honor of claiming the esteemed Hector Trophée, adding another chapter to this celebrated tournament's history.",
   "participants": [

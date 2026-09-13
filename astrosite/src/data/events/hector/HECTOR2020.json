@@ -5,7 +5,8 @@
   "location": "Tahko Golf, Finland",
   "timing": {
     "start": "2020-09-10",
-    "end": "2020-09-13"
+    "end": "2020-09-13",
+    "timezone": "Europe/Helsinki"
   },
   "description": "Tahko Golf in Finland was the venue for the Hector Trophée 2020, occurring from September 10-13 despite a global pandemic and torrential rain reminiscent of an apocalypse on first two days of competition. The tournament’s format blended stroke play, stableford, best ball, and scramble, providing a comprehensive challenge that culminated in a dynamic competition.",
   "participants": [

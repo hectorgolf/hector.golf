@@ -5,7 +5,8 @@
   "location": "Quellness Golf Resort, Germany",
   "timing": {
     "start": "2022-09-14",
-    "end": "2022-09-17"
+    "end": "2022-09-17",
+    "timezone": "Europe/Berlin"
   },
   "description": "In 2022, the Quellness Golf Resort in Germany hosted the eclectic Hector Trophée, from September 14-17. This tournament featured a unique mix of stroke play, stableford, best ball, and scramble formats, showcasing the versatility and strategic depth of the world’s elite amateur golfers.",
   "participants": [

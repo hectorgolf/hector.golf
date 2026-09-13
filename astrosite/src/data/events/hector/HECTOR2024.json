@@ -5,7 +5,8 @@
   "location": "La Finca Golf, Spain",
   "timing": {
     "start": "2024-09-25",
-    "end": "2024-09-28"
+    "end": "2024-09-28",
+    "timezone": "Europe/Madrid"
   },
   "description": "The world's best amateur golfers will once again face off with each other in Hector Trophée 2024. The tournament will be played at La Finca and Villamartin. The tournament will be played in the classic 4-day stroke play format and the proud winners will be awarded with the prestigious Hector Trophée.",
   "participants": [

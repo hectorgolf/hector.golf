@@ -160,6 +160,26 @@ const isoDateSchema = z
     .refine(isValidIsoDate, { message: "expected a calendar date in ISO format, e.g. 2026-09-24" });
 
 /**
+ * True if the runtime recognises the string as an IANA time zone.
+ *
+ * Asked of `Intl` rather than checked against a list of our own: the list moves
+ * (zones are added, renamed and made links to one another), and the only list that
+ * matters is the one the code computing with it will actually accept.
+ */
+function isValidTimeZone(zone: string): boolean {
+    try {
+        new Intl.DateTimeFormat(undefined, { timeZone: zone });
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+const timeZoneSchema = z
+    .string()
+    .refine(isValidTimeZone, { message: "expected an IANA time zone, e.g. Europe/Prague" });
+
+/**
  * When an event is played: its first day and its last.
  *
  * A one-day event repeats the same date, which keeps every reader of the pair
@@ -175,6 +195,22 @@ const eventTimingSchema = z
         start: isoDateSchema,
         /** The event's last day, which for a one-day event is the start date again. */
         end: isoDateSchema,
+        /**
+         * Where the event is played, expressed as time rather than as a place: the
+         * IANA zone the two dates above are dates *in*.
+         *
+         * A Hector is played wherever it is played — Konopiště, Empordà, Tahko — and
+         * an hour of the morning only means something once you know which. The one
+         * thing that reads this is the moment a Hector's buckets stop being
+         * recomputed, which is 08:00 on the first day and is 08:00 to the people on
+         * the first tee, not to the machine running the job.
+         *
+         * Optional because only the events that freeze something need it, and
+         * requiring it would put a time zone field in front of whoever creates a
+         * matchplay tournament in the admin for no benefit. Every Hector carries one;
+         * `bucketsAreOpen` says what happens to a Hector that does not.
+         */
+        timezone: timeZoneSchema.optional(),
     })
     .refine((timing) => timing.start <= timing.end, {
         message: "an event cannot end before it starts",
