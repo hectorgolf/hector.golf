@@ -171,6 +171,28 @@ alone. Then
 set the site's `PUBLIC_LEADERBOARD_PROXY_URL` repository variable to the deployed URL —
 until that is set, the leaderboard pages render exactly as they did before.
 
+### These scripts are still how keys get set
+
+`.github/workflows/deploy-functions.yml` redeploys all four functions when code
+lands on `main`, so a dependency bump or a code change no longer waits for
+somebody to remember to run these. It deliberately passes no `--set-env-vars`,
+though: `gcloud`'s env-var flags all mutate, and passing none leaves each
+function's existing keys alone, which keeps `GOOGLE_GEMINI_API_KEY`,
+`ASTROSITE_API_KEY` and `HECTOR_APP_API_KEY` out of GitHub entirely.
+
+So the scripts above remain the way configuration changes. Run the matching one
+by hand when a function is deployed for the first time, or when a key is
+rotated. After that, code ships itself.
+
+The workflow is also inert until its repository variables are set — these
+functions are in a different GCP project from the one `terraform/` manages, so
+it needs its own deploy identity. Its header says what to create.
+
+Both limits come from that project split, not from the design. See
+[docs/functions-migration.md](../docs/functions-migration.md) for the plan that
+closes it, after which the keys live in Secret Manager and the workflow deploys
+configuration along with code.
+
 ## Running it locally
 
 ```bash

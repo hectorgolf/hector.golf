@@ -189,7 +189,17 @@ variable "billing_account" {
 }
 
 variable "budget_amount_eur" {
-  description = "Monthly budget in EUR that triggers the alert thresholds."
+  description = <<-EOT
+    Monthly budget in EUR that triggers the alert thresholds.
+
+    Raised from 1 to 2 when the Cloud Functions moved into this project. They
+    call Gemini, and `GeneratePlayerAvatar` calls `gemini-2.5-flash-image`,
+    which is not free. At €1 the 50% threshold was going to fire on ordinary
+    use, and a budget alert that cries wolf is worse than no budget alert: it
+    trains you to close the mail without reading it.
+
+    The thresholds are percentages, so this one number moves all three.
+  EOT
   type        = number
-  default     = 1
+  default     = 2
 }

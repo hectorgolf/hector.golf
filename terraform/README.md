@@ -18,7 +18,7 @@ bucket has to exist before `terraform init` will work.
 | `iap.tf` | Identity-Aware Proxy: the service agent binding and who may sign in |
 | `iam.tf` | Three service accounts and their roles |
 | `github_oidc.tf` | Workload Identity Federation for GitHub Actions |
-| `budget.tf` | The €1/month billing alert, off by default |
+| `budget.tf` | The €2/month billing alert, off by default |
 | `outputs.tf` | The values that become GitHub Actions variables |
 
 Applied by [`terraform-apply.yml`](../.github/workflows/terraform-apply.yml) on merge to `main`,

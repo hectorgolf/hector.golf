@@ -24,7 +24,7 @@ admin_image = "us-docker.pkg.dev/cloudrun/container/hello"
 # iap_oauth_client_id     = "1234-abcd.apps.googleusercontent.com"
 # iap_oauth_client_secret = "GOCSPX-..."
 
-# Optional: the €1/month budget alert. Needs billing-account permissions, so
+# Optional: the €2/month budget alert. Needs billing-account permissions, so
 # apply this one locally rather than from CI.
 # enable_budget_alert = true
 # billing_account     = "01ABCD-234567-89EFGH"

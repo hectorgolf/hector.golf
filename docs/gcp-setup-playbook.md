@@ -22,7 +22,7 @@ Everything in [`terraform/`](../terraform/):
 | Workload Identity Federation pool | Keyless GitHub Actions auth — no service account keys anywhere |
 | Secret Manager secret `github-dispatch-token` | The GitHub token the admin dispatches workflows with. Terraform creates the container; step 11 adds the value |
 | Two Cloud Scheduler jobs | Start the data-update workflows on time (03:00 and 12:00 UTC), because GitHub's own cron runs hours late. In `europe-west1`, not `europe-north1` — Cloud Scheduler does not run there |
-| Billing budget (optional) | Alerts above €1/month |
+| Billing budget (optional) | Alerts above €2/month |
 
 And three workflows: [`terraform-plan.yml`](../.github/workflows/terraform-plan.yml) on pull
 requests, [`terraform-apply.yml`](../.github/workflows/terraform-apply.yml) on merge to `main`, and
@@ -432,8 +432,8 @@ BILLING=$(gcloud billing projects describe hector-golf \
 
 gcloud billing budgets create \
   --billing-account="$BILLING" \
-  --display-name="hector.golf - alert above EUR 1/month" \
-  --budget-amount=1EUR \
+  --display-name="hector.golf - alert above EUR 2/month" \
+  --budget-amount=2EUR \
   --filter-projects="projects/hector-golf" \
   --threshold-rule=percent=0.5 \
   --threshold-rule=percent=1.0 \
