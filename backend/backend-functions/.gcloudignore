@@ -22,6 +22,7 @@ node_modules
 
 # Ignore tests:
 test
+vitest.config.mts
 
 # Include whatever is in .gitignore:
 #!include:.gitignore

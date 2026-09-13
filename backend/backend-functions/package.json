@@ -5,6 +5,12 @@
   "scripts": {
     "cli": "npx tsx src/cli/cli.ts samples/1.png",
     "cli:generate-player-avatar": "npx tsx src/cli/generate-player-avatar.ts",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:functions": "vitest run --project functions",
+    "test:deployment": "vitest run --project deployment",
+    "test:watch": "vitest --project unit --project functions",
+    "typecheck": "tsc --noEmit --project test/tsconfig.json",
     "clean": "rm -rf ./dist",
     "gcp-build": "tsc",
     "start:scorecard-detection": "npm run gcp-build && export $(cat .env | xargs) && npx functions-framework --target=ExtractScorecardInformation --source=dist/functions/scorecard-detection/index.js",
@@ -30,7 +36,8 @@
     "glob": "^13.0.6",
     "ts-node": "^10.9.2",
     "tsx": "^4.23.13",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
   },
   "dependencies": {
     "@google-cloud/functions-framework": "^5.0.5",

@@ -1,0 +1,61 @@
+# Runs the Cloud Functions' test suites on pull requests.
+#
+# Separate from pr-checks.yml and admin-checks.yml for the same reason those are
+# separate from each other: these are different packages with different failure
+# modes, and one workflow each keeps any of them from going red for another's
+# reasons.
+#
+# backend/backend-functions is not part of the root npm workspace — it is deployed
+# with `gcloud functions deploy --source=.`, which installs from its own
+# package.json — so this installs from its own lockfile rather than the one at the
+# repository root.
+#
+# Nothing here touches GCP, Gemini, or app.hector.golf. The deployment suite starts
+# the Functions Framework locally against a freshly built dist/, with placeholder
+# API keys, and every request it makes is answered by a guard clause before the
+# function would call anything.
+name: Backend checks
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-checks.yml'
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: backend/backend-functions
+
+jobs:
+  test:
+    name: Test and build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          # The runtime the deploy scripts name (--runtime=nodejs24).
+          node-version: 24
+          cache: npm
+          cache-dependency-path: backend/backend-functions/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Unit, functions, and deployment suites. The last of these compiles dist/
+      # itself, so it covers the `gcp-build` that Google Cloud runs at deploy time.
+      - name: Test
+        run: npm test
+
+      # The deployable build excludes the tests, so this is the only thing that
+      # typechecks them.
+      - name: Typecheck the tests
+        run: npm run typecheck
