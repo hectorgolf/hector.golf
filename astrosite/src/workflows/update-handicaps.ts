@@ -137,7 +137,16 @@ const persistHandicapHistoryToDisk = async (
     }
 };
 
-const fetchUpdatedPlayerRecords = async (
+/**
+ * The players as they will be handed to `persistHandicapHistoryToDisk`.
+ *
+ * Exported for the tests, which pin the payload rather than the write: every
+ * decision about what lands in `handicaps.json` — who is written at all, what
+ * value, and what the commit message says it changed from — is made here, and
+ * the writer only carries it out. All the I/O is in the injected sources, so
+ * this is testable without standing in for the filesystem or the network.
+ */
+export const fetchUpdatedPlayerRecords = async (
     players: Player[],
     handicapHistory: Array<HandicapHistoryEntry>,
     handicapSources: Array<HandicapSource>,
