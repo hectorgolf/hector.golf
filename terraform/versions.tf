@@ -11,7 +11,7 @@ terraform {
   # The state bucket is created by hand, once, before the first `init`.
   # Terraform cannot describe the bucket that holds its own state, so this is
   # the one piece of infrastructure in this project that is not in this
-  # directory. See docs/gcp-setup-playbook.md, step 2.
+  # directory. See docs/current/gcp-setup-playbook.md, step 2.
   #
   # Backend blocks cannot read variables, so the bucket name is literal. If it
   # ever needs to vary, drop the `bucket` line and pass

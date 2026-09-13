@@ -11,7 +11,7 @@ Follow it top to bottom. It takes about half an hour, most of which is waiting f
 
 ## What this builds
 
-Everything in [`terraform/`](../terraform/):
+Everything in [`terraform/`](../../terraform/):
 
 | Resource | What it is for |
 | --- | --- |
@@ -24,19 +24,19 @@ Everything in [`terraform/`](../terraform/):
 | Two Cloud Scheduler jobs | Start the data-update workflows on time (03:00 and 12:00 UTC), because GitHub's own cron runs hours late. In `europe-west1`, not `europe-north1` — Cloud Scheduler does not run there |
 | Billing budget (optional) | Alerts above €2/month |
 
-And three workflows: [`terraform-plan.yml`](../.github/workflows/terraform-plan.yml) on pull
-requests, [`terraform-apply.yml`](../.github/workflows/terraform-apply.yml) on merge to `main`, and
-[`deploy-admin.yml`](../.github/workflows/deploy-admin.yml), which stays inert until an `admin/`
+And three workflows: [`terraform-plan.yml`](../../.github/workflows/terraform-plan.yml) on pull
+requests, [`terraform-apply.yml`](../../.github/workflows/terraform-apply.yml) on merge to `main`, and
+[`deploy-admin.yml`](../../.github/workflows/deploy-admin.yml), which stays inert until an `admin/`
 directory exists.
 
 ## What this deliberately does not build
 
 - **The public site.** `hector.golf` remains a static Astro build on GitHub Pages, deployed by
-  the existing [`deploy.yml`](../.github/workflows/deploy.yml). Nothing here touches it.
+  the existing [`deploy.yml`](../../.github/workflows/deploy.yml). Nothing here touches it.
 - **The four existing Cloud Functions** in the old project (`GeneratePlayerBiography`,
   `GeneratePlayerAvatar`, `ExtractScorecardInformation`, `TournamentLeaderboard`). They are still
   deployed by hand from a laptop via the npm scripts in
-  [`backend/backend-functions/package.json`](../backend/backend-functions/package.json). Importing
+  [`backend/backend-functions/package.json`](../../backend/backend-functions/package.json). Importing
   them is worthwhile eventually and is not on the path to a working admin UI. See
   [§13 of the architecture notes](./architecture.md).
 - **The Terraform state bucket**, which cannot describe itself. Step 2 creates it by hand; it is the
@@ -96,7 +96,7 @@ curl -s -H "Authorization: Bearer $(gcloud auth application-default print-access
 > Then export that variable in every shell where you work on Hector.
 
 While you are here, check `gcloud config list` for a `[run] region` left over from another project.
-CI is unaffected — [`deploy-admin.yml`](../.github/workflows/deploy-admin.yml) passes `--region`
+CI is unaffected — [`deploy-admin.yml`](../../.github/workflows/deploy-admin.yml) passes `--region`
 explicitly — but a manual `gcloud run deploy` would deploy to the wrong region.
 
 ### Check the free-tier database first
@@ -148,7 +148,7 @@ Terraform enables the rest itself, but it cannot enable the APIs it needs in ord
 gcloud services enable cloudresourcemanager.googleapis.com serviceusage.googleapis.com
 ```
 
-Everything else is declared in [`apis.tf`](../terraform/apis.tf), and each resource that needs an
+Everything else is declared in [`apis.tf`](../../terraform/apis.tf), and each resource that needs an
 API says so with `depends_on`. That dependency is not decoration: without it Terraform is free to
 create a service account in the same pass that enables `iam.googleapis.com`, and whether that works
 comes down to which call lands first.
@@ -167,7 +167,7 @@ gcloud storage buckets update "gs://${BUCKET}" --versioning
 ```
 
 The bucket name is hardcoded in the `backend "gcs"` block in
-[`terraform/versions.tf`](../terraform/versions.tf), because backend blocks cannot read variables.
+[`terraform/versions.tf`](../../terraform/versions.tf), because backend blocks cannot read variables.
 If you use a different name, either edit that line or pass
 `terraform init -backend-config=bucket=…`.
 
@@ -183,8 +183,8 @@ that it has stayed the whole list:
 
 | Service agent | Created for | Granted | Where |
 | --- | --- | --- | --- |
-| `gcp-sa-iap` | `iap.googleapis.com` | `roles/run.invoker` on the admin service | [`iap.tf`](../terraform/iap.tf) |
-| `gcp-sa-cloudscheduler` | `cloudscheduler.googleapis.com` | `roles/iam.serviceAccountTokenCreator` on `hector-scheduler` | [`scheduler.tf`](../terraform/scheduler.tf) |
+| `gcp-sa-iap` | `iap.googleapis.com` | `roles/run.invoker` on the admin service | [`iap.tf`](../../terraform/iap.tf) |
+| `gcp-sa-cloudscheduler` | `cloudscheduler.googleapis.com` | `roles/iam.serviceAccountTokenCreator` on `hector-scheduler` | [`scheduler.tf`](../../terraform/scheduler.tf) |
 
 Create both:
 
@@ -237,7 +237,7 @@ config falls back to a public container for exactly one run:
 admin_image = "us-docker.pkg.dev/cloudrun/container/hello"
 ```
 
-Normally that variable is unset and [`cloud_run.tf`](../terraform/cloud_run.tf) composes the image
+Normally that variable is unset and [`cloud_run.tf`](../../terraform/cloud_run.tf) composes the image
 name itself, from the Artifact Registry resource:
 
 ```hcl
@@ -445,7 +445,7 @@ is "look now", 200% is "it is still climbing".
 
 ### Why not Terraform
 
-[`budget.tf`](../terraform/budget.tf) describes the same budget and is deliberately off by default,
+[`budget.tf`](../../terraform/budget.tf) describes the same budget and is deliberately off by default,
 because switching it on halfway is the worst of the three states:
 
 | `enable_budget_alert` | What happens |
@@ -459,7 +459,7 @@ incidents in this project, where a plan reads as routine and removes something t
 
 ## Step 10 — After the first real deploy, drop the placeholder
 
-Once [`deploy-admin.yml`](../.github/workflows/deploy-admin.yml) has run once, there is a real image
+Once [`deploy-admin.yml`](../../.github/workflows/deploy-admin.yml) has run once, there is a real image
 in Artifact Registry and the placeholder has done its job. Delete these lines from
 `terraform.tfvars`:
 
@@ -694,7 +694,7 @@ Everything else in `terraform/` can be changed by editing it and re-applying.
 ## Teardown
 
 `terraform destroy` will **not** delete the Firestore database. That is on purpose:
-[`firestore.tf`](../terraform/firestore.tf) sets `deletion_policy = "ABANDON"` and
+[`firestore.tf`](../../terraform/firestore.tf) sets `deletion_policy = "ABANDON"` and
 `delete_protection_state = "DELETE_PROTECTION_ENABLED"`, so a destroy drops it from state and
 leaves the data alone. Unlike the JSON files this replaces, there is no `git revert` for a deleted
 Firestore database.
@@ -725,7 +725,7 @@ Really deleting it takes two deliberate steps: set `delete_protection_state` to
 | CI: `Permission denied on resource project` | The `GH_TERRAFORM_SA` variable is wrong, or the WIF binding does not cover this ref. Plan runs on `refs/pull/N/merge`, so the Terraform identity is bound to the repository, not to `main` |
 | CI: `Error acquiring the state lock` | A previous run died holding it. `terraform force-unlock <id>` locally, having first checked no apply is actually running |
 | First apply fails with the revision never becoming ready, or an image pull error | `admin_image` is unset on a project with nothing in Artifact Registry yet. Put the placeholder line back for that one run — see step 4 |
-| `terraform apply` wants to change the Cloud Run image every time | The `ignore_changes` block in [`cloud_run.tf`](../terraform/cloud_run.tf) was removed. Terraform owns the service; the deploy workflow owns the image |
+| `terraform apply` wants to change the Cloud Run image every time | The `ignore_changes` block in [`cloud_run.tf`](../../terraform/cloud_run.tf) was removed. Terraform owns the service; the deploy workflow owns the image |
 | Images accumulating past the cleanup policy | First check there is a **DELETE** policy that actually matches them. A KEEP policy deletes nothing — it only exempts artifacts from a DELETE policy — so a repository with only `keep-recent` on it grows forever, and a DELETE policy conditioned on `UNTAGGED` matches nothing here because the deploy workflow tags every image with a commit SHA. `gcloud artifacts repositories describe hector-admin --location="$REGION"` prints the live policies. Second, sweeps are asynchronous and run roughly daily, so nothing disappears at `apply` time. Only third is the other cause: something pushed to a repository Terraform does not manage — most likely `gcloud run deploy --source`, which creates `cloud-run-source-deploy` behind your back |
 
 ## Once this is done
@@ -735,7 +735,7 @@ The infrastructure is in place and empty. The next pieces, in the order they mak
 1. **Migrate `handicaps` and the player images.** They are the two datasets Git handles worst, and
    neither is edited by a human, so a mistake is cheap.
 2. **Build the admin service** under `admin/`, at which point `deploy-admin.yml` starts firing.
-3. **Split the data loader** in [`astrosite/src/code/data.ts`](../astrosite/src/code/data.ts) into a
+3. **Split the data loader** in [`astrosite/src/code/data.ts`](../../astrosite/src/code/data.ts) into a
    Firestore implementation and the existing filesystem one, so `astro dev` and `npm test` keep
    running with no emulator, no Java and no credentials.
 4. **Decide who wins when CI and a human write the same field.** `player.handicap` is already a

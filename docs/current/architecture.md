@@ -92,7 +92,7 @@ waiting for a deploy.
 │   ├── scripts/commit-changes.sh
 │   └── test/{unit,astro}/
 ├── backend/backend-functions/  # GCP Cloud Functions gen2 (Gemini wrappers + leaderboard proxy)
-├── terraform/                  # The hector-golf GCP project (see docs/gcp-setup-playbook.md)
+├── terraform/                  # The hector-golf GCP project (see docs/current/gcp-setup-playbook.md)
 ├── .github/workflows/          # Nine workflows
 └── docs/                       # This document, the setup playbook, and data-ownership.md
 ```
@@ -106,7 +106,7 @@ communicate only over HTTPS at data-update time.
 ### Stack
 
 Astro 7 with default **static output** — no adapter, no SSR, no `output` setting in
-[`astro.config.mjs`](../astrosite/astro.config.mjs), which is seven lines long and sets only
+[`astro.config.mjs`](../../astrosite/astro.config.mjs), which is seven lines long and sets only
 `site: 'https://hector.golf'` and the React integration. TypeScript 6 (`astro/tsconfigs/strict`),
 Zod for all schemas, Vitest 4 for tests, Chart.js for the one interactive widget.
 
@@ -158,7 +158,7 @@ Every dynamic route implements `getStaticPaths()`. There are no API endpoints an
 
 **`src/code/mscorecard/`** is a self-contained SDK and CLI for mscorecard.com, reverse engineered
 from the iOS app's traffic and documented in
-[`astrosite/docs/mscorecard-api.md`](../astrosite/docs/mscorecard-api.md). It is not part of the
+[`astrosite/docs/mscorecard-api.md`](../../astrosite/docs/mscorecard-api.md). It is not part of the
 site: nothing under `src/pages/`, `src/components/` or `src/workflows/` imports it, no npm script
 runs it, and it reaches the network only when a developer invokes
 `npx tsx src/code/mscorecard/cli/main.ts` with `MSCORECARD_EMAIL` / `MSCORECARD_PASSWORD` set. It
@@ -167,7 +167,7 @@ shares the repository, and `src/code/scoring.ts`, with the site — nothing else
 ### The design system
 
 The site shares a visual language with the scorecard app at <https://app.hector.golf>, and
-[`src/styles/hector.css`](../astrosite/src/styles/hector.css) is where that language lives: ~780
+[`src/styles/hector.css`](../../packages/ui/styles/hector.css) is where that language lives: ~780
 lines holding the token set, a small reset, base typography, and the component primitives that pages
 compose from — `.card`, `.pill`, `.btn`, `.chip-num`, `.num`, `.score`, `.label`, `.eyebrow`,
 `.table-scroll`, `.page`, `.section`, `.grid`, `.segmented`, `.breadcrumbs`. Palette, type scale and
@@ -194,13 +194,13 @@ that means "live". The `-soft` tone of each pair is one step lighter, for type a
 enough that the base tint would strain.
 
 **Trophy marks are components, not images.** `HectorMark`, `VictorMark` and `MatchplayMark` are
-inline SVG drawn in `currentColor`, and [`CompetitionMark`](../astrosite/src/components/CompetitionMark.astro)
+inline SVG drawn in `currentColor`, and [`CompetitionMark`](../../packages/ui/components/CompetitionMark.astro)
 is the single place that pairs a competition with both its shape and its tint — so a Victor trophy
 cannot come out gold on one page and ember on another. `WinBadge` replaced the three near-identical
 `players/icons/*WinIcon.astro` components, which had drifted into rendering every trophy in the same
 gold.
 
-[`PageHeader`](../astrosite/src/components/PageHeader.astro) is the standard masthead — gold eyebrow,
+[`PageHeader`](../../packages/ui/components/PageHeader.astro) is the standard masthead — gold eyebrow,
 serif display title, mono metadata strip, optional lede. Every page uses it, directly or through
 `EventList`, except the landing page (which has a bespoke hero), the 404 and the per-hole page. Its
 metadata parts are laid out as flex items rather than one joined string, so a date range wraps as a
@@ -208,14 +208,14 @@ whole unit instead of being chopped mid-range.
 
 ### The brandbook is generated, not written
 
-[`/brand`](../astrosite/src/pages/brand.astro) documents the palette, and it is built *from* the
-stylesheet rather than describing it. [`src/code/palette.ts`](../astrosite/src/code/palette.ts)
+[`/brand`](../../astrosite/src/pages/brand.astro) documents the palette, and it is built *from* the
+stylesheet rather than describing it. [`src/code/palette.ts`](../../astrosite/src/code/palette.ts)
 parses the `:root` block out of `hector.css?raw` at build time, follows `var()` chains to real
 values, and computes hex, RGB, hue angle and WCAG contrast against the page ground. Every figure on
 the page is measured, every swatch paints with `var(--token)`, and the specimens are the real
 components — so the brandbook cannot drift from the site.
 
-[`test/unit/palette.test.ts`](../astrosite/test/unit/palette.test.ts) then asserts the palette's
+[`test/unit/palette.test.ts`](../../astrosite/test/unit/palette.test.ts) then asserts the palette's
 rules against the shipped stylesheet: every competition colour stays legible on the page ground, the
 three stay far apart in hue, the par colours read as one set, Victor stays clear of the "live"
 emerald, and violet never stands for a competition. Changing a colour in `hector.css` can fail the
@@ -226,25 +226,25 @@ test suite.
 The delivered site is essentially static HTML. There is no state management, no router, and no
 search. Four pieces of client JS exist in total:
 
-1. **Handicap chart** — [`HandicapHistoryChart.astro`](../astrosite/src/components/players/HandicapHistoryChart.astro)
+1. **Handicap chart** — [`HandicapHistoryChart.astro`](../../astrosite/src/components/players/HandicapHistoryChart.astro)
    renders a `<canvas>` carrying the last 20 handicap entries in `data-` attributes, and loads
-   [`HandicapHistoryChart.ts`](../astrosite/src/components/players/HandicapHistoryChart.ts) (bundled
+   [`HandicapHistoryChart.ts`](../../astrosite/src/components/players/HandicapHistoryChart.ts) (bundled
    by Astro) which draws a Chart.js time series with a custom `afterRender` plugin painting the
    current handicap in a gold filled circle. Being a bundled TS module rather than a stylesheet, it
    is the one place that restates the palette's hex values by hand (see §13).
-2. **Bracket connectors** — [`SingleEliminationBracketV2.astro`](../astrosite/src/components/events/SingleEliminationBracketV2.astro)
+2. **Bracket connectors** — [`SingleEliminationBracketV2.astro`](../../astrosite/src/components/events/SingleEliminationBracketV2.astro)
    pulls `leader-line` from cdnjs (SRI-pinned, `is:inline`) and draws connector lines between match
    elements on `DOMContentLoaded`.
 3. **Leaderboard auto-refresh** — for a Sheets-managed event, the leaderboard page runs a
    `setInterval` that hard-reloads with a cache-busting query string every five minutes. An
-   app.hector.golf-managed event gets [`LiveLeaderboard.astro`](../astrosite/src/components/events/LiveLeaderboard.astro)
+   app.hector.golf-managed event gets [`LiveLeaderboard.astro`](../../astrosite/src/components/events/LiveLeaderboard.astro)
    instead, which polls the leaderboard proxy (§10) and rewrites the rendered rows in place, cloning
    the component's own row template so the replacements keep their scoped styles.
 4. **Google Tag Manager** — the inline bootstrap in `Layout.astro`.
 
 ## 4. Data model
 
-All content lives as JSON committed under [`astrosite/src/data/`](../astrosite/src/data/):
+All content lives as JSON committed under [`astrosite/src/data/`](../../astrosite/src/data/):
 
 | Path | Count | Written by | Contents |
 | --- | --- | --- | --- |
@@ -260,10 +260,10 @@ All content lives as JSON committed under [`astrosite/src/data/`](../astrosite/s
 ### Events are a discriminated union
 
 `Event` is a Zod discriminated union on `format`
-([`src/schemas/events.ts`](../astrosite/src/schemas/events.ts)), with `hectorEventSchema`,
+([`src/schemas/events.ts`](../../packages/schemas/src/events.ts)), with `hectorEventSchema`,
 `matchplayEventSchema`, and `finnkampenEventSchema` extending a shared `BaseEventSchema`. Hand-written
 type guards `isHectorEvent` / `isMatchplayEvent` / `isFinnkampenEvent` live in
-[`src/code/data.ts`](../astrosite/src/code/data.ts).
+[`src/code/data.ts`](../../astrosite/src/code/data.ts).
 
 **The directory name must equal the `format` discriminator**, because `pathToEventJson()` builds the
 write path as `../data/events/${event.format}/${event.id}.json`.
@@ -303,7 +303,7 @@ This is the most surprising part of the codebase and the easiest place to make a
 
 ### (a) Astro content collections — declared, mostly unused
 
-[`src/content.config.ts`](../astrosite/src/content.config.ts) defines three collections — `courses`,
+[`src/content.config.ts`](../../astrosite/src/content.config.ts) defines three collections — `courses`,
 `players`, `events` — with the `glob()` loader and the Zod schemas.
 
 Only **`courses`** is ever read, by four pages. The two `courses/[slug]` pages call `getCollection`
@@ -328,11 +328,11 @@ across the entire build**. Two consequences worth internalising:
 - **Glob paths are relative to the working directory**, not to the module. Every command — build,
   tests, workflow scripts — must be run from `astrosite/`.
 - **The singletons are mutated in place.** `populateMissingParticipants()` and
-  `populateUpdatedHandicaps()` in [`src/code/events.ts`](../astrosite/src/code/events.ts) modify the
+  `populateUpdatedHandicaps()` in [`src/code/events.ts`](../../astrosite/src/code/events.ts) modify the
   shared event objects, so their effects persist across every page rendered later in the same build.
 
 A **third** mechanism exists in
-[`src/code/leaderboards/leaderboards.ts`](../astrosite/src/code/leaderboards/leaderboards.ts): it
+[`src/code/leaderboards/leaderboards.ts`](../../astrosite/src/code/leaderboards/leaderboards.ts): it
 uses `import.meta.glob` for discovery, rewrites the resulting keys into CWD-relative paths, then
 reads the files with `readFileSync`.
 
@@ -374,17 +374,17 @@ files:
 - **Chronological grouping** — `getAllEventsGroupedByChronology()`, with the special rule that a
   matchplay event holding a recorded winner counts as past regardless of its dates.
 - **Date formatting** — events store ISO dates, so the derivation now runs the other way:
-  `formatEventDates()` / `formatDateRange()` in [`dates.ts`](../astrosite/src/code/dates.ts) render
+  `formatEventDates()` / `formatDateRange()` in [`dates.ts`](../../packages/schemas/src/dates.ts) render
   `timing` into display prose, and the chronology predicates (`eventHasStarted`, `isPastEvent`,
   `yearOfEvent`) are plain string or `Date` comparisons on `timing.start` / `timing.end` rather than
   regex-matching a sentence.
 - **Round scheduling** — a round records a `day` offset into the event, not a date.
-  [`rounds.ts`](../astrosite/src/code/rounds.ts) turns that into a real date (`dateOfRound()`, day 1
+  [`rounds.ts`](../../astrosite/src/code/rounds.ts) turns that into a real date (`dateOfRound()`, day 1
   being the event's first day) and into a title (`titleOfRound()` → "Saturday morning"). The part of
   day is inferred from the round's position within its day, and a day holding a single round is
   named by its weekday alone rather than being guessed into a "morning".
 - **Privacy name shortening** — for players marked `privacy: 'shorten-last-name'`, a singleton in
-  [`players.ts`](../astrosite/src/code/players.ts) computes the *shortest unique last-name prefix*
+  [`players.ts`](../../astrosite/src/code/players.ts) computes the *shortest unique last-name prefix*
   among players sharing a first name, so "Lasse Koskela" renders as "Lasse K" while two Johns would
   become "John De" / "John Di".
 - **Player ranking** — `players/index.astro` sorts with a seven-level comparator: total wins →
@@ -406,7 +406,7 @@ files:
 Notable details:
 
 - **`HandicapSource` interface** —
-  [`handicap-source-api.ts`](../astrosite/src/code/handicaps/handicap-source-api.ts) defines
+  [`handicap-source-api.ts`](../../astrosite/src/code/handicaps/handicap-source-api.ts) defines
   `getPlayerHandicap`, `resolveClubMembership`, and `getClubs`, plus a `NullHandicapSource`
   fallback. `update-handicaps.ts` pops sources off a list and falls through on failure, so adding a
   second provider is a matter of implementing the interface.
@@ -471,11 +471,11 @@ are queued and delivered when GitHub has capacity. Measured across the last 300 
 | 2026-06 | 4h13m | 2h52m |
 | 2026-09 | 4h32m | 3h46m |
 
-`workflow_dispatch` has no such queue. So [`terraform/scheduler.tf`](../terraform/scheduler.tf) runs
+`workflow_dispatch` has no such queue. So [`terraform/scheduler.tf`](../../terraform/scheduler.tf) runs
 **two** Cloud Scheduler jobs, at 03:00 and 12:00 UTC. They are the one thing in this project not in
 `europe-north1` — Cloud Scheduler does not run there, so they sit in `europe-west1`. Each calls one endpoint on the admin service —
 `POST /api/workflows/dispatch` — which starts every workflow marked `scheduled` in
-[`admin/src/lib/workflows.ts`](../admin/src/lib/workflows.ts), using a GitHub token read from Secret
+[`admin/src/lib/workflows.ts`](../../admin/src/lib/workflows.ts), using a GitHub token read from Secret
 Manager.
 
 The split is deliberate: **when** lives in Terraform, where `gcloud scheduler jobs list` answers it
@@ -510,9 +510,9 @@ and `:15` data jobs to pick up what they committed.
 03:05 can therefore still wait until the middle of the morning to reach the site. Fixing the scrapes
 without fixing this only moves the delay one step down the pipeline. Two ways out, neither taken
 yet: add `deploy.yml` to `DISPATCHABLE_WORKFLOWS` in
-[`admin/src/lib/workflows.ts`](../admin/src/lib/workflows.ts) and give it two more Cloud Scheduler
+[`admin/src/lib/workflows.ts`](../../admin/src/lib/workflows.ts) and give it two more Cloud Scheduler
 jobs at `:30`, or give it a `workflow_run` trigger on the four update workflows — the mechanism
-[`refresh-admin-mirror.yml`](../.github/workflows/refresh-admin-mirror.yml) already uses, which costs
+[`refresh-admin-mirror.yml`](../../.github/workflows/refresh-admin-mirror.yml) already uses, which costs
 nothing and fires as soon as a scrape finishes rather than at a fixed time after it.
 
 **Why `update-leaderboards` is different.** Alone among the four, it writes its output through the
@@ -523,7 +523,7 @@ into the event JSON — goes through the normal working-tree path.
 
 ### The commit-back script
 
-[`scripts/commit-changes.sh`](../astrosite/scripts/commit-changes.sh) is shared by all four update
+[`scripts/commit-changes.sh`](../../astrosite/scripts/commit-changes.sh) is shared by all four update
 workflows:
 
 1. Exits 0 immediately unless `git status --short` shows modified files under `src/data/`.
@@ -584,7 +584,7 @@ and assigns a club **only when exactly one** club matches.
 | `update-player-club-memberships.yml` | Cron `15 22 15 * *`; manual | Script + `commit-changes.sh` | `contents: write` |
 
 **Deployment target is GitHub Pages**, with the custom domain supplied by
-[`public/CNAME`](../astrosite/public/CNAME) (`hector.golf`; `www` 301s to it). The build step passes
+[`public/CNAME`](../../astrosite/public/CNAME) (`hector.golf`; `www` 301s to it). The build step passes
 `--site ${{ steps.pages.outputs.origin }} --base ${{ steps.pages.outputs.base_path }}` so the Pages
 environment determines the final URLs, and uses concurrency group `pages` with
 `cancel-in-progress: false`.
@@ -604,7 +604,7 @@ header says what to create. It also passes no `--set-env-vars`, which leaves eac
 existing keys untouched — it redeploys code, never configuration.
 
 Both of those constraints are consequences of the split rather than of the design, and
-[functions-migration.md](functions-migration.md) is the plan for removing them by moving the
+[functions-migration.md](../plans/functions-migration.md) is the plan for removing them by moving the
 functions into `hector-golf`.
 
 ### Secrets and variables
@@ -717,7 +717,7 @@ the JSON against the schema first.
 
 ## 12. Testing
 
-Vitest 4, configured through [`vitest.config.ts`](../astrosite/vitest.config.ts), which wraps Astro's
+Vitest 4, configured through [`vitest.config.ts`](../../astrosite/vitest.config.ts), which wraps Astro's
 `getViteConfig()` so tests resolve modules exactly as the build does. The two suites are run
 separately because they need different setups:
 
@@ -776,7 +776,7 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
   but no code in `astrosite/` reads them — leftovers from a removed TeeTime integration.
 - `zod` is imported throughout `src/schemas/` and `src/code/` but is **not a declared dependency** —
   it resolves transitively through Astro, so an Astro upgrade could break the build.
-- [`HandicapHistoryChart.ts`](../astrosite/src/components/players/HandicapHistoryChart.ts) hardcodes
+- [`HandicapHistoryChart.ts`](../../astrosite/src/components/players/HandicapHistoryChart.ts) hardcodes
   five palette hex values (`#8b79d8`, `#cfc6f0`, `#e3b341`, `#1d1c20`, `#7c7a86`) because it is a
   bundled TS module painting onto a canvas rather than a stylesheet. It is the one place the design
   system is restated by hand, so it will not follow a token change in `hector.css`.

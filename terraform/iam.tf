@@ -77,7 +77,7 @@ resource "google_project_iam_member" "terraform_ci" {
 
 # Access to the state bucket is granted in the bootstrap step rather than here,
 # because the bucket is created before Terraform runs and is deliberately not
-# managed by it. See docs/gcp-setup-playbook.md, step 2.
+# managed by it. See docs/current/gcp-setup-playbook.md, step 2.
 
 # ---------------------------------------------------------------------------
 # The application deploy identity: builds and ships the admin container, and

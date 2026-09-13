@@ -12,7 +12,7 @@
 #
 # This never touches matchplay. The seed refuses to, because that is the one
 # thing the admin authors and Firestore is its only copy until it is exported.
-# See docs/data-ownership.md.
+# See docs/current/data-ownership.md.
 name: Refresh the admin's mirror
 
 on:
@@ -61,7 +61,7 @@ jobs:
             echo "configured=true" >> "$GITHUB_OUTPUT"
           else
             echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::GH_WIF_PROVIDER or GH_DEPLOYER_SA is unset, so there is no project to refresh. See docs/gcp-setup-playbook.md."
+            echo "::notice::GH_WIF_PROVIDER or GH_DEPLOYER_SA is unset, so there is no project to refresh. See docs/current/gcp-setup-playbook.md."
           fi
 
       - name: Setup Node

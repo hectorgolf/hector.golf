@@ -201,7 +201,7 @@ functions are in a different GCP project from the one `terraform/` manages, so
 it needs its own deploy identity. Its header says what to create.
 
 Both limits come from that project split, not from the design. See
-[docs/functions-migration.md](../docs/functions-migration.md) for the plan that
+[docs/plans/functions-migration.md](../docs/plans/functions-migration.md) for the plan that
 closes it, after which the keys live in Secret Manager and the workflow deploys
 configuration along with code.
 
@@ -214,7 +214,7 @@ npm run start:tournament-leaderboard    # reads .env, serves on :8080
 
 # Local CLI For GeneratePlayerAvatar
 
-From [backend/backend-functions](backend/backend-functions), run:
+From [backend/backend-functions](backend-functions), run:
 
 ```bash
 npm run cli:generate-player-avatar -- <photo-file> <sample-file> [output-file]

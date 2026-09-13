@@ -12,7 +12,7 @@
  *
  * Nothing stops a person editing those files by hand and losing the edit at the
  * next export. That was a deliberate choice for a one-developer repository — see
- * docs/data-ownership.md — rather than something nobody thought of.
+ * docs/current/data-ownership.md — rather than something nobody thought of.
  *
  * It exports only what the admin can author, which today is matchplay events and
  * nothing else. Firestore holds players and the other event formats too, but as

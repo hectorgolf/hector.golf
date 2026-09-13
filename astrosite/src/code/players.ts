@@ -32,7 +32,7 @@ export function getPlayerById(id: string): Player|undefined {
     const player = PlayerSchema.parse(_record);
     // A hand-set handicap is a stopgap for a player WiseGolf has no figure for,
     // and `update-handicaps.ts` replaces it as soon as there is a real one — see
-    // docs/data-ownership.md. So the stored value wins here only because CI has
+    // docs/current/data-ownership.md. So the stored value wins here only because CI has
     // not overwritten it yet, which is the intended precedence.
     //
     // `??` and not `||`: a scratch player's handicap is 0, and 0 is falsy, so
