@@ -38,8 +38,11 @@ describe('bucketsAreOpen()', () => {
             expect(bucketsAreOpen(hector2026, new Date('2026-09-24T13:00:00Z'))).toBe(false)
         })
 
-        it('is closed during the event and after it', () => {
+        it('is closed during the event', () => {
             expect(bucketsAreOpen(hector2026, new Date('2026-09-26T08:00:00Z'))).toBe(false)
+        })
+
+        it('is closed after the event', () => {
             expect(bucketsAreOpen(hector2026, new Date('2027-01-01T00:00:00Z'))).toBe(false)
         })
     })
@@ -87,9 +90,17 @@ describe('bucketsAreOpen()', () => {
 
 describe('timing.timezone', () => {
     const konopiste = {
-        id: 'TEST', format: 'hector', name: 'Test', location: 'Somewhere',
-        participants: [], maxStrokesOverPar: 4,
-        timing: { start: '2026-09-24', end: '2026-09-27', timezone: 'Europe/Prague' },
+        id: 'TEST',
+        format: 'hector',
+        name: 'Test',
+        location: 'Somewhere',
+        participants: [],
+        maxStrokesOverPar: 4,
+        timing: {
+            start: '2026-09-24',
+            end: '2026-09-27',
+            timezone: 'Europe/Prague'
+        },
     }
 
     it('accepts a zone the runtime knows', () => {
