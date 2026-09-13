@@ -11,7 +11,7 @@ import { writeJsonFile } from "../code/json.ts";
 import { playersData, hectorEvents, hasParticipants, bucketsAreOpen, pathToEventJson } from "../code/data.ts";
 import { getPlayerName, updatePlayerData } from "../code/players.ts";
 import type { Player } from "@hector/schemas/src/players.ts";
-import type { HandicapHistoryEntry } from "@hector/schemas/src/handicaps.ts";
+import { type HandicapHistoryEntry, latestPerDay } from "@hector/schemas/src/handicaps.ts";
 
 /**
  * Get the player's handicap from their history.
@@ -34,9 +34,9 @@ export function getPlayerHandicapFromHistory(
     const absoluteOffset = -Math.abs(offsetFromEnd) - 1;
     const maximumOffset = -(handicapHistory.length - 1);
     const offset = Math.max(maximumOffset, absoluteOffset);
-    return handicapHistory
-        .filter((entry) => entry.player === playerId)
-        .sort((a, b) => a.date.localeCompare(b.date))
+    // Days, not readings: an offset of -1 means "the day before", and a handicap
+    // read twice today must not make this morning count as yesterday.
+    return latestPerDay(handicapHistory.filter((entry) => entry.player === playerId))
         .map((entry) => entry.handicap)
         .at(offset);
 }
@@ -94,22 +94,20 @@ const persistHandicapHistoryToDisk = async (
     const commitMessage: string[] = [];
 
     for (const player of playersWithNewHandicap) {
-        const duplicate = handicapHistory.find((entry) => entry.player === player.id && entry.date === date);
-        if (duplicate) {
-            // If our data already contains a handicap entry for this player on this date, let's update
-            // the existing entry rather than creating a new one. This might happen when there's been a delay
-            // in the Golf Association processing handicaps changes and our early-morning data update has
-            // mistakenly grabbed "today's" handicap from the API, and later in the afternoon data update
-            // we get the "correct" handicap because the Golf Association has re-run their failed batch job.
-            handicapHistory = handicapHistory.filter((entry) => !(entry.player === player.id && entry.date === date));
-            // The replaced observation survives only in this line and in git: the
-            // entry that lands keeps the later `observed`, which is what explains a
-            // surprising bucket, but the morning value it displaced is not kept.
+        // A second reading on the same day is kept alongside the first rather than
+        // replacing it. The Golf Union re-runs a failed nightly batch during office
+        // hours, so the morning value may be partial, wrong, or yesterday's — and
+        // which of those it was is only answerable if both readings survive. The
+        // daily view is `latestPerDay`, not the shape of the file.
+        const earlier = handicapHistory.filter((entry) => entry.player === player.id && entry.date === date);
+        if (earlier.length > 0) {
+            const readings = earlier
+                .map((entry) => `${JSON.stringify(entry.handicap)} at ${entry.observed ?? "an unrecorded time"}`)
+                .join(", ");
             console.warn(
-                `Updating older entry for ${getPlayerName(player)} on ${duplicate.date}. Replacing ${JSON.stringify(duplicate.handicap)} observed ${JSON.stringify(duplicate.observed ?? "at an unrecorded time")} with ${JSON.stringify(player.handicap)} observed ${observed}`,
+                `Second reading today for ${getPlayerName(player)} on ${date}: already saw ${readings}; now ${JSON.stringify(player.handicap)} at ${observed}. Keeping both.`,
             );
         }
-        // If there's no entry for this player on this date, we'll just push a new entry to the list
         newHandicapChanges.push({
             date,
             player: player.id,
