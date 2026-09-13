@@ -25,15 +25,15 @@
   "license": "MIT",
   "description": "GCP Cloud Functions for Hector.golf",
   "devDependencies": {
-    "@types/node": "^25.6.0",
+    "@types/node": "^25.9.6",
+    "dotenv": "^17.4.2",
     "glob": "^13.0.6",
     "ts-node": "^10.9.2",
     "tsx": "^4.23.13",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@google-cloud/functions-framework": "^5.0.2",
-    "@google/generative-ai": "^0.24.1",
-    "dotenv": "^17.3.1"
+    "@google-cloud/functions-framework": "^5.0.5",
+    "@google/generative-ai": "^0.24.1"
   }
 }
