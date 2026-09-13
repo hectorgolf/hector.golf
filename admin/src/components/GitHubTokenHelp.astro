@@ -1,0 +1,204 @@
+---
+import { repository } from '../lib/github.ts'
+import { githubTokenSecretLocation } from '../lib/secrets.ts'
+
+/*
+ * What to do when the GitHub token is missing or refused.
+ *
+ * This is on the page rather than only in docs/gcp-setup-playbook.md because of
+ * who is standing in front of it and when. The page says the nightly updates are
+ * not running; the next question is always "so what do I do", and the answer
+ * involves a GitHub screen and a gcloud command that nobody memorises. A link to
+ * a playbook is one more thing to go and find at the moment somebody has already
+ * found the right page.
+ *
+ * It prints the real project and secret id rather than placeholders — see
+ * `githubTokenSecretLocation` for why that is safe to render.
+ */
+
+interface Props {
+	/** `missing`: no token at all. `rejected`: there is one and GitHub refused it. */
+	mode: 'missing' | 'rejected'
+}
+
+const { mode } = Astro.props
+const location = githubTokenSecretLocation()
+
+// The URL that opens GitHub's fine-grained token form directly. Not the generic
+// settings page: the form is four clicks deep and easy to land on the wrong one
+// of, since classic tokens live next door and would also appear to work.
+const NEW_TOKEN_URL = 'https://github.com/settings/personal-access-tokens/new'
+
+const command = location
+	? `gcloud secrets versions add ${location.secretId} --project=${location.project} --data-file=-`
+	: 'gcloud secrets versions add github-dispatch-token --project=<project> --data-file=-'
+---
+
+<section class="notice bad token-help">
+	<h2>
+		{mode === 'missing' ? 'No GitHub token is configured' : 'GitHub refused the token'}
+	</h2>
+
+	<p>
+		{
+			mode === 'missing' ? (
+				<>
+					This service starts the update workflows by asking GitHub to run them, and it has no
+					token to ask with. Until it has one, the buttons below do nothing and the twice-daily
+					Cloud Scheduler runs fail.
+				</>
+			) : (
+				<>
+					There is a token, and GitHub would not accept it. Fine-grained tokens expire, and the
+					one here is <strong>not</strong> revoked or renewed automatically. Replacing it is the
+					same three steps as creating the first one.
+				</>
+			)
+		}
+	</p>
+
+	<p class="what-it-is">
+		The token <em>is</em> the secret. It is a GitHub fine-grained personal access token, stored as a
+		version of the Secret Manager secret{' '}
+		{location ? <code>{location.secretId}</code> : <span>this service points at</span>}. Terraform
+		creates that secret but deliberately never its value, so that the token is not written into
+		Terraform state — which means creating it is a manual step, by design, and this is it.
+	</p>
+
+	<ol class="steps">
+		<li>
+			<p>
+				<strong>Create the token</strong> at{' '}
+				<a href={NEW_TOKEN_URL} rel="noreferrer" target="_blank">
+					github.com/settings/personal-access-tokens/new
+				</a>
+				. It must be a <em>fine-grained</em> token, not a classic one.
+			</p>
+			<table class="datagrid token-fields">
+				<tbody>
+					<tr>
+						<td>Resource owner</td>
+						<td><code>{repository.split('/')[0]}</code></td>
+					</tr>
+					<tr>
+						<td>Repository access</td>
+						<td>
+							Only select repositories → <code>{repository}</code>
+						</td>
+					</tr>
+					<tr>
+						<td>Repository permissions</td>
+						<td>
+							<strong>Actions: Read and write</strong>, and nothing else
+						</td>
+					</tr>
+					<tr>
+						<td>Expiration</td>
+						<td>Your call — it cannot be "never", so put the date in a calendar</td>
+					</tr>
+				</tbody>
+			</table>
+			<p class="why">
+				Read and write on Actions is the whole grant: enough to start a workflow and to list recent
+				runs for this page, and not enough to read the repository's code or push to it. The
+				workflows do their own committing, with their own <code>GITHUB_TOKEN</code>.
+			</p>
+		</li>
+
+		<li>
+			<p>
+				<strong>Store it</strong> in Secret Manager, reading from stdin so the token never reaches
+				your shell history. Paste it, then press <kbd>Ctrl</kbd>+<kbd>D</kbd>:
+			</p>
+			<pre><code>{command}</code></pre>
+			{
+				!location && (
+					<p class="why">
+						This service has not been told where its secret is —{' '}
+						<code>GITHUB_DISPATCH_TOKEN_SECRET</code> is unset, which is normal on a laptop and a
+						misconfiguration in Cloud Run. The command above is a template.
+					</p>
+				)
+			}
+		</li>
+
+		<li>
+			<p>
+				<strong>Reload this page.</strong> Nothing needs redeploying: the token is read from Secret
+				Manager each time it is used, so a new version takes effect immediately. That is also all a
+				rotation is.
+			</p>
+		</li>
+	</ol>
+
+	<p class="why">
+		The same steps, with more context, are in <code>docs/gcp-setup-playbook.md</code> under "The
+		GitHub token for scheduled data updates".
+	</p>
+</section>
+
+<style>
+	.token-help {
+		display: flex;
+		flex-direction: column;
+		gap: 0.7rem;
+	}
+
+	.token-help h2 {
+		margin: 0;
+		font-size: 1rem;
+	}
+
+	.token-help p {
+		margin: 0;
+	}
+
+	.steps {
+		margin: 0;
+		padding-left: 1.2rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.9rem;
+	}
+
+	.steps li {
+		padding-left: 0.2rem;
+	}
+
+	.steps li > p + table,
+	.steps li > p + p,
+	.steps li > pre + p {
+		margin-top: 0.45rem;
+	}
+
+	.token-fields {
+		width: auto;
+	}
+
+	.token-fields td:first-child {
+		color: var(--text-dim);
+		white-space: nowrap;
+	}
+
+	.why {
+		color: var(--text-dim);
+		font-size: 0.85rem;
+	}
+
+	pre {
+		margin: 0;
+		padding: 0.6rem 0.75rem;
+		background: var(--bg);
+		border: 1px solid var(--line);
+		overflow-x: auto;
+		font-size: 0.82rem;
+	}
+
+	kbd {
+		font-family: var(--font-score, monospace);
+		font-size: 0.78rem;
+		border: 1px solid var(--line-strong);
+		border-radius: 3px;
+		padding: 0 0.25rem;
+	}
+</style>

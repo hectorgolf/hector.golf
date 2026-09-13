@@ -1,0 +1,210 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro'
+import PageHeader from '@hector/ui/components/PageHeader.astro'
+import GitHubTokenHelp from '../../components/GitHubTokenHelp.astro'
+
+import { FAILURE_MESSAGES, github, type GitHubFailure, type RunsOutcome } from '../../lib/github.ts'
+import { ageInWords, labelOf, toneOf, triggerInWords } from '../../lib/runs.ts'
+import { DISPATCHABLE_WORKFLOWS, workflowBySlug } from '../../lib/workflows.ts'
+
+/*
+ * The outcome of a dispatch arrives as query parameters rather than as anything
+ * held on the server, because the endpoint answers a form POST with a redirect
+ * and there is nowhere between the two to keep state — no session, and the
+ * service scales to zero between visits.
+ *
+ * Both parameters are therefore whatever was in the URL bar, so neither is
+ * rendered. They are looked up: the slug against the workflow list, the reason
+ * against the failure messages. Anything that does not resolve falls back to
+ * wording of our own, so nothing a stranger can put in a link reaches the page.
+ */
+const ran = workflowBySlug(Astro.url.searchParams.get('ran') ?? undefined)
+const failed = workflowBySlug(Astro.url.searchParams.get('failed') ?? undefined)
+const reason = Astro.url.searchParams.get('reason') as GitHubFailure | null
+const failureMessage = reason && reason in FAILURE_MESSAGES ? FAILURE_MESSAGES[reason] : undefined
+
+/*
+ * Both workflows' histories at once. In parallel because they are independent
+ * and this is the page's only latency; the client never fails the page, so a
+ * GitHub that is down costs the run history and not the buttons.
+ */
+const histories = new Map<string, RunsOutcome>(
+    await Promise.all(
+        DISPATCHABLE_WORKFLOWS.map(
+            async (workflow) => [workflow.slug, await github().recentRuns(workflow, 3)] as const
+        )
+    )
+)
+
+/*
+ * Whether the token itself is the problem, and therefore whether to put the
+ * instructions for fixing it on the page.
+ *
+ * Read from the run-history calls rather than only from a failed dispatch, so an
+ * admin who arrives before pressing anything is told why the page is empty. The
+ * dispatch's reason is folded in too, for the one case the histories cannot see:
+ * a token granted Actions *read* would list runs happily and then be refused the
+ * dispatch.
+ */
+const tokenTrouble = [
+    ...[...histories.values()].flatMap((outcome) => (outcome.ok ? [] : [outcome.reason])),
+    ...(failed && failureMessage && reason ? [reason] : []),
+]
+
+const tokenHelp = tokenTrouble.includes('not-configured')
+    ? 'missing'
+    : tokenTrouble.includes('unauthorized')
+      ? 'rejected'
+      : undefined
+
+const TONE_PILL = {
+    running: 'pill-live',
+    good: 'pill-victor',
+    bad: 'pill-matchplay',
+    neutral: 'pill-outline',
+} as const
+
+const now = new Date()
+---
+
+<AdminLayout title="Data updates">
+	<PageHeader
+		title="Data updates"
+		lede="The scrapes that keep the site's data current, and a way to run one now."
+	/>
+
+	{
+		ran && (
+			<p class="notice good">
+				Asked GitHub to run <strong>{ran.label}</strong>. It takes a minute or two, and the site
+				rebuilds after it commits.
+			</p>
+		)
+	}
+
+	{
+		failed && (
+			<p class="notice bad">
+				Could not start <strong>{failed.label}</strong>.{' '}
+				{failureMessage ?? 'GitHub refused the request. The details are in Cloud Logging.'}
+			</p>
+		)
+	}
+
+	<p class="lede-note">
+		These normally run twice a day, started by Cloud Scheduler at 03:00 and 12:00 UTC. Run one by hand
+		when the data is needed in between — or when the association published handicaps late enough that
+		the midday run was still too early to see them.
+	</p>
+
+	{tokenHelp && <GitHubTokenHelp mode={tokenHelp} />}
+
+	<div class="workflows">
+		{
+			DISPATCHABLE_WORKFLOWS.map((workflow) => {
+				const history = histories.get(workflow.slug)
+				const runs = history?.ok ? history.runs : []
+				const latest = runs[0]
+
+				return (
+					<article class="card workflow">
+						<div class="row-between">
+							<h2>{workflow.label}</h2>
+							{/*
+							 * A form rather than a link, because this changes
+							 * something. The admin ships no client JavaScript, so
+							 * the button is the submit and the endpoint redirects
+							 * back here.
+							 */}
+							<form method="POST" action={`/api/workflows/${workflow.slug}/dispatch`}>
+								<button type="submit">Run now</button>
+							</form>
+						</div>
+
+						<p class="blurb">{workflow.blurb}</p>
+
+						{latest ? (
+							<p class="last-run">
+								Last run <time datetime={latest.startedAt}>{ageInWords(latest.startedAt, now)}</time>,{' '}
+								{triggerInWords(latest)} —{' '}
+								<a href={latest.url} rel="noreferrer">
+									<span class:list={['pill', TONE_PILL[toneOf(latest)]]}>{labelOf(latest)}</span>
+								</a>
+							</p>
+						) : (
+							<p class="last-run muted">
+								{history?.ok
+									? 'No runs recorded yet.'
+									: 'Could not read the run history from GitHub.'}
+							</p>
+						)}
+
+						{runs.length > 1 && (
+							<ul class="earlier">
+								{runs.slice(1).map((run) => (
+									<li>
+										<a href={run.url} rel="noreferrer">
+											#{run.runNumber}
+										</a>{' '}
+										<span class="muted">
+											{ageInWords(run.startedAt, now)}, {triggerInWords(run)} — {labelOf(run)}
+										</span>
+									</li>
+								))}
+							</ul>
+						)}
+					</article>
+				)
+			})
+		}
+	</div>
+</AdminLayout>
+
+<style>
+	.lede-note {
+		color: var(--text-muted);
+		font-size: 0.9rem;
+		max-width: 44rem;
+	}
+
+	.workflows {
+		display: grid;
+		gap: 1rem;
+	}
+
+	.workflow {
+		padding: 1.1rem 1.25rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.workflow h2 {
+		margin: 0;
+		font-size: 1.05rem;
+	}
+
+	.workflow form {
+		margin: 0;
+	}
+
+	.blurb,
+	.last-run {
+		margin: 0;
+		font-size: 0.9rem;
+	}
+
+	.blurb {
+		color: var(--text-muted);
+	}
+
+	.muted {
+		color: var(--text-dim);
+	}
+
+	.earlier {
+		margin: 0.2rem 0 0;
+		padding-left: 1.1rem;
+		font-size: 0.85rem;
+	}
+</style>
