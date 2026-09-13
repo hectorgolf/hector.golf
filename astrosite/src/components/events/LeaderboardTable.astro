@@ -1,7 +1,7 @@
 ---
 import { getPlayerName } from '../../code/players'
 import { type EnrichedLeaderboard } from '../../code/leaderboards/leaderboards'
-import { leaderboardPosition, normalizeDiff, pointsLabel } from '../../code/leaderboards/presentation'
+import { decimalsForBoard, leaderboardPosition, normalizeDiff, pointsLabel } from '../../code/leaderboards/presentation'
 import { type Competition } from '@hector/ui/components/CompetitionMark.astro'
 
 interface Props {
@@ -30,6 +30,11 @@ interface Props {
 }
 
 const { entries, competitorLabel, ascending, competition, live = false, emptyMessage } = Astro.props
+
+// Strokes carry a decimal, Stableford points do not. Derived from the same
+// direction the board is sorted by, so the static table and the live updater —
+// which reads it back off `data-ascending` — cannot format differently.
+const decimals = decimalsForBoard(ascending)
 ---
 
 <div class="table-scroll">
@@ -78,9 +83,9 @@ const { entries, competitorLabel, ascending, competition, live = false, emptyMes
 								)}
 							</td>
 							<td class="numeric points">
-								<span class="score">{pointsLabel(points)}</span>
+								<span class="score">{pointsLabel(points, decimals)}</span>
 							</td>
-							<td class="numeric diff">{normalizeDiff(diff)}</td>
+							<td class="numeric diff">{normalizeDiff(diff, decimals)}</td>
 							<td class="thru num">{through}</td>
 						</tr>
 					)

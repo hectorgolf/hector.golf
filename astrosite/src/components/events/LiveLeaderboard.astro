@@ -58,6 +58,7 @@ const config = { eventId, endpoint, pollSeconds, stopAfter, roster: rosterByName
 <script>
 	import { readAppLeaderboardPayload } from '../../code/leaderboards/app-payload'
 	import {
+		decimalsForBoard,
 		leaderboardPosition,
 		normalizeDiff,
 		pointsLabel,
@@ -246,6 +247,9 @@ const config = { eventId, endpoint, pollSeconds, stopAfter, roster: rosterByName
 		delete table.dataset.empty
 
 		const ascending = table.dataset.ascending !== 'false'
+		// Same fact the static table formatted by, read back off the element it
+		// wrote it to, so a live update cannot change a column's precision.
+		const decimals = decimalsForBoard(ascending)
 
 		rows.forEach((row, index) => {
 			let tr = body.children[index] as HTMLElement | undefined
@@ -264,10 +268,10 @@ const config = { eventId, endpoint, pollSeconds, stopAfter, roster: rosterByName
 			}
 
 			const points = tr.querySelector<HTMLElement>('[data-cell="points"]')
-			if (points) points.textContent = pointsLabel(row.points)
+			if (points) points.textContent = pointsLabel(row.points, decimals)
 
 			const diff = tr.querySelector<HTMLElement>('[data-cell="diff"]')
-			if (diff) diff.textContent = normalizeDiff(row.diff)
+			if (diff) diff.textContent = normalizeDiff(row.diff, decimals)
 
 			const thru = tr.querySelector<HTMLElement>('[data-cell="thru"]')
 			if (thru) thru.textContent = throughLabel(row.through)

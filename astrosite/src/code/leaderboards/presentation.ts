@@ -37,15 +37,45 @@ export function leaderboardPosition(
 }
 
 /**
+ * How many decimals a board's numbers carry.
+ *
+ * This follows the unit the board counts in, and the scoring direction is how
+ * that unit is recorded: a board where lower is better is counting **strokes**,
+ * which are fractional once handicap allowances are applied — 224.9 is a real
+ * score — while a board where higher is better is counting **Stableford points**,
+ * and there is no such thing as half a Stableford point.
+ *
+ * Reading it off the direction rather than off the competition's name is what
+ * keeps the older events right. Hector counted points until 2022 and strokes
+ * from 2023, so HECTOR2020 is a Hector board that must print "206" while
+ * HECTOR2025 is a Hector board that must print "222.0". The stored `scoring`
+ * field already says which each one is.
+ */
+export function decimalsForBoard(lowerIsBetter: boolean): number {
+    return lowerIsBetter ? 1 : 0;
+}
+
+/**
  * The difference to the leader, as the board prints it.
  *
  * The leader's own row and a dead-level row both print nothing — a column of
  * "0.0" against the leader reads as a score rather than as a gap.
+ *
+ * The sign is preserved and the magnitude re-formatted to the board's precision,
+ * rather than the source string being passed through with a decimal bolted on.
+ * The sources disagree about precision for the same competition — a sheet has
+ * sent Victor gaps as both "-2" and "-2.0" in different years — and the column
+ * has to read the same way down its whole length regardless.
  */
-export function normalizeDiff(diff: string): string {
+export function normalizeDiff(diff: string, decimals: number): string {
     if (diff === "") return diff;
-    if (diff === "0.0") return "";
-    return diff.includes(".") ? diff : `${diff}.0`;
+    const value = parseFloat(diff);
+    // Anything that is not a number is handed back untouched: a source that
+    // starts sending "E" or "AS" for level should reach the board as it wrote it
+    // rather than as "NaN".
+    if (!Number.isFinite(value)) return diff;
+    if (value === 0) return "";
+    return `${value > 0 ? "+" : "-"}${Math.abs(value).toFixed(decimals)}`;
 }
 
 /**
@@ -59,10 +89,20 @@ export function throughLabel(through: string): string {
     return through || "0";
 }
 
-/** The score, as the board prints it: one decimal, matching the stored snapshots. */
-export function pointsLabel(points: number | string): string {
-    if (typeof points === "string") return points;
-    return Number.isFinite(points) ? points.toFixed(1) : String(points);
+/**
+ * The score, as the board prints it, at the board's own precision.
+ *
+ * A stored score is a *string* — the sheets write "143.0" one year and "150" the
+ * next for the same competition — so it is parsed and re-formatted rather than
+ * passed through. Passing it through is what made the Victor board print "150"
+ * for 2023 and "143.0" for 2025, which is the same score in two notations.
+ *
+ * Something that will not parse is handed back as it arrived, for the same
+ * reason as in `normalizeDiff`.
+ */
+export function pointsLabel(points: number | string, decimals: number): string {
+    const value = asNumber(points);
+    return Number.isFinite(value) ? value.toFixed(decimals) : String(points);
 }
 
 /**

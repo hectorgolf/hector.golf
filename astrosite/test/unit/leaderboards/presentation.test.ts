@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+    decimalsForBoard,
     leaderboardPosition,
     normalizeDiff,
     pointsLabel,
@@ -34,23 +35,57 @@ describe("leaderboardPosition", () => {
     });
 });
 
+describe("decimalsForBoard", () => {
+    /*
+     * Precision follows the unit, and the direction is how the unit is recorded:
+     * lower-is-better means strokes, which go fractional once handicap
+     * allowances are applied, and higher-is-better means Stableford points,
+     * which do not come in halves.
+     */
+    it("gives a strokes board one decimal", () => {
+        expect(decimalsForBoard(true)).toBe(1);
+    });
+
+    it("gives a Stableford board none", () => {
+        expect(decimalsForBoard(false)).toBe(0);
+    });
+});
+
 describe("normalizeDiff", () => {
+    const STROKES = 1;
+    const POINTS = 0;
+
     it("leaves the leader's empty diff empty", () => {
-        expect(normalizeDiff("")).toBe("");
+        expect(normalizeDiff("", STROKES)).toBe("");
+        expect(normalizeDiff("", POINTS)).toBe("");
     });
 
-    it("prints nothing for a dead-level score", () => {
-        expect(normalizeDiff("0.0")).toBe("");
+    it("prints nothing for a dead-level score, however the source spelled zero", () => {
+        expect(normalizeDiff("0.0", STROKES)).toBe("");
+        expect(normalizeDiff("0", POINTS)).toBe("");
+        expect(normalizeDiff("+0.0", POINTS)).toBe("");
     });
 
-    it("gives a whole number a decimal", () => {
-        expect(normalizeDiff("+2")).toBe("+2.0");
-        expect(normalizeDiff("1")).toBe("1.0");
+    it("prints a strokes gap to one decimal", () => {
+        expect(normalizeDiff("+2", STROKES)).toBe("+2.0");
+        expect(normalizeDiff("+2.9", STROKES)).toBe("+2.9");
+        expect(normalizeDiff("-1.0", STROKES)).toBe("-1.0");
     });
 
-    it("leaves an existing decimal alone", () => {
-        expect(normalizeDiff("+2.9")).toBe("+2.9");
-        expect(normalizeDiff("-1.0")).toBe("-1.0");
+    it("prints a Stableford gap whole, because there is no half a point", () => {
+        expect(normalizeDiff("-3", POINTS)).toBe("-3");
+        // The sheets have written the same gap both ways in different years; the
+        // column has to read the same way down its whole length regardless.
+        expect(normalizeDiff("-3.0", POINTS)).toBe("-3");
+    });
+
+    it("keeps the sign the source gave it", () => {
+        expect(normalizeDiff("1", STROKES)).toBe("+1.0");
+        expect(normalizeDiff("-1", POINTS)).toBe("-1");
+    });
+
+    it("hands back something that is not a number rather than printing NaN", () => {
+        expect(normalizeDiff("AS", POINTS)).toBe("AS");
     });
 });
 
@@ -70,13 +105,26 @@ describe("throughLabel", () => {
 });
 
 describe("pointsLabel", () => {
-    it("passes a stored string through untouched", () => {
-        expect(pointsLabel("222.0")).toBe("222.0");
+    const STROKES = 1;
+    const POINTS = 0;
+
+    it("prints a strokes score to one decimal, from a number or a stored string", () => {
+        expect(pointsLabel(222, STROKES)).toBe("222.0");
+        expect(pointsLabel(224.9, STROKES)).toBe("224.9");
+        expect(pointsLabel("222.0", STROKES)).toBe("222.0");
     });
 
-    it("gives a live number the one decimal the snapshots use", () => {
-        expect(pointsLabel(222)).toBe("222.0");
-        expect(pointsLabel(224.9)).toBe("224.9");
+    it("prints a Stableford score whole", () => {
+        expect(pointsLabel(143, POINTS)).toBe("143");
+        // The reason this reformats rather than passing the stored string
+        // through: the sheets wrote "150" for 2023 and "143.0" for 2025, and the
+        // Victor board printed both, for the same kind of score.
+        expect(pointsLabel("143.0", POINTS)).toBe("143");
+        expect(pointsLabel("150", POINTS)).toBe("150");
+    });
+
+    it("hands back something that is not a number rather than printing NaN", () => {
+        expect(pointsLabel("-", POINTS)).toBe("-");
     });
 });
 
