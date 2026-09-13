@@ -9,7 +9,22 @@
  */
 export type IsoDate = string;
 
+/**
+ * A moment in time, to the second, always in UTC: "2026-09-13T03:02:42Z".
+ *
+ * Distinct from `IsoDate` in what it is for. A date says which day something is
+ * *about*; an instant says when we *saw* it. The two answer different questions
+ * and a handicap entry carries both, because the answers can differ by most of a
+ * day — see `docs/handicap-updates.md`.
+ *
+ * Always UTC, and spelled with the `Z`, so that two instants can be compared as
+ * strings and so that no reader has to ask which zone a file was written in.
+ */
+export type IsoInstant = string;
+
 const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+const ISO_INSTANT_PATTERN = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})Z$/;
 
 const MONTH_NAMES = [
     "January", "February", "March", "April", "May", "June",
@@ -39,6 +54,31 @@ export const isoDate = (date: Date|undefined): IsoDate => {
  * @returns the current date in ISO format (yyyy-mm-dd)
  */
 export const isoDateToday = (): IsoDate => isoDate(new Date());
+
+/**
+ * The current moment as an `IsoInstant`.
+ *
+ * Seconds are the finest resolution kept. `toISOString()` offers milliseconds and
+ * nothing here is timed that closely — the things being stamped happen minutes or
+ * hours apart — so the extra digits would be noise in a file people read.
+ */
+export const isoInstantNow = (now: Date = new Date()): IsoInstant =>
+    now.toISOString().replace(/\.\d+Z$/, "Z");
+
+/**
+ * True if the string is a moment in UTC, to the second, spelled "2026-09-13T03:02:42Z".
+ *
+ * Deliberately narrower than ISO 8601 allows. An offset other than `Z`, a missing
+ * `Z`, or fractional seconds are all rejected rather than normalised, so that every
+ * instant in the data reads the same way and sorts as a string.
+ */
+export function isValidIsoInstant(value: string): boolean {
+    const match = value.match(ISO_INSTANT_PATTERN);
+    if (!match) return false;
+    const [, date, hours, minutes, seconds] = match;
+    if (!isValidIsoDate(date)) return false;
+    return Number(hours) < 24 && Number(minutes) < 60 && Number(seconds) < 60;
+}
 
 /**
  * True if the string is a real calendar date in ISO format.

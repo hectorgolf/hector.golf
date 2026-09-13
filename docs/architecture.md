@@ -254,7 +254,7 @@ All content lives as JSON committed under [`astrosite/src/data/`](../astrosite/s
 | `events/finnkampen/*.json` | 2 | Human | `FINNKAMPEN2021`–`2022` |
 | `courses/*.json` | 17 | Human | Tees, ratings, slope, scorecard, per-hole descriptions |
 | `leaderboards/*.json` | 6 | CI only | Per-event Hector and Victor standings |
-| `handicaps.json` | 1390 entries | CI only | Append-only `{player, date, handicap}` time series |
+| `handicaps.json` | 1393 entries | CI only | Append-only `{player, date, handicap, observed?}` time series. `observed` says when the value was read, which is not the same day as `date` when the Golf Union re-runs a failed batch — see [handicap-updates.md](./handicap-updates.md) |
 | `clubs.json` | 140 clubs | CI only | Finnish golf clubs `{name, abbreviation, sources[]}` |
 
 ### Events are a discriminated union

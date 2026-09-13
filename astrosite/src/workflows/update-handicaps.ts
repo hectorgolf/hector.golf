@@ -5,12 +5,13 @@ import { fileURLToPath } from "url";
 import type { HandicapSource } from "../code/handicaps/handicap-source-api.ts";
 import { createWisegolfSession } from "../code/handicaps/wisegolf-api.ts";
 
-import { formatEventDates, isoDateToday } from "@hector/schemas/src/dates.ts";
+import { formatEventDates, isoDateToday, isoInstantNow } from "@hector/schemas/src/dates.ts";
 import { writeJsonFile } from "../code/json.ts";
 
 import { playersData, hectorEvents, hasParticipants, bucketsAreOpen, pathToEventJson } from "../code/data.ts";
 import { getPlayerName, updatePlayerData } from "../code/players.ts";
 import type { Player } from "@hector/schemas/src/players.ts";
+import type { HandicapHistoryEntry } from "@hector/schemas/src/handicaps.ts";
 
 /**
  * Get the player's handicap from their history.
@@ -78,18 +79,15 @@ type PlayerWithHandicapChanges = Player & {
     handicapChangedFrom?: number;
 };
 
-type HandicapHistoryEntry = {
-    date: string;
-    player: string;
-    handicap: number;
-};
-
 const persistHandicapHistoryToDisk = async (
     players: PlayerWithHandicapChanges[],
     handicapHistory: Array<HandicapHistoryEntry>,
 ) => {
     const newHandicapChanges: Array<HandicapHistoryEntry> = [];
     const date = isoDateToday();
+    // One stamp for the whole run: these entries were all read from the same
+    // response, and a per-entry clock would imply a precision that is not there.
+    const observed = isoInstantNow();
 
     const playersWithNewHandicap = players.filter((p) => p.handicap !== undefined).filter((p) => p.handicapChanged);
 
@@ -104,8 +102,11 @@ const persistHandicapHistoryToDisk = async (
             // mistakenly grabbed "today's" handicap from the API, and later in the afternoon data update
             // we get the "correct" handicap because the Golf Association has re-run their failed batch job.
             handicapHistory = handicapHistory.filter((entry) => !(entry.player === player.id && entry.date === date));
+            // The replaced observation survives only in this line and in git: the
+            // entry that lands keeps the later `observed`, which is what explains a
+            // surprising bucket, but the morning value it displaced is not kept.
             console.warn(
-                `Updating older entry for ${getPlayerName(player)} on ${duplicate.date}. Replacing ${JSON.stringify(duplicate.handicap)} with ${JSON.stringify(player.handicap)}`,
+                `Updating older entry for ${getPlayerName(player)} on ${duplicate.date}. Replacing ${JSON.stringify(duplicate.handicap)} observed ${JSON.stringify(duplicate.observed ?? "at an unrecorded time")} with ${JSON.stringify(player.handicap)} observed ${observed}`,
             );
         }
         // If there's no entry for this player on this date, we'll just push a new entry to the list
@@ -113,6 +114,7 @@ const persistHandicapHistoryToDisk = async (
             date,
             player: player.id,
             handicap: player.handicap as number,
+            observed,
         });
 
         commitMessage.push(
