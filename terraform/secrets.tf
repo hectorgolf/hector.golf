@@ -33,7 +33,19 @@ resource "google_secret_manager_secret" "github_dispatch_token" {
     component = "admin"
   }
 
-  depends_on = [google_project_service.enabled["secretmanager.googleapis.com"]]
+  depends_on = [
+    google_project_service.enabled["secretmanager.googleapis.com"],
+    # Terraform in CI runs as terraform-ci, and the role that lets it create this
+    # secret is granted by *this configuration*, in iam.tf. Without an edge the
+    # two are unordered, so the first apply after secretmanager.admin was added
+    # raced and lost: "Permission 'secretmanager.secrets.create' denied".
+    #
+    # This makes the grant happen first. It is not a guarantee — IAM is
+    # eventually consistent, so a grant made seconds ago may still not be in
+    # effect — but it turns a coin flip into a rare retry. See the troubleshooting
+    # note on new terraform-ci roles in docs/gcp-setup-playbook.md.
+    google_project_iam_member.terraform_ci,
+  ]
 }
 
 # Read access for the service, and for nothing else. `secretAccessor` can read

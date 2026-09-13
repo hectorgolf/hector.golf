@@ -28,8 +28,9 @@ import { SCHEDULED_WORKFLOWS } from '../../../lib/workflows.ts'
  * A fan-out has an outcome per workflow and one status code to say it in. This
  * reports 502 if any dispatch failed, which makes Cloud Scheduler retry the
  * whole tick and re-dispatch the ones that worked. That is the right trade here:
- * a duplicate run is cheap — the scrapes replace the day's entry rather than
- * appending, and the shared GitHub concurrency group keeps two runs from
+ * a duplicate run is cheap — a repeated handicap reading is kept as another
+ * reading rather than corrupting the first, `latestPerDay` decides which one
+ * counts, and the shared GitHub concurrency group keeps two runs from
  * overlapping — while a silently skipped workflow is the failure this service
  * was built to stop. The body names each workflow and its outcome, so the logs
  * say which half actually failed.

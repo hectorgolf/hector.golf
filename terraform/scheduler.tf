@@ -98,8 +98,11 @@ resource "google_cloud_scheduler_job" "data_update" {
   # been done, the same way google_iap_settings is.
   for_each = local.iap_configured ? local.data_update_schedules : {}
 
-  project     = var.project_id
-  region      = var.region
+  project = var.project_id
+  # NOT var.region. Cloud Scheduler does not run in europe-north1, where the rest
+  # of this project lives — see var.scheduler_region for the whole story. This is
+  # the one resource here that is deliberately somewhere else.
+  region      = var.scheduler_region
   name        = "hector-data-update-${each.key}"
   description = "Starts the scheduled data updates via the admin service, because GitHub's own cron runs hours late."
 
@@ -121,9 +124,10 @@ resource "google_cloud_scheduler_job" "data_update" {
     #
     # The endpoint fans out, so a retry after a partial failure re-dispatches the
     # workflows that already succeeded. That is the better half of the trade: a
-    # duplicate run replaces the day's entry rather than appending to it and is
-    # serialised by the shared concurrency group, while a silently skipped
-    # workflow is the exact failure this whole mechanism exists to stop.
+    # repeated handicap reading is kept as another reading rather than corrupting
+    # the first, the runs are serialised by the shared concurrency group, and a
+    # silently skipped workflow is the exact failure this mechanism exists to
+    # stop.
     retry_count          = 3
     min_backoff_duration = "30s"
     max_backoff_duration = "300s"
@@ -161,5 +165,9 @@ resource "google_cloud_scheduler_job" "data_update" {
     google_project_service.enabled["cloudscheduler.googleapis.com"],
     google_service_account_iam_member.scheduler_agent_mints_tokens,
     google_iap_web_cloud_run_service_iam_member.scheduler,
+    # Same reason as in secrets.tf: cloudscheduler.admin is granted to
+    # terraform-ci by iam.tf, and without this edge the grant and the first use
+    # of it are unordered within the same apply.
+    google_project_iam_member.terraform_ci,
   ]
 }

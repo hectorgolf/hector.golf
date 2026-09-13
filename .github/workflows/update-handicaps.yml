@@ -15,8 +15,10 @@ on:
   # See terraform/scheduler.tf and admin/src/lib/workflows.ts.
   #
   # This stays because late is better than never on the day the admin service is
-  # the broken one. When both fire, the concurrency group below serialises them
-  # and the script replaces the day's handicap entry rather than duplicating it.
+  # the broken one. When both fire, the concurrency group below serialises them,
+  # and a second run in one day is a supported outcome rather than a mess: every
+  # reading is kept, and `latestPerDay` in @hector/schemas decides which one the
+  # site shows. A run that reads the same value twice costs a row.
   schedule:
     - cron: "0 3,13 * * *"
 
