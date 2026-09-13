@@ -32,6 +32,43 @@ installed, so it has been checked by hand — the YAML parses to the intended st
 bash was exercised under `bash -e` in all three variable states, and the rendered `gcloud` command
 is syntax-checked with and without the matrix's `extra_flags` — but never linted.
 
+## Security, from the same sweep
+
+**Rotate the `update-hector-leaderboard` keys.** `UpdateLeaderboard`'s source bundle contained a
+service account private key — `service_account_credentials.json`, committed into the zip that was
+sitting in `gcf-v2-sources-167706335356-europe-north1`. The zip is deleted and it was the last copy
+(bucket versioning is on, one version existed; no matching image in `gcf-artifacts`), so nothing new
+is exposed. **Deleting a copy is not revocation**, though: the key is still valid.
+
+It is `583f23a1…`, and it is not dormant — Policy Analyzer reports it authenticating through
+2026-09-05, the end of its observation window. The account carries `roles/secretmanager.secretAccessor`,
+so that key reads every secret in the project.
+
+What blocks the rotation is that **two** of its keys are live: `583f23a1…` and `cf542f7b…`
+(2026-09-01). So two things use this account and only one of them is CI —
+`update-leaderboards.yml:64` passes `GCP_SERVICE_ACCOUNT_CREDENTIALS` as `GOOGLE_CREDENTIALS` for
+Sheets access. GitHub secrets cannot be read back, so identifying which is which means either a
+throwaway workflow that prints only `private_key_id`, or the local copy of the JSON. Find the second
+consumer first: rotating blind fixes CI and silently breaks whatever else is using the other key.
+
+Enable it with:
+
+```bash
+gcloud services enable policyanalyzer.googleapis.com --project=hector-golf
+gcloud policy-intelligence query-activity --activity-type=serviceAccountKeyLastAuthentication \
+  --project=gen-lang-client-0537211409 --format=json
+```
+
+Note that report lists keys that no longer exist — it records what has authenticated, not what is
+there — so check anything it names against `gcloud iam service-accounts keys list`.
+
+**Decide what to do with `terraform-deployer`.** A dormant identity in the old project, last
+authenticated 2025-04-06, holding `iam.serviceAccountAdmin`, `iam.serviceAccountUser` and
+`storage.admin` — enough to impersonate any service account in the project, including the one above.
+Its one never-used key is deleted; one user-managed key remains. The roles are normal for a Terraform
+identity and the dormancy is the problem, so the suggested order is disable, wait a week, then delete.
+Not urgent, and nothing about it is reachable without existing project access.
+
 ## Decisions before the migration runs
 
 All settled. `docs/functions-migration.md` is no longer blocked on a decision, and phases 1 and 8
@@ -61,12 +98,16 @@ project filter, so it spans the whole billing account rather than `hector-golf`.
 source of any alert mail that already looks like noise, and it is worth either adopting or deleting
 before judging the managed one.
 
-**~~Find out what else lives in `gen-lang-client-0537211409`.~~** Answered. It holds
+**~~Find out what else lives in `gen-lang-client-0537211409`.~~** Answered, and acted on. It holds
 `hector-firestore`, deliberately, and the project is therefore not deleted — `docs/functions-migration.md`
-phase 7 now says so rather than leaving it open. Still unaccounted for and worth a look before
-phase 7 runs: a fifth gen2 function, `UpdateLeaderboard`, that nothing in this repository
-references, and two 1st-gen leftovers in `europe-west3` (`greeting-function`,
-`task-processor-function`). Phase 7 deletes four functions by name and none of these is one of them.
+phase 7 now says so rather than leaving it open.
+
+The three functions phase 7 did not name are gone. `greeting-function` and `task-processor-function`
+in `europe-west3` were tutorial leftovers — deployed eight seconds apart, running as the default App
+Engine account, no log entries in 180 days. `UpdateLeaderboard` turned out to be the Cloud Functions
+Hello World scaffold under a name someone meant to implement: its whole body was
+``res.send(`Hello ${name}`)``, deployed 2024-09-05 and never touched again. Its Cloud Run service and
+source object went with it. The project now holds exactly the four functions phase 7 names.
 
 **~~Confirm whether both projects bill to the same account.~~** Answered: both are on
 `billingAccounts/016901-7781DB-45CC39`, so the migration moves no money between accounts. What it
