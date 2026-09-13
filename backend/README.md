@@ -2,6 +2,18 @@
 
 This is an Express.js based REST API for the hector.golf website.
 
+# Configuration
+
+Copy [`backend-functions/.env.sample`](backend-functions/.env.sample) to
+`backend-functions/.env` and fill in the values. `.env` is gitignored and has to stay
+that way: three of the five values are live credentials, and this repository is public.
+
+Every `deploy:*` and `start:*` script sources that file. They do it with
+`set -a && . ./.env && set +a` rather than `export $(cat .env | xargs)`, which cannot
+read a file with comments in it — `xargs` fails and every variable silently comes out
+empty, which for a deploy means `--set-env-vars GOOGLE_GEMINI_API_KEY=` and a function
+that ships without its key.
+
 # Tests
 
 ```bash
