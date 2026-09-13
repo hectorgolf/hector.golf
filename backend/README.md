@@ -17,6 +17,35 @@ starts the framework CLI against it for every `--entry-point` the deploy scripts
 resolving it exactly the way `gcloud` will. None of them reach the network, GCP, or
 Gemini. See [backend-functions/test/README.md](backend-functions/test/README.md).
 
+# The `uuid` override
+
+`package.json` pins `uuid` to `11.1.1` through an `overrides` block. It is the
+only override here, and it is worth knowing why before deleting it.
+
+`uuid` is not a dependency of ours. It arrives as
+`@google-cloud/functions-framework` → `cloudevents` → `uuid@^8.3.2`, and 8.3.2 is
+subject to [GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq):
+`v3()`, `v5()` and `v6()` write into a caller-supplied buffer without checking its
+bounds, so an undersized buffer is partly filled instead of throwing the
+`RangeError` that `v4()` raises. Nothing here calls those, but the advisory is
+what Dependabot sees.
+
+The usual fix does not exist. `@google-cloud/functions-framework@5.0.5` and
+`cloudevents@10.0.0` are both the newest published releases, and `cloudevents`
+still asks for `uuid@^8.3.2`, so there is no version to upgrade to and an
+override is the whole of the remedy.
+
+`11.1.1` rather than the newest `14.0.0` because `cloudevents` is CommonJS and
+reaches `uuid` by `require("uuid")`. The 11.x line is the last one that ships a
+CommonJS build; 12, 13 and 14 are ESM-only. All four lines carry the fix — it was
+backported to 11.1.1, 12.0.1 and 13.0.1 — so staying on 11 costs nothing but the
+newer majors.
+
+Remove the block once `cloudevents` ships a release that asks for a patched
+`uuid` itself. `test/deployment` is the suite that would notice if the override
+ever broke the framework, since it boots the Functions Framework CLI against a
+real build.
+
 # GeneratePlayerAvatar API
 
 `GeneratePlayerAvatar` expects a JSON body with two fields:
