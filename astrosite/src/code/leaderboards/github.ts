@@ -1,5 +1,5 @@
 import { Octokit, RequestError } from "octokit";
-import type { GoogleSheetIndividualLeaderboard, GoogleSheetTeamLeaderboard } from "./types";
+import { BOARD_SCORING, type GoogleSheetIndividualLeaderboard, type GoogleSheetTeamLeaderboard } from "./types";
 import { serializeJson } from "../json";
 
 const getEnvironmentVariable = (name: string): string => {
@@ -62,10 +62,11 @@ const createOrReplaceHectorLeaderboardDataFile = async (
 ): Promise<boolean> => {
     const payload = {
         event: eventId,
-        scoring: {
-            hector: "ascending", // for Hector, lower score is better since we're counting strokes (starting from 2023 onwards)
-            victor: "descending", // for Victor, higher score is better since we're counting Stableford points
-        },
+        // Hector counts strokes (lower is better) from 2023 onwards, Victor counts
+        // Stableford points (higher is better). Read from one definition rather
+        // than restated here, because the app adapter signs its diffs by the same
+        // fact and the two disagreeing would sign every gap backwards.
+        scoring: BOARD_SCORING,
         hector: hector,
         victor: victor,
         updatedAt: new Date().toISOString(),

@@ -1,4 +1,9 @@
-import type { GoogleSheetIndividualLeaderboard, GoogleSheetTeamLeaderboard } from "./types";
+import {
+    BOARD_SCORING,
+    type GoogleSheetIndividualLeaderboard,
+    type GoogleSheetTeamLeaderboard,
+    type ScoringDirection,
+} from "./types";
 
 /**
  * The parts of an app.hector.golf tournament payload that the leaderboards read.
@@ -46,11 +51,39 @@ export type AppLeaderboardSnapshot = LeaderboardData & {
     status?: string;
 };
 
+/**
+ * The gap to the leader, as the shared row shape defines it: signed.
+ *
+ * app.hector.golf sends `diffToLeader` as a **magnitude** — how far behind, never
+ * which way — so 3.5 strokes behind and 3 points behind both arrive as a bare
+ * positive number. Google Sheets has always sent the sign along with the number,
+ * and the board renders whatever string it is given, so app-sourced rows used to
+ * print "3.5" where sheet-sourced rows print "+3.5".
+ *
+ * The sign is a property of the board's direction rather than of the competition:
+ * a player behind the leader scores *higher* where lower is better, and *lower*
+ * where higher is better. Hector counted points before 2023, so hard-coding
+ * "Hector means plus" would have been wrong for the events that are still
+ * published.
+ *
+ * `Math.abs` first, so that this stays right if upstream ever starts sending the
+ * sign itself: a signed value is re-signed to the same thing rather than coming
+ * out as "+-3".
+ */
+const signedDiff = (diffToLeader: number | null | undefined, direction: ScoringDirection): string => {
+    // Zero is not "level with the leader by 0", it is a row with no gap to show,
+    // and the board prints nothing for it — see `normalizeDiff`, which reduces a
+    // sheet's "0.0" to the same empty string.
+    if (!diffToLeader) return "";
+    const magnitude = Math.abs(diffToLeader);
+    return direction === "ascending" ? `+${magnitude}` : `-${magnitude}`;
+};
+
 export const extractHectorRows = (data: AppLeaderboardPayload): GoogleSheetTeamLeaderboard => {
     return data.hector.map((entry) => ({
         team: entry.players,
         points: entry.points ?? 0,
-        diff: entry.diffToLeader ? String(entry.diffToLeader) : "",
+        diff: signedDiff(entry.diffToLeader, BOARD_SCORING.hector),
         through: `${entry.roundsPlayed ?? 0}/${data.rounds.length}`,
     }));
 };
@@ -59,7 +92,7 @@ export const extractVictorRows = (data: AppLeaderboardPayload): GoogleSheetIndiv
     return data.victor.map((entry) => ({
         player: entry.player,
         points: entry.points ?? 0,
-        diff: entry.diffToLeader ? String(entry.diffToLeader) : "",
+        diff: signedDiff(entry.diffToLeader, BOARD_SCORING.victor),
         through: `${entry.roundsPlayed ?? 0}/${data.rounds.length}`,
     }));
 };
