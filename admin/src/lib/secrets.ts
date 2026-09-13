@@ -104,7 +104,16 @@ export async function githubToken(): Promise<string | undefined> {
         const payload = version.payload?.data?.toString().trim()
         return payload || undefined
     } catch (error) {
-        console.error('Could not read the GitHub token', { secret: githubTokenSecret }, error)
+        // The resource name is deliberately not interpolated here, and please do
+        // not add it back as a convenience. It reads to CodeQL's
+        // `js/clear-text-logging` rule as a value from a sensitive environment
+        // variable being written to a log — which it is not, being a path rather
+        // than a credential, but the rule cannot tell those apart and is right to
+        // be suspicious of the shape.
+        //
+        // Nothing is lost: this service has exactly one secret, and the Secret
+        // Manager client's own error names the resource it failed to read.
+        console.error('Could not read the GitHub token from Secret Manager', error)
         return undefined
     }
 }
