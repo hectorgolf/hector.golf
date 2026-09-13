@@ -1,0 +1,21 @@
+{
+  // Typechecks the tests, which `tsconfig.json` deliberately leaves out: that one
+  // describes the deployable build, and the tests are not part of it.
+  //
+  // The module settings differ from the build's on purpose. Vitest runs these files as
+  // ES modules through Vite, so `import.meta.url` is available here in a way it is not
+  // in the CommonJS output `tsc` emits into `dist/`.
+  "extends": "../tsconfig.json",
+  "include": ["./**/*.ts", "../src/**/*.ts", "../vitest.config.mts"],
+  // The base config's exclusions, minus the `*.test.ts` one that is the whole point of
+  // this file. `src/cli/` stays out: it is a local tool, not part of the deployment.
+  "exclude": ["node_modules", "../src/cli/**/*.ts"],
+  "compilerOptions": {
+    "rootDir": "..",
+    "noEmit": true,
+    "declaration": false,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": ["node"]
+  }
+}

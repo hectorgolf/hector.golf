@@ -2,6 +2,21 @@
 
 This is an Express.js based REST API for the hector.golf website.
 
+# Tests
+
+```bash
+cd backend/backend-functions
+npm install
+npm test
+```
+
+Three suites, in rising order of cost and of how much they prove:
+`test/unit` calls modules directly, `test/functions` drives each handler over real HTTP
+through the Functions Framework's own server, and `test/deployment` builds `dist/` and
+starts the framework CLI against it for every `--entry-point` the deploy scripts name,
+resolving it exactly the way `gcloud` will. None of them reach the network, GCP, or
+Gemini. See [backend-functions/test/README.md](backend-functions/test/README.md).
+
 # GeneratePlayerAvatar API
 
 `GeneratePlayerAvatar` expects a JSON body with two fields:

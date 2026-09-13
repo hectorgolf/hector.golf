@@ -20,7 +20,13 @@ function extractAuthToken(request: Request): string | undefined {
     return token ? token : undefined;
 }
 
-function validateAvatarImagePayload(image: unknown, fieldName: string): string[] {
+/**
+ * Exported so the rules the README documents can be tested one at a time, rather than
+ * only through an HTTP round trip that can assert on one combination per request.
+ * It is not part of the deployed surface: `gcloud` resolves `--entry-point` by name
+ * against the package's `main`, so an extra named export here changes nothing.
+ */
+export function validateAvatarImagePayload(image: unknown, fieldName: string): string[] {
     const errors: string[] = [];
 
     if (typeof image === "string") {
