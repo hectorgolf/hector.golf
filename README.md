@@ -54,12 +54,16 @@ behind `GeneratePlayerAvatar` is not free. Nobody has looked at what the old pro
 If it is already above €1/month, the 50% threshold will fire on ordinary use and the alert stops
 being worth reading.
 
-**Find out what else lives in `gen-lang-client-0537211409`.** Phase 7 offers to delete the project.
-If a Firestore database was ever created there by accident it is holding that project's free-tier
-allowance, and deleting throws it away — `docs/gcp-setup-playbook.md` has the sweep that finds one.
+**~~Find out what else lives in `gen-lang-client-0537211409`.~~** Answered. It holds
+`hector-firestore`, deliberately, and the project is therefore not deleted — `docs/functions-migration.md`
+phase 7 now says so rather than leaving it open. Still unaccounted for and worth a look before
+phase 7 runs: a fifth gen2 function, `UpdateLeaderboard`, that nothing in this repository
+references, and two 1st-gen leftovers in `europe-west3` (`greeting-function`,
+`task-processor-function`). Phase 7 deletes four functions by name and none of these is one of them.
 
-**Confirm whether both projects bill to the same account.** It decides whether the migration changes
-anything about billing beyond which budget filter can see the spend.
+**~~Confirm whether both projects bill to the same account.~~** Answered: both are on
+`billingAccounts/016901-7781DB-45CC39`, so the migration moves no money between accounts. What it
+moves is which project the spend is attributed to, which is what the budget filter sees.
 
 ## Documentation
 

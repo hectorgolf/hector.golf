@@ -65,9 +65,11 @@ gcloud billing projects describe gen-lang-client-0537211409 --format="value(bill
 gcloud billing projects describe hector-golf --format="value(billingAccountName)"
 ```
 
-**Nothing else is in the old project.** If a Firestore database was created there by accident, it is
-holding that project's free-tier allowance and deleting the project throws it away. The playbook's
-sweep over every project you can see is the way to check.
+**Nothing else is in the old project.** Checked, and the answer is no: it holds a Firestore
+database, `hector-firestore` in `europe-north1`, with backup schedules enabled. It is not there by
+accident and it is staying — see "The old project is not deleted" below. Run the playbook's sweep
+anyway before phase 7 if time has passed, since the point is to find what nobody remembers putting
+there.
 
 ## Phase 1 — Terraform
 
@@ -313,9 +315,25 @@ for fn in ExtractScorecardInformation GeneratePlayerBiography GeneratePlayerAvat
 done
 ```
 
-Delete the old Gemini API key. Then decide about the project itself — deleting it is reversible for
-30 days, and the playbook's argument for keeping a stray project applies here too if it holds a
-free-tier Firestore database.
+Delete the old Gemini API key.
+
+### The old project is not deleted
+
+Decided, rather than left open: `gen-lang-client-0537211409` stays, because it holds
+`hector-firestore` and the intention is to keep that database available for something else in that
+project later.
+
+The reason is the free tier, which is granted **per project** rather than per account. One free
+Firestore database per project means the old project's allowance is only usable inside the old
+project, and it is spent the moment the database is deleted — there is no way to move it to
+`hector-golf`, which is already spending its own on `hector`. Deleting the project would throw the
+allowance away to save nothing: an empty project with a scaled-to-zero database costs nothing to
+keep.
+
+So phase 7 ends with the four functions and the old Gemini key gone, and the project itself left
+standing and empty apart from the database. Anything that assumes the project disappears — the
+playbook's stray-project sweep in particular — should expect to keep finding this one, and finding
+it is not a loose end.
 
 ## Phase 8 — What this repo looks like afterwards
 
