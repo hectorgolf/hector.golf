@@ -55,10 +55,17 @@ https://europe-north1-hector-golf.cloudfunctions.net/<Name>
 
 Two things to confirm, because both are cheaper to find out now.
 
-**The billing account.** Gemini calls will bill to `hector-golf` afterwards, and
-`gemini-2.5-flash-image` behind `GeneratePlayerAvatar` is not free. `budget_amount_eur` has been
-raised from 1 to 2 in anticipation; check the old project's actual Gemini spend against that before
-you rely on it.
+**The billing account.** Checked: both projects bill to `billingAccounts/016901-7781DB-45CC39`, so
+nothing moves between accounts — only which project the spend is attributed to. The old project runs
+about **€0.60/month**, against a first threshold of €1.00 at `budget_amount_eur = 2`, so the
+migrated spend does not trip the alert by itself.
+
+**Apply the budget before you migrate.** `budget_amount_eur = 2` is committed but not applied: the
+live budget still reads €1, where the first threshold is €0.50 and €0.60 of arriving spend crosses
+it immediately. A `terraform apply` has to land before or with phase 6, not after it. Note also a
+second budget on the account — "€1 Monthly Budget Alert", no project filter, not managed by this
+repository's Terraform — which spans both projects and is the likelier source of alert mail that
+already reads as noise.
 
 ```bash
 gcloud billing projects describe gen-lang-client-0537211409 --format="value(billingAccountName)"
@@ -70,6 +77,19 @@ database, `hector-firestore` in `europe-north1`, with backup schedules enabled. 
 accident and it is staying — see "The old project is not deleted" below. Run the playbook's sweep
 anyway before phase 7 if time has passed, since the point is to find what nobody remembers putting
 there.
+
+## What Terraform owns, and what it does not
+
+Settled before phase 1, because reaching for `google_cloudfunctions2_function` is the obvious move
+and it is the wrong one here.
+
+Terraform owns the APIs, the service accounts and IAM, and the Secret Manager *containers*. CI
+deploys the functions themselves, wholesale, with `gcloud`. That is the same division as
+`deploy-admin.yml`, which ships Cloud Run revisions while Terraform owns the service.
+
+The reason is the one that decides it: **deploying a new version of a function must not require a
+`terraform apply`.** Managing the function resource would put the source bundle in Terraform's hands
+and have it fight the deploy workflow over every release.
 
 ## Phase 1 — Terraform
 
