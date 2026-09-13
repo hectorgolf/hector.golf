@@ -16,14 +16,18 @@
 # The crons stay in the workflow files as a backstop. If this project is down,
 # the updates still happen, just as late as they always did.
 #
-# ## Cost
+# ## Two jobs, not one per workflow
 #
 # Cloud Scheduler bills per job per month, not per execution, and the first three
-# jobs on a billing account are free. Four jobs is therefore about $0.10/month
-# against the budget in budget.tf. Collapsing the two workflows into one job per
-# time slot would make it free again; it is not done because a job per workflow
-# is what makes the Cloud Scheduler console readable, and the four lines below
-# are where to change that decision.
+# on a billing account are free — so a job per workflow per time slot would put
+# this project over a threshold it otherwise sits under, against the budget in
+# budget.tf. Two jobs that each say "run the scheduled updates" stay inside it.
+#
+# The split that leaves is the useful one. *When* stays here, where
+# `gcloud scheduler jobs list` can answer it without reading TypeScript — which
+# matters more than usual, given this mechanism exists because nobody could tell
+# when a job really ran. *What* lives in DISPATCHABLE_WORKFLOWS, so adding a
+# workflow to the twice-daily run needs no infrastructure change at all.
 
 # The identity the schedule calls as. Distinct from the admin's runtime identity:
 # this one needs to get *in* to the service and nothing else, while that one
@@ -65,24 +69,25 @@ resource "google_iap_web_cloud_run_service_iam_member" "scheduler" {
 }
 
 locals {
-  # Slug (matching DISPATCHABLE_WORKFLOWS in admin/src/lib/workflows.ts) and when
-  # to run it, in UTC.
+  # When the data updates run, in UTC. Each job starts everything marked
+  # `scheduled` in admin/src/lib/workflows.ts.
   #
   # 03:00 and 12:00 are the times the workflows' own crons were always meant to
   # fire at, give or take: 05:00/06:00 and 14:00/15:00 in Finland, depending on
-  # the season. Leaderboards keep their quarter-past offset so the two scrapes do
-  # not commit on top of each other and lose a race in `git pull -r`.
+  # the season.
   #
   # Note that 12:00 is an hour earlier than update-handicaps.yml's own `0 3,13`.
   # That is the point of moving it: deploy.yml's cron is `30 3,12`, so a handicap
   # update that lands at 13:00 has always missed the rebuild that was waiting for
   # it and sat until the next one.
+  #
+  # Both workflows are started in the same second, so nothing keeps them from
+  # committing on top of each other except the `data-update` concurrency group
+  # they share in GitHub — an interlock rather than the stagger that used to be
+  # here, which was really a guess about how long a scrape takes.
   data_update_schedules = {
-    handicaps-morning = { workflow = "handicaps", cron = "0 3 * * *" }
-    handicaps-midday  = { workflow = "handicaps", cron = "0 12 * * *" }
-
-    leaderboards-morning = { workflow = "leaderboards", cron = "15 3 * * *" }
-    leaderboards-midday  = { workflow = "leaderboards", cron = "15 12 * * *" }
+    morning = { cron = "0 3 * * *" }
+    midday  = { cron = "0 12 * * *" }
   }
 }
 
@@ -95,8 +100,8 @@ resource "google_cloud_scheduler_job" "data_update" {
 
   project     = var.project_id
   region      = var.region
-  name        = "hector-${each.key}"
-  description = "Starts ${each.value.workflow} via the admin service, because GitHub's own cron runs hours late."
+  name        = "hector-data-update-${each.key}"
+  description = "Starts the scheduled data updates via the admin service, because GitHub's own cron runs hours late."
 
   schedule = each.value.cron
   # UTC rather than Europe/Helsinki: these times are written as UTC in the
@@ -112,11 +117,13 @@ resource "google_cloud_scheduler_job" "data_update" {
   attempt_deadline = "120s"
 
   retry_config {
-    # GitHub being briefly unreachable should not cost a day's update. A retry
-    # can dispatch a second run if the first was accepted and the answer was
-    # lost, which is harmless here: a second handicap run replaces the day's
-    # entry rather than appending a duplicate, and the workflows' concurrency
-    # groups keep the two from overlapping.
+    # GitHub being briefly unreachable should not cost a day's update.
+    #
+    # The endpoint fans out, so a retry after a partial failure re-dispatches the
+    # workflows that already succeeded. That is the better half of the trade: a
+    # duplicate run replaces the day's entry rather than appending to it and is
+    # serialised by the shared concurrency group, while a silently skipped
+    # workflow is the exact failure this whole mechanism exists to stop.
     retry_count          = 3
     min_backoff_duration = "30s"
     max_backoff_duration = "300s"
@@ -124,7 +131,10 @@ resource "google_cloud_scheduler_job" "data_update" {
 
   http_target {
     http_method = "POST"
-    uri         = "${google_cloud_run_v2_service.admin.uri}/api/workflows/${each.value.workflow}/dispatch"
+    # The fan-out endpoint: it starts every workflow marked `scheduled`, so what
+    # runs is decided in one list in the application rather than by which jobs
+    # happen to exist here.
+    uri = "${google_cloud_run_v2_service.admin.uri}/api/workflows/dispatch"
 
     # JSON rather than a form content type, and it matters: Astro's CSRF check
     # fires on form content types and would reject a POST that arrives without a

@@ -472,15 +472,29 @@ are queued and delivered when GitHub has capacity. Measured across the last 300 
 | 2026-09 | 4h32m | 3h46m |
 
 `workflow_dispatch` has no such queue. So [`terraform/scheduler.tf`](../terraform/scheduler.tf) runs
-four Cloud Scheduler jobs that call the admin service, which dispatches the workflow with a GitHub
-token from Secret Manager — handicaps at 03:00 and 12:00 UTC, leaderboards at 03:15 and 12:15. The
-same endpoint is behind the **Run now** buttons on the admin's `/updates` page, for a scrape needed
-between those times or when the association published handicaps too late for the midday run to see
-them.
+**two** Cloud Scheduler jobs, at 03:00 and 12:00 UTC. Each calls one endpoint on the admin service —
+`POST /api/workflows/dispatch` — which starts every workflow marked `scheduled` in
+[`admin/src/lib/workflows.ts`](../admin/src/lib/workflows.ts), using a GitHub token read from Secret
+Manager.
+
+The split is deliberate: **when** lives in Terraform, where `gcloud scheduler jobs list` answers it
+without anyone reading TypeScript, and **what** lives in the application, so adding a workflow to the
+twice-daily run needs no infrastructure change at all. Two jobs rather than one per workflow also
+keeps the project inside Cloud Scheduler's three-job free tier.
+
+`POST /api/workflows/<slug>/dispatch` starts a single workflow, and is what the **Run now** buttons
+on the admin's `/operations` page use — for a scrape needed between the scheduled times, or when the
+association published handicaps too late for the midday run to see them. That page also shows a log
+of recent runs with start times to the second: a repeating `03:00:xx` down the column is how a reader
+knows when the next scheduled run is due, without this code keeping its own copy of the schedule to
+disagree with Terraform's.
 
 The `schedule:` blocks stay in the workflow files as a backstop for the day the admin service is the
-broken one, which is why both workflows now carry a `concurrency` group: two triggers can fire close
-enough together that their runs would otherwise race over the same `git pull -r && git push`.
+broken one. That leaves several ways for two scrapes to overlap — the tick starts both in the same
+second, and the backstop crons land anywhere at all — so all four update workflows now share one
+`concurrency` group, `data-update`. They all end in the same `git pull -r && git push`, and the
+staggered start times that used to keep them apart were never more than a guess about how long each
+one takes.
 
 **The deploy has two triggers, and the cron is not the main one.** `deploy.yml` runs on every push to
 `main` whose changes touch `astrosite/**` or `.github/workflows/**`, so ordinary human commits — a
@@ -526,7 +540,7 @@ the history.
 | Script | Schedule (UTC) | Reads | Writes |
 | --- | --- | --- | --- |
 | `update-handicaps.ts` | 03:00 and 12:00, by Cloud Scheduler (cron `0 3,13 * * *` as a late backstop) | WiseGolf | `handicaps.json`, `players/*.json`, event `buckets` |
-| `update-leaderboards.ts` | 03:15 and 12:15, by Cloud Scheduler (cron `15 3,12 * * *` as a late backstop) | Sheets / app.hector.golf | `leaderboards/*.json` (via API), event `results.teams` |
+| `update-leaderboards.ts` | 03:00 and 12:00, by Cloud Scheduler (cron `15 3,12 * * *` as a late backstop) | Sheets / app.hector.golf | `leaderboards/*.json` (via API), event `results.teams` |
 | `update-player-biographies.ts` | `30 2 10,25 * *` | GCP function, WiseGolf | `players/*.json` `biography`, `clubs.json` |
 | `update-player-club-memberships.ts` | `15 22 15 * *` | WiseGolf | `players/*.json` `club` |
 
@@ -563,7 +577,7 @@ and assigns a club **only when exactly one** club matches.
 | `terraform-plan.yml` | PRs touching `terraform/**` | `fmt` → `init` → `validate` → `plan`, posted as a PR comment | `contents: read`, `id-token: write`, `pull-requests: write` |
 | `terraform-apply.yml` | Push to `main` touching `terraform/**`; manual | `terraform apply`, gated by the `infrastructure` environment | `contents: read`, `id-token: write` |
 | `deploy-admin.yml` | Push to `main` touching `admin/**`; manual | Build, push to Artifact Registry, `gcloud run deploy` | `contents: read`, `id-token: write` |
-| `update-leaderboards.yml` | Dispatched by the admin service at 03:15/12:15 UTC; cron `15 3,12 * * *` as a backstop; manual | Script + `commit-changes.sh` | `contents: write` |
+| `update-leaderboards.yml` | Dispatched by the admin service at 03:00/12:00 UTC; cron `15 3,12 * * *` as a backstop; manual | Script + `commit-changes.sh` | `contents: write` |
 | `update-player-biographies.yml` | Cron `30 2 10,25 * *`; manual | Script + `commit-changes.sh` | `contents: write` |
 | `update-player-club-memberships.yml` | Cron `15 22 15 * *`; manual | Script + `commit-changes.sh` | `contents: write` |
 
@@ -746,8 +760,6 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
   workflows pin `"22"`, and the Cloud Functions run `nodejs24`.
 - `TEETIME_CLUB_NUMBER`, `TEETIME_USERNAME`, and `TEETIME_PASSWORD` are passed to three workflows,
   but no code in `astrosite/` reads them — leftovers from a removed TeeTime integration.
-- `update-leaderboards.yml`'s comment says 13:15 UTC while its cron is `15 3,12 * * *` (03:15 and
-  12:15).
 - `zod` is imported throughout `src/schemas/` and `src/code/` but is **not a declared dependency** —
   it resolves transitively through Astro, so an Astro upgrade could break the build.
 - [`HandicapHistoryChart.ts`](../astrosite/src/components/players/HandicapHistoryChart.ts) hardcodes

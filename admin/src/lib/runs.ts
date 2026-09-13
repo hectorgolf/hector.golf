@@ -36,6 +36,28 @@ export function ageInWords(startedAt: string, now: Date = new Date()): string {
     return `${days} ${days === 1 ? 'day' : 'days'} ago`
 }
 
+/**
+ * The exact moment, in UTC, to the second: `2026-09-13 03:00:24`.
+ *
+ * To the second on purpose, and this is the log's whole point. A column of
+ * `03:00:24`, `03:00:19`, `03:01:06` is how somebody reading this page knows the
+ * next run is tonight at three — the pattern *is* the answer, and it is a more
+ * trustworthy one than a predicted "next run" would be, since a prediction would
+ * be this code's copy of a schedule that actually lives in Terraform and could
+ * quietly disagree with it.
+ *
+ * UTC rather than the reader's timezone because the admin ships no client
+ * JavaScript, so the server would have to guess — and because every schedule in
+ * this project is written in UTC, so a column in Helsinki time would be the one
+ * thing on the page that could not be compared with the rest of it.
+ */
+export function formatUtc(startedAt: string): string {
+    const started = new Date(startedAt)
+    if (Number.isNaN(started.getTime())) return 'unknown'
+    // `2026-09-13T03:00:24.000Z` → `2026-09-13 03:00:24`
+    return started.toISOString().replace('T', ' ').slice(0, 19)
+}
+
 export type RunTone = 'running' | 'good' | 'bad' | 'neutral'
 
 /**

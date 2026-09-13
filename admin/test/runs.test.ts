@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { WorkflowRun } from '../src/lib/github.ts'
-import { ageInWords, labelOf, toneOf, triggerInWords } from '../src/lib/runs.ts'
+import { ageInWords, formatUtc, labelOf, toneOf, triggerInWords } from '../src/lib/runs.ts'
 
 const run = (overrides: Partial<WorkflowRun> = {}): WorkflowRun => ({
     status: 'completed',
@@ -40,6 +40,31 @@ describe('how long ago a run started', () => {
     it('does not turn an unparseable timestamp into "Invalid Date ago"', () => {
         expect(ageInWords('', now)).toBe('at an unknown time')
         expect(ageInWords('not a date', now)).toBe('at an unknown time')
+    })
+})
+
+describe('the exact start time in the execution log', () => {
+    /*
+     * The seconds are the feature. A reader works out that tonight's run is at
+     * three by seeing 03:00:24 / 03:00:19 / 03:01:06 down the column, so a
+     * formatter that rounded to the minute would take away the whole point of
+     * the log — and anything that shifted the times into local time would make
+     * them incomparable with the schedules, which are all written in UTC.
+     */
+    it('renders UTC to the second, whatever timezone the server is in', () => {
+        expect(formatUtc('2026-09-13T03:00:24.000Z')).toBe('2026-09-13 03:00:24')
+        expect(formatUtc('2026-09-13T12:01:06Z')).toBe('2026-09-13 12:01:06')
+    })
+
+    it('converts an offset timestamp to UTC rather than printing it as given', () => {
+        // 06:00:24 in Helsinki summer time is the 03:00 run, and must line up
+        // with the other rows in the column.
+        expect(formatUtc('2026-09-13T06:00:24+03:00')).toBe('2026-09-13 03:00:24')
+    })
+
+    it('says so rather than printing "Invalid Date" when there is nothing to format', () => {
+        expect(formatUtc('')).toBe('unknown')
+        expect(formatUtc('not a date')).toBe('unknown')
     })
 })
 

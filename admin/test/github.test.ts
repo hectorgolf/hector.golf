@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { createGitHubClient, FAILURE_MESSAGES, type GitHubFailure } from '../src/lib/github.ts'
-import { DISPATCHABLE_WORKFLOWS, workflowBySlug } from '../src/lib/workflows.ts'
+import { DISPATCHABLE_WORKFLOWS, SCHEDULED_WORKFLOWS, workflowBySlug } from '../src/lib/workflows.ts'
 
 const handicaps = workflowBySlug('handicaps')!
 
@@ -240,5 +240,31 @@ describe('the list of workflows this service may start', () => {
         expect(workflowBySlug('handicaps')?.file).toBe('update-handicaps.yml')
         expect(workflowBySlug('../../deploy')).toBeUndefined()
         expect(workflowBySlug(undefined)).toBeUndefined()
+    })
+})
+
+describe('what the twice-daily tick starts', () => {
+    /*
+     * The two Cloud Scheduler jobs call one endpoint that starts this list, so
+     * this list *is* the schedule's payload — the infrastructure names no
+     * workflow at all. An entry silently dropping out of it would be a scrape
+     * that quietly stops running, with the jobs still green.
+     */
+    it('is every workflow marked scheduled, and only those', () => {
+        expect(SCHEDULED_WORKFLOWS.map((workflow) => workflow.slug)).toEqual(
+            DISPATCHABLE_WORKFLOWS.filter((workflow) => workflow.scheduled).map((workflow) => workflow.slug)
+        )
+        expect(SCHEDULED_WORKFLOWS.every((workflow) => workflow.scheduled)).toBe(true)
+    })
+
+    it('currently covers both scrapes, in the order they should queue', () => {
+        expect(SCHEDULED_WORKFLOWS.map((workflow) => workflow.file)).toEqual([
+            'update-handicaps.yml',
+            'update-leaderboards.yml',
+        ])
+    })
+
+    it('is not empty, which would be a tick that does nothing twice a day', () => {
+        expect(SCHEDULED_WORKFLOWS.length).toBeGreaterThan(0)
     })
 })

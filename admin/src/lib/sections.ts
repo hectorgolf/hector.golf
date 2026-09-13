@@ -36,8 +36,8 @@ export const SECTIONS: Section[] = [
         available: false,
     },
     {
-        slug: 'updates',
-        label: 'Data updates',
+        slug: 'operations',
+        label: 'Operations',
         blurb: 'When the scrapes last ran, and a way to start one without waiting for the schedule.',
         available: true,
     },

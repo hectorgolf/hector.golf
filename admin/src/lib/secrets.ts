@@ -24,10 +24,11 @@ import { SecretManagerServiceClient } from '@google-cloud/secret-manager'
  * resolves once per revision and would need a redeploy nobody would remember to
  * do.
  *
- * The cost of asking every time is one API call per dispatch, on a path that
- * runs four times a day plus the occasional button press. Secret Manager's free
- * tier is 10,000 access operations a month, so this rounds to nothing and no
- * cache is worth the staleness it would introduce.
+ * The cost of asking every time is one API call per GitHub call: four a day from
+ * the two scheduled ticks, two more each time somebody opens the Operations
+ * page, and one per button press. Secret Manager's free tier is 10,000 access
+ * operations a month, so this rounds to nothing and no cache is worth the
+ * staleness it would introduce.
  */
 
 /**
@@ -48,7 +49,7 @@ export type SecretLocation = { project: string; secretId: string }
 
 /**
  * The project and secret id pulled back out of the resource name, so that the
- * help text on `/updates` can print the exact `gcloud` command to run rather
+ * help text on `/operations` can print the exact `gcloud` command to run rather
  * than a template with placeholders to fill in. Somebody reading that page is
  * there because something is missing; making them go and look up two values
  * first is how a page stops being help.

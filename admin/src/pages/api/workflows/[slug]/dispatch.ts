@@ -7,18 +7,16 @@ import { workflowBySlug } from '../../../../lib/workflows.ts'
 /**
  * Start one of the data-update workflows now.
  *
- * Two callers, deliberately the same endpoint:
+ * This is the **one workflow** endpoint, behind the "Run now" buttons on
+ * `/operations`: for when the data is needed between the twice-daily runs, or
+ * when the association published handicaps later than usual and the midday run
+ * was too early to see them. The schedule calls `../dispatch` instead, which
+ * starts everything at once.
  *
- *  - **Cloud Scheduler**, twice a day, because GitHub's own `schedule` trigger
- *    arrives hours late for this repository. See `lib/workflows.ts` for the
- *    measurements. It sends JSON and reads the JSON answer.
- *  - **An admin pressing a button** on `/updates`, when the data is needed
- *    between those two runs — or when the association published handicaps later
- *    than usual and the afternoon run was too early to see them. That is a form
- *    POST, and it gets a redirect back to the page rather than a JSON body.
- *
- * One endpoint rather than two because the interesting logic — which workflows
- * may be started at all — must not be able to differ between them.
+ * It answers a browser with a redirect and anything else with JSON, so it also
+ * works from a terminal — which is the supported way to start a single workflow
+ * without a browser, and why the two shapes live in one endpoint rather than
+ * two that could drift apart.
  *
  * ## Who is allowed to call it
  *
@@ -61,7 +59,7 @@ export const POST: APIRoute = async ({ params, request, redirect }) => {
         // list of workflows this service knows about, so an unknown slug is a
         // missing route in every sense.
         return wantsHtml(request)
-            ? redirect(`/updates?failed=unknown&reason=not-found`, 303)
+            ? redirect(`/operations?failed=unknown&reason=not-found`, 303)
             : json({ error: `No dispatchable workflow named ${params.slug}` }, 404)
     }
 
@@ -80,8 +78,8 @@ export const POST: APIRoute = async ({ params, request, redirect }) => {
         // 303 rather than 302: the browser must follow it with a GET, so a
         // reload of the page it lands on does not re-post and start a second run.
         return outcome.ok
-            ? redirect(`/updates?ran=${workflow.slug}`, 303)
-            : redirect(`/updates?failed=${workflow.slug}&reason=${outcome.reason}`, 303)
+            ? redirect(`/operations?ran=${workflow.slug}`, 303)
+            : redirect(`/operations?failed=${workflow.slug}&reason=${outcome.reason}`, 303)
     }
 
     // 202, not 200: GitHub has accepted the request and does not say which run it

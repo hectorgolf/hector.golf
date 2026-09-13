@@ -34,15 +34,19 @@
  *
  * ## Adding one
  *
- * An entry here is all it takes: the API route, the Admin UI and the Terraform
- * that schedules them all read this list rather than naming workflows
- * themselves. `deploy.yml` is the obvious candidate — its own `30 3,12` cron is
- * queued exactly as badly, so the site can still take hours to rebuild around
- * data that arrived on time.
+ * An entry here is all it takes. The API routes and the Operations page read
+ * this list rather than naming workflows themselves, and so does the schedule:
+ * `terraform/scheduler.tf` has two jobs that call one endpoint, which starts
+ * everything marked `scheduled` — so adding a workflow to the twice-daily run is
+ * an entry here and no infrastructure change at all.
+ *
+ * `deploy.yml` is the obvious candidate — its own `30 3,12` cron is queued
+ * exactly as badly, so the site can still take hours to rebuild around data that
+ * arrived on time.
  */
 
 export type DispatchableWorkflow = {
-    /** URL segment, form value, and the name of the Cloud Scheduler job. */
+    /** URL segment and form value. */
     slug: string
     /**
      * The workflow's file name, which is how GitHub's dispatch API names it.
@@ -53,6 +57,15 @@ export type DispatchableWorkflow = {
     label: string
     /** One line, shown beside the button that starts it. */
     blurb: string
+    /**
+     * Whether the twice-daily Cloud Scheduler tick starts this one.
+     *
+     * `false` does not mean unreachable — it means "only when a person asks",
+     * and the button on the Operations page still works. That is the setting for
+     * anything expensive or disruptive enough that a human should be the one
+     * deciding, which is why the flag exists before anything needs it.
+     */
+    scheduled: boolean
 }
 
 export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
@@ -61,14 +74,28 @@ export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
         file: 'update-handicaps.yml',
         label: "Players' official handicaps",
         blurb: 'Reads every player\'s current handicap from WiseGolf and re-sorts the buckets of any event whose buckets are still open.',
+        scheduled: true,
     },
     {
         slug: 'leaderboards',
         file: 'update-leaderboards.yml',
         label: 'Tournament leaderboards',
         blurb: 'Refreshes the leaderboards of events that have started, from Google Sheets or app.hector.golf.',
+        scheduled: true,
     },
 ]
+
+/**
+ * What the scheduled tick starts, in the order it starts them.
+ *
+ * Order is not cosmetic. Both workflows commit to `main`, so they share one
+ * GitHub concurrency group and the second to be dispatched waits for the first
+ * to finish. Handicaps is first because the buckets it writes are the thing an
+ * event page is most wrong about when it is stale.
+ */
+export const SCHEDULED_WORKFLOWS: readonly DispatchableWorkflow[] = DISPATCHABLE_WORKFLOWS.filter(
+    (workflow) => workflow.scheduled
+)
 
 export function workflowBySlug(slug: string | undefined): DispatchableWorkflow | undefined {
     return DISPATCHABLE_WORKFLOWS.find((workflow) => workflow.slug === slug)

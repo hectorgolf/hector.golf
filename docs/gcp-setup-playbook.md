@@ -21,7 +21,7 @@ Everything in [`terraform/`](../terraform/):
 | Four service accounts | One runtime identity, one for Terraform in CI, one for app deploys, one for the scheduled data updates |
 | Workload Identity Federation pool | Keyless GitHub Actions auth — no service account keys anywhere |
 | Secret Manager secret `github-dispatch-token` | The GitHub token the admin dispatches workflows with. Terraform creates the container; step 11 adds the value |
-| Four Cloud Scheduler jobs | Start the handicap and leaderboard scrapes on time, because GitHub's own cron runs hours late |
+| Two Cloud Scheduler jobs | Start the data-update workflows on time (03:00 and 12:00 UTC), because GitHub's own cron runs hours late |
 | Billing budget (optional) | Alerts above €1/month |
 
 And three workflows: [`terraform-plan.yml`](../.github/workflows/terraform-plan.yml) on pull
@@ -487,7 +487,7 @@ gcloud run services describe hector-admin --region="$REGION" \
 
 The admin service starts the data-update workflows rather than running them: the repository is the
 database, so a scrape is a workflow that commits JSON to `main`. It needs a GitHub token to do that,
-and until it has one the `/updates` page says so and the Cloud Scheduler jobs get a 502 twice a day.
+and until it has one the `/operations` page says so and the Cloud Scheduler jobs get a 502 twice a day.
 
 Why this exists at all is worth one line: GitHub queues `schedule` events and delivers them when it
 has capacity, which for this repository has meant a median of **four and a half hours late** in
@@ -506,7 +506,7 @@ one:
 | Expiration | Your call. It cannot be "never" for a fine-grained token, so put the date in a calendar |
 
 Read and write on Actions is the whole grant: enough to dispatch a workflow and to list recent runs
-for the `/updates` page, and not enough to read the repository's contents or push to it. The
+for the `/operations` page, and not enough to read the repository's contents or push to it. The
 workflows it starts do the committing, with their own `GITHUB_TOKEN`.
 
 ### 2. Put it in Secret Manager
@@ -524,7 +524,7 @@ Paste the token, then press Ctrl-D. Nothing needs redeploying: `admin/src/lib/se
 
 ### 3. Verify
 
-Open `/updates` in the admin. Both workflows should list their recent runs — that read uses the same
+Open `/operations` in the admin. Both workflows should list their recent runs — that read uses the same
 token, so a page that shows them proves the token works. Press **Run now** on one and check that a
 `workflow_dispatch` run appears in the repository's Actions tab within a few seconds.
 

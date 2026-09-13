@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { githubTokenSecretLocation } from '../src/lib/secrets.ts'
 
 /**
- * The parsing behind the `gcloud secrets versions add …` command the /updates
+ * The parsing behind the `gcloud secrets versions add …` command the /operations
  * page prints when the token is missing. Getting it wrong means handing somebody
  * a command that silently targets the wrong secret, which is worse than printing
  * a placeholder and saying so.
