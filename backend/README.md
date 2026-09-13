@@ -188,6 +188,11 @@ The workflow is also inert until its repository variables are set — these
 functions are in a different GCP project from the one `terraform/` manages, so
 it needs its own deploy identity. Its header says what to create.
 
+Both limits come from that project split, not from the design. See
+[docs/functions-migration.md](../docs/functions-migration.md) for the plan that
+closes it, after which the keys live in Secret Manager and the workflow deploys
+configuration along with code.
+
 ## Running it locally
 
 ```bash

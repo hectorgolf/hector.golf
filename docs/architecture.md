@@ -603,6 +603,10 @@ that project to federate with. The workflow skips with a notice until `GH_FUNCTI
 header says what to create. It also passes no `--set-env-vars`, which leaves each function's
 existing keys untouched — it redeploys code, never configuration.
 
+Both of those constraints are consequences of the split rather than of the design, and
+[functions-migration.md](functions-migration.md) is the plan for removing them by moving the
+functions into `hector-golf`.
+
 ### Secrets and variables
 
 | Name | Kind | Used by |
