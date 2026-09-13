@@ -32,7 +32,25 @@ function acquireGoogleCredentials() {
     try {
         return JSON.parse(normalizedValue);
     } catch (error) {
-        console.error(`Error parsing GOOGLE_CREDENTIALS: ${JSON.stringify(normalizedValue)}`, error);
+        // Deliberately does not log the value.
+        //
+        // GitHub Actions masks registered secrets, and it did catch this on the
+        // five runs that hit this branch on 2026-09-01 — the credential came out
+        // as fourteen `***` rather than as a private key. That was luck rather
+        // than design: what gets logged here is a *transformed* copy, and masking
+        // only held because escaping the newlines left the PEM body's own lines
+        // intact as substrings. A transformation that did not preserve them —
+        // stripping whitespace, re-encoding — would print a usable key into a
+        // public repository's log. Nothing outside Actions masks anything at all,
+        // so a local run printed the whole thing regardless.
+        //
+        // The length is the diagnostic that was actually useful: it distinguishes
+        // "empty or truncated" from "present but malformed" without quoting it.
+        console.error(
+            `Error parsing GOOGLE_CREDENTIALS as JSON (${value.length} characters). ` +
+                `Expected the contents of a service account key file.`,
+            error,
+        );
         return undefined;
     }
 }
