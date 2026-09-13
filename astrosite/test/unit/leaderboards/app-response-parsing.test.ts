@@ -108,7 +108,7 @@ describe("Parsing app.hector.golf tournament responses", () => {
         expect(data!.hector).toEqual([{ team: "Lasse K & Toni M", points: 71, diff: "", through: "1/2" }]);
         expect(data!.victor).toEqual([
             { player: "Lasse K", points: 36, diff: "", through: "1/2" },
-            { player: "Toni M", points: 35, diff: "1", through: "1/2" },
+            { player: "Toni M", points: 35, diff: "-1", through: "1/2" },
         ]);
     });
 
