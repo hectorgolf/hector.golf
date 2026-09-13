@@ -42,7 +42,7 @@ graph LR
     end
 
     subgraph gha["GitHub Actions"]
-        WF["src/workflows/*.ts<br/>run by cron"]
+        WF["src/workflows/*.ts<br/>dispatched on a schedule"]
         BUILD["astro build<br/>deploy.yml"]
     end
 
@@ -433,7 +433,9 @@ This is how the system is actually operated.
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Cron as GitHub Actions cron
+    participant Sched as Cloud Scheduler
+    participant Admin as hector-admin (Cloud Run)
+    participant Cron as GitHub Actions
     participant Script as src/workflows/*.ts
     participant Ext as External APIs
     participant Tree as Working tree
@@ -441,7 +443,10 @@ sequenceDiagram
     participant Deploy as deploy.yml
     participant Pages as GitHub Pages
 
-    Cron->>Script: npx tsx (03:00 / 03:15 / 13:00 …)
+    Sched->>Admin: POST /api/workflows/handicaps/dispatch (03:00 / 12:00 UTC)
+    Admin->>Cron: POST /actions/workflows/…/dispatches
+    Note over Sched,Cron: The workflows' own `schedule:` crons remain<br/>as a backstop, and run hours late (see below)
+    Cron->>Script: npx tsx
     Script->>Ext: fetch handicaps / leaderboards / biographies
     Ext-->>Script: JSON
     Script->>Tree: write src/data/**.json
@@ -454,7 +459,42 @@ sequenceDiagram
     Deploy->>Pages: astro build → actions/deploy-pages
 ```
 
-### Two mechanics that explain the design
+### Three mechanics that explain the design
+
+**GitHub's `schedule` trigger does not keep time, so it is no longer the one used.** Scheduled events
+are queued and delivered when GitHub has capacity. Measured across the last 300 scheduled runs of
+`update-handicaps.yml`, not one started on time:
+
+| Month | Median lateness, 03:00 slot | 13:00 slot |
+| --- | --- | --- |
+| 2026-04 | 2h22m | 1h28m |
+| 2026-06 | 4h13m | 2h52m |
+| 2026-09 | 4h32m | 3h46m |
+
+`workflow_dispatch` has no such queue. So [`terraform/scheduler.tf`](../terraform/scheduler.tf) runs
+**two** Cloud Scheduler jobs, at 03:00 and 12:00 UTC. Each calls one endpoint on the admin service —
+`POST /api/workflows/dispatch` — which starts every workflow marked `scheduled` in
+[`admin/src/lib/workflows.ts`](../admin/src/lib/workflows.ts), using a GitHub token read from Secret
+Manager.
+
+The split is deliberate: **when** lives in Terraform, where `gcloud scheduler jobs list` answers it
+without anyone reading TypeScript, and **what** lives in the application, so adding a workflow to the
+twice-daily run needs no infrastructure change at all. Two jobs rather than one per workflow also
+keeps the project inside Cloud Scheduler's three-job free tier.
+
+`POST /api/workflows/<slug>/dispatch` starts a single workflow, and is what the **Run now** buttons
+on the admin's `/operations` page use — for a scrape needed between the scheduled times, or when the
+association published handicaps too late for the midday run to see them. That page also shows a log
+of recent runs with start times to the second: a repeating `03:00:xx` down the column is how a reader
+knows when the next scheduled run is due, without this code keeping its own copy of the schedule to
+disagree with Terraform's.
+
+The `schedule:` blocks stay in the workflow files as a backstop for the day the admin service is the
+broken one. That leaves several ways for two scrapes to overlap — the tick starts both in the same
+second, and the backstop crons land anywhere at all — so all four update workflows now share one
+`concurrency` group, `data-update`. They all end in the same `git pull -r && git push`, and the
+staggered start times that used to keep them apart were never more than a guess about how long each
+one takes.
 
 **The deploy has two triggers, and the cron is not the main one.** `deploy.yml` runs on every push to
 `main` whose changes touch `astrosite/**` or `.github/workflows/**`, so ordinary human commits — a
@@ -464,6 +504,15 @@ The `30 3,12` cron exists to cover the one case that push cannot: commits made b
 itself. Pushes authenticated with `GITHUB_TOKEN` deliberately do not trigger further workflows, so
 the automated data commits cannot set off `deploy.yml`. The cron runs half an hour after the `:00`
 and `:15` data jobs to pick up what they committed.
+
+**This cron is still a `schedule`, and so is still delivered hours late.** Data that now arrives at
+03:05 can therefore still wait until the middle of the morning to reach the site. Fixing the scrapes
+without fixing this only moves the delay one step down the pipeline. Two ways out, neither taken
+yet: add `deploy.yml` to `DISPATCHABLE_WORKFLOWS` in
+[`admin/src/lib/workflows.ts`](../admin/src/lib/workflows.ts) and give it two more Cloud Scheduler
+jobs at `:30`, or give it a `workflow_run` trigger on the four update workflows — the mechanism
+[`refresh-admin-mirror.yml`](../.github/workflows/refresh-admin-mirror.yml) already uses, which costs
+nothing and fires as soon as a scrape finishes rather than at a fixed time after it.
 
 **Why `update-leaderboards` is different.** Alone among the four, it writes its output through the
 **GitHub Contents API** (Octokit `createOrUpdateFileContents` against
@@ -490,8 +539,8 @@ the history.
 
 | Script | Schedule (UTC) | Reads | Writes |
 | --- | --- | --- | --- |
-| `update-handicaps.ts` | `0 3,13 * * *` | WiseGolf | `handicaps.json`, `players/*.json`, event `buckets` |
-| `update-leaderboards.ts` | `15 3,12 * * *` | Sheets / app.hector.golf | `leaderboards/*.json` (via API), event `results.teams` |
+| `update-handicaps.ts` | 03:00 and 12:00, by Cloud Scheduler (cron `0 3,13 * * *` as a late backstop) | WiseGolf | `handicaps.json`, `players/*.json`, event `buckets` |
+| `update-leaderboards.ts` | 03:00 and 12:00, by Cloud Scheduler (cron `15 3,12 * * *` as a late backstop) | Sheets / app.hector.golf | `leaderboards/*.json` (via API), event `results.teams` |
 | `update-player-biographies.ts` | `30 2 10,25 * *` | GCP function, WiseGolf | `players/*.json` `biography`, `clubs.json` |
 | `update-player-club-memberships.ts` | `15 22 15 * *` | WiseGolf | `players/*.json` `club` |
 
@@ -524,11 +573,11 @@ and assigns a club **only when exactly one** club matches.
 | --- | --- | --- | --- |
 | `deploy.yml` | Push to `main` touching `astrosite/**` or workflows; cron `30 3,12 * * *`; manual | `withastro/action@v6` → `actions/deploy-pages@v5` | `contents: read`, `pages: write`, `id-token: write` |
 | `pr-checks.yml` | PRs targeting `main` | `npm ci` → `npm test` → `npm run build` | `contents: read` |
-| `update-handicaps.yml` | Cron `0 3,13 * * *`; manual | Script + `commit-changes.sh` | `contents: write` |
+| `update-handicaps.yml` | Dispatched by the admin service at 03:00/12:00 UTC; cron `0 3,13 * * *` as a backstop; manual | Script + `commit-changes.sh` | `contents: write` |
 | `terraform-plan.yml` | PRs touching `terraform/**` | `fmt` → `init` → `validate` → `plan`, posted as a PR comment | `contents: read`, `id-token: write`, `pull-requests: write` |
 | `terraform-apply.yml` | Push to `main` touching `terraform/**`; manual | `terraform apply`, gated by the `infrastructure` environment | `contents: read`, `id-token: write` |
 | `deploy-admin.yml` | Push to `main` touching `admin/**`; manual | Build, push to Artifact Registry, `gcloud run deploy` | `contents: read`, `id-token: write` |
-| `update-leaderboards.yml` | Cron `15 3,12 * * *`; manual | Script + `commit-changes.sh` | `contents: write` |
+| `update-leaderboards.yml` | Dispatched by the admin service at 03:00/12:00 UTC; cron `15 3,12 * * *` as a backstop; manual | Script + `commit-changes.sh` | `contents: write` |
 | `update-player-biographies.yml` | Cron `30 2 10,25 * *`; manual | Script + `commit-changes.sh` | `contents: write` |
 | `update-player-club-memberships.yml` | Cron `15 22 15 * *`; manual | Script + `commit-changes.sh` | `contents: write` |
 
@@ -711,8 +760,6 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
   workflows pin `"22"`, and the Cloud Functions run `nodejs24`.
 - `TEETIME_CLUB_NUMBER`, `TEETIME_USERNAME`, and `TEETIME_PASSWORD` are passed to three workflows,
   but no code in `astrosite/` reads them — leftovers from a removed TeeTime integration.
-- `update-leaderboards.yml`'s comment says 13:15 UTC while its cron is `15 3,12 * * *` (03:15 and
-  12:15).
 - `zod` is imported throughout `src/schemas/` and `src/code/` but is **not a declared dependency** —
   it resolves transitively through Astro, so an Astro upgrade could break the build.
 - [`HandicapHistoryChart.ts`](../astrosite/src/components/players/HandicapHistoryChart.ts) hardcodes

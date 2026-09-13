@@ -51,9 +51,19 @@ locals {
     "roles/iap.admin",                       # google_iap_web_cloud_run_service_iam_member
     "roles/iap.settingsAdmin",               # google_iap_settings
     "roles/iam.serviceAccountAdmin",         # create the service accounts above
-    "roles/iam.serviceAccountUser",          # attach the runtime SA to Cloud Run
+    "roles/iam.serviceAccountUser",          # attach the runtime SA to Cloud Run, and the scheduler SA to its jobs
     "roles/iam.workloadIdentityPoolAdmin",   # keep github_oidc.tf from drifting
     "roles/resourcemanager.projectIamAdmin", # the project-level bindings in this file
+    # The secret container in secrets.tf and the binding on it. There is no role
+    # that can create a secret without also being able to read it, so this does
+    # mean a Terraform CI run can read the GitHub token. That is the same trade
+    # already made for admin_deployer below and holds for the same reason: this
+    # identity has run.admin and can act as the runtime service account, so it
+    # can already read the token by deploying a container that does. Granting it
+    # directly adds convenience rather than reach. Terraform still never creates
+    # a secret *version*, so the token stays out of state.
+    "roles/secretmanager.admin",
+    "roles/cloudscheduler.admin", # the jobs in scheduler.tf
   ]
 }
 

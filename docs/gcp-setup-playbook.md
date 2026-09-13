@@ -18,8 +18,10 @@ Everything in [`terraform/`](../terraform/):
 | Firestore database, Enterprise edition | The data store. `europe-north1`, native mode, PITR on, delete-protected |
 | Artifact Registry repository | Admin service container images, with cleanup policies |
 | Cloud Run service `hector-admin` | The admin UI and API, scaled to zero, IAP in front of it |
-| Three service accounts | One runtime identity, one for Terraform in CI, one for app deploys |
+| Four service accounts | One runtime identity, one for Terraform in CI, one for app deploys, one for the scheduled data updates |
 | Workload Identity Federation pool | Keyless GitHub Actions auth — no service account keys anywhere |
+| Secret Manager secret `github-dispatch-token` | The GitHub token the admin dispatches workflows with. Terraform creates the container; step 11 adds the value |
+| Two Cloud Scheduler jobs | Start the data-update workflows on time (03:00 and 12:00 UTC), because GitHub's own cron runs hours late |
 | Billing budget (optional) | Alerts above €1/month |
 
 And three workflows: [`terraform-plan.yml`](../.github/workflows/terraform-plan.yml) on pull
@@ -169,18 +171,42 @@ The bucket name is hardcoded in the `backend "gcs"` block in
 If you use a different name, either edit that line or pass
 `terraform init -backend-config=bucket=…`.
 
-## Step 3 — Create the IAP service agent
+## Step 3 — Create the service agents
 
-IAP reaches Cloud Run as a Google-managed service account, and
-[`terraform/iap.tf`](../terraform/iap.tf) grants that account `roles/run.invoker`. The account does
-not exist in a new project until something asks for it, and granting a role to a service account
-that does not exist fails. So ask for it now:
+Some Google APIs act on your project as a **service agent**: a Google-managed service account named
+`service-<project number>@gcp-sa-<api>.iam.gserviceaccount.com`. Terraform grants roles to two of
+them, and neither exists in a new project until something asks for it. Granting a role to a service
+account that does not exist fails, so the first apply fails unless they are created first.
+
+There are exactly two, and this is the whole list — `grep 'gcp-sa-' terraform/*.tf` is how to check
+that it has stayed the whole list:
+
+| Service agent | Created for | Granted | Where |
+| --- | --- | --- | --- |
+| `gcp-sa-iap` | `iap.googleapis.com` | `roles/run.invoker` on the admin service | [`iap.tf`](../terraform/iap.tf) |
+| `gcp-sa-cloudscheduler` | `cloudscheduler.googleapis.com` | `roles/iam.serviceAccountTokenCreator` on `hector-scheduler` | [`scheduler.tf`](../terraform/scheduler.tf) |
+
+Create both:
 
 ```bash
 gcloud beta services identity create --service=iap.googleapis.com --project="$PROJECT_ID"
 ```
 
-Running this twice is harmless.
+```bash
+gcloud beta services identity create --service=cloudscheduler.googleapis.com --project="$PROJECT_ID"
+```
+
+Running either twice is harmless, so there is no need to check first.
+
+**Why each one needs what it gets.** IAP reaches Cloud Run as its own agent rather than as the
+signed-in user, so without `run.invoker` the sign-in succeeds and the service then answers "Your
+client does not have permission to get URL". Cloud Scheduler does not sign OIDC tokens itself — it
+asks IAM to mint one as the `hector-scheduler` account, which its agent can only do with
+`serviceAccountTokenCreator`. Without it the scheduled data updates fail at 03:00 with no symptom
+other than a job status of `PERMISSION_DENIED`.
+
+> If an apply ever fails with `Error setting IAM policy … does not exist` naming one of these
+> addresses, this step is what was skipped. Run it and apply again; nothing needs unwinding.
 
 ## Step 4 — The first apply, from your laptop
 
@@ -456,6 +482,66 @@ To see what is really running, ask the service rather than the configuration:
 gcloud run services describe hector-admin --region="$REGION" \
   --format="value(spec.template.spec.containers[0].image)"
 ```
+
+## Step 11 — The GitHub token for scheduled data updates
+
+The admin service starts the data-update workflows rather than running them: the repository is the
+database, so a scrape is a workflow that commits JSON to `main`. It needs a GitHub token to do that,
+and until it has one the `/operations` page says so and the Cloud Scheduler jobs get a 502 twice a day.
+
+Why this exists at all is worth one line: GitHub queues `schedule` events and delivers them when it
+has capacity, which for this repository has meant a median of **four and a half hours late** in
+September 2026 and never once on time across 300 runs. `workflow_dispatch` has no such queue.
+
+### 1. Create a fine-grained token
+
+At **GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens**, create
+one:
+
+| Field | Value |
+| --- | --- |
+| Resource owner | `hectorgolf` |
+| Repository access | Only select repositories → `hectorgolf/hector.golf` |
+| Repository permissions | **Actions: Read and write**, and nothing else |
+| Expiration | Your call. It cannot be "never" for a fine-grained token, so put the date in a calendar |
+
+Read and write on Actions is the whole grant: enough to dispatch a workflow and to list recent runs
+for the `/operations` page, and not enough to read the repository's contents or push to it. The
+workflows it starts do the committing, with their own `GITHUB_TOKEN`.
+
+### 2. Put it in Secret Manager
+
+Terraform created the secret but deliberately never its value — a version managed from `terraform/`
+is a token written into state in plain text. Add it by hand, reading from stdin so the token never
+reaches your shell history:
+
+```bash
+gcloud secrets versions add "$(terraform output -raw github_dispatch_token_secret)" --project="$PROJECT_ID" --data-file=-
+```
+
+Paste the token, then press Ctrl-D. Nothing needs redeploying: `admin/src/lib/secrets.ts` resolves
+`versions/latest` on each use, which is also all a rotation is.
+
+### 3. Verify
+
+Open `/operations` in the admin. Both workflows should list their recent runs — that read uses the same
+token, so a page that shows them proves the token works. Press **Run now** on one and check that a
+`workflow_dispatch` run appears in the repository's Actions tab within a few seconds.
+
+Then prove the schedule itself, rather than waiting until 03:00 to find out:
+
+```bash
+gcloud scheduler jobs run hector-handicaps-morning --location="$REGION" --project="$PROJECT_ID"
+```
+
+```bash
+gcloud scheduler jobs describe hector-handicaps-morning --location="$REGION" --project="$PROJECT_ID" --format="value(status)"
+```
+
+An empty status is success. A `401` means the OIDC audience and IAP's OAuth client disagree — check
+that `iap_oauth_client_id` is set, since the jobs are left out of the plan entirely without it. A
+`403` means the `hector-scheduler` service account is not in IAP's access list, which
+`terraform/scheduler.tf` grants and an apply would restore.
 
 ## Optional — a custom domain for the admin service
 

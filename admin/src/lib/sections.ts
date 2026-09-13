@@ -35,6 +35,12 @@ export const SECTIONS: Section[] = [
         blurb: 'Profiles, biography text and the prompt hints the biography generator reads.',
         available: false,
     },
+    {
+        slug: 'operations',
+        label: 'Operations',
+        blurb: 'When the scrapes last ran, and a way to start one without waiting for the schedule.',
+        available: true,
+    },
 ]
 
 /** Which section a pathname belongs to, for marking the nav item current. */

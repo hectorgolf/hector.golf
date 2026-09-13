@@ -36,6 +36,23 @@ output "project_number" {
   value       = data.google_project.this.number
 }
 
+output "github_dispatch_token_secret" {
+  description = <<-EOT
+    The Secret Manager secret the admin service reads its GitHub token from.
+    Terraform creates the container but never a version — add the token with
+
+      gcloud secrets versions add "$(terraform output -raw github_dispatch_token_secret)" --data-file=-
+
+    See the GitHub token step in docs/gcp-setup-playbook.md.
+  EOT
+  value       = google_secret_manager_secret.github_dispatch_token.secret_id
+}
+
+output "scheduler_service_account" {
+  description = "The identity the scheduled data updates call the admin service as."
+  value       = google_service_account.scheduler.email
+}
+
 output "admin_dns_records" {
   description = <<-EOT
     The DNS records to create at the registrar for var.admin_domain, as Google

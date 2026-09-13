@@ -45,6 +45,30 @@ resource "google_cloud_run_v2_service" "admin" {
         value = google_firestore_database.hector.name
       }
 
+      # Which repository the "Run now" buttons and the Cloud Scheduler jobs act
+      # on. The same variable that decides which repository may mint tokens
+      # through Workload Identity Federation, so this deployment cannot be
+      # pointed at one repository for CI and a different one for dispatching.
+      env {
+        name  = "GITHUB_REPOSITORY"
+        value = var.github_repository
+      }
+
+      # Where the GitHub token is, rather than the token itself.
+      #
+      # Cloud Run can inject a secret's value into the environment directly and
+      # this deliberately does not use that. A container spec that names a secret
+      # version cannot start when the version is missing, which would mean a
+      # fresh project — or a rotation done in the wrong order — takes the entire
+      # admin down because one button could not work. The same reasoning as the
+      # probes below pointing at /livez rather than /readyz. `secrets.ts` reads
+      # it per use, which also means `gcloud secrets versions add` is the whole
+      # of a rotation, with no redeploy to forget.
+      env {
+        name  = "GITHUB_DISPATCH_TOKEN_SECRET"
+        value = "${google_secret_manager_secret.github_dispatch_token.name}/versions/latest"
+      }
+
       resources {
         limits = {
           cpu    = "1"
