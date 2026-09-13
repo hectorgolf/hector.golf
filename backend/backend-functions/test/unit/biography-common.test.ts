@@ -47,4 +47,17 @@ describe("ordinals", () => {
     ])("switches to digits beyond ten: %i", (n, expected) => {
         expect(nth(n)).toBe(expected);
     });
+
+    // With thirteen Hector events in the books, a player on their eleventh appearance
+    // is not hypothetical, and "their 11st appearance" is what the biography said.
+    it.each([
+        [11, "11th"],
+        [12, "12th"],
+        [13, "13th"],
+        [111, "111th"],
+        [112, "112th"],
+        [113, "113th"],
+    ])("does not let the teens take the ending their last digit suggests: %i", (n, expected) => {
+        expect(nth(n)).toBe(expected);
+    });
 });

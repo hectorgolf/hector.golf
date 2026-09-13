@@ -49,12 +49,19 @@ export function nth(n: number, short: boolean = false): string {
             return "tenth";
         }
     }
-    const lastDigit = n.toString().slice(-1);
-    if (lastDigit === "1") {
+    // 11, 12 and 13 are "th" despite their last digit, and so is every number ending in
+    // them: 111th, 112th, 113th. Without this the prompt asks Gemini to write about a
+    // player's "11st appearance", and Gemini writes exactly that.
+    const lastTwoDigits = n % 100;
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
+        return `${n}th`;
+    }
+    const lastDigit = n % 10;
+    if (lastDigit === 1) {
         return `${n}st`;
-    } else if (lastDigit === "2") {
+    } else if (lastDigit === 2) {
         return `${n}nd`;
-    } else if (lastDigit === "3") {
+    } else if (lastDigit === 3) {
         return `${n}rd`;
     } else {
         return `${n}th`;
