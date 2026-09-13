@@ -14,6 +14,28 @@ variable "region" {
   default     = "europe-north1"
 }
 
+variable "scheduler_region" {
+  description = <<-EOT
+    The region the Cloud Scheduler jobs live in.
+
+    Separate from var.region, and not by choice: **Cloud Scheduler is not
+    available in europe-north1**. `gcloud scheduler locations list` is the
+    authoritative list, and Finland is not on it — an apply with var.region here
+    fails with "Location 'europe-north1' is not a valid location".
+
+    Being in a different region than everything else costs nothing that matters.
+    The job makes one HTTPS call to the admin service twice a day, so the
+    cross-region hop is a few milliseconds and a few kilobytes of egress on a
+    path that runs 730 times a year. Nothing is stored here: the job holds a URL
+    and a service account email, both of which are in this repository already.
+
+    europe-west1 (Belgium) is the closest supported region that is also one of
+    the cheapest. Change it only to another region on that list.
+  EOT
+  type        = string
+  default     = "europe-west1"
+}
+
 variable "github_repository" {
   description = "owner/repo allowed to mint tokens through Workload Identity Federation."
   type        = string

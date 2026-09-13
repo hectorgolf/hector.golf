@@ -21,7 +21,7 @@ Everything in [`terraform/`](../terraform/):
 | Four service accounts | One runtime identity, one for Terraform in CI, one for app deploys, one for the scheduled data updates |
 | Workload Identity Federation pool | Keyless GitHub Actions auth — no service account keys anywhere |
 | Secret Manager secret `github-dispatch-token` | The GitHub token the admin dispatches workflows with. Terraform creates the container; step 11 adds the value |
-| Two Cloud Scheduler jobs | Start the data-update workflows on time (03:00 and 12:00 UTC), because GitHub's own cron runs hours late |
+| Two Cloud Scheduler jobs | Start the data-update workflows on time (03:00 and 12:00 UTC), because GitHub's own cron runs hours late. In `europe-west1`, not `europe-north1` — Cloud Scheduler does not run there |
 | Billing budget (optional) | Alerts above €1/month |
 
 And three workflows: [`terraform-plan.yml`](../.github/workflows/terraform-plan.yml) on pull
@@ -528,14 +528,21 @@ Open `/operations` in the admin. Both workflows should list their recent runs �
 token, so a page that shows them proves the token works. Press **Run now** on one and check that a
 `workflow_dispatch` run appears in the repository's Actions tab within a few seconds.
 
-Then prove the schedule itself, rather than waiting until 03:00 to find out:
+Then prove the schedule itself, rather than waiting until 03:00 to find out.
+
+Note the region: the Cloud Scheduler jobs are **not** in `$REGION`. Cloud Scheduler does not run in
+`europe-north1`, so they live in `europe-west1` — see `var.scheduler_region`.
 
 ```bash
-gcloud scheduler jobs run hector-handicaps-morning --location="$REGION" --project="$PROJECT_ID"
+export SCHEDULER_REGION=europe-west1
 ```
 
 ```bash
-gcloud scheduler jobs describe hector-handicaps-morning --location="$REGION" --project="$PROJECT_ID" --format="value(status)"
+gcloud scheduler jobs run hector-data-update-morning --location="$SCHEDULER_REGION" --project="$PROJECT_ID"
+```
+
+```bash
+gcloud scheduler jobs describe hector-data-update-morning --location="$SCHEDULER_REGION" --project="$PROJECT_ID" --format="value(status)"
 ```
 
 An empty status is success. A `401` means the OIDC audience and IAP's OAuth client disagree — check
@@ -703,6 +710,8 @@ Really deleting it takes two deliberate steps: set `delete_protection_state` to
 | `set-quota-project`: `the account in ADC does not have the "serviceusage.services.use" permission on this project` | ADC is authenticated as an account with no access to this project. `gcloud auth list` shows the CLI account; the two are independent. Re-run `gcloud auth application-default login` as the account that owns the project |
 | `Error 403: Permission denied` on the first apply | Step 1 not run, or ADC is pointed at the wrong account — the CLI account being right does not mean ADC is. Check with the `userinfo` command in "Before you start" |
 | `Service account service-…@gcp-sa-iap… does not exist` | Step 3 not run |
+| CI apply fails with `Permission 'secretmanager.secrets.create' denied` (or any other permission listed in `local.terraform_ci_roles`) | **The role that grants the permission is granted by the apply that needs it.** CI runs as `terraform-ci`, and adding a role to `terraform_ci_roles` means the first apply after that change is doing both things at once. The resources that need the new roles carry `depends_on` edges so the grant is ordered first, but IAM is eventually consistent, so a grant made seconds ago may still not be in effect. **The fix is to re-run the apply** — the binding survives the failed run, so the second attempt has it. If it fails twice, grant it out of band and re-run: `gcloud projects add-iam-policy-binding "$PROJECT_ID" --member="serviceAccount:$(terraform output -raw terraform_service_account)" --role=roles/secretmanager.admin` |
+| `Location 'europe-north1' is not a valid location` on a Cloud Scheduler job | Cloud Scheduler does not run in `europe-north1`. The jobs are deliberately in `var.scheduler_region` (`europe-west1`) while everything else is in `var.region`; if you overrode it, `gcloud scheduler locations list` is the authoritative set |
 | A database you created by hand is not listed in this project | The console was pointed at a different project. Use the cross-project loop in "Check the free-tier database first" to find it |
 | Browser shows "Empty Google Account OAuth client ID(s)/secret(s)" | IAP is on but has no OAuth client. This project is outside an organization and its users are external, so Google's managed client cannot be used — do step 5 |
 | Browser shows "Your client does not have permission to get URL from this server" | The IAP service agent is missing `roles/run.invoker`. Re-apply; if it persists, redeploy the Cloud Run service — IAP caches the backend |

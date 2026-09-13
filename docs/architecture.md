@@ -472,7 +472,8 @@ are queued and delivered when GitHub has capacity. Measured across the last 300 
 | 2026-09 | 4h32m | 3h46m |
 
 `workflow_dispatch` has no such queue. So [`terraform/scheduler.tf`](../terraform/scheduler.tf) runs
-**two** Cloud Scheduler jobs, at 03:00 and 12:00 UTC. Each calls one endpoint on the admin service —
+**two** Cloud Scheduler jobs, at 03:00 and 12:00 UTC. They are the one thing in this project not in
+`europe-north1` — Cloud Scheduler does not run there, so they sit in `europe-west1`. Each calls one endpoint on the admin service —
 `POST /api/workflows/dispatch` — which starts every workflow marked `scheduled` in
 [`admin/src/lib/workflows.ts`](../admin/src/lib/workflows.ts), using a GitHub token read from Secret
 Manager.

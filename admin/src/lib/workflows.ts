@@ -29,8 +29,9 @@
  * calls this service at 03:00 produces a run that starts at 03:00. That is the
  * whole idea. The `schedule:` blocks stay in the workflow files deliberately —
  * late is better than never on the day this service is the broken one, and the
- * scripts already tolerate running twice in a day (a second run replaces that
- * day's handicap entry rather than appending a duplicate).
+ * scripts are built for running twice in a day: every handicap reading is kept,
+ * and `latestPerDay` in @hector/schemas is what decides which of a day's
+ * readings the site shows. A redundant run costs a row, not correctness.
  *
  * ## Adding one
  *
