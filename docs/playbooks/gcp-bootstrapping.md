@@ -1,46 +1,23 @@
-# Setting up hector.golf on a fresh GCP project
+# Bootstrapping the GCP project
 
-_Last reviewed: 2026-09-10_
+_A procedure, not a description. Last reviewed: 2026-09-14._
 
-This is the runbook for taking an empty Google Cloud project to a working, CI-deployed admin
-service with a Firestore database behind it. It exists because the previous GCP setup was clicked
-together by hand and could not be rebuilt, and because three of the decisions below cannot be
-undone once made.
+Takes an empty Google Cloud project to a working, CI-deployed admin service with a Firestore
+database behind it. Follow it top to bottom; it takes about half an hour, most of which is waiting
+for API enablement.
 
-Follow it top to bottom. It takes about half an hour, most of which is waiting for API enablement.
+**When you would run this**
 
-## What this builds
+- Recovering from the loss of `hector-golf` — this is the disaster-recovery procedure, and it is the
+  reason the previous hand-clicked setup was unacceptable: it could not be rebuilt.
+- Standing up a second environment, or a scratch project to try something in.
 
-Everything in [`terraform/`](../../terraform/):
+It exists because the previous GCP setup was clicked together by hand and could not be rebuilt, and
+because three of its decisions cannot be undone once made — those are in
+[`../current/gcp-setup.md`](../current/gcp-setup.md), and are worth reading **before** step 1 rather
+than after.
 
-| Resource | What it is for |
-| --- | --- |
-| Firestore database, Enterprise edition | The data store. `europe-north1`, native mode, PITR on, delete-protected |
-| Artifact Registry repository | Admin service container images, with cleanup policies |
-| Cloud Run service `hector-admin` | The admin UI and API, scaled to zero, IAP in front of it |
-| Four service accounts | One runtime identity, one for Terraform in CI, one for app deploys, one for the scheduled data updates |
-| Workload Identity Federation pool | Keyless GitHub Actions auth — no service account keys anywhere |
-| Secret Manager secret `github-dispatch-token` | The GitHub token the admin dispatches workflows with. Terraform creates the container; step 11 adds the value |
-| Two Cloud Scheduler jobs | Start the data-update workflows on time (03:00 and 12:00 UTC), because GitHub's own cron runs hours late. In `europe-west1`, not `europe-north1` — Cloud Scheduler does not run there |
-| Billing budget (optional) | Alerts above €2/month |
-
-And three workflows: [`terraform-plan.yml`](../../.github/workflows/terraform-plan.yml) on pull
-requests, [`terraform-apply.yml`](../../.github/workflows/terraform-apply.yml) on merge to `main`, and
-[`deploy-admin.yml`](../../.github/workflows/deploy-admin.yml), which stays inert until an `admin/`
-directory exists.
-
-## What this deliberately does not build
-
-- **The public site.** `hector.golf` remains a static Astro build on GitHub Pages, deployed by
-  the existing [`deploy.yml`](../../.github/workflows/deploy.yml). Nothing here touches it.
-- **The four existing Cloud Functions** in the old project (`GeneratePlayerBiography`,
-  `GeneratePlayerAvatar`, `ExtractScorecardInformation`, `TournamentLeaderboard`). They are still
-  deployed by hand from a laptop via the npm scripts in
-  [`backend/backend-functions/package.json`](../../backend/backend-functions/package.json). Importing
-  them is worthwhile eventually and is not on the path to a working admin UI. See
-  [§13 of the architecture notes](./architecture.md).
-- **The Terraform state bucket**, which cannot describe itself. Step 2 creates it by hand; it is the
-  one piece of infrastructure not in `terraform/`.
+For what the finished thing consists of, see the same document. This one is only the steps.
 
 ## Before you start
 
@@ -139,6 +116,7 @@ tidy — turning off delete protection first if it is on:
 ```bash
 gcloud firestore databases delete --database=DATABASE_ID --project=WRONG_PROJECT
 ```
+
 
 ## Step 1 — Enable the two bootstrap APIs
 
@@ -680,16 +658,6 @@ Then run `terraform plan` and read the summary line. What you want is **`1 to im
 than a permanent part of the configuration, and leaving it in means every future plan re-checks an
 import that already happened.
 
-## The decisions you cannot take back
-
-| Decision | Why it is permanent |
-| --- | --- |
-| Firestore `location_id` | Cannot be changed after provisioning. Moving means a new database and a data migration |
-| Firestore `type` | Same |
-| Firestore `database_edition` | Same. `STANDARD` → `ENTERPRISE` has a documented migration path; the reverse does not |
-| Which database got the free tier | The first one created in the project keeps it |
-
-Everything else in `terraform/` can be changed by editing it and re-applying.
 
 ## Teardown
 
@@ -728,16 +696,3 @@ Really deleting it takes two deliberate steps: set `delete_protection_state` to
 | `terraform apply` wants to change the Cloud Run image every time | The `ignore_changes` block in [`cloud_run.tf`](../../terraform/cloud_run.tf) was removed. Terraform owns the service; the deploy workflow owns the image |
 | Images accumulating past the cleanup policy | First check there is a **DELETE** policy that actually matches them. A KEEP policy deletes nothing — it only exempts artifacts from a DELETE policy — so a repository with only `keep-recent` on it grows forever, and a DELETE policy conditioned on `UNTAGGED` matches nothing here because the deploy workflow tags every image with a commit SHA. `gcloud artifacts repositories describe hector-admin --location="$REGION"` prints the live policies. Second, sweeps are asynchronous and run roughly daily, so nothing disappears at `apply` time. Only third is the other cause: something pushed to a repository Terraform does not manage — most likely `gcloud run deploy --source`, which creates `cloud-run-source-deploy` behind your back |
 
-## Once this is done
-
-The infrastructure is in place and empty. The next pieces, in the order they make sense:
-
-1. **Migrate `handicaps` and the player images.** They are the two datasets Git handles worst, and
-   neither is edited by a human, so a mistake is cheap.
-2. **Build the admin service** under `admin/`, at which point `deploy-admin.yml` starts firing.
-3. **Split the data loader** in [`astrosite/src/code/data.ts`](../../astrosite/src/code/data.ts) into a
-   Firestore implementation and the existing filesystem one, so `astro dev` and `npm test` keep
-   running with no emulator, no Java and no credentials.
-4. **Decide who wins when CI and a human write the same field.** `player.handicap` is already a
-   hand-set override of scraped history, and `update-handicaps.ts` rewrites event `buckets` twice a
-   day. Nothing currently marks a value as "set by hand, do not clobber".

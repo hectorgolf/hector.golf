@@ -136,7 +136,7 @@ variable "admin_domain" {
 
     Verification is per account rather than per project, so the terraform-ci
     service account also has to be an owner of the domain in Search Console. See
-    the custom domain section of docs/current/gcp-setup-playbook.md.
+    the custom domain section of docs/playbooks/gcp-bootstrapping.md.
 
     Once applied, `terraform output admin_dns_records` prints the records to add
     at the registrar.

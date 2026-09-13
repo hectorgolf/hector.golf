@@ -159,9 +159,10 @@ plainly that they are not implemented. Nothing in any schema, page or script has
 `bucketsLocked` is now the narrower of the two: `bucketsAreOpen()` already stops CI at 08:00 on the
 first morning, so the field is only about locking buckets *earlier* than that.
 
-**Two of the playbook's four next steps are still open.**
-[`docs/current/gcp-setup-playbook.md`](docs/current/gcp-setup-playbook.md) ends with four. The admin
-service was built and the ownership question was settled; these were not:
+**Two of the four next steps the GCP setup was aiming at are still open.** They used to live at the
+end of the setup document, which is why nobody saw them; splitting that document moved them here and
+dropped the section. The admin service was built and the ownership question was settled; these were
+not:
 
 - *Migrate `handicaps` and the player images into Firestore.* Named as the place to start because
   Git handles them worst and neither is edited by a human, so a mistake is cheap. Still 1397 entries

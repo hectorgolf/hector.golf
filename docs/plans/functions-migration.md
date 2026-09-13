@@ -12,7 +12,7 @@ only one that is visible to anybody using the site.
 
 Nobody chose the split. `gen-lang-client-0537211409` is the project Google AI Studio created
 alongside the Gemini API key, which is the exact accident
-[the playbook warns about](../current/gcp-setup-playbook.md) in the Firestore step. The functions were deployed
+[the playbook warns about](../playbooks/gcp-bootstrapping.md) in the Firestore step. The functions were deployed
 from a laptop into whichever project `.env` named, and that was it.
 
 What the split costs, concretely:

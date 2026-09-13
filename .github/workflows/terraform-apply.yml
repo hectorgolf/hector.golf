@@ -65,7 +65,7 @@ jobs:
           # until someone finishes step 6.
           if [ -z "$WIF_PROVIDER" ] && [ -z "$TERRAFORM_SA" ] && [ -z "$ADMIN_PRINCIPALS" ]; then
             echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::GCP is not wired up to GitHub yet - step 6 of docs/current/gcp-setup-playbook.md. Nothing applied."
+            echo "::notice::GCP is not wired up to GitHub yet - step 6 of docs/playbooks/gcp-bootstrapping.md. Nothing applied."
             exit 0
           fi
 
@@ -73,7 +73,7 @@ jobs:
           # TF_ADMIN_PRINCIPALS reads admin_principals as an empty list, which
           # revokes every IAP binding rather than doing nothing.
           echo "::error::Partially configured. Missing:$missing"
-          echo "::error::Refusing to apply. Finish step 6 of docs/current/gcp-setup-playbook.md."
+          echo "::error::Refusing to apply. Finish step 6 of docs/playbooks/gcp-bootstrapping.md."
           exit 1
 
       - name: Authenticate to Google Cloud
