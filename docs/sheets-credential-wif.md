@@ -92,11 +92,16 @@ make the field optional rather than to restructure anything:
   resolve it;
 - the "missing — cannot authenticate" throw goes away, because missing is now the normal case.
 
-Two details worth keeping while in there. The parse-failure branch logs
-``Error parsing GOOGLE_CREDENTIALS: ${JSON.stringify(normalizedValue)}`` — the whole credential,
-into the Actions log of a public repository. Once ADC is the only path, delete that branch rather
-than leaving a log line that can print a key. And the newline-normalising fallback exists only for
-pasted `.env` values; it goes when the variable does.
+The newline-normalising fallback exists only for pasted `.env` values, so it goes when the variable
+does, and the parse-failure branch goes with it.
+
+That branch used to log the value it could not parse. An earlier draft of this document called that
+"the whole credential in a public repository's log", which was wrong and worth correcting here
+rather than quietly: it fired five times on 2026-09-01 and Actions' masking caught it — fourteen
+`***`, no key material. It is fixed anyway, in the commit that removed the value and kept the
+length, because masking held by accident: what reaches the log is a transformed copy, and the match
+only worked because escaping newlines left the PEM body's lines intact as substrings. None of that
+applies off Actions, where the same branch printed the credential in full.
 
 ## Phase 4 — The workflow
 
