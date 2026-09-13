@@ -8,7 +8,7 @@ import { createWisegolfSession } from "../code/handicaps/wisegolf-api.ts";
 import { formatEventDates, isoDateToday } from "@hector/schemas/src/dates.ts";
 import { writeJsonFile } from "../code/json.ts";
 
-import { playersData, hectorEvents, hasParticipants, isUpcomingEvent, pathToEventJson } from "../code/data.ts";
+import { playersData, hectorEvents, hasParticipants, bucketsAreOpen, pathToEventJson } from "../code/data.ts";
 import { getPlayerName, updatePlayerData } from "../code/players.ts";
 import type { Player } from "@hector/schemas/src/players.ts";
 
@@ -254,8 +254,10 @@ export function sortPlayersForBucketing(handicapHistory: Array<HandicapHistoryEn
 const updateBucketsForUpcomingEvents = async () => {
     const handicapHistory: Array<HandicapHistoryEntry> = readJsonFile(pathToHandicapHistoryJson, []);
 
-    console.log(`Updating buckets for upcoming events...`);
-    const eventsToUpdate = hectorEvents.filter(hasParticipants).filter(isUpcomingEvent) as HectorEvent[];
+    console.log(`Updating buckets for events whose buckets are still open...`);
+    // Not "upcoming": buckets freeze at 08:00 on the first morning, local to the
+    // event, because the Draft after round one reads them. See `bucketsAreOpen`.
+    const eventsToUpdate = hectorEvents.filter(hasParticipants).filter((e) => bucketsAreOpen(e)) as HectorEvent[];
 
     for (const event of eventsToUpdate) {
         console.log(`Updating buckets for ${event.name} on ${formatEventDates(event)}...`);

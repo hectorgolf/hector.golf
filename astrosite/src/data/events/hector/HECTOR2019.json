@@ -5,7 +5,8 @@
   "location": "Golf & Spa Resort Konopiště, Czechia",
   "timing": {
     "start": "2019-09-20",
-    "end": "2019-09-22"
+    "end": "2019-09-22",
+    "timezone": "Europe/Prague"
   },
   "description": "The Hector Trophée went abroad for a second year running in 2019, to Golf & Spa Resort Konopiště in Czechia, where Hector Trophée VI ran from September 20 to 22 across the resort's Radecký and d'Este courses. The field grew by half, from sixteen players to twenty-four in twelve pairs, making it the largest turnout the event had seen.",
   "participants": [
