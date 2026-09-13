@@ -64,6 +64,12 @@ it.
 
 So the rotation is narrow: **only `583f23a1…` was ever in the zip.** `cf542f7b…` needs no action.
 
+Before rotating, read [`docs/sheets-credential-wif.md`](docs/sheets-credential-wif.md), which
+retires the key rather than replacing it: the workflow already declares `id-token: write` and
+`GH_WIF_PROVIDER` already exists, so this is the last workflow still holding a downloadable
+credential. Rotating now and moving to WIF later is a reasonable order — it closes the exposure
+today — but it mints one more key into the project everything else is migrating out of.
+
 1. Mint a new key and update `GCP_SERVICE_ACCOUNT_CREDENTIALS`.
 2. Run `update-leaderboards.yml` by hand and confirm it is green — that proves the new key works
    before anything is destroyed.
