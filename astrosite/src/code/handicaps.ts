@@ -1,6 +1,10 @@
 import { type Player } from "@hector/schemas/src/players.ts";
 import { type HandicapSource } from "./handicaps/handicap-source-api";
-import { type HandicapHistoryEntry, schema as HandicapHistoryEntrySchema } from "@hector/schemas/src/handicaps.ts";
+import {
+    type HandicapHistoryEntry,
+    schema as HandicapHistoryEntrySchema,
+    latestPerDay,
+} from "@hector/schemas/src/handicaps.ts";
 import { createWisegolfSession } from "./handicaps/wisegolf-api";
 
 import handicapData from "../data/handicaps.json";
@@ -24,9 +28,18 @@ export const getPlayerHandicapHistory = (player: Player): HandicapHistoryEntry[]
     return getPlayerHandicapHistoryById(player.id);
 };
 
+/**
+ * One player's handicap by day, oldest first.
+ *
+ * A day holding two readings is collapsed to the last of them, so a caller still
+ * gets one value per date: the chart plots one point per day rather than two at
+ * the same x, and `getPlayerHandicapById` taking the final element still means
+ * "the most recent handicap". `observationsOn()` is there for the times you want
+ * the readings themselves.
+ */
 export const getPlayerHandicapHistoryById = (id: string): HandicapHistoryEntry[] => {
-    let events: HandicapHistoryEntry[] = handicapData
+    const events: HandicapHistoryEntry[] = handicapData
         .map((record) => HandicapHistoryEntrySchema.parse(record))
         .filter((event) => event.player === id);
-    return events.sort((a, b) => a.date.localeCompare(b.date));
+    return latestPerDay(events);
 };
