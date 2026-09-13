@@ -44,14 +44,37 @@ It is `583f23a1…`, and it is not dormant — Policy Analyzer reports it authen
 2026-09-05, the end of its observation window. The account carries `roles/secretmanager.secretAccessor`,
 so that key reads every secret in the project.
 
-What blocks the rotation is that **two** of its keys are live: `583f23a1…` and `cf542f7b…`
-(2026-09-01). So two things use this account and only one of them is CI —
-`update-leaderboards.yml:64` passes `GCP_SERVICE_ACCOUNT_CREDENTIALS` as `GOOGLE_CREDENTIALS` for
-Sheets access. GitHub secrets cannot be read back, so identifying which is which means either a
-throwaway workflow that prints only `private_key_id`, or the local copy of the JSON. Find the second
-consumer first: rotating blind fixes CI and silently breaks whatever else is using the other key.
+Every key on the account is now accounted for, so the rotation is not blocked on anything:
 
-Enable it with:
+| key | consumer | exposed in the zip |
+| --- | --- | --- |
+| `583f23a1…` | GitHub Actions, via `GCP_SERVICE_ACCOUNT_CREDENTIALS` | **yes** |
+| `cf542f7b…` | this laptop, `astrosite/.env.google-credentials.json` | no |
+| `8fb97428…` | none found, last used 2025-09-12 | no |
+
+Two things settle the first row without reading the secret, which cannot be read back. `gh secret
+list --json name,updatedAt` reports `GCP_SERVICE_ACCOUNT_CREDENTIALS` as last updated **2024-09-05**
+and never since, and `583f23a1…` was created 2024-09-04 — a secret nobody has touched cannot hold a
+key minted eighteen months later. And `cf542f7b…` is on disk locally, in a file written four and a
+half hours after that key was created, holding the same `private_key_id`; `docs/architecture.md` §13
+already records that file as real credentials in the working tree. Nothing reads it by name —
+`google-sheets.ts` takes `GOOGLE_CREDENTIALS` from the environment — so it is a holding copy pasted
+into `.env` for a manual run, which matches a last authentication of 2026-09-01 with no cron behind
+it.
+
+So the rotation is narrow: **only `583f23a1…` was ever in the zip.** `cf542f7b…` needs no action.
+
+1. Mint a new key and update `GCP_SERVICE_ACCOUNT_CREDENTIALS`.
+2. Run `update-leaderboards.yml` by hand and confirm it is green — that proves the new key works
+   before anything is destroyed.
+3. Delete `583f23a1…`, and `8fb97428…` with it: a year-old key with no identified consumer is the
+   thing you do not want left lying around.
+
+While in there, ask whether the account needs `roles/secretmanager.secretAccessor` at all. It reads
+one Google Sheet. The role gives it every secret in the project, and it is there because of the
+Hello World function that has now been deleted.
+
+The evidence above came from Policy Analyzer:
 
 ```bash
 gcloud services enable policyanalyzer.googleapis.com --project=hector-golf
@@ -59,8 +82,11 @@ gcloud policy-intelligence query-activity --activity-type=serviceAccountKeyLastA
   --project=gen-lang-client-0537211409 --format=json
 ```
 
-Note that report lists keys that no longer exist — it records what has authenticated, not what is
-there — so check anything it names against `gcloud iam service-accounts keys list`.
+Two traps in it. It lists keys that no longer exist — it records what has authenticated, not what is
+there — so check anything it names against `gcloud iam service-accounts keys list`. And audit logs
+cannot stand in for it here: `protoPayload.authenticationInfo.serviceAccountKeyName` is never
+populated in this project, because Data Access logging is off, so a query on that field comes back
+empty whether or not the key is in use.
 
 **Decide what to do with `terraform-deployer`.** A dormant identity in the old project, last
 authenticated 2025-04-06, holding `iam.serviceAccountAdmin`, `iam.serviceAccountUser` and
