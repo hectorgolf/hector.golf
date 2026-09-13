@@ -49,7 +49,7 @@ run. The Sheets path runs twice a day, not only during a tournament.
 ## Phase 1 — Terraform
 
 A service account with no project roles, and a WIF binding copied from `admin_deployer_wif` in
-[`github_oidc.tf`](../terraform/github_oidc.tf):
+[`github_oidc.tf`](../../terraform/github_oidc.tf):
 
 ```hcl
 resource "google_service_account" "leaderboard_reader" {

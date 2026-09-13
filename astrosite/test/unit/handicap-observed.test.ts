@@ -4,7 +4,7 @@ import { schema as handicapEntrySchema } from '@hector/schemas/src/handicaps.ts'
 
 /**
  * `observed` records when a handicap was read, as opposed to `date`, which records
- * the day it belongs to. The two can be a day apart — see docs/handicap-updates.md.
+ * the day it belongs to. The two can be a day apart — see docs/current/handicap-updates.md.
  */
 
 describe('isValidIsoInstant()', () => {

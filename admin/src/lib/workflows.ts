@@ -4,7 +4,7 @@
  *
  * ## Why the admin starts workflows rather than doing the work
  *
- * The repository is the database (docs/architecture.md §1): a data update is a
+ * The repository is the database (docs/current/architecture.md §1): a data update is a
  * scraper writing JSON under `astrosite/src/data/` and committing it to `main`,
  * after which a rebuild publishes it. Doing that here would mean this service
  * holding push credentials and reimplementing `scripts/commit-changes.sh`, for

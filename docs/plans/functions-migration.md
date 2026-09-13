@@ -1,6 +1,6 @@
 # Migrating the Cloud Functions into `hector-golf`
 
-The four Cloud Functions in [`backend/backend-functions/`](../backend/backend-functions/) run in
+The four Cloud Functions in [`backend/backend-functions/`](../../backend/backend-functions/) run in
 `gen-lang-client-0537211409`. Everything else — Firestore, the admin service, Artifact Registry, the
 scheduler jobs, the Terraform state bucket — is in `hector-golf`. This document is the plan for
 closing that split.
@@ -12,18 +12,18 @@ only one that is visible to anybody using the site.
 
 Nobody chose the split. `gen-lang-client-0537211409` is the project Google AI Studio created
 alongside the Gemini API key, which is the exact accident
-[the playbook warns about](gcp-setup-playbook.md) in the Firestore step. The functions were deployed
+[the playbook warns about](../current/gcp-setup-playbook.md) in the Firestore step. The functions were deployed
 from a laptop into whichever project `.env` named, and that was it.
 
 What the split costs, concretely:
 
-- **No CI deploys.** [`deploy-functions.yml`](../.github/workflows/deploy-functions.yml) ships inert
+- **No CI deploys.** [`deploy-functions.yml`](../../.github/workflows/deploy-functions.yml) ships inert
   because the deploy identity would have to live in a project Terraform does not manage. Activating
   it there means standing up a second Workload Identity pool for a project you would rather delete.
 - **Secrets stay on laptops.** `GOOGLE_GEMINI_API_KEY`, `ASTROSITE_API_KEY` and
   `HECTOR_APP_API_KEY` are set by `--set-env-vars` from somebody's `.env`. Secret Manager is in the
   other project, so there is no shared place to put them.
-- **Two billing surfaces.** The budget alert in [`budget.tf`](../terraform/budget.tf) filters on
+- **Two billing surfaces.** The budget alert in [`budget.tf`](../../terraform/budget.tf) filters on
   `hector-golf` only. Gemini spend is invisible to it.
 - **Nothing describes it.** The functions exist in no Terraform, so the only record of what they are
   is the `npm run deploy:*` scripts.
@@ -98,7 +98,7 @@ Three files change. None of them needs a new role on `terraform-ci`: it already 
 covers everything below. That is worth checking rather than assuming when the plan runs, since a
 missing role shows up as a mid-apply permission denial.
 
-**[`apis.tf`](../terraform/apis.tf)** — add to `local.services`:
+**[`apis.tf`](../../terraform/apis.tf)** — add to `local.services`:
 
 ```hcl
     "cloudfunctions.googleapis.com",     # the functions themselves
@@ -110,7 +110,7 @@ missing role shows up as a mid-apply permission denial.
 `run.googleapis.com` and `artifactregistry.googleapis.com` are already enabled, which matters:
 gen2 functions *are* Cloud Run services underneath and their images land in Artifact Registry.
 
-**[`iam.tf`](../terraform/iam.tf)** — a runtime identity and a deploy identity, mirroring the
+**[`iam.tf`](../../terraform/iam.tf)** — a runtime identity and a deploy identity, mirroring the
 `admin_runtime` / `admin_deployer` split that is already there:
 
 ```hcl
@@ -153,13 +153,13 @@ state. It is also unnecessary — `gcloud functions deploy` uploads through a si
 from `generateUploadUrl`, which `cloudfunctions.developer` already covers.
 
 Start with the two roles above and add only what a failed deploy actually names. The role list in
-[`deploy-functions.yml`](../.github/workflows/deploy-functions.yml)'s header was written for a
+[`deploy-functions.yml`](../../.github/workflows/deploy-functions.yml)'s header was written for a
 cross-project setup and is broader than this needs; it gets rewritten in phase 8.
 
-**[`github_oidc.tf`](../terraform/github_oidc.tf)** — bind the new deployer to the *existing* pool,
+**[`github_oidc.tf`](../../terraform/github_oidc.tf)** — bind the new deployer to the *existing* pool,
 alongside `admin_deployer_wif`. This is the payoff: same project, so there is one pool, not two.
 
-**[`secrets.tf`](../terraform/secrets.tf)** — three more containers, following the rule already
+**[`secrets.tf`](../../terraform/secrets.tf)** — three more containers, following the rule already
 established there: **Terraform creates the container and never the value.**
 
 ```hcl
@@ -269,10 +269,10 @@ gcloud functions deploy TournamentLeaderboard \
 
 `GeneratePlayerBiography` and `GeneratePlayerAvatar` also want `--timeout=540s`; the loop above
 omits it for brevity, so add it or deploy those two separately. The authority on every flag is the
-`deploy:*` scripts in [`package.json`](../backend/backend-functions/package.json).
+`deploy:*` scripts in [`package.json`](../../backend/backend-functions/package.json).
 
 `--allow-unauthenticated` works here: `hector-golf` is not in an organization — see the note in
-[`iap.tf`](../terraform/iap.tf) — so no domain-restricted-sharing policy blocks an `allUsers`
+[`iap.tf`](../../terraform/iap.tf) — so no domain-restricted-sharing policy blocks an `allUsers`
 binding.
 
 ## Phase 5 — Verify, before anything points at them
@@ -308,18 +308,18 @@ so the site has to be rebuilt before visitors reach the new function, and the ol
 until every cached build is gone.
 
 1. Set the `PUBLIC_LEADERBOARD_PROXY_URL` repository variable to the new URL.
-2. Trigger [`deploy.yml`](../.github/workflows/deploy.yml) — pushing to `main` or dispatching it —
+2. Trigger [`deploy.yml`](../../.github/workflows/deploy.yml) — pushing to `main` or dispatching it —
    and wait for Pages to serve the rebuilt site. Load a leaderboard page and watch the network tab
    hit `hector-golf`.
 3. Merge the URL change in
-   [`update-player-biographies.ts:174`](../astrosite/src/workflows/update-player-biographies.ts).
+   [`update-player-biographies.ts:174`](../../astrosite/src/workflows/update-player-biographies.ts).
    This one is hardcoded, so it is a code change rather than a variable.
 4. Update `FUNCTION_REGION` and `GCLOUD_PROJECT_ID` in your local `.env` — that is all the avatar
-   CLI and [`generate-avatars.sh`](../backend/backend-functions/generate-avatars.sh) need, since
+   CLI and [`generate-avatars.sh`](../../backend/backend-functions/generate-avatars.sh) need, since
    they build the URL from those.
-5. Update the documentation: [`backend/README.md`](../backend/README.md) has the URL in four places,
-   [`architecture.md`](architecture.md) §10 has the base-URL template, and
-   [`.env.sample`](../astrosite/.env.sample) has the placeholder form.
+5. Update the documentation: [`backend/README.md`](../../backend/README.md) has the URL in four places,
+   [`architecture.md`](../current/architecture.md) §10 has the base-URL template, and
+   [`.env.sample`](../../astrosite/.env.sample) has the placeholder form.
 
 Leave both sets running. Nothing is saved by hurrying the next phase.
 
@@ -359,13 +359,13 @@ it is not a loose end.
 
 The migration is not finished until these land, because they are what stops the split recurring.
 
-- **[`deploy-functions.yml`](../.github/workflows/deploy-functions.yml) loses its guard job.** The
+- **[`deploy-functions.yml`](../../.github/workflows/deploy-functions.yml) loses its guard job.** The
   `GH_FUNCTIONS_*` variables and the whole "inert until configured" preamble exist only because of
   the cross-project split. It reuses `GH_WIF_PROVIDER` and a new `GH_FUNCTIONS_DEPLOYER_SA` from the
   same pool, like `deploy-admin.yml`.
 - **It can deploy configuration, not just code.** With the keys in Secret Manager, the workflow
   passes `--set-secrets` and `--service-account` on every deploy. The caveat in
-  [`backend/README.md`](../backend/README.md) — that first deploys and key rotations still need the
+  [`backend/README.md`](../../backend/README.md) — that first deploys and key rotations still need the
   npm scripts — goes away. Rotation becomes `gcloud secrets versions add` plus a redeploy, and
   `:latest` means even the redeploy is optional for a new instance.
 - **The `deploy:*` scripts in `package.json` drop `--set-env-vars`** and gain `--set-secrets`, so a
@@ -385,7 +385,7 @@ Cheap everywhere, which is the point of the ordering.
 
 ## Cost
 
-Moving the functions moves their spend under the alert in [`budget.tf`](../terraform/budget.tf),
+Moving the functions moves their spend under the alert in [`budget.tf`](../../terraform/budget.tf),
 which is why `budget_amount_eur` went from 1 to 2 alongside this plan. The functions themselves
 round to nothing — they scale to zero and the leaderboard proxy is capped at five instances. The
 variable is Gemini, and specifically `gemini-2.5-flash-image` behind `GeneratePlayerAvatar`, which

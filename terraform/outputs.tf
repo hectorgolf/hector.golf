@@ -43,7 +43,7 @@ output "github_dispatch_token_secret" {
 
       gcloud secrets versions add "$(terraform output -raw github_dispatch_token_secret)" --data-file=-
 
-    See the GitHub token step in docs/gcp-setup-playbook.md.
+    See the GitHub token step in docs/current/gcp-setup-playbook.md.
   EOT
   value       = google_secret_manager_secret.github_dispatch_token.secret_id
 }

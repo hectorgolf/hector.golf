@@ -19,7 +19,7 @@
 # The reason it cannot simply reuse GH_WIF_PROVIDER and GH_DEPLOYER_SA is that
 # these functions are not in the Terraform-managed project. They live in
 # `gen-lang-client-0537211409` — the project Google AI Studio created alongside
-# the Gemini API key, which docs/gcp-setup-playbook.md warns about landing in by
+# the Gemini API key, which docs/current/gcp-setup-playbook.md warns about landing in by
 # accident — while terraform/ manages `hector-golf`. The admin deployer has no
 # permissions there at all, and there is no Workload Identity pool in that
 # project to federate with. Activating this workflow is therefore a GCP task,

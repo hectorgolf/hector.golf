@@ -3,7 +3,7 @@
 Infrastructure for the hector.golf admin service and its Firestore database, in the `hector-golf`
 GCP project (`europe-north1`).
 
-**Read [`docs/gcp-setup-playbook.md`](../docs/gcp-setup-playbook.md) before running anything here.**
+**Read [`docs/current/gcp-setup-playbook.md`](../docs/current/gcp-setup-playbook.md) before running anything here.**
 Three of the settings in `firestore.tf` cannot be changed after the first apply, and the state
 bucket has to exist before `terraform init` will work.
 

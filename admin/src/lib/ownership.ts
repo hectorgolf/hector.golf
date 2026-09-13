@@ -12,7 +12,7 @@ import { EventFormat } from '@hector/schemas/src/events.ts'
  * `OWNED` is what the admin can author, so Firestore is its source of truth and
  * the committed JSON is generated from it. Everything else is a mirror the admin
  * reads — scheduled jobs write those files, and Firestore's copy is a convenience
- * for the UI, never a source. See docs/data-ownership.md.
+ * for the UI, never a source. See docs/current/data-ownership.md.
  */
 export const OWNED_FORMATS: ReadonlySet<EventFormat> = new Set([EventFormat.Matchplay])
 

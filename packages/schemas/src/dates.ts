@@ -15,7 +15,7 @@ export type IsoDate = string;
  * Distinct from `IsoDate` in what it is for. A date says which day something is
  * *about*; an instant says when we *saw* it. The two answer different questions
  * and a handicap entry carries both, because the answers can differ by most of a
- * day — see `docs/handicap-updates.md`.
+ * day — see `docs/current/handicap-updates.md`.
  *
  * Always UTC, and spelled with the `Z`, so that two instants can be compared as
  * strings and so that no reader has to ask which zone a file was written in.
