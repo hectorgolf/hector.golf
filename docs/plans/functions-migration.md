@@ -60,12 +60,21 @@ nothing moves between accounts — only which project the spend is attributed to
 about **€0.60/month**, against a first threshold of €1.00 at `budget_amount_eur = 2`, so the
 migrated spend does not trip the alert by itself.
 
-**Apply the budget before you migrate.** `budget_amount_eur = 2` is committed but not applied: the
-live budget still reads €1, where the first threshold is €0.50 and €0.60 of arriving spend crosses
-it immediately. A `terraform apply` has to land before or with phase 6, not after it. Note also a
-second budget on the account — "€1 Monthly Budget Alert", no project filter, not managed by this
-repository's Terraform — which spans both projects and is the likelier source of alert mail that
-already reads as noise.
+**The budget is already raised.** Done on 2026-09-14: the budget filtered to `hector-golf` reads €2,
+so the first threshold is €1.00 and the €0.60 of arriving spend clears it. Nothing to do here before
+phase 6 — this paragraph exists so that nobody re-checks it.
+
+It was **not** raised with `terraform apply`, and an earlier draft of this plan said it would be.
+`budget.tf` is gated on `count = var.enable_budget_alert ? 1 : 0` with the variable `false`, so the
+budget is not in Terraform state and an apply changes nothing while appearing to succeed. It is
+managed with `gcloud`, per the budget step of
+[`../playbooks/gcp-bootstrapping.md`](../playbooks/gcp-bootstrapping.md), and `budget_amount_eur` is
+a record of intent rather than the thing that takes effect. If this migration changes the budget
+again, change both or neither is true.
+
+Note also a second budget on the account — "€1 Monthly Budget Alert", no project filter, not managed
+by this repository at all — which spans both projects and is the likelier source of alert mail that
+already reads as noise. It was left alone.
 
 ```bash
 gcloud billing projects describe gen-lang-client-0537211409 --format="value(billingAccountName)"

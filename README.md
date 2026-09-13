@@ -120,10 +120,24 @@ same division as `deploy-admin.yml` — so nothing in phases 1 or 8 changes. Rec
 **€0.60/month**. Against `budget_amount_eur = 2` the first threshold is €1.00, so the migrated
 spend does not fire it on its own and the raise from 1 to 2 was the right call.
 
-One thing that came out of checking, and it is an action rather than a decision: **the €2 is not
-live.** The budget on the billing account still reads €1, so `budget_amount_eur = 2` is committed
-but unapplied. At €1 the first threshold is €0.50 and €0.60 of migrated spend crosses it on arrival,
-so the `terraform apply` has to land before or with the migration rather than after it.
+**~~The €2 is not live.~~** Done, on 2026-09-14: the budget filtered to `hector-golf` now reads €2,
+so the first threshold is €1.00 rather than €0.50 and the €0.60 of arriving spend clears it.
+
+Worth recording *how*, because an earlier version of this entry said a `terraform apply` was what
+was missing and that was wrong. `budget.tf` is gated on `count = var.enable_budget_alert ? 1 : 0`
+and the variable is `false`, so the budget is not in Terraform state and an apply would have changed
+nothing while looking like it had. The repository is deliberate about this — turning the variable on
+locally is the *worst* of the three states, because CI reads the default `false` and plans to
+destroy a budget it has no billing permission to refresh. The sanctioned mechanism is `gcloud`, as
+in the bootstrapping playbook's budget step, and that is what was used:
+
+```bash
+gcloud billing budgets update <budget-id> --billing-account="$BILLING" \
+  --display-name="hector.golf - alert above EUR 2/month" --budget-amount=2EUR
+```
+
+`budget_amount_eur = 2` in `variables.tf` is therefore documentation of intent rather than the thing
+that takes effect. Anyone changing the budget changes both, or neither is true.
 
 There is also a **second budget nobody's Terraform owns**: "€1 Monthly Budget Alert", with no
 project filter, so it spans the whole billing account rather than `hector-golf`. It is the likelier
