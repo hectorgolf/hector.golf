@@ -578,6 +578,7 @@ and assigns a club **only when exactly one** club matches.
 | `terraform-plan.yml` | PRs touching `terraform/**` | `fmt` → `init` → `validate` → `plan`, posted as a PR comment | `contents: read`, `id-token: write`, `pull-requests: write` |
 | `terraform-apply.yml` | Push to `main` touching `terraform/**`; manual | `terraform apply`, gated by the `infrastructure` environment | `contents: read`, `id-token: write` |
 | `deploy-admin.yml` | Push to `main` touching `admin/**`; manual | Build, push to Artifact Registry, `gcloud run deploy` | `contents: read`, `id-token: write` |
+| `deploy-functions.yml` | Push to `main` touching `backend/backend-functions/**`; manual | `gcloud functions deploy` for each of the four functions, in parallel | `contents: read`, `id-token: write` |
 | `update-leaderboards.yml` | Dispatched by the admin service at 03:00/12:00 UTC; cron `15 3,12 * * *` as a backstop; manual | Script + `commit-changes.sh` | `contents: write` |
 | `update-player-biographies.yml` | Cron `30 2 10,25 * *`; manual | Script + `commit-changes.sh` | `contents: write` |
 | `update-player-club-memberships.yml` | Cron `15 22 15 * *`; manual | Script + `commit-changes.sh` | `contents: write` |
@@ -593,6 +594,14 @@ package manager" step that always resolves to npm.
 
 Dependabot is active (see the merged `Bump the npm_and_yarn group…` commits) but runs from the
 repository's security settings — there is no `.github/dependabot.yml`.
+
+**`deploy-functions.yml` is inert until it is configured.** The four functions are not in the
+Terraform-managed `hector-golf` project — they live in the `gen-lang-client-*` project described in
+§10 — so the admin deployer's identity has no reach there and there is no Workload Identity pool in
+that project to federate with. The workflow skips with a notice until `GH_FUNCTIONS_PROJECT_ID`,
+`GH_FUNCTIONS_WIF_PROVIDER` and `GH_FUNCTIONS_DEPLOYER_SA` are set as repository variables; its
+header says what to create. It also passes no `--set-env-vars`, which leaves each function's
+existing keys untouched — it redeploys code, never configuration.
 
 ### Secrets and variables
 

@@ -1,0 +1,172 @@
+# Rolls the Cloud Functions in backend/backend-functions out to GCP.
+#
+# ## Why this exists
+#
+# Every other deployable thing here redeploys itself when its code lands on
+# main: deploy-admin.yml watches `admin/**`, deploy.yml watches `astrosite/**`,
+# terraform-apply.yml watches `terraform/**`. `backend/**` matched none of them,
+# so the four functions were deployed only by somebody running `npm run
+# deploy:*` on a laptop. A dependency bump merged in #84 and went nowhere, which
+# is how the gap was noticed: the manifest on main said one thing and the
+# running functions said another, with nothing to reconcile them.
+#
+# ## Why it ships inert
+#
+# It deliberately does nothing until three repository variables are set, in the
+# same spirit as deploy-admin.yml's Dockerfile guard: commit the deploy path so
+# it is reviewed once, up front, rather than improvised on the day it is needed.
+#
+# The reason it cannot simply reuse GH_WIF_PROVIDER and GH_DEPLOYER_SA is that
+# these functions are not in the Terraform-managed project. They live in
+# `gen-lang-client-0537211409` — the project Google AI Studio created alongside
+# the Gemini API key, which docs/gcp-setup-playbook.md warns about landing in by
+# accident — while terraform/ manages `hector-golf`. The admin deployer has no
+# permissions there at all, and there is no Workload Identity pool in that
+# project to federate with. Activating this workflow is therefore a GCP task,
+# not a YAML one; the variables below are the seam.
+#
+# To activate, in the functions' project:
+#   1. Create a Workload Identity pool and provider for this repository, and a
+#      deploy service account holding roles/cloudfunctions.developer,
+#      roles/run.developer, roles/cloudbuild.builds.editor,
+#      roles/artifactregistry.writer, roles/storage.objectAdmin, plus
+#      roles/iam.serviceAccountUser on each function's runtime identity.
+#   2. Set GH_FUNCTIONS_PROJECT_ID, GH_FUNCTIONS_WIF_PROVIDER and
+#      GH_FUNCTIONS_DEPLOYER_SA as repository variables.
+# Until all three are set, every run skips and says so rather than failing.
+#
+# ## Why no environment variables are passed
+#
+# The `npm run deploy:*` scripts pass --set-env-vars because they are how the
+# keys get onto a function in the first place. This workflow does not, and must
+# not: `gcloud functions deploy`'s env-var flags are all opt-in mutations —
+# --set-env-vars "removes all existing environment variables first",
+# --clear-env-vars empties them, and --update-env-vars merges — so passing none
+# leaves whatever each function already has exactly as it is.
+#
+# That is the property worth having. Shipping a dependency bump has no business
+# knowing GOOGLE_GEMINI_API_KEY, ASTROSITE_API_KEY or HECTOR_APP_API_KEY, and
+# three fewer secrets in this repository is three fewer things to leak. The
+# consequence is that this workflow redeploys code, never configuration: a
+# function that has never been deployed, or one whose keys have been rotated,
+# still needs a run of the matching npm script.
+name: Deploy Cloud Functions
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - 'backend/backend-functions/**'
+      - '.github/workflows/deploy-functions.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+# Unlike deploy-admin.yml, in-progress runs are not cancelled. That workflow
+# rolls out one Cloud Run revision, which is atomic — losing a half-finished one
+# costs nothing. This one walks four independent functions, so a cancellation
+# lands somewhere in the middle and leaves two of them on the new code and two
+# on the old, with nothing recording which. Queueing is the cheaper failure.
+concurrency:
+  group: "deploy-functions"
+  cancel-in-progress: false
+
+jobs:
+  guard:
+    name: Check the deploy path is configured
+    runs-on: ubuntu-latest
+    outputs:
+      deployable: ${{ steps.check.outputs.deployable }}
+    steps:
+      - name: Check for the repository variables
+        id: check
+        env:
+          PROJECT_ID: ${{ vars.GH_FUNCTIONS_PROJECT_ID }}
+          WIF_PROVIDER: ${{ vars.GH_FUNCTIONS_WIF_PROVIDER }}
+          DEPLOYER_SA: ${{ vars.GH_FUNCTIONS_DEPLOYER_SA }}
+        run: |
+          missing=()
+          [ -n "$PROJECT_ID" ]   || missing+=("GH_FUNCTIONS_PROJECT_ID")
+          [ -n "$WIF_PROVIDER" ] || missing+=("GH_FUNCTIONS_WIF_PROVIDER")
+          [ -n "$DEPLOYER_SA" ]  || missing+=("GH_FUNCTIONS_DEPLOYER_SA")
+          if [ ${#missing[@]} -eq 0 ]; then
+            echo "deployable=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "deployable=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Not configured yet, so there is nothing to deploy. Missing repository variables: ${missing[*]}. See the header of .github/workflows/deploy-functions.yml for what to create in the functions' GCP project."
+          fi
+
+  deploy:
+    name: ${{ matrix.function }}
+    needs: guard
+    if: needs.guard.outputs.deployable == 'true'
+    runs-on: ubuntu-latest
+
+    # One job per function, and fail-fast off, for the reason backend-checks.yml
+    # is separate from admin-checks.yml: these fail for unrelated reasons, and a
+    # broken leaderboard proxy should not stop the biography generator shipping.
+    # The flags mirror the `npm run deploy:*` scripts in package.json exactly —
+    # if one changes there, change it here.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - function: ExtractScorecardInformation
+            extra_flags: ""
+          - function: GeneratePlayerBiography
+            extra_flags: "--timeout=540s"
+          - function: GeneratePlayerAvatar
+            extra_flags: "--timeout=540s"
+          - function: TournamentLeaderboard
+            extra_flags: "--timeout=30s --max-instances=5"
+
+    defaults:
+      run:
+        working-directory: backend/backend-functions
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GH_FUNCTIONS_WIF_PROVIDER }}
+          service_account: ${{ vars.GH_FUNCTIONS_DEPLOYER_SA }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      # --source=. uploads this directory and Cloud Build runs the buildpack
+      # against it, which installs from package-lock.json and then runs the
+      # `gcp-build` script to compile TypeScript. Nothing is built here: a
+      # dist/ built on the runner would be uploaded and then rebuilt anyway.
+      # .gcloudignore keeps node_modules, test/ and samples/ out of the upload,
+      # which is also why the install in the build is a clean one and picks up
+      # the `overrides` block in package.json.
+      - name: Deploy
+        run: |
+          gcloud functions deploy ${{ matrix.function }} \
+            --gen2 \
+            --project="${{ vars.GH_FUNCTIONS_PROJECT_ID }}" \
+            --region="${{ vars.GH_FUNCTIONS_REGION || 'europe-north1' }}" \
+            --runtime=nodejs24 \
+            --trigger-http \
+            --allow-unauthenticated \
+            --entry-point=${{ matrix.function }} \
+            --source=. \
+            ${{ matrix.extra_flags }} \
+            --quiet
+
+      - name: Summarise
+        if: success()
+        run: |
+          {
+            echo "### Deployed ${{ matrix.function }}"
+            echo
+            echo "- Commit: \`${GITHUB_SHA::12}\`"
+            echo "- Region: ${{ vars.GH_FUNCTIONS_REGION || 'europe-north1' }}"
+            echo "- Environment variables: left as they were (see this workflow's header)"
+          } >> "$GITHUB_STEP_SUMMARY"
