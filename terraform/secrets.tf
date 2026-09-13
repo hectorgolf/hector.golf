@@ -43,7 +43,7 @@ resource "google_secret_manager_secret" "github_dispatch_token" {
     # This makes the grant happen first. It is not a guarantee — IAM is
     # eventually consistent, so a grant made seconds ago may still not be in
     # effect — but it turns a coin flip into a rare retry. See the troubleshooting
-    # note on new terraform-ci roles in docs/current/gcp-setup-playbook.md.
+    # note on new terraform-ci roles in docs/playbooks/gcp-bootstrapping.md.
     google_project_iam_member.terraform_ci,
   ]
 }

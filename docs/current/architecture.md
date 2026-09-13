@@ -92,9 +92,9 @@ waiting for a deploy.
 │   ├── scripts/commit-changes.sh
 │   └── test/{unit,astro}/
 ├── backend/backend-functions/  # GCP Cloud Functions gen2 (Gemini wrappers + leaderboard proxy)
-├── terraform/                  # The hector-golf GCP project (see docs/current/gcp-setup-playbook.md)
+├── terraform/                  # The hector-golf GCP project (see docs/current/gcp-setup.md)
 ├── .github/workflows/          # Nine workflows
-└── docs/                       # This document, the setup playbook, and data-ownership.md
+└── docs/                       # current/ describes, plans/ proposes, playbooks/ instructs
 ```
 
 There is **no monorepo tooling**. `astrosite/` and `backend/backend-functions/` are two independent

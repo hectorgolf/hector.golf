@@ -73,7 +73,7 @@ jobs:
           # which is the expected state on the pull request that adds terraform/.
           if [ -z "$WIF_PROVIDER" ] && [ -z "$TERRAFORM_SA" ] && [ -z "$ADMIN_PRINCIPALS" ]; then
             echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::GCP is not wired up to GitHub yet — step 6 of docs/current/gcp-setup-playbook.md. Skipping the plan; formatting and validation still ran."
+            echo "::notice::GCP is not wired up to GitHub yet — step 6 of docs/playbooks/gcp-bootstrapping.md. Skipping the plan; formatting and validation still ran."
             exit 0
           fi
 
@@ -82,7 +82,7 @@ jobs:
           # TF_ADMIN_PRINCIPALS reads admin_principals as an empty list, which is
           # an instruction to revoke every IAP binding rather than a no-op.
           echo "::error::Partially configured. Missing:$missing"
-          echo "::error::Finish step 6 of docs/current/gcp-setup-playbook.md before CI plans anything."
+          echo "::error::Finish step 6 of docs/playbooks/gcp-bootstrapping.md before CI plans anything."
           exit 1
 
       # Keyless: Actions presents its OIDC token and exchanges it for a

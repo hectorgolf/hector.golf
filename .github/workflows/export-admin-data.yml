@@ -49,7 +49,7 @@ jobs:
             echo "configured=true" >> "$GITHUB_OUTPUT"
           else
             echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::GH_WIF_PROVIDER or GH_DEPLOYER_SA is unset, so there is no project to export from. See docs/current/gcp-setup-playbook.md."
+            echo "::notice::GH_WIF_PROVIDER or GH_DEPLOYER_SA is unset, so there is no project to export from. See docs/playbooks/gcp-bootstrapping.md."
           fi
 
       - name: Setup Node
