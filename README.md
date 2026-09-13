@@ -34,25 +34,32 @@ is syntax-checked with and without the matrix's `extra_flags` — but never lint
 
 ## Decisions before the migration runs
 
-These block `docs/functions-migration.md`, which is written but unexecuted.
+All settled. `docs/functions-migration.md` is no longer blocked on a decision, and phases 1 and 8
+stand as written.
 
-**Migrate first, or activate `deploy-functions.yml` where the functions are now?** The workflow ships
-inert because its deploy identity would have to live in `gen-lang-client-0537211409`. Standing up a
-second Workload Identity pool in a project the plan then deletes is throwaway work, so the
-recommendation is to migrate first. If the migration is months away, activating it in the old
-project is the better trade.
+**~~Migrate first, or activate `deploy-functions.yml` where the functions are now?~~** Migrate
+first. Standing up a second Workload Identity pool in the old project is throwaway work, and the
+workflow stays inert until phase 8 turns it on in `hector-golf`.
 
-**Should Terraform own the functions themselves?** The plan has Terraform manage the APIs,
-identities and secret containers while CI deploys the functions wholesale with `gcloud` — the same
-split as `deploy-admin.yml`, which deploys revisions while Terraform owns the Cloud Run service.
-Managing `google_cloudfunctions2_function` instead would put the source bundle in Terraform's hands
-and fight the deploy workflow. Choosing that changes phases 1 and 8 substantially.
+**~~Should Terraform own the functions themselves?~~** No. Deploying a new version of a function
+must not require a `terraform apply`. That is the split the plan already assumes — Terraform owns
+the APIs, identities and secret containers, CI deploys the functions wholesale with `gcloud`, the
+same division as `deploy-admin.yml` — so nothing in phases 1 or 8 changes. Recorded here because
+`google_cloudfunctions2_function` is the obvious thing to reach for and this says why not to.
 
-**Check €2/month against real Gemini spend.** `budget_amount_eur` was raised from 1 to 2 on the
-reasoning that Gemini billing lands in this project after the migration and `gemini-2.5-flash-image`
-behind `GeneratePlayerAvatar` is not free. Nobody has looked at what the old project actually spends.
-If it is already above €1/month, the 50% threshold will fire on ordinary use and the alert stops
-being worth reading.
+**~~Check €2/month against real Gemini spend.~~** `gen-lang-client-0537211409` runs about
+**€0.60/month**. Against `budget_amount_eur = 2` the first threshold is €1.00, so the migrated
+spend does not fire it on its own and the raise from 1 to 2 was the right call.
+
+One thing that came out of checking, and it is an action rather than a decision: **the €2 is not
+live.** The budget on the billing account still reads €1, so `budget_amount_eur = 2` is committed
+but unapplied. At €1 the first threshold is €0.50 and €0.60 of migrated spend crosses it on arrival,
+so the `terraform apply` has to land before or with the migration rather than after it.
+
+There is also a **second budget nobody's Terraform owns**: "€1 Monthly Budget Alert", with no
+project filter, so it spans the whole billing account rather than `hector-golf`. It is the likelier
+source of any alert mail that already looks like noise, and it is worth either adopting or deleting
+before judging the managed one.
 
 **~~Find out what else lives in `gen-lang-client-0537211409`.~~** Answered. It holds
 `hector-firestore`, deliberately, and the project is therefore not deleted — `docs/functions-migration.md`
