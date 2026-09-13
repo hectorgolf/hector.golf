@@ -58,15 +58,37 @@ pick up a retry — but it only catches retries that finished before it ran. **A
 17:00 Finnish time is missed until the following morning**, by which point it is a value dated
 yesterday arriving today.
 
-### It replaces, rather than appends, within a day
+### It keeps every reading, including two in one day
 
-`persistHandicapHistoryToDisk` looks for an existing entry with the same player and the same `date`.
-If it finds one, the new value replaces it rather than becoming a second entry for that day. This is
-deliberate: the afternoon value is the corrected one, and two entries for one date would make
-"the player's handicap on the 13th" ambiguous.
+`handicaps.json` is a **log of observations**, not a table of days. A handicap read twice on the
+13th is two entries dated the 13th:
 
-The cost is that **the displaced morning observation is not kept.** It survives in the workflow log
-and in the file's git history, and nowhere else.
+```json
+{ "player": "lasse-k", "date": "2026-09-13", "handicap": 14.7, "observed": "2026-09-13T03:02:42Z" },
+{ "player": "lasse-k", "date": "2026-09-13", "handicap": 14.5, "observed": "2026-09-13T13:10:06Z" }
+```
+
+An earlier version replaced the morning entry instead, so that "the handicap on the 13th" had one
+answer. That kept the file tidy and threw away the only evidence of what a page had been showing
+before the retry landed — which is the question this whole document exists to answer.
+
+Nothing is written when a reading matches what is already on record, so an unchanged handicap does
+not add a row. Only *changes* accumulate.
+
+### Days are a view, not the shape of the file
+
+Almost everything that reads the history wants days rather than readings: what the handicap was on a
+date, what it was the day before, twenty days of it to draw a chart. `latestPerDay()` in
+`packages/schemas/src/handicaps.ts` collapses the log to the last reading of each day, and the two
+places that read the history both go through it:
+
+| Reader | What it would get wrong without the collapse |
+| --- | --- |
+| `getPlayerHandicapFromHistory` (the scrape) | An offset of `-1` means "the day before". Over a raw log it would mean "this morning", so the bucketing sort would read a day's trend off two readings an hour apart |
+| `getPlayerHandicapHistoryById` (the site) | The chart plots `{x: date, y: handicap}` and takes the last twenty. Over a raw log it would plot two points at the same x, and "twenty" would stop meaning twenty days |
+
+`observationsOn(history, player, date)` is the other direction, for when you want the readings
+themselves.
 
 ### It records when each value was seen
 
@@ -86,8 +108,9 @@ questions and they routinely disagree.
 
 Always UTC, always to the second, so that two of them can be compared as plain strings.
 
-The 1393 entries that predate the field do not have one. That is honest rather than lazy — we do not
-know when they were read, and a guessed timestamp would be indistinguishable from a real one.
+Entries that predate the field do not have one. That is honest rather than lazy — we do not know
+when they were read, and a guessed timestamp would be indistinguishable from a real one. Where one
+of those shares a day with a newer reading, the stamped one is treated as the later of the two.
 
 ## Reading `observed` after the fact
 
@@ -101,19 +124,24 @@ With `observed`, that reconstructs in one step. A Hector's buckets stop moving a
 for a Finnish venue is 05:00 UTC and for Konopiště 06:00 UTC — so **the buckets are always built from
 the 03:00 UTC scrape**, and the 13:00 UTC scrape is always after the freeze.
 
-So if the entry reads:
+So if `observationsOn(history, "…", "2026-09-24")` gives:
 
 ```json
+{ "player": "…", "date": "2026-09-24", "handicap": 11.8, "observed": "2026-09-24T03:01:12Z" },
 { "player": "…", "date": "2026-09-24", "handicap": 11.2, "observed": "2026-09-24T13:01:58Z" }
 ```
 
-then the Union's nightly batch had not produced that value by 06:00 Finnish time, the retry did, and
-the buckets were frozen seven hours earlier against the stale number. The buckets are not wrong;
-they are a correct record of what was known at 08:00. The same reasoning explains a round played on
-day two under handicaps that later look off by a stroke.
+then the page is showing 11.2, the buckets were built from 11.8, and the second reading landed seven
+hours after they froze. The buckets are not wrong; they are a correct record of what was known at
+08:00 — and the log says what that was, rather than leaving it to be inferred.
 
-Without the field, the same reconstruction means reading commit timestamps on `handicaps.json`,
-which conflates when a value was *read* with when CI got round to *committing* it.
+That last part is why both readings are kept. A single entry carrying only the later `observed`
+proves a value arrived after the freeze but not which value the freeze used; recovering that would
+mean reading `handicaps.json` out of git at the right commit. The same reasoning explains a round
+played on day two under handicaps that later look off by a stroke.
+
+Without `observed` at all, even the timing has to come from commit timestamps, which conflate when a
+value was *read* with when CI got round to *committing* it.
 
 ## Related
 
