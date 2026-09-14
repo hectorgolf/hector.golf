@@ -677,7 +677,7 @@ and assigns a club **only when exactly one** club matches.
 | `terraform-plan.yml` | PRs touching `terraform/**` | `fmt` → `init` → `validate` → `plan`, posted as a PR comment | `contents: read`, `id-token: write`, `pull-requests: write` |
 | `terraform-apply.yml` | Push to `main` touching `terraform/**`; manual | `terraform apply`, gated by the `infrastructure` environment | `contents: read`, `id-token: write` |
 | `deploy-admin.yml` | Push to `main` touching `admin/**`; manual | Build, push to Artifact Registry, `gcloud run deploy` | `contents: read`, `id-token: write` |
-| `deploy-functions.yml` | Push to `main` touching `backend/backend-functions/**`; manual | `gcloud functions deploy` for each of the four functions, in parallel | `contents: read`, `id-token: write` |
+| `deploy-functions.yml` | Push to `main` touching `backend/backend-functions/**`; manual | `gcloud functions deploy` for each of the four functions, in parallel, with `--service-account` and `--set-secrets` | `contents: read`, `id-token: write` |
 | `update-leaderboards.yml` | Dispatched by the admin service at 03:00/12:00 UTC; cron `15 3,12 * * *` as a backstop; manual | Script + `commit-changes.sh` | `contents: write` |
 | `update-player-biographies.yml` | Cron `30 2 10,25 * *`; manual | Script + `commit-changes.sh` | `contents: write` |
 | `update-player-club-memberships.yml` | Cron `15 22 15 * *`; manual | Script + `commit-changes.sh` | `contents: write` |
@@ -694,17 +694,21 @@ package manager" step that always resolves to npm.
 Dependabot is active (see the merged `Bump the npm_and_yarn group…` commits) but runs from the
 repository's security settings — there is no `.github/dependabot.yml`.
 
-**`deploy-functions.yml` is inert until it is configured.** The four functions are not in the
-Terraform-managed `hector-golf` project — they live in the `gen-lang-client-*` project described in
-§10 — so the admin deployer's identity has no reach there and there is no Workload Identity pool in
-that project to federate with. The workflow skips with a notice until `GH_FUNCTIONS_PROJECT_ID`,
-`GH_FUNCTIONS_WIF_PROVIDER` and `GH_FUNCTIONS_DEPLOYER_SA` are set as repository variables; its
-header says what to create. It also passes no `--set-env-vars`, which leaves each function's
-existing keys untouched — it redeploys code, never configuration.
+**`deploy-functions.yml` deploys configuration, not only code.** Every deploy passes
+`--service-account` and `--set-secrets`, so a function's identity and its three keys are whatever
+the workflow states rather than whatever the last laptop deploy happened to set. `--set-secrets`
+names a Secret Manager container rather than a value, so no key passes through this repository, a
+GitHub secret or a CI runner — and rotating one is `gcloud secrets versions add` alone, since the
+functions reference `:latest`.
 
-Both of those constraints are consequences of the split rather than of the design, and
-[functions-migration.md](../plans/functions-migration.md) is the plan for removing them by moving the
-functions into `hector-golf`.
+It federates through `GH_WIF_PROVIDER`, the same pool every other workflow here uses, as
+`functions-deployer@`. There is no second pool and no `GH_FUNCTIONS_WIF_PROVIDER`.
+
+Until 2026-09-14 none of that was true: the functions ran in the `gen-lang-client-*` project, this
+workflow shipped inert behind a guard job, and it deliberately passed no environment variables at
+all because the only way to set one was `--set-env-vars` from somebody's `.env`. Both constraints
+were consequences of the project split, which
+[functions-migration.md](../plans/functions-migration.md) closed.
 
 ### Secrets and variables
 
@@ -713,6 +717,8 @@ functions into `hector-golf`.
 | `WISEGOLF_USERNAME` | Variable (also hardcoded in some workflow YAML) | deploy, PR checks, three update workflows |
 | `WISEGOLF_PASSWORD` | Secret | deploy, PR checks, three update workflows |
 | `GH_LEADERBOARD_SA` | Variable | `update-leaderboards` — the identity it federates to |
+| `GH_FUNCTIONS_DEPLOYER_SA` | Variable | `deploy-functions` — the identity it federates to |
+| `GH_FUNCTIONS_RUNTIME_SA` | Variable | `deploy-functions` — what it passes to `--service-account` |
 | `HECTOR_APP_API_KEY` | Secret | `update-leaderboards` |
 | `ASTROSITE_API_KEY` | Secret | `update-player-biographies` |
 | `GITHUB_TOKEN` | Built-in → `GITHUB_ACCESS_TOKEN` | `update-leaderboards` |
@@ -724,7 +730,13 @@ runtime. Three are thin wrappers over Google Gemini via `@google/generative-ai`;
 leaderboard proxy. There is no Express app, no database, and no persistent storage — the Functions
 Framework merely supplies Express-compatible request and response types.
 
-Base URL: `https://europe-north1-<project>.cloudfunctions.net/<FunctionName>`.
+Base URL: `https://europe-north1-hector-golf.cloudfunctions.net/<FunctionName>`. A gen2 function
+also answers on its underlying Cloud Run URL, of the shape
+`https://<function>-<suffix>-lz.a.run.app`, whose suffix is generated at deploy time; the
+`cloudfunctions.net` alias is the form this repository uses everywhere.
+
+The three keys are mounted from Secret Manager at runtime — `gemini-api-key`, `astrosite-api-key`
+and `hector-app-api-key`, read by `hector-functions@hector-golf`, which holds no other access.
 
 | Function | Model | Auth | Caller |
 | --- | --- | --- | --- |

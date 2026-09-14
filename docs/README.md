@@ -21,14 +21,15 @@ will mislead you.
 
 | | | executed? |
 | --- | --- | --- |
-| [`functions-migration.md`](plans/functions-migration.md) | Moving the four Cloud Functions out of `gen-lang-client-0537211409` into `hector-golf` | No. Nothing started |
+| [`functions-migration.md`](plans/functions-migration.md) | Moving the four Cloud Functions out of `gen-lang-client-0537211409` into `hector-golf` | **Nearly.** Phases 1–6 and 8 done 2026-09-14; phase 7 waits until 2026-09-21 |
 | [`sheets-credential-wif.md`](plans/sheets-credential-wif.md) | Retiring the last downloadable service account key, in favour of Workload Identity | **Partly.** Phases 1–5 applied 2026-09-14; phase 6 waits until 2026-09-21 |
 
-A partly-executed plan is the case the lifecycle below does not cover, and `sheets-credential-wif.md`
-is the reason this column exists: it is neither finished nor untouched, and its phase 6 is waiting on
-a calendar rather than on a decision. It says so in its own header too. Leave it in `plans/` until
-that phase runs, then make the move-or-delete call — the table is what keeps it honest in the
-meantime.
+A partly-executed plan is the case the lifecycle below does not cover, and both of these are now in
+it: neither is finished, neither is untouched, and what each is waiting on is a calendar rather than
+a decision. They come due the same day, 2026-09-21 — `sheets-credential-wif.md` phase 6 and
+`functions-migration.md` phase 7, both of which delete a credential a week after the thing that
+replaced it went live. Leave them in `plans/` until then, then make the move-or-delete call on both.
+The column is what keeps them honest in the meantime.
 
 ## [`playbooks/`](playbooks/) — how to do a thing, again
 
