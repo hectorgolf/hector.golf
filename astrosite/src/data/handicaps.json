@@ -6983,5 +6983,59 @@
     "date": "2026-09-13",
     "player": "jari-k",
     "handicap": 1.8
+  },
+  {
+    "date": "2026-09-14",
+    "player": "toni-m",
+    "handicap": 14.2,
+    "observed": "2026-09-14T05:22:46Z"
+  },
+  {
+    "date": "2026-09-14",
+    "player": "timo-l",
+    "handicap": 11.2,
+    "observed": "2026-09-14T05:22:46Z"
+  },
+  {
+    "date": "2026-09-14",
+    "player": "simo-l",
+    "handicap": 5.9,
+    "observed": "2026-09-14T05:22:46Z"
+  },
+  {
+    "date": "2026-09-14",
+    "player": "olli-v",
+    "handicap": 8.7,
+    "observed": "2026-09-14T05:22:46Z"
+  },
+  {
+    "date": "2026-09-14",
+    "player": "martin-s",
+    "handicap": 10.6,
+    "observed": "2026-09-14T05:22:46Z"
+  },
+  {
+    "date": "2026-09-14",
+    "player": "marcus-m",
+    "handicap": 9.4,
+    "observed": "2026-09-14T05:22:46Z"
+  },
+  {
+    "date": "2026-09-14",
+    "player": "juuso-p",
+    "handicap": 8.1,
+    "observed": "2026-09-14T05:22:46Z"
+  },
+  {
+    "date": "2026-09-14",
+    "player": "jussi-a",
+    "handicap": 9.4,
+    "observed": "2026-09-14T05:22:46Z"
+  },
+  {
+    "date": "2026-09-14",
+    "player": "jarkko-k",
+    "handicap": 12.9,
+    "observed": "2026-09-14T05:22:46Z"
   }
 ]
