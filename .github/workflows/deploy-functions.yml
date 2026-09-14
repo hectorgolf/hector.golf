@@ -39,10 +39,17 @@
 # GH_FUNCTIONS_WIF_PROVIDER and there should not be.
 #
 # functions-deployer holds roles/cloudfunctions.developer and
-# roles/iam.serviceAccountUser on hector-functions, and nothing else. If a
-# deploy fails naming a permission, add that role in terraform/iam.tf rather
-# than widening the account here — and see the note there about why
-# roles/storage.objectAdmin in particular is the wrong answer.
+# roles/iam.serviceAccountUser on two accounts: hector-functions, which the
+# functions run as, and functions-builder, which their builds run as. Nothing
+# else. If a deploy fails naming a permission, add that role in
+# terraform/iam.tf rather than widening the account here — and see the notes
+# there about why roles/storage.objectAdmin, and actAs on the default compute
+# account, are both the wrong answer.
+#
+# --build-service-account is not optional dressing. Omit it and the build runs
+# as the project's default compute service account, which Google gave
+# roles/editor; the deployer would then need actAs on an editor-privileged
+# account to deploy at all.
 
 name: Deploy Cloud Functions
 
@@ -133,6 +140,7 @@ jobs:
             --entry-point=${{ matrix.function }} \
             --source=. \
             --service-account="${{ vars.GH_FUNCTIONS_RUNTIME_SA }}" \
+            --build-service-account="projects/${{ vars.GCP_PROJECT_ID }}/serviceAccounts/${{ vars.GH_FUNCTIONS_BUILDER_SA }}" \
             --set-secrets="${{ matrix.secrets }}" \
             ${{ matrix.extra_flags }} \
             --quiet

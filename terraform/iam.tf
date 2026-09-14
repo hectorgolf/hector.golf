@@ -246,3 +246,56 @@ resource "google_service_account_iam_member" "functions_deployer_act_as" {
   role               = "roles/iam.serviceAccountUser"
   member             = google_service_account.functions_deployer.member
 }
+
+# ---------------------------------------------------------------------------
+# The build identity.
+#
+# A gen2 deploy runs a Cloud Build job, and the deployer has to be able to act
+# as whatever identity that build runs as. Left alone, that is the project's
+# default compute service account — which carries roles/editor, granted by
+# Google when the API was enabled and not by anything here.
+#
+# Going along with that is the obvious fix and the wrong one. The first deploy
+# failed with exactly the error that invites it:
+#
+#   Caller is missing permission 'iam.serviceaccounts.actAs' on service account
+#   …-compute@developer.gserviceaccount.com
+#
+# Granting functions_deployer serviceAccountUser on an editor-privileged account
+# would let it run a build as project editor, which is most of what
+# roles/editor can do and is flatly at odds with this account's own description:
+# "Deploys the Cloud Functions. Cannot change infrastructure." The same argument
+# as the storage.objectAdmin note above — the convenient grant reaches much
+# further than the thing being asked for.
+#
+# So the build gets its own identity, named explicitly with
+# --build-service-account, holding one role.
+# ---------------------------------------------------------------------------
+
+resource "google_service_account" "functions_builder" {
+  project      = var.project_id
+  account_id   = "functions-builder"
+  display_name = "hector.golf Cloud Functions (build)"
+  description  = "Identity the gen2 buildpack builds run as. Holds cloudbuild.builds.builder and nothing else."
+  depends_on   = [google_project_service.enabled["iam.googleapis.com"]]
+
+}
+
+# The role Google documents for a user-managed Cloud Build service account. It
+# is a bundle — logging, reading the uploaded source, writing the built image to
+# Artifact Registry — and it is the supported floor rather than a convenience:
+# a build cannot report its own result without it.
+resource "google_project_iam_member" "functions_builder_build" {
+  project = var.project_id
+  role    = "roles/cloudbuild.builds.builder"
+  member  = google_service_account.functions_builder.member
+}
+
+# The actAs the failed deploy was asking for, pointed at this account instead of
+# at the default compute one. Scoped to the single service account, as with
+# functions_deployer_act_as above.
+resource "google_service_account_iam_member" "functions_deployer_act_as_builder" {
+  service_account_id = google_service_account.functions_builder.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = google_service_account.functions_deployer.member
+}

@@ -36,6 +36,16 @@ output "functions_deployer_service_account" {
   value       = google_service_account.functions_deployer.email
 }
 
+output "functions_builder_service_account" {
+  description = <<-EOT
+    Value for the GH_FUNCTIONS_BUILDER_SA repository variable, and the
+    --build-service-account on every `gcloud functions deploy`. Naming it is
+    what keeps the build off the project's default compute service account,
+    which carries roles/editor.
+  EOT
+  value       = google_service_account.functions_builder.email
+}
+
 output "functions_runtime_service_account" {
   description = <<-EOT
     The identity the four Cloud Functions run as, for the --service-account flag
