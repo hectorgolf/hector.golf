@@ -41,7 +41,7 @@
  * everything marked `scheduled` — so adding a workflow to the twice-daily run is
  * an entry here and no infrastructure change at all.
  *
- * `deploy.yml` is here now, though not on the tick: it is dispatched by a scrape
+ * `deploy-site.yml` is here now, though not on the tick: it is dispatched by a scrape
  * that has just committed, which is the only moment there is something new to
  * publish. Its own `30 3,12` cron stays as the backstop.
  */
@@ -86,7 +86,7 @@ export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
     },
     {
         slug: 'deploy',
-        file: 'deploy.yml',
+        file: 'deploy-site.yml',
         label: 'Deploy hector.golf',
         blurb: 'Rebuilds and publishes the public site. Started automatically when a data update commits something, and available here for when you want it anyway.',
         /*
@@ -98,7 +98,7 @@ export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
          * by the scrape itself through `[slug]/dispatch.ts`, which is the only
          * moment at which there is something new to publish.
          *
-         * `deploy.yml`'s own `30 3,12` cron stays as the backstop, for the same
+         * `deploy-site.yml`'s own `30 3,12` cron stays as the backstop, for the same
          * reason the workflows keep their GitHub crons: late is better than
          * never on the day this path is the broken one.
          */

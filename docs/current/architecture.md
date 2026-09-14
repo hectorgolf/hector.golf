@@ -43,7 +43,7 @@ graph LR
 
     subgraph gha["GitHub Actions"]
         WF["src/workflows/*.ts<br/>dispatched on a schedule"]
-        BUILD["astro build<br/>deploy.yml"]
+        BUILD["astro build<br/>deploy-site.yml"]
     end
 
     subgraph repo["Git repository (the database)"]
@@ -539,7 +539,7 @@ sequenceDiagram
     participant Ext as External APIs
     participant Tree as Working tree
     participant Repo as main branch
-    participant Deploy as deploy.yml
+    participant Deploy as deploy-site.yml
     participant Pages as GitHub Pages
 
     Sched->>Admin: POST /api/workflows/handicaps/dispatch (03:00 / 12:00 UTC)
@@ -596,19 +596,19 @@ second, and the backstop crons land anywhere at all — so all four update workf
 staggered start times that used to keep them apart were never more than a guess about how long each
 one takes.
 
-**The deploy has two triggers, and the cron is not the main one.** `deploy.yml` runs on every push to
+**The deploy has two triggers, and the cron is not the main one.** `deploy-site.yml` runs on every push to
 `main` whose changes touch `astrosite/**` or `.github/workflows/**`, so ordinary human commits — a
 new event JSON, a component change — rebuild and publish the site immediately.
 
 The `30 3,12` cron exists to cover the one case that push cannot: commits made by the data pipeline
 itself. Pushes authenticated with `GITHUB_TOKEN` deliberately do not trigger further workflows, so
-the automated data commits cannot set off `deploy.yml`. The cron runs half an hour after the `:00`
+the automated data commits cannot set off `deploy-site.yml`. The cron runs half an hour after the `:00`
 and `:15` data jobs to pick up what they committed.
 
 **This cron is still a `schedule`, and so is still delivered hours late.** Data that now arrives at
 03:05 can therefore still wait until the middle of the morning to reach the site. Fixing the scrapes
 without fixing this only moves the delay one step down the pipeline. Two ways out, neither taken
-yet: add `deploy.yml` to `DISPATCHABLE_WORKFLOWS` in
+yet: add `deploy-site.yml` to `DISPATCHABLE_WORKFLOWS` in
 [`admin/src/lib/workflows.ts`](../../admin/src/lib/workflows.ts) and give it two more Cloud Scheduler
 jobs at `:30`, or give it a `workflow_run` trigger on the four update workflows — the mechanism
 [`refresh-admin-mirror.yml`](../../.github/workflows/refresh-admin-mirror.yml) already uses, which costs
@@ -671,7 +671,7 @@ and assigns a club **only when exactly one** club matches.
 
 | Workflow | Trigger | Runs | Permissions |
 | --- | --- | --- | --- |
-| `deploy.yml` | Push to `main` touching `astrosite/**` or workflows; cron `30 3,12 * * *`; manual | `withastro/action@v6` → `actions/deploy-pages@v5` | `contents: read`, `pages: write`, `id-token: write` |
+| `deploy-site.yml` | Push to `main` touching `astrosite/**` or workflows; cron `30 3,12 * * *`; manual | `withastro/action@v6` → `actions/deploy-pages@v5` | `contents: read`, `pages: write`, `id-token: write` |
 | `pr-checks.yml` | PRs targeting `main` | `npm ci` → `npm test` → `npm run build` | `contents: read` |
 | `update-handicaps.yml` | Dispatched by the admin service at 03:00/12:00 UTC; cron `0 3,13 * * *` as a backstop; manual | Script + `commit-changes.sh` | `contents: write` |
 | `terraform-plan.yml` | PRs touching `terraform/**` | `fmt` → `init` → `validate` → `plan`, posted as a PR comment | `contents: read`, `id-token: write`, `pull-requests: write` |

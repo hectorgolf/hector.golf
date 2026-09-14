@@ -3,7 +3,7 @@
 # ## Why this exists
 #
 # Every other deployable thing here redeploys itself when its code lands on
-# main: deploy-admin.yml watches `admin/**`, deploy.yml watches `astrosite/**`,
+# main: deploy-admin.yml watches `admin/**`, deploy-site.yml watches `astrosite/**`,
 # terraform-apply.yml watches `terraform/**`. `backend/**` matched none of them,
 # so the four functions were deployed only by somebody running `npm run
 # deploy:*` on a laptop. A dependency bump merged in #84 and went nowhere, which

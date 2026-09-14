@@ -181,7 +181,7 @@ the seed, because Firestore is the only copy of those.
 
 An edit made in the admin UI lives in Firestore and nowhere else until it is exported. To publish it,
 run the **Export admin data** workflow from the Actions tab. It exports, commits what changed, and
-pushes; the push lands under `astrosite/`, which is what `deploy.yml` watches, so the public site
+pushes; the push lands under `astrosite/`, which is what `deploy-site.yml` watches, so the public site
 rebuilds without a second button.
 
 From a laptop the same thing is `cd admin && npm run export`, then commit the result yourself.

@@ -33,7 +33,7 @@ directory exists.
 ## What is deliberately not here
 
 - **The public site.** `hector.golf` remains a static Astro build on GitHub Pages, deployed by
-  the existing [`deploy.yml`](../../.github/workflows/deploy.yml). Nothing here touches it.
+  the existing [`deploy-site.yml`](../../.github/workflows/deploy-site.yml). Nothing here touches it.
 - **The four existing Cloud Functions** in the old project (`GeneratePlayerBiography`,
   `GeneratePlayerAvatar`, `ExtractScorecardInformation`, `TournamentLeaderboard`). They are still
   deployed by hand from a laptop via the npm scripts in

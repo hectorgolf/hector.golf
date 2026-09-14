@@ -62,7 +62,7 @@ jobs:
           GIT_COMMITTER_NAME: update-memberships.yml
           GIT_COMMITTER_EMAIL: ${{ secrets.GIT_COMMITTER_EMAIL }}
 
-      # A push made with GITHUB_TOKEN does not trigger workflows, so deploy.yml's
+      # A push made with GITHUB_TOKEN does not trigger workflows, so deploy-site.yml's
       # `on: push` has never fired for these commits and the site waited for that
       # workflow's own cron. This asks the admin service — which holds a token
       # that is not GITHUB_TOKEN — to dispatch it now instead.

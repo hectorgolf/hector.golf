@@ -3,7 +3,7 @@
 #
 # This is the step that makes the admin usable without a laptop. Firestore is
 # where a matchplay tournament is edited; `astrosite/src/data/events/matchplay/`
-# is generated from it; and deploy.yml already rebuilds the site on any push to
+# is generated from it; and deploy-site.yml already rebuilds the site on any push to
 # main touching `astrosite/**`. Running this is therefore the whole publish.
 #
 # Manual rather than scheduled, deliberately. An export is the act of publishing

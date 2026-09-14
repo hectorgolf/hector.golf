@@ -1,14 +1,14 @@
 name: Request a deploy
 description: >
-  Ask the admin service to dispatch deploy.yml, after a data update has committed
+  Ask the admin service to dispatch deploy-site.yml, after a data update has committed
   something. Does nothing when there was nothing to commit.
 
 # Why this goes through the admin rather than calling GitHub directly.
 #
 # A push made with the default GITHUB_TOKEN does not trigger workflows — that is
-# GitHub's recursion guard — so deploy.yml's `on: push` never fired for the data
+# GitHub's recursion guard — so deploy-site.yml's `on: push` never fired for the data
 # commits that most needed it, and the site waited for its own `30 3,12` cron.
-# Dispatching deploy.yml from here with GITHUB_TOKEN would not work either: the
+# Dispatching deploy-site.yml from here with GITHUB_TOKEN would not work either: the
 # same rule covers API-triggered events.
 #
 # What does work is a token that is not GITHUB_TOKEN. The admin service already
@@ -55,11 +55,11 @@ runs:
         [ -n "${{ inputs.admin_domain }}" ]    || missing="$missing TF_ADMIN_DOMAIN"
         [ -n "${{ inputs.iap_client_id }}" ]   || missing="$missing TF_IAP_OAUTH_CLIENT_ID"
         if [ -n "$missing" ]; then
-          # Not a failure. The data is committed either way, and deploy.yml's own
+          # Not a failure. The data is committed either way, and deploy-site.yml's own
           # cron still publishes it; this path is an improvement on that, not a
           # replacement for it. A project that has not been wired up yet should
           # not have red data updates.
-          echo "::notice::Not asking for a deploy — unconfigured:$missing. deploy.yml's cron will publish this."
+          echo "::notice::Not asking for a deploy — unconfigured:$missing. deploy-site.yml's cron will publish this."
           echo "ask=false" >> "$GITHUB_OUTPUT"
           exit 0
         fi
@@ -119,7 +119,7 @@ runs:
           exit 0
         fi
         # Deliberately a warning rather than a failure. The data is committed and
-        # pushed; deploy.yml's cron will publish it within hours. Failing here
+        # pushed; deploy-site.yml's cron will publish it within hours. Failing here
         # would turn "the site is a bit stale" into "the scrape is broken", and
         # the scrape was not.
-        echo "::warning::The admin service did not accept the deploy request (HTTP $status). deploy.yml's cron will publish this instead."
+        echo "::warning::The admin service did not accept the deploy request (HTTP $status). deploy-site.yml's cron will publish this instead."

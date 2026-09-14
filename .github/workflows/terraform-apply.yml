@@ -7,7 +7,7 @@
 # environment: add required reviewers to it in Settings → Environments.
 #
 # Note it is deliberately NOT the existing `production` environment, which
-# deploy.yml and pr-checks.yml already use — putting reviewers on that one would
+# deploy-site.yml and pr-checks.yml already use — putting reviewers on that one would
 # make every site deploy wait for a human.
 name: Terraform apply
 
