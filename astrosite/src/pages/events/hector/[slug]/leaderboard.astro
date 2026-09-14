@@ -148,6 +148,7 @@ const liveEmptyMessage = !eventHasStarted(event)
                 eventId={liveEventId!}
                 endpoint={leaderboardProxy}
                 stopAfter={stopPollingAfter}
+                renderedAt={leaderboards.updatedAt}
             />
         ) : (
             <>
