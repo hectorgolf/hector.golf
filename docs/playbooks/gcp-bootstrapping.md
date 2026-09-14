@@ -1,6 +1,6 @@
 # Bootstrapping the GCP project
 
-_A procedure, not a description. Last reviewed: 2026-09-14._
+*A procedure, not a description. Last reviewed: 2026-09-14.*
 
 Takes an empty Google Cloud project to a working, CI-deployed admin service with a Firestore
 database behind it. Follow it top to bottom; it takes about half an hour, most of which is waiting
@@ -116,7 +116,6 @@ tidy — turning off delete protection first if it is on:
 ```bash
 gcloud firestore databases delete --database=DATABASE_ID --project=WRONG_PROJECT
 ```
-
 
 ## Step 1 — Enable the two bootstrap APIs
 
@@ -292,7 +291,7 @@ Find `hector-admin` in the Applications list → **More options** → **Settings
 **Auto Generate Credentials**. That creates the client *and* sets its redirect URI in one go. Doing
 it by hand instead means adding this to the client yourself:
 
-```
+```text
 https://iap.googleapis.com/v1/oauth/clientIds/YOUR_CLIENT_ID:handleRedirect
 ```
 
@@ -688,7 +687,6 @@ Then run `terraform plan` and read the summary line. What you want is **`1 to im
 than a permanent part of the configuration, and leaving it in means every future plan re-checks an
 import that already happened.
 
-
 ## Teardown
 
 `terraform destroy` will **not** delete the Firestore database. That is on purpose:
@@ -725,4 +723,3 @@ Really deleting it takes two deliberate steps: set `delete_protection_state` to
 | First apply fails with the revision never becoming ready, or an image pull error | `admin_image` is unset on a project with nothing in Artifact Registry yet. Put the placeholder line back for that one run — see step 4 |
 | `terraform apply` wants to change the Cloud Run image every time | The `ignore_changes` block in [`cloud_run.tf`](../../terraform/cloud_run.tf) was removed. Terraform owns the service; the deploy workflow owns the image |
 | Images accumulating past the cleanup policy | First check there is a **DELETE** policy that actually matches them. A KEEP policy deletes nothing — it only exempts artifacts from a DELETE policy — so a repository with only `keep-recent` on it grows forever, and a DELETE policy conditioned on `UNTAGGED` matches nothing here because the deploy workflow tags every image with a commit SHA. `gcloud artifacts repositories describe hector-admin --location="$REGION"` prints the live policies. Second, sweeps are asynchronous and run roughly daily, so nothing disappears at `apply` time. Only third is the other cause: something pushed to a repository Terraform does not manage — most likely `gcloud run deploy --source`, which creates `cloud-run-source-deploy` behind your back |
-

@@ -72,7 +72,8 @@ Each image field can be provided as one of:
 - object with `data` or `base64`
 - object with `inlineData` containing both `data` and `mimeType`
 
-If either field is invalid, the function responds with HTTP `400` and a `details` array that explains validation errors.
+If either field is invalid, the function responds with HTTP `400` and a `details` array that
+explains validation errors.
 
 ## Example request (data URL strings)
 
@@ -158,13 +159,13 @@ access is limited by CORS to the hector.golf origins plus localhost for developm
 
 ## Responses
 
-| Status | When |
-| ------ | ---- |
+| Status | When                                                                                                |
+| ------ | --------------------------------------------------------------------------------------------------- |
 | `200`  | Upstream payload, with `Cache-Control: public, max-age=30, s-maxage=60, stale-while-revalidate=300` |
-| `400`  | `?event=` missing or not a plausible tournament id |
-| `405`  | Anything other than `GET` or `OPTIONS` |
-| `500`  | `HECTOR_APP_API_KEY` is not configured on the function |
-| `502`  | Upstream refused or could not be reached (never cached, so the next poll retries) |
+| `400`  | `?event=` missing or not a plausible tournament id                                                  |
+| `405`  | Anything other than `GET` or `OPTIONS`                                                              |
+| `500`  | `HECTOR_APP_API_KEY` is not configured on the function                                              |
+| `502`  | Upstream refused or could not be reached (never cached, so the next poll retries)                   |
 
 ## Deploying
 

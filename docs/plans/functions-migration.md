@@ -11,9 +11,9 @@ only one that is visible to anybody using the site.
 ## Why
 
 Nobody chose the split. `gen-lang-client-0537211409` is the project Google AI Studio created
-alongside the Gemini API key, which is the exact accident
-[the playbook warns about](../playbooks/gcp-bootstrapping.md) in the Firestore step. The functions were deployed
-from a laptop into whichever project `.env` named, and that was it.
+alongside the Gemini API key, which is the exact accident [the playbook warns
+about](../playbooks/gcp-bootstrapping.md) in the Firestore step. The functions were deployed from a
+laptop into whichever project `.env` named, and that was it.
 
 What the split costs, concretely:
 
@@ -46,7 +46,7 @@ of the benefit.
 There is no "move function between projects" operation in GCP. Every phase below is deploy-new,
 verify, cut over, delete-old, and **the URLs change**:
 
-```
+```text
 https://europe-north1-gen-lang-client-0537211409.cloudfunctions.net/<Name>
 https://europe-north1-hector-golf.cloudfunctions.net/<Name>
 ```
@@ -426,8 +426,8 @@ that must survive untouched.
 
 1. Set the `PUBLIC_LEADERBOARD_PROXY_URL` repository variable, per the first row above. **Done on
    2026-09-14**, which starts the clock described below.
-2. Trigger [`deploy-site.yml`](../../.github/workflows/deploy-site.yml) and wait for Pages to serve the
-   rebuilt site. Load a leaderboard page and watch the network tab hit `hector-golf`.
+2. Trigger [`deploy-site.yml`](../../.github/workflows/deploy-site.yml) and wait for Pages to serve
+   the rebuilt site. Load a leaderboard page and watch the network tab hit `hector-golf`.
 
    **Step 1 already commits you to this, whether or not you run it.** `deploy-site.yml` fires on a
    schedule as well as on a push — `cron: "0 8,13 * * *"` — so the next scheduled build picks up

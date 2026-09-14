@@ -131,14 +131,13 @@ copy of them. `roundReferenceFor()` works out which IDs to use.
 that was **not** in any capture — every one uses `download=1` — and is marked as such
 in the source. Verify it before relying on it.
 
-`courseHcp` is caller-supplied: the app computes it client-side and the server stores
-whatever it is sent. Every captured value fits `round(index × slope / 113 + (CR − Par))` capped at 54 for
-a WHS index (`hcpType` `"9"`), using the course's default eighteen-hole rating and
-par, with a plain club handicap (`"0"`) used verbatim. It reproduces every value the
-app has been seen to write, now across three courses: 14.8 → 17 and 14.1 → 14 for
-Lasse, 36 → 36 for Toni, 54 → 54 for Lotta, and 54 → 50 for Luka off Gumböle's reds.
-Note it is *not* halved for a nine-hole round. The SDK still asks for the number
-rather than deriving it; `cli/handicap.ts` has the rule.
+`courseHcp` is caller-supplied: the app computes it client-side and the server stores whatever it is
+sent. Every captured value fits `round(index × slope / 113 + (CR − Par))` capped at 54 for a WHS
+index (`hcpType` `"9"`), using the course's default eighteen-hole rating and par, with a plain club
+handicap (`"0"`) used verbatim. It reproduces every value the app has been seen to write, now across
+three courses: 14.8 → 17 and 14.1 → 14 for Lasse, 36 → 36 for Toni, 54 → 54 for Lotta, and 54 → 50
+for Luka off Gumböle's reds. Note it is *not* halved for a nine-hole round. The SDK still asks for
+the number rather than deriving it; `cli/handicap.ts` has the rule.
 
 ## The CLI
 
