@@ -679,6 +679,7 @@ and assigns a club **only when exactly one** club matches.
 | `check-site.yml` | PRs targeting `main` touching `astrosite/**`, `packages/**`, the root manifest/lockfile, `.node-version`, or this file | `npm ci` → `npm test` → `npm run build` | `contents: read` |
 | `check-admin.yml` | PRs targeting `main` touching `admin/**`, `packages/**`, the root manifest/lockfile, `.node-version`, `.dockerignore`, or this file | `npm ci` → test → build → `docker build` of `admin/Dockerfile` | `contents: read` |
 | `check-backend.yml` | PRs targeting `main` touching `backend/**` or this file | `npm ci` → `npm test` → `npm run typecheck` in `backend/backend-functions` | `contents: read` |
+| `check-markdown.yml` | PRs targeting `main` touching any `**/*.md`, `.markdownlint-cli2.jsonc`, or this file | root-only `npm ci` → `npm run lint:md` over every `.md` in the repository | `contents: read` |
 | `update-handicaps.yml` | Dispatched by the admin service at 03:00/12:00 UTC; cron `0 3,13 * * *` as a backstop; manual | Script + `commit-changes.sh` | `contents: write` |
 | `terraform-plan.yml` | PRs touching `terraform/**` | `fmt` → `init` → `validate` → `plan`, posted as a PR comment | `contents: read`, `id-token: write`, `pull-requests: write` |
 | `terraform-apply.yml` | Push to `main` touching `terraform/**`; manual | `terraform apply`, gated by the `infrastructure` environment | `contents: read`, `id-token: write` |

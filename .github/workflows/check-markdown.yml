@@ -1,0 +1,72 @@
+# Lints the Markdown on pull requests.
+#
+# Separate from the other three check workflows for the reason they are separate
+# from each other: different inputs, different failure modes, and one workflow
+# each keeps any of them from going red for another's reasons. This one is also
+# the only check that spans the whole repository rather than one package —
+# `docs/`, the six READMEs, and anything else that grows a `.md`.
+#
+# ## What it runs on
+#
+# Markdown, and the configuration that decides what passes. Nothing else — the
+# filter means what its name says.
+#
+# `package-lock.json` was in this list and is deliberately not any more, because
+# it pins the linter version and a bump there can change the result without
+# `.markdownlint-cli2.jsonc` being touched: the config overrides six rules and
+# never sets `"default": false`, so every other active rule is whatever
+# markdownlint ships. That is a real gap and it is accepted knowingly. The
+# lockfile is shared by every workspace, so filtering on it would run this job on
+# every dependency bump anywhere in the repository — a filter that fires mostly
+# for reasons unrelated to its name is the thing #125 went through this directory
+# to remove. The failure it would have caught is cheap and announces itself: a
+# linter upgrade that changes what passes goes red on the next pull request that
+# touches a `.md`, which is nearly all of them.
+#
+# ## Why the install looks like that
+#
+# `markdownlint-cli2` is a devDependency of the *root* package, and nothing in
+# `astrosite`, `admin` or `packages/*` is involved in linting prose. A plain
+# `npm ci` at the root would install all of them — Astro, the admin app and their
+# trees — to run one linter over some text files. `--workspaces=false
+# --include-workspace-root` installs the root package alone, from the same
+# lockfile, so the version is still the pinned one.
+name: Check markdown
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - '**/*.md'
+      - '.markdownlint-cli2.jsonc'
+      - '.github/workflows/check-markdown.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      # The root package only — see the header. markdownlint-cli2 is the whole of
+      # its dependency tree.
+      - name: Install markdownlint
+        run: npm ci --workspaces=false --include-workspace-root
+
+      # Lints every .md in the repository, not only the ones this PR touched. The
+      # globs and ignores are in .markdownlint-cli2.jsonc, so what CI checks and
+      # what `npm run lint:md` checks on a laptop cannot drift apart.
+      - name: Lint
+        run: npm run lint:md
