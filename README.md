@@ -8,19 +8,6 @@ somebody decided to do next.
 Finished items are deleted rather than struck through. What was done and why is in the commit that
 did it.
 
-## Security
-
-**Delete the last downloadable service account key, and the account with it.** `cf542f7b…` on
-`update-hector-leaderboard@gen-lang-client-0537211409`, with a copy on a laptop at
-`astrosite/.env.google-credentials.json`. Nothing in CI uses either; the key is a local convenience,
-and [`docs/playbooks/local-gcp-identities.md`](docs/playbooks/local-gcp-identities.md) is how to work
-without it. Phase 6 of
-[`docs/plans/sheets-credential-wif.md`](docs/plans/sheets-credential-wif.md), due 2026-09-21.
-
-The account goes with the key. It holds `roles/secretmanager.secretAccessor` and
-`roles/cloudbuild.builds.builder` in order to read one spreadsheet — leftovers from a deleted Hello
-World function — so it is worth more gone than kept.
-
 ## Billing
 
 **A second budget nobody's Terraform owns.** "€1 Monthly Budget Alert", with no project filter, so

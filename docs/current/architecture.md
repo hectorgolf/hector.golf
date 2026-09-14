@@ -940,8 +940,9 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
   `src/code/handicaps/wisegolf-api.ts` is gone, and the credential was rotated (commit `47791c3`).
   The old value is still in the Git history of a public repository, which is why rotating was the
   fix rather than deleting the comment.
-- `astrosite/.env` and `astrosite/.env.google-credentials.json` exist in the working tree. They are
-  gitignored, but they are real credentials on disk.
+- `astrosite/.env` exists in the working tree. It is gitignored, but it is real credentials on disk.
+  The `.env.google-credentials.json` beside it is gone, deleted 2026-09-14 with the account it
+  belonged to.
 
 **Configuration drift**
 

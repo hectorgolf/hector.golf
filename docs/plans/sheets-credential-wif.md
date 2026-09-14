@@ -1,7 +1,8 @@
 # Retiring the Google Sheets service account key
 
-*Written 2026-09-14. **Phases 1–5 executed the same day** (#99, #101, #100). Phase 6 is deliberately
-outstanding — it waits a week, until 2026-09-21 at the earliest.*
+*Written 2026-09-14. **All six phases executed the same day** (#99, #101, #100). Phase 6 was
+scheduled for 2026-09-21 and brought forward once phase 5 was verified green: no JSON key for this
+identity exists anywhere any more. This plan is done and is kept as a record.*
 
 `update-leaderboards.yml` reads two Google Sheets using a downloadable service account key, held in
 the `GCP_SERVICE_ACCOUNT_CREDENTIALS` repository secret. This plan replaces it with Workload
@@ -163,7 +164,7 @@ is absent from the step's environment and `GOOGLE_APPLICATION_CREDENTIALS` point
 
 ## Phase 6 — Remove the key
 
-Only after phase 5 is green.
+Only after phase 5 is green. **Done 2026-09-14**, all four steps.
 
 1. Delete the `GCP_SERVICE_ACCOUNT_CREDENTIALS`, `GCP_SERVICE_ACCOUNT_EMAIL` and
    `GCP_SERVICE_ACCOUNT_PRIVATE_KEY` repository secrets. Nothing reads them once phase 4 lands —
@@ -172,6 +173,13 @@ Only after phase 5 is green.
 3. Delete `astrosite/.env.google-credentials.json` from the laptop.
 4. Remove `GOOGLE_CREDENTIALS` from `astrosite/.env.sample` and replace it with the ADC instructions
    below.
+
+What that looked like in practice: the secrets in step 1 were already gone by the time the rest ran.
+The account's `uniqueId` was `117677587522329827385`, which is what an undelete would need before
+2026-10-14. Deleting it left its two roles behind in the project IAM policy as
+`deleted:serviceAccount:…?uid=…` tombstones — inert, but they would come back with an undelete, so
+they were removed as well. `update-leaderboards.yml` was run afterwards and reported both events and
+both sheet ids, which is the same check phase 5 asks for.
 
 ## Running it from your laptop
 
