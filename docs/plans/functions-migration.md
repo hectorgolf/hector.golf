@@ -406,7 +406,8 @@ change no grep can reach.
 | **`PUBLIC_LEADERBOARD_PROXY_URL`** repository variable | ~~`tournamentleaderboard-…-lz.a.run.app`~~ → the alias | **Done 2026-09-14.** It reads `https://europe-north1-hector-golf.cloudfunctions.net/TournamentLeaderboard`. Recorded because it is the one row no grep can check: the value lives in GitHub settings, not the tree, and it was composed rather than substituted — the old value had no project name in it |
 | [`update-player-biographies.ts:174`](../../astrosite/src/workflows/update-player-biographies.ts) | old project, alias form | swap the project name — a code change |
 | [`backend/README.md`](../../backend/README.md) :79 :82 :94 :153 | old project, alias form | swap the project name |
-| `astrosite/.env.sample`, `backend/backend-functions/.env.sample`, [`architecture.md`](../current/architecture.md) §10 | `<project>` placeholder | already generic — leave alone |
+| `astrosite/.env.sample:44`, `backend/backend-functions/.env.sample:40`, [`architecture.md`](../current/architecture.md) §10 | `<project>` placeholder in the *URL* | already generic — leave alone |
+| `backend/backend-functions/.env.sample:20` | `GCLOUD_PROJECT_ID=gen-lang-client-0537211409` | **Done 2026-09-14.** Not a URL, which is why an earlier version of this table missed it by writing off the whole file as placeholders. It is what the deploy scripts pass to `--project` and what the avatar CLI builds its URL from, so it was a live instruction to deploy into the old project |
 | [`generate-player-avatar.ts:35`](../../backend/backend-functions/src/cli/generate-player-avatar.ts) | built from `FUNCTION_REGION` + `GCLOUD_PROJECT_ID` | no code change; the local `.env` is what moves, in step 4 |
 | `admin/test/origin.test.ts:40` | `hector-admin-…-lz.a.run.app` | **do not touch.** The admin Cloud Run service, not a function, and the test asserts run.app behaviour — rewriting it inverts the assertion |
 
@@ -436,8 +437,8 @@ that must survive untouched.
 4. Update `FUNCTION_REGION` and `GCLOUD_PROJECT_ID` in your local `.env` — that is all the avatar
    CLI and [`generate-avatars.sh`](../../backend/backend-functions/generate-avatars.sh) need, since
    they build the URL from those.
-5. Update the documentation — the `backend/README.md` row above. `architecture.md` §10 and both
-   `.env.sample` files need nothing, being placeholders already.
+5. Update the documentation — the `backend/README.md` and `.env.sample:20` rows above. **Done
+   2026-09-14.** `architecture.md` §10 and the two `<project>` URL placeholders needed nothing.
 
 Leave both sets running. Nothing is saved by hurrying the next phase.
 
