@@ -1,6 +1,22 @@
 #!/bin/bash
 
 #
+# Report whether this script committed anything, so a caller can act on it.
+#
+# Under Github Actions the answer lands in $GITHUB_OUTPUT as `committed=true|false`,
+# which is how a later step reads it. The exit code stays 0 either way: "nothing
+# changed" is a normal outcome for a scrape, not a failure, and making it non-zero
+# would turn every quiet day into a red workflow.
+#
+report_committed() {
+    local value="$1"
+    echo "committed=$value"
+    if [ -n "$GITHUB_OUTPUT" ]; then
+        echo "committed=$value" >> "$GITHUB_OUTPUT"
+    fi
+}
+
+#
 # Detect which environment we're running in (Github or e.g. someone's laptop)
 # and initialize standard Github Actions environment variables if needed.
 #
@@ -19,6 +35,7 @@ fi
 CHANGED_DATA_FILES=$(git status --short | egrep '^ M src/data/' | awk '{print $2}')
 if [ "$CHANGED_DATA_FILES" == "" ]; then
     echo "No changes to data files detected.";
+    report_committed false
     exit 0
 fi
 
@@ -82,4 +99,5 @@ done
 git commit -F "$COMMIT_MESSAGE_FILE"
 git pull -r
 git push
+report_committed true
 echo "Done!"
