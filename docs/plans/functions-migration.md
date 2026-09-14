@@ -121,10 +121,11 @@ and have it fight the deploy workflow over every release.
 
 ## Phase 1 — Terraform
 
-Four files change — `apis.tf`, `iam.tf`, `github_oidc.tf` and `secrets.tf`. None of them needs a new
-role on `terraform-ci`: it already holds `serviceUsageAdmin`, `serviceAccountAdmin`,
-`projectIamAdmin` and `secretmanager.admin`, which covers everything below. That is worth checking rather than assuming when the plan runs, since a
-missing role shows up as a mid-apply permission denial.
+Five files change — `apis.tf`, `iam.tf`, `github_oidc.tf`, `secrets.tf` and `outputs.tf`. None of
+them needs a new role on `terraform-ci`: it already holds `serviceUsageAdmin`,
+`serviceAccountAdmin`, `projectIamAdmin` and `secretmanager.admin`, which covers everything below.
+That is worth checking rather than assuming when the plan runs, since a missing role shows up as a
+mid-apply permission denial.
 
 **[`apis.tf`](../../terraform/apis.tf)** — add to `local.services`:
 
@@ -250,8 +251,29 @@ resource "google_secret_manager_secret_iam_member" "functions_runtime_reads" {
 }
 ```
 
+**[`outputs.tf`](../../terraform/outputs.tf)** — the file this plan originally forgot, which is why
+the count above says five. Terraform having built these is no use if nothing can read their
+addresses back out:
+
+```hcl
+output "functions_deployer_service_account" { … }  # the GH_FUNCTIONS_DEPLOYER_SA phase 8 needs
+output "functions_runtime_service_account"  { … }  # the --service-account flag in phase 4
+output "function_secrets"                   { … }  # secret id => environment variable, for --set-secrets
+```
+
+The first is the seam phase 8 turns `deploy-functions.yml` on at, and it pairs with the *existing*
+`GH_WIF_PROVIDER` — there is no `GH_FUNCTIONS_WIF_PROVIDER`, which is the whole point of migrating.
+The third exists because which key mounts as which environment variable is otherwise knowable only
+by reading the `deploy:*` scripts in `package.json`, and phases 3 and 4 both need it.
+
+Update the comment at the top of that file while you are in it: it counts the outputs that feed
+GitHub Actions variables, and this adds one.
+
 Apply through the normal PR path: `terraform-plan.yml` comments the plan, `terraform-apply.yml` runs
-it on merge.
+it on merge. Expect **15 to add, 0 to change, 0 to destroy**. If a local `terraform plan` instead
+reports three destroys — `google_iap_settings.admin` and both `cloud_scheduler_job.data_update`
+instances — that is not drift: all three are gated on `local.iap_configured`, and you have not
+passed `-var iap_oauth_client_id`. CI does.
 
 ## Phase 2 — The Gemini key
 
