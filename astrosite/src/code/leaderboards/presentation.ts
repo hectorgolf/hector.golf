@@ -118,3 +118,31 @@ export function splitCompetitorNames(competitor: string): string[] {
         .map((name) => name.trim())
         .filter((name) => name.length > 0);
 }
+
+/**
+ * A timestamp as the live board prints it: the time of day, in the reader's own
+ * formatting.
+ *
+ * No date, because a board is read while it is being played and "18:37" is what
+ * a reader wants from it. What keeps that honest is `agoLabel` below: standings
+ * old enough for the date to matter are printed with their age beside them.
+ */
+export function clockLabel(at: number): string {
+    return new Date(at).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+}
+
+/**
+ * How long ago something was, in the roundest words still true of it.
+ *
+ * Rounded down throughout, so the board never claims to be further behind than
+ * it is. It goes up to days because it has to: a cached board may be two days
+ * old, and the poller keeps running for a day after the event's last round.
+ */
+export function agoLabel(ms: number): string {
+    const minutes = Math.floor(ms / 60_000);
+    if (minutes < 60) return `${minutes} min ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return hours === 1 ? "an hour ago" : `${hours} hours ago`;
+    const days = Math.floor(hours / 24);
+    return days === 1 ? "a day ago" : `${days} days ago`;
+}
