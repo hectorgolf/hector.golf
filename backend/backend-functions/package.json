@@ -10,7 +10,7 @@
     "test:functions": "vitest run --project functions",
     "test:deployment": "vitest run --project deployment",
     "test:watch": "vitest --project unit --project functions",
-    "typecheck": "tsc --noEmit --project test/tsconfig.json",
+    "typecheck": "tsc --noEmit --project test/tsconfig.json && tsc --project src/cli/tsconfig.json",
     "clean": "rm -rf ./dist",
     "gcp-build": "tsc",
     "start:scorecard-detection": "npm run gcp-build && set -a && . ./.env && set +a && npx functions-framework --target=ExtractScorecardInformation --source=dist/functions/scorecard-detection/index.js",
