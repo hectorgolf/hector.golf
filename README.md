@@ -61,8 +61,10 @@ deleted. What remains:
 already moved to Workload Identity, so **nothing reads that secret**.
 `update-leaderboards.yml` authenticates with `google-github-actions/auth@v3` as
 `leaderboard-reader@hector-golf.iam.gserviceaccount.com`, and `GCP_SERVICE_ACCOUNT_CREDENTIALS`
-appears nowhere outside this file and the plan that retired it. Verified with
-`grep -rn GCP_SERVICE_ACCOUNT .github/` — no hits.
+is referenced by no workflow step. Verify with `grep -rn 'secrets\.GCP_SERVICE_ACCOUNT' .github/`,
+which returns nothing — note the `secrets.` prefix, because a plain
+`grep -rn GCP_SERVICE_ACCOUNT .github/` still finds one line: a comment in `update-leaderboards.yml`
+recording which credential the keyless exchange replaced.
 
 So three secrets and one key are disposable. `_EMAIL` and `_PRIVATE_KEY` have not been touched since
 2024-09-05 and were never read by anything; `_PRIVATE_KEY` holds the private half of the now-deleted
