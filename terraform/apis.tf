@@ -1,10 +1,32 @@
 locals {
   services = [
+    # Creating the Gemini API key with gcloud, in phase 2 of the functions
+    # migration. Nothing in terraform/ manages the key itself — it is a
+    # credential, and credentials do not go in state.
+    "apikeys.googleapis.com",
     "artifactregistry.googleapis.com",
     "billingbudgets.googleapis.com",
+    # A gen2 function is built from source by a buildpack, which is a Cloud
+    # Build job, and the resulting image lands in Artifact Registry above. All
+    # three are needed to deploy one, even though only cloudfunctions is the API
+    # anybody calls by name.
+    "cloudbuild.googleapis.com",
+    "cloudfunctions.googleapis.com",
     "cloudresourcemanager.googleapis.com",
     "cloudscheduler.googleapis.com",
     "firestore.googleapis.com",
+    # The Gemini API the three AI functions call. This one is easy to argue
+    # yourself out of, so: the functions authenticate to it with an API *key*,
+    # and it is true that a key is a bearer credential which does not care where
+    # the caller runs. What it does care about is which project the key belongs
+    # to, because that is the consumer project the call is billed and quota'd
+    # against — and phase 2 mints the key here.
+    #
+    # Same trap as sheets.googleapis.com below, which had to be added in a
+    # follow-up commit for exactly this reason. It fails as a 403
+    # SERVICE_DISABLED naming a project number, which reads like a permissions
+    # problem rather than a missing line in this list.
+    "generativelanguage.googleapis.com",
     "iam.googleapis.com",
     "iamcredentials.googleapis.com",
     "iap.googleapis.com",

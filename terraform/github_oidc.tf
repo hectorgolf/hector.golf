@@ -63,3 +63,13 @@ resource "google_service_account_iam_member" "leaderboard_reader_wif" {
   role               = "roles/iam.workloadIdentityUser"
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.ref/refs/heads/main"
 }
+
+# The third of the same shape, and the point of the functions migration: the
+# functions deploy from the one pool this project already has, rather than from
+# a second pool stood up in gen-lang-client-0537211409 purely because the
+# functions happened to be deployed there.
+resource "google_service_account_iam_member" "functions_deployer_wif" {
+  service_account_id = google_service_account.functions_deployer.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.ref/refs/heads/main"
+}

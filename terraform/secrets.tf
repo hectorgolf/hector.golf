@@ -58,3 +58,75 @@ resource "google_secret_manager_secret_iam_member" "admin_runtime_reads_github_t
   role      = "roles/secretmanager.secretAccessor"
   member    = google_service_account.admin_runtime.member
 }
+
+# ---------------------------------------------------------------------------
+# The three keys the Cloud Functions read, once they live in this project.
+# Phase 1 of docs/plans/functions-migration.md; the values go in by hand in
+# phase 3.
+#
+# The rule above holds here too and matters more, because these are three keys
+# rather than one: **Terraform creates the container and never the value.**
+# There is no google_secret_manager_secret_version below, so none of these ever
+# enters Terraform state.
+#
+# This is what the migration buys. Today the three keys reach the functions
+# through --set-env-vars from somebody's .env, which is why deploy-functions.yml
+# cannot deploy configuration and why rotating a key means finding the laptop
+# that has it. Mounted from here with --set-secrets, rotation is
+# `gcloud secrets versions add` plus a redeploy — and because the functions
+# reference :latest, even the redeploy is optional for a new instance.
+# ---------------------------------------------------------------------------
+
+locals {
+  # secret id => the environment variable the function reads it as. The
+  # right-hand side is not used by Terraform; it is here because it is the thing
+  # you need when writing the --set-secrets flag in phase 4, and it is otherwise
+  # only knowable by reading package.json's deploy scripts.
+  function_secrets = {
+    "gemini-api-key"     = "GOOGLE_GEMINI_API_KEY"
+    "astrosite-api-key"  = "ASTROSITE_API_KEY"
+    "hector-app-api-key" = "HECTOR_APP_API_KEY"
+  }
+}
+
+resource "google_secret_manager_secret" "functions" {
+  for_each = local.function_secrets
+
+  project   = var.project_id
+  secret_id = each.key
+
+  # Pinned to var.region, as with the GitHub token above and for the same
+  # reason.
+  replication {
+    user_managed {
+      replicas {
+        location = var.region
+      }
+    }
+  }
+
+  labels = {
+    component = "functions"
+  }
+
+  depends_on = [
+    google_project_service.enabled["secretmanager.googleapis.com"],
+    # See the note on the same edge above: without it, the first apply after
+    # secretmanager.admin was granted races the grant and loses.
+    google_project_iam_member.terraform_ci,
+  ]
+}
+
+# secretAccessor reads versions and cannot list, create, disable or destroy
+# them, so a compromised function can use its key — which it must — but cannot
+# replace it with one of its own. Granted per secret rather than project-wide,
+# which also means TournamentLeaderboard's identity could be split off later
+# without touching the other two.
+resource "google_secret_manager_secret_iam_member" "functions_runtime_reads" {
+  for_each = google_secret_manager_secret.functions
+
+  project   = var.project_id
+  secret_id = each.value.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = google_service_account.functions_runtime.member
+}
