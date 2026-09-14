@@ -171,7 +171,7 @@ async function extractPlayerBiographyInput(
 
 async function generateBiography(input: PlayerBiographyInput): Promise<string[]> {
     const response = await fetch(
-        "https://europe-north1-gen-lang-client-0537211409.cloudfunctions.net/GeneratePlayerBiography",
+        "https://europe-north1-hector-golf.cloudfunctions.net/GeneratePlayerBiography",
         {
             method: "POST",
             headers: {
