@@ -51,6 +51,19 @@ https://europe-north1-gen-lang-client-0537211409.cloudfunctions.net/<Name>
 https://europe-north1-hector-golf.cloudfunctions.net/<Name>
 ```
 
+A gen2 function answers on **two** hostnames, and this matters in phase 6 because the repository is
+not consistent about which one it uses. The `cloudfunctions.net` form above is a stable alias; the
+underlying Cloud Run service also has its own URL, of the shape
+`https://tournamentleaderboard-kjr7ijzijq-lz.a.run.app`, with a generated suffix you cannot predict
+before deploying. Both currently return 200.
+
+Everything written down here — `backend/README.md`, `.env.sample`, `architecture.md` §10, the avatar
+CLI's URL builder — uses the `cloudfunctions.net` form. The live `PUBLIC_LEADERBOARD_PROXY_URL`
+repository variable does not: it holds the `run.app` form, set by hand in 2026-09. So phase 6 step 1
+is not a like-for-like swap of one project name for another, and reading the new URL off
+`gcloud functions describe … --format="value(serviceConfig.uri)"` gives you the `run.app` form.
+Prefer the `cloudfunctions.net` form, which is the one the rest of the repository documents.
+
 ## Before you start
 
 Two things to confirm, because both are cheaper to find out now.
@@ -87,6 +100,12 @@ accident and it is staying — see "The old project is not deleted" below. Run t
 anyway before phase 7 if time has passed, since the point is to find what nobody remembers putting
 there.
 
+Two service accounts are there as well, and neither blocks anything here. `update-hector-leaderboard@`
+is being retired by [`sheets-credential-wif.md`](sheets-credential-wif.md), whose phase 6 — deleting
+its keys and the account — is the piece of that plan still outstanding. `terraform-deployer` is
+dormant and is in the backlog. Both are recorded in [`../../README.md`](../../README.md); this plan
+does not touch either, and phase 7 does not wait for them.
+
 ## What Terraform owns, and what it does not
 
 Settled before phase 1, because reaching for `google_cloudfunctions2_function` is the obvious move
@@ -102,9 +121,9 @@ and have it fight the deploy workflow over every release.
 
 ## Phase 1 — Terraform
 
-Three files change. None of them needs a new role on `terraform-ci`: it already holds
-`serviceUsageAdmin`, `serviceAccountAdmin`, `projectIamAdmin` and `secretmanager.admin`, which
-covers everything below. That is worth checking rather than assuming when the plan runs, since a
+Four files change — `apis.tf`, `iam.tf`, `github_oidc.tf` and `secrets.tf`. None of them needs a new
+role on `terraform-ci`: it already holds `serviceUsageAdmin`, `serviceAccountAdmin`,
+`projectIamAdmin` and `secretmanager.admin`, which covers everything below. That is worth checking rather than assuming when the plan runs, since a
 missing role shows up as a mid-apply permission denial.
 
 **[`apis.tf`](../../terraform/apis.tf)** — add to `local.services`:
@@ -117,7 +136,20 @@ missing role shows up as a mid-apply permission denial.
 ```
 
 `run.googleapis.com` and `artifactregistry.googleapis.com` are already enabled, which matters:
-gen2 functions *are* Cloud Run services underneath and their images land in Artifact Registry.
+gen2 functions *are* Cloud Run services underneath and their images land in Artifact Registry. The
+other four are not: checked 2026-09-14, `hector-golf` has none of `cloudfunctions`, `cloudbuild`,
+`generativelanguage` or `apikeys` on.
+
+**Do not trim `generativelanguage.googleapis.com` from that list** on the strength of the argument
+above that an API key is not a project binding. Both things are true at once: nothing checks where
+the *caller* runs, but the API still has to be enabled in the project the *credential* belongs to,
+because that is the consumer project the call is attributed to. The new key is minted in
+`hector-golf` in phase 2, so `hector-golf` is where the API has to be on.
+
+This is not hypothetical. The Sheets migration next door hit exactly this and needed a follow-up
+commit for it — see the comment on `sheets.googleapis.com` in `apis.tf`, which was added to
+`local.services` after the fact for the same reason. The failure is a 403 `SERVICE_DISABLED` naming
+a project *number*, which reads like a permissions problem rather than a one-line fix.
 
 **[`iam.tf`](../../terraform/iam.tf)** — a runtime identity and a deploy identity, mirroring the
 `admin_runtime` / `admin_deployer` split that is already there:
@@ -166,7 +198,13 @@ Start with the two roles above and add only what a failed deploy actually names.
 cross-project setup and is broader than this needs; it gets rewritten in phase 8.
 
 **[`github_oidc.tf`](../../terraform/github_oidc.tf)** — bind the new deployer to the *existing* pool,
-alongside `admin_deployer_wif`. This is the payoff: same project, so there is one pool, not two.
+alongside `admin_deployer_wif` and `leaderboard_reader_wif`. This is the payoff: same project, so
+there is one pool, not two.
+
+`leaderboard_reader_wif` is the newest of the three and the closest worked example of the whole
+shape this phase repeats — a service account, a ref-scoped `workloadIdentityUser` binding on the
+existing pool, an output feeding a `GH_*_SA` repository variable. It went in on 2026-09-14 and is
+applied, so copy from it rather than from memory.
 
 **[`secrets.tf`](../../terraform/secrets.tf)** — three more containers, following the rule already
 established there: **Terraform creates the container and never the value.**
@@ -280,6 +318,17 @@ gcloud functions deploy TournamentLeaderboard \
 omits it for brevity, so add it or deploy those two separately. The authority on every flag is the
 `deploy:*` scripts in [`package.json`](../../backend/backend-functions/package.json).
 
+No local `npm run clean && npm run gcp-build` is needed before these, even though every `deploy:*`
+script does one. `--source=.` uploads `src/` and the buildpack runs the `gcp-build` script — `tsc` —
+server-side; `dist/` is gitignored and never uploaded. The local build in those scripts is there to
+fail fast on a laptop, not because the deploy needs it.
+
+**This also closes the `uuid` item in [`../../README.md`](../../README.md).** All four functions are
+running `uuid` 8.3.2 because nothing deploys them from CI, while `package-lock.json` on `main` pins
+11.1.1. These deploys build from `main`, so the new functions get the pin. Which is the argument for
+*not* doing the `npm run deploy:all` that item suggests if the migration is going ahead: it would
+ship the fix into the project phase 7 deletes.
+
 `--allow-unauthenticated` works here: `hector-golf` is not in an organization — see the note in
 [`iap.tf`](../../terraform/iap.tf) — so no domain-restricted-sharing policy blocks an `allUsers`
 binding.
@@ -302,9 +351,12 @@ curl -s -o /dev/null -w '%{http_code}\n' -X POST \
   "https://europe-north1-hector-golf.cloudfunctions.net/GeneratePlayerBiography" -d '{}'
 ```
 
-A `500` from a Gemini function is the interesting failure: it means the secret did not mount. Check
-with `gcloud functions describe <Name> --gen2 --region=europe-north1 --project=hector-golf` and
-confirm the runtime service account holds `secretAccessor` on that secret.
+Two failures are worth telling apart. A `500` from a Gemini function means the secret did not
+mount: check with
+`gcloud functions describe <Name> --gen2 --region=europe-north1 --project=hector-golf` and confirm
+the runtime service account holds `secretAccessor` on that secret. A `403 SERVICE_DISABLED` naming a
+project number means the key is fine and `generativelanguage.googleapis.com` is not enabled in
+`hector-golf` — phase 1's `apis.tf` change did not land, or has not applied.
 
 Then generate one biography end to end with a real `ASTROSITE_API_KEY`. The Gemini key is the only
 thing in this migration that is genuinely new, and a 401 from Google is much easier to diagnose now
@@ -316,7 +368,9 @@ than during cutover.
 so the site has to be rebuilt before visitors reach the new function, and the old one has to stay up
 until every cached build is gone.
 
-1. Set the `PUBLIC_LEADERBOARD_PROXY_URL` repository variable to the new URL.
+1. Set the `PUBLIC_LEADERBOARD_PROXY_URL` repository variable to the new URL. It currently holds a
+   `run.app` URL rather than a `cloudfunctions.net` one — see "the URLs change" above before
+   assuming this is a search-and-replace of the project name.
 2. Trigger [`deploy.yml`](../../.github/workflows/deploy.yml) — pushing to `main` or dispatching it —
    and wait for Pages to serve the rebuilt site. Load a leaderboard page and watch the network tab
    hit `hector-golf`.

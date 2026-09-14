@@ -15,12 +15,20 @@ Descriptive. If one of these disagrees with the code, the document is wrong and 
 
 ## [`plans/`](plans/) — what has not happened yet
 
-Prescriptive, and **none of these has been executed**. A plan describes a system that does not exist.
+Prescriptive. A plan describes a system that does not exist yet, in whole or in part — so the
+"executed?" column is the first thing to read, because a plan that is partly done is the one that
+will mislead you.
 
-| | |
-| --- | --- |
-| [`functions-migration.md`](plans/functions-migration.md) | Moving the four Cloud Functions out of `gen-lang-client-0537211409` into `hector-golf` |
-| [`sheets-credential-wif.md`](plans/sheets-credential-wif.md) | Retiring the last downloadable service account key, in favour of Workload Identity |
+| | | executed? |
+| --- | --- | --- |
+| [`functions-migration.md`](plans/functions-migration.md) | Moving the four Cloud Functions out of `gen-lang-client-0537211409` into `hector-golf` | No. Nothing started |
+| [`sheets-credential-wif.md`](plans/sheets-credential-wif.md) | Retiring the last downloadable service account key, in favour of Workload Identity | **Partly.** Phases 1–5 applied 2026-09-14; phase 6 waits until 2026-09-21 |
+
+A partly-executed plan is the case the lifecycle below does not cover, and `sheets-credential-wif.md`
+is the reason this column exists: it is neither finished nor untouched, and its phase 6 is waiting on
+a calendar rather than on a decision. It says so in its own header too. Leave it in `plans/` until
+that phase runs, then make the move-or-delete call — the table is what keeps it honest in the
+meantime.
 
 ## [`playbooks/`](playbooks/) — how to do a thing, again
 
