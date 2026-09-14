@@ -89,21 +89,55 @@ locals {
   # When the data updates run, in UTC. Each job starts everything marked
   # `scheduled` in admin/src/lib/workflows.ts.
   #
-  # 03:00 and 12:00 are the times the workflows' own crons were always meant to
-  # fire at, give or take: 05:00/06:00 and 14:00/15:00 in Finland, depending on
-  # the season.
+  # ## Still two jobs, and that is the constraint
   #
-  # Note that 12:00 is an hour earlier than update-handicaps.yml's own `0 3,13`.
-  # That is the point of moving it: deploy.yml's cron is `30 3,12`, so a handicap
-  # update that lands at 13:00 has always missed the rebuild that was waiting for
-  # it and sat until the next one.
+  # Cloud Scheduler's free tier is three *jobs* per billing account, billed per
+  # job per month rather than per execution. So a job that fires ten times a day
+  # costs exactly what a job that fires once does, and the way to scrape more
+  # often is a busier cron rather than more jobs. There is one job spare; it is
+  # not spent here.
   #
-  # Both workflows are started in the same second, so nothing keeps them from
-  # committing on top of each other except the `data-update` concurrency group
-  # they share in GitHub — an interlock rather than the stagger that used to be
-  # here, which was really a guess about how long a scrape takes.
+  # ## Why the morning is a window rather than a moment
+  #
+  # We play in Europe and a realistic early tee time is 04:00 to 07:00 UTC. A
+  # handicap that arrives after the first tee shot is too late to be the handicap
+  # anyone played off, so the morning scrape wants to cover that whole window
+  # rather than guess one time inside it.
+  #
+  # It has to, because the thing it is waiting for does not keep to a time. The
+  # Finnish Golf Union computes overnight at about 03:00 Finnish and re-runs a
+  # failed batch during office hours — docs/current/handicap-updates.md has the
+  # detail. On 2026-09-14 the numbers landed between 06:00 and 08:22 Finnish; the
+  # single 03:00 UTC scrape ran at 06:00:36 local, missed them by seconds, read
+  # every player as unchanged, and the site carried yesterday's handicaps until
+  # the afternoon. Hourly from 03:00 to 07:00 would have caught it within the
+  # hour.
+  #
+  # The last tick before a Hector's buckets freeze matters most: the freeze is
+  # 08:00 local to the event, which is 05:00 UTC for a Finnish venue and 06:00
+  # UTC for Konopiště, so the last useful tick is 04:00 and 05:00 respectively.
+  # That leaves an hour in which a handicap can arrive and miss the buckets,
+  # which is the cost of hourly over half-hourly and is accepted deliberately:
+  # the buckets are projected until the morning of the event, and a value that
+  # late is one the Union itself published late.
+  #
+  # ## The afternoon
+  #
+  # One tick, for a retry that finished during office hours. Not a window: by
+  # then the round is under way and the handicaps are whatever they were at the
+  # first tee, so this is about the site being right rather than about anyone
+  # playing off it.
+  #
+  # ## What a tick costs
+  #
+  # A wake-up of the admin service, which scales to zero, and two GitHub workflow
+  # runs of a couple of minutes each. Both are inside free tiers. The workflows
+  # share one `data-update` concurrency group, so a tick that arrives while the
+  # previous one is still running queues rather than races — which is the
+  # interlock that makes a higher cadence safe at all.
   data_update_schedules = {
-    morning = { cron = "0 3 * * *" }
+    # Hourly across the early-tee-time window.
+    morning = { cron = "0 3-7 * * *" }
     midday  = { cron = "0 12 * * *" }
   }
 }

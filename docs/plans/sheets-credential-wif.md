@@ -45,7 +45,7 @@ this credential and are not changed.
 
 Worth knowing before you assume this is low-traffic: the "event finished" filter in
 `update-leaderboards.ts` is **commented out**, so both concluded tournaments are re-read on every
-run. The Sheets path runs twice a day, not only during a tournament.
+run. The Sheets path runs on every tick, not only during a tournament.
 
 ## Phase 1 — Terraform
 

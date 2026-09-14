@@ -24,7 +24,7 @@ variable "scheduler_region" {
     fails with "Location 'europe-north1' is not a valid location".
 
     Being in a different region than everything else costs nothing that matters.
-    The job makes one HTTPS call to the admin service twice a day, so the
+    The job makes one HTTPS call to the admin service per tick, so the
     cross-region hop is a few milliseconds and a few kilobytes of egress on a
     path that runs 730 times a year. Nothing is stored here: the job holds a URL
     and a service account email, both of which are in this repository already.
