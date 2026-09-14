@@ -74,6 +74,29 @@ worse than either end state, because CI reads a different value than a laptop do
 destroy a budget it cannot even refresh. The playbook's step 9 has the full table of what each
 setting does.
 
+There are in fact two live budgets, and only the first is about this project:
+
+| Budget | Scope | Amount | Thresholds |
+| --- | --- | --- | --- |
+| `hector.golf - alert above EUR 2/month` | `hector-golf` only | €2/month | 50%, 100%, 200% of current spend |
+| `Billing account - alert above EUR 4/month` | whole billing account, no project filter | €4/month | 100% of current spend, 100% of forecast |
+
+The second is a backstop, and it stays outside `terraform/` on purpose: its scope is the billing
+account, which is expected to outlive this stack and eventually hold others. A stack that owned it
+would either have to be the permanent home of every future project's alerting, or hand it over
+later. Its ceiling is deliberately above the per-project budget beneath it, so routine `hector-golf`
+spend cannot trip it — an account-wide budget set *below* a project budget alarms during normal
+operation and trains you to ignore it, which is what the earlier €1 version did.
+
+What it cannot see is creep. It catches a project spiking, not a forgotten project burning a steady
+couple of euros, because that never reaches the ceiling. The per-project budgets are what close
+that gap, and only `hector-golf` has one.
+
+If you edit either budget with `gcloud billing budgets update`, check the JSON it prints back.
+`--add-threshold-rule` documents `percent` as "integer between 0 and 100" but passes the value
+straight into an API field that is a fraction, so `percent=100` stores `100.0`, meaning 10000% —
+an alert that never fires. `percent=1` is 100%.
+
 ## Where the outstanding work is
 
 Not here. [`../../README.md`](../../README.md) is the backlog. Two of the four "next pieces" this
