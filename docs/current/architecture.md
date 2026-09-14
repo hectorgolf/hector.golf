@@ -159,10 +159,13 @@ configured anywhere in this repository:
 An event gives a player two handicaps, and the file carries both because they are the same number
 for most of an event's life and diverge for the rest of it:
 
-| | Frozen | Read from |
+Each player carries one object per basis — `bucketing` (which also holds `bucket`, the half of the
+split they landed in) and `playing` — and each of those is `{ hcp, observed }`:
+
+| | Frozen | `hcp` read from |
 | --- | --- | --- |
-| `bucketing_hcp` | `bucket_freeze` — 08:00 on the first morning, local to the event | The number in the committed event file, which is what the split was computed from |
-| `playing_hcp` | When the event ends | The observation log, or `getPlayerById` while the event is live |
+| `bucketing` | `bucket_freeze` — 08:00 on the first morning, local to the event | The number in the committed event file, which is what the split was computed from |
+| `playing` | When the event ends | The observation log, or `getPlayerById` while the event is live |
 
 The bucketing handicap is read from the **committed** event file rather than from the `HectorEvent`
 the payload is built from. `populateUpdatedHandicaps` (§6) replaces exactly those numbers with
@@ -175,12 +178,16 @@ under two names.
 tell a settled split from a provisional one without reimplementing the rule; `bucketsFreezeAt()` in
 `data.ts` is that rule, and `bucketsAreOpen()` is now defined in terms of it so the two cannot drift.
 
-`bucketing_hcp_observed` is when we last *asked* the sources about that player before the split
-froze, and `handicaps_checked` is the same question for the field as a whole. Not when the handicap
-last changed: a handicap that has not moved since August is no less current for it, and "we checked
-at 03:02 and it is still 15.4" is what answers a player whose eBirdie shows something else. Both are
-read as of `bucket_freeze` and the event's last day respectively, because a sweep that ran after a
-split settled cannot be what the split was drawn from.
+Each basis's `observed` is when we last *asked* the sources about that player — the same question at
+the two ends of an event — and `handicaps_checked` is it for the field as a whole. Not when the handicap last changed: a handicap that has not moved since August is no less
+current for it, and "we checked at 03:02 and it is still 15.4" is what answers a player whose eBirdie
+shows something else. Each is read as of the moment its handicap settled, `bucket_freeze` and the
+event's last day respectively, because a sweep that ran after a split settled cannot be what the
+split was drawn from.
+
+They are instants rather than dates, and deliberately so: the gap this explains is measured in hours
+— the Union's WHS batch runs at about 03:00 and re-runs during office hours when the nightly run
+fails — and a date cannot show it.
 
 They come from `src/data/handicap-checks.json`, a log of sweeps that `update-handicaps.ts` appends to
 on **every** run — `handicaps.json` records what changed, this records that we looked, and a quiet

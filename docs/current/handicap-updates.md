@@ -162,9 +162,10 @@ buckets are part of its record and are kept for good, so what explains them has 
 too — the 2026 split is still on the site in 2036, and "the handicaps behind it were last checked at
 03:01 that morning" has to still be answerable then. It costs about 57KB a year.
 
-This is what `/events/hector/:id/handicaps.json` publishes as `bucketing_hcp_observed` and
-`handicaps_checked`, and the two together are what answers "my eBirdie shows something else": the
-handicap we hold, and the moment we last asked about it.
+This is what `/events/hector/:id/handicaps.json` publishes as each basis's `observed` — a player's
+`bucketing.observed` and `playing.observed`, the same question asked at the two ends of an event —
+and as `handicaps_checked` for the field as a whole. Together with the handicap beside it, that is what answers "my eBirdie
+shows something else": the number we hold, and the moment we last asked about it.
 
 ## Reading `observed` after the fact
 
