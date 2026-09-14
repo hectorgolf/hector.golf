@@ -626,6 +626,12 @@ the request URL as `http://localhost:8080`, decides every form POST came from so
 answers `Cross-site POST form submissions are forbidden` with a 403 — pages still render, so it
 looks like only saving is broken.
 
+That message has a second cause worth knowing, because it reads identically: Astro also rejects a
+cross-origin POST that arrives with **no** `Content-Type` at all, not only one carrying a form
+content type. A non-browser caller — `curl` without a body sends no content type — therefore has to
+send `Content-Type: application/json`, which is why `terraform/scheduler.tf` and
+`.github/actions/request-deploy` both post an empty JSON body.
+
 ## Adopting something that already exists
 
 If a resource is already there — because it got clicked into being before anyone read this, or

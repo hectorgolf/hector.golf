@@ -86,16 +86,35 @@ runs:
         ID_TOKEN: ${{ steps.auth.outputs.id_token }}
         ADMIN_DOMAIN: ${{ inputs.admin_domain }}
       run: |
+        # Content-Type matters, and not for the reason it looks like. Astro's CSRF
+        # check forbids a cross-origin POST that arrives *without* a content type at
+        # all, not only one carrying a form content type — see `origin-check.js`:
+        #
+        #     if (hasContentType) { return formLikeHeader && !isSameOrigin }
+        #     return !isSameOrigin
+        #
+        # curl sends no content type when there is no body, so this asked with none
+        # and got back 403 "Cross-site POST form submissions are forbidden" from the
+        # moment it was written. Cloud Scheduler has always sent JSON and an empty
+        # body for exactly this reason — see the http_target in
+        # terraform/scheduler.tf — and this is the same request, spelled the same way.
+        #
         # No Accept: text/html, so the endpoint answers JSON rather than a 303.
         status=$(curl -sS -o /tmp/dispatch-response.json -w '%{http_code}' \
           -X POST "https://${ADMIN_DOMAIN}/api/workflows/deploy/dispatch" \
           -H "Authorization: Bearer ${ID_TOKEN}" \
+          -H "Content-Type: application/json" \
           -H "Accept: application/json" \
+          --data '{}' \
           --max-time 30) || status=000
         echo "HTTP $status"
         cat /tmp/dispatch-response.json 2>/dev/null || true
         echo
-        if [ "$status" = "200" ] || [ "$status" = "204" ]; then
+        # 202 is the success the endpoint actually returns: GitHub has accepted the
+        # dispatch and does not say which run it created, so the endpoint reports only
+        # that it asked. 200 and 204 are here because a caller should not break if it
+        # ever answers a plainer yes.
+        if [ "$status" = "202" ] || [ "$status" = "200" ] || [ "$status" = "204" ]; then
           echo "::notice::Asked the admin service to deploy."
           exit 0
         fi

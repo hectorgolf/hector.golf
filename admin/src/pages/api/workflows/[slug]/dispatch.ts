@@ -39,11 +39,23 @@ import { workflowBySlug } from '../../../../lib/workflows.ts'
  * ## CSRF
  *
  * Astro's origin check covers the browser half: it rejects a cross-site POST
- * carrying a form content type, which is what the button sends. It does not
- * apply to the JSON that Cloud Scheduler sends, which is what makes one endpoint
- * work for both — and is fine, because a cross-site attacker cannot make a
+ * carrying a form content type, which is what the button sends. A caller sending
+ * JSON passes it, which is what makes one endpoint work for both the button and
+ * Cloud Scheduler — and is safe, because a cross-site attacker cannot make a
  * browser send that content type without CORS permission this service never
  * grants.
+ *
+ * The trap, for anyone adding a caller: a POST with **no** content type at all is
+ * rejected too, not only a form-typed one. `astro/dist/core/app/origin-check.js`
+ * reads
+ *
+ *     if (hasContentType) { return formLikeHeader && !isSameOrigin }
+ *     return !isSameOrigin
+ *
+ * and curl sends no content type when it has no body. That is not a theoretical
+ * trap: `.github/actions/request-deploy` was written without one and every data
+ * update's deploy request returned 403 until it was given `Content-Type:
+ * application/json` and an empty body, as `terraform/scheduler.tf` already did.
  */
 
 /** The `Accept` a browser sends, and Cloud Scheduler does not. */
