@@ -175,55 +175,13 @@ Only after phase 5 is green.
 
 ## Running it from your laptop
 
-This is the part that changes for you, and it is the reason to read phase 3 before phase 6.
+Moved out. [`../playbooks/local-gcp-identities.md`](../playbooks/local-gcp-identities.md) covers it,
+along with the rest of switching identities on a laptop, because that is a thing you do repeatedly
+rather than once — and unlike this plan, a playbook is not used up by being followed.
 
-**Today** `.env` carries `GOOGLE_CREDENTIALS` as one line of JSON — pasted from
-`.env.google-credentials.json` — and `npm run update-leaderboards` picks it up through `env-cmd`.
-
-**Afterwards** there is no key to paste. ADC resolves the identity instead, and there are two ways
-to set it up.
-
-**As the service account, by impersonation — recommended.**
-
-```bash
-gcloud auth application-default login \
-  --impersonate-service-account=leaderboard-reader@hector-golf.iam.gserviceaccount.com
-```
-
-Your laptop then runs as exactly the identity CI runs as, so a sheet you can read locally is one CI
-can read, and a permission problem reproduces instead of appearing only in Actions. It needs
-`roles/iam.serviceAccountTokenCreator` on that account for your own Google account, which is one
-more Terraform binding:
-
-```hcl
-resource "google_service_account_iam_member" "leaderboard_reader_impersonation" {
-  service_account_id = google_service_account.leaderboard_reader.name
-  role               = "roles/iam.serviceAccountTokenCreator"
-  member             = "user:you@example.com"
-}
-```
-
-**As yourself.**
-
-```bash
-gcloud auth application-default login
-```
-
-Simpler, nothing to grant, and it works because you own the spreadsheets. The catch is that it
-proves less: you can read those sheets whether or not they have been shared with the service
-account, so a local run passing says nothing about whether CI will.
-
-Either way:
-
-- `npm run update-leaderboards` is unchanged. `env-cmd` still loads `.env` for `WISEGOLF_*`,
-  `GITHUB_ACCESS_TOKEN` and `HECTOR_APP_API_KEY`; only the `GOOGLE_CREDENTIALS` line goes.
-- `.env` must still exist, even empty — `env-cmd` fails without it, which is why `test-unit` runs
-  `touch .env` first.
-- ADC is still a credential on disk, at `~/.config/gcloud/application_default_credentials.json`.
-  The difference is that it is yours, short-lived, refreshable and revocable with
-  `gcloud auth application-default revoke` — not a permanent key that can be copied into a zip.
-- Expect to re-run the login occasionally. ADC tokens expire; a service account key never did, which
-  is the convenience being traded away and the whole point.
+The short version: `gcloud auth application-default login --impersonate-service-account=` the
+leaderboard reader, and drop `GOOGLE_CREDENTIALS` from `.env`. The impersonation binding comes from
+the `TF_LEADERBOARD_IMPERSONATORS` repository variable.
 
 ## Rollback
 

@@ -39,6 +39,7 @@ has been followed, because the next person will need it too.
 | | |
 | --- | --- |
 | [`gcp-bootstrapping.md`](playbooks/gcp-bootstrapping.md) | Taking an empty GCP project to a working, CI-deployed admin service. The disaster-recovery procedure |
+| [`local-gcp-identities.md`](playbooks/local-gcp-identities.md) | Running things locally as the right GCP identity, without a browser round trip every time you switch |
 
 That distinction is the reason for a third directory rather than filing playbooks under `plans/`. A
 plan is finished when it has been executed and becomes misleading if left in place; a playbook is
