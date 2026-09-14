@@ -347,6 +347,19 @@ search. Four pieces of client JS exist in total:
    published fresher standings than the cache holds, or when anything about the entry is doubtful,
    and it is rolled back to the published empty state if the tournament itself then answers
    `upcoming`.
+
+   Two details keep that board honest, and one keeps it from flashing. The status line prints the
+   timestamp the standings carry, and once they are more than five minutes old it also prints how
+   far behind they are, in amber — a board nothing is refreshing has to stop reading like a live
+   one, so `--amber-400` (registered on `/brand`) now means exactly that. Polling never makes two
+   round trips within ten seconds, whatever asks for one: the thirty-second interval already
+   respected that, but returning to the tab reads immediately, and a tab being switched to and from
+   is not a reason for the proxy to answer ten times a minute; a request refused by that floor is
+   rescheduled, not dropped. And because the empty state is server-rendered, it is painted long
+   before the island's module has loaded — so a hand-written inline script, running during
+   parsing, marks the boards `data-cache-pending` when this browser has an entry for the event,
+   and CSS holds the message back (opacity, keeping the row's box) until the module has had its
+   say, or for 500ms if it never loads.
 4. **Google Tag Manager** — the inline bootstrap in `Layout.astro`.
 
 ## 4. Data model

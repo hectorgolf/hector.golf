@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+    agoLabel,
+    clockLabel,
     decimalsForBoard,
     leaderboardPosition,
     normalizeDiff,
@@ -146,5 +148,50 @@ describe("splitCompetitorNames", () => {
     it("drops empty fragments", () => {
         expect(splitCompetitorNames("Lasse Koskela + ")).toEqual(["Lasse Koskela"]);
         expect(splitCompetitorNames("")).toEqual([]);
+    });
+});
+
+describe("clockLabel", () => {
+    it("prints the time of day, without the date", () => {
+        const at = Date.parse("2026-09-25T11:04:00.000Z");
+        // Formatted in the runner's own locale and zone, as a reader's browser
+        // does, so this asserts the shape rather than a particular rendering.
+        expect(clockLabel(at)).toMatch(/^\d{1,2}[:.]\d{2}( ?[AP]M)?$/i);
+    });
+});
+
+/**
+ * How the live board says how far behind it is. Rounded down throughout: a board
+ * that claims to be staler than it is would be as misleading as one that hides it.
+ */
+describe("agoLabel", () => {
+    const minutes = (n: number) => n * 60_000;
+
+    it("counts whole minutes under an hour", () => {
+        expect(agoLabel(minutes(5))).toBe("5 min ago");
+        expect(agoLabel(minutes(59))).toBe("59 min ago");
+    });
+
+    it("rounds down rather than up", () => {
+        expect(agoLabel(minutes(5) + 59_000)).toBe("5 min ago");
+        expect(agoLabel(minutes(119))).toBe("an hour ago");
+    });
+
+    it("says nothing yet in the first minute", () => {
+        expect(agoLabel(0)).toBe("0 min ago");
+        expect(agoLabel(59_000)).toBe("0 min ago");
+    });
+
+    it("counts hours, naming the first one", () => {
+        expect(agoLabel(minutes(60))).toBe("an hour ago");
+        expect(agoLabel(minutes(120))).toBe("2 hours ago");
+        expect(agoLabel(minutes(60 * 23))).toBe("23 hours ago");
+    });
+
+    /** A cached board may be two days old, so the label has to reach that far. */
+    it("counts days, naming the first one", () => {
+        expect(agoLabel(minutes(60 * 24))).toBe("a day ago");
+        expect(agoLabel(minutes(60 * 47))).toBe("a day ago");
+        expect(agoLabel(minutes(60 * 48))).toBe("2 days ago");
     });
 });

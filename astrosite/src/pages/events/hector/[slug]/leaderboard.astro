@@ -141,16 +141,24 @@ const liveEmptyMessage = !eventHasStarted(event)
             </section>
         )}
 
-        <RoundsList event={event} allThrough={allThrough} />
-
-        {live ? (
+        {/*
+          * Directly below the boards, because what it says is about them: when
+          * the standings above were current, and — once they are behind — how far
+          * behind they are. Under the rounds list, where this used to sit, a
+          * reader looking at a stale board would never see it.
+          */}
+        {live && (
             <LiveLeaderboard
                 eventId={liveEventId!}
                 endpoint={leaderboardProxy}
                 stopAfter={stopPollingAfter}
                 renderedAt={leaderboards.updatedAt}
             />
-        ) : (
+        )}
+
+        <RoundsList event={event} allThrough={allThrough} />
+
+        {!live && (
             <>
                 {updatedAt && (
                     <p class="updated-at meta">Updated {updatedAt.toISOString()}</p>

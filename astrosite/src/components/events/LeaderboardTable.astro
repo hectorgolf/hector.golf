@@ -226,6 +226,42 @@ const decimals = decimalsForBoard(ascending)
 		font-size: 12px;
 	}
 
+	/*
+	 * Holds the message back while the live updater decides whether this visitor
+	 * has cached standings to paint instead.
+	 *
+	 * Rendered in the page, the message is painted before any script has run, so
+	 * a board about to be filled from the cache used to show "play has not
+	 * started" for a frame on every reload. The attribute is set during parsing —
+	 * before the first paint — by the only party that can know: the browser
+	 * itself, looking in its own storage. Held by `opacity` rather than by
+	 * `display` or `visibility`: the row keeps its box, so the board does not
+	 * resize when the message lands, and opacity is the one of the three that
+	 * animates predictably.
+	 *
+	 * The animation is the safety net. The updater drops the attribute as soon as
+	 * it has had its say, but if its module never loads at all, the message must
+	 * still arrive rather than leaving a board silently blank.
+	 */
+	table.leaderboard[data-cache-pending] [data-empty-state] {
+		animation: leaderboard-empty-state-reveal 200ms ease-out 500ms both;
+	}
+
+	@keyframes leaderboard-empty-state-reveal {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		table.leaderboard[data-cache-pending] [data-empty-state] {
+			animation-duration: 0s;
+		}
+	}
+
 	/* Occupies the space the standings will, so the board reads as waiting
 	   rather than broken. */
 	.empty {
