@@ -41,9 +41,9 @@
  * everything marked `scheduled` — so adding a workflow to the twice-daily run is
  * an entry here and no infrastructure change at all.
  *
- * `deploy.yml` is the obvious candidate — its own `30 3,12` cron is queued
- * exactly as badly, so the site can still take hours to rebuild around data that
- * arrived on time.
+ * `deploy.yml` is here now, though not on the tick: it is dispatched by a scrape
+ * that has just committed, which is the only moment there is something new to
+ * publish. Its own `30 3,12` cron stays as the backstop.
  */
 
 export type DispatchableWorkflow = {
@@ -83,6 +83,26 @@ export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
         label: 'Tournament leaderboards',
         blurb: 'Refreshes the leaderboards of events that have started, from Google Sheets or app.hector.golf.',
         scheduled: true,
+    },
+    {
+        slug: 'deploy',
+        file: 'deploy.yml',
+        label: 'Deploy hector.golf',
+        blurb: 'Rebuilds and publishes the public site. Started automatically when a data update commits something, and available here for when you want it anyway.',
+        /*
+         * Not on the twice-daily tick, and not because it is expensive.
+         *
+         * The tick starts the scrapes, which have not committed anything yet
+         * when it fires — a deploy in the same second would publish the data
+         * that was already there. This runs *after* a scrape commits, dispatched
+         * by the scrape itself through `[slug]/dispatch.ts`, which is the only
+         * moment at which there is something new to publish.
+         *
+         * `deploy.yml`'s own `30 3,12` cron stays as the backstop, for the same
+         * reason the workflows keep their GitHub crons: late is better than
+         * never on the day this path is the broken one.
+         */
+        scheduled: false,
     },
 ]
 

@@ -68,6 +68,23 @@ resource "google_iap_web_cloud_run_service_iam_member" "scheduler" {
   member                 = google_service_account.scheduler.member
 }
 
+# GitHub Actions impersonates this same identity to ask for a deploy once a
+# scrape has committed something. Bound to main, like admin_deployer_wif.
+#
+# The same account rather than a second one, because a second one would be this
+# one with a different name: identical purpose — "start a data-update workflow"
+# — and the identical IAP grant above, which is the only permission either needs.
+# Two names for one authority is a thing to keep in step rather than a boundary.
+#
+# What this does not do is give Actions a way past IAP. It gets in the same front
+# door as Cloud Scheduler and the humans, holding a token minted for the IAP
+# audience; the endpoint it reaches still reads the identity from the IAP header.
+resource "google_service_account_iam_member" "scheduler_wif" {
+  service_account_id = google_service_account.scheduler.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.ref/refs/heads/main"
+}
+
 locals {
   # When the data updates run, in UTC. Each job starts everything marked
   # `scheduled` in admin/src/lib/workflows.ts.
