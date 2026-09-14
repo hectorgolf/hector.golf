@@ -338,7 +338,15 @@ search. Four pieces of client JS exist in total:
    `setInterval` that hard-reloads with a cache-busting query string every five minutes. An
    app.hector.golf-managed event gets [`LiveLeaderboard.astro`](../../astrosite/src/components/events/LiveLeaderboard.astro)
    instead, which polls the leaderboard proxy (§10) and rewrites the rendered rows in place, cloning
-   the component's own row template so the replacements keep their scoped styles.
+   the component's own row template so the replacements keep their scoped styles. It also keeps the
+   last standings it read in `localStorage`
+   ([`live-cache.ts`](../../astrosite/src/code/leaderboards/live-cache.ts)) and paints them before
+   the first request goes out, so a page reloaded mid-round opens on a timestamped board rather than
+   on the build's "play has not started" notice. A cached board is only ever the first frame: it is
+   declined when it is over 48 hours old — a weekend, the shape of the event — when the build
+   published fresher standings than the cache holds, or when anything about the entry is doubtful,
+   and it is rolled back to the published empty state if the tournament itself then answers
+   `upcoming`.
 4. **Google Tag Manager** — the inline bootstrap in `Layout.astro`.
 
 ## 4. Data model
