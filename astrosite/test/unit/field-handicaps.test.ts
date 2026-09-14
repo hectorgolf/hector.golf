@@ -268,6 +268,24 @@ describe('when the handicaps were last checked', () => {
         }
     })
 
+    it('is the oldest stamp in the field, so it is a guarantee about all of them', () => {
+        // Every handicap in the file was checked at least this recently. Taken from
+        // the entries rather than from the log, so it cannot claim a freshness that
+        // no player in this field actually has — which the latest sweep could, since
+        // a sweep is field-wide and may have skipped somebody in this one.
+        for (const id of ['HECTOR2026', 'HECTOR2025', 'HECTOR2024', 'HECTOR2014']) {
+            const payload = fieldHandicaps(eventById(id))
+            const stamps = payload.handicaps.map((p) => p.playing.observed)
+            const expected = stamps.some((s) => s === null) ? null : stamps.slice().sort()[0]
+            expect(payload.handicaps_checked, id).toBe(expected ?? null)
+            for (const stamp of stamps) {
+                if (payload.handicaps_checked !== null) {
+                    expect(stamp! >= payload.handicaps_checked, `${id}/${stamp}`).toBe(true)
+                }
+            }
+        }
+    })
+
     it('is null throughout for an event older than the sweep log', () => {
         const payload = fieldHandicaps(eventById('HECTOR2014'))
         expect(payload.handicaps_checked).toBeNull()
