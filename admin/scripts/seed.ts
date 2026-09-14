@@ -64,7 +64,9 @@ async function seed(
         const ref = firestore.collection(collection).doc(parsed.data.id)
 
         // Read before writing, so a document that has not changed is left alone.
-        // This runs twice a day on a schedule: writing all sixty every time would
+        // This runs after every scheduled data update, which is a dozen times a
+        // day now that the morning is a half-hourly window: writing all sixty
+        // every time would
         // burn the free tier's write quota on nothing, and — worse — make
         // `updatedAt` mean "when the seed last ran" rather than "when this last
         // changed", which is the field the ownership rules will lean on.

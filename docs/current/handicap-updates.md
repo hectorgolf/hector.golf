@@ -44,19 +44,36 @@ which tells you retrospectively that the earlier one was wrong — and only if y
 
 ## What this repository does about it
 
-### It scrapes twice a day
+### It scrapes every half hour through the morning, and once after lunch
 
-`update-handicaps.yml` runs at `0 3,13 * * *`, which is 03:00 and 13:00 UTC. In Finnish local terms:
+Cloud Scheduler starts the updates — `terraform/scheduler.tf`. The workflows keep their own crons as
+a backstop, but those are delivered hours late and are not the real clock.
 
-| Scrape | Summer (EEST, UTC+3) | Winter (EET, UTC+2) | Relative to the Union's batches |
+| Ticks | UTC | Summer (EEST) | Winter (EET) |
 | --- | --- | --- | --- |
-| 03:00 UTC | 06:00 | 05:00 | About three hours after the nightly run |
-| 13:00 UTC | 16:00 | 15:00 | Inside the retry window, near its end |
+| Every 30 minutes | 03:00 – 07:30 | 06:00 – 10:30 | 05:00 – 09:30 |
+| Once | 12:00 | 15:00 | 14:00 |
 
-The morning scrape is positioned to read a completed nightly batch. The afternoon scrape exists to
-pick up a retry — but it only catches retries that finished before it ran. **A retry completing at
-17:00 Finnish time is missed until the following morning**, by which point it is a value dated
-yesterday arriving today.
+**The morning is a window rather than a moment because the thing it waits for does not keep to a
+time.** On 2026-09-14 the Union's numbers landed between 06:00 and 08:22 Finnish. The scrape that
+day ran at 06:00:36 — inside that window and past it by seconds — so all 37 players read as
+unchanged and the site carried yesterday's handicaps until the afternoon. Half-hourly, the worst
+case is thirty minutes stale rather than most of a day.
+
+The window is sized to the golf, not to the Union: we play in Europe and a realistic early tee time
+is 04:00 to 07:00 UTC. A handicap arriving after the first tee shot is too late to be the one anyone
+played off. The ticks cover that whole range, and the last one before a Hector's buckets freeze —
+08:00 local, so 05:00 UTC in Finland and 06:00 at Konopiště — is within half an hour of it either
+way.
+
+The afternoon tick is a single one, for a retry that finished during office hours. By then the round
+is under way and the handicaps are whatever they were at the first tee, so it is about the site
+being right rather than about anyone playing off it. **A retry completing after 15:00 Finnish time
+is still missed until the next morning.**
+
+None of this costs anything. Cloud Scheduler's free tier is three *jobs* per billing account, billed
+per job per month rather than per execution, so ten firings cost what one does — and this is still
+two jobs, as it was when it was two ticks.
 
 ### It keeps every reading, including two in one day
 
@@ -120,19 +137,22 @@ The case this was added for:
 > looks at the site that afternoon, sees a player's current handicap, and finds that the buckets do
 > not reflect it.
 
-With `observed`, that reconstructs in one step. A Hector's buckets stop moving at 08:00 local, which
-for a Finnish venue is 05:00 UTC and for Konopiště 06:00 UTC — so **the buckets are always built from
-the 03:00 UTC scrape**, and the 13:00 UTC scrape is always after the freeze.
+With `observed`, that reconstructs in one step, and the reconstruction is a comparison rather than an
+assumption. A Hector's buckets stop moving at 08:00 local — 05:00 UTC for a Finnish venue, 06:00 UTC
+for Konopiště — so **which readings the buckets could have used is whichever ticks fell before that
+time**, and `observed` says which ones those were. Half-hourly ticks mean the answer is no longer
+"the morning scrape" but a specific instant you can read off the entry.
 
 So if `observationsOn(history, "…", "2026-09-24")` gives:
 
 ```json
-{ "player": "…", "date": "2026-09-24", "handicap": 11.8, "observed": "2026-09-24T03:01:12Z" },
-{ "player": "…", "date": "2026-09-24", "handicap": 11.2, "observed": "2026-09-24T13:01:58Z" }
+{ "player": "…", "date": "2026-09-24", "handicap": 11.8, "observed": "2026-09-24T05:30:41Z" },
+{ "player": "…", "date": "2026-09-24", "handicap": 11.2, "observed": "2026-09-24T12:00:58Z" }
 ```
 
-then the page is showing 11.2, the buckets were built from 11.8, and the second reading landed seven
-hours after they froze. The buckets are not wrong; they are a correct record of what was known at
+then for Konopiště, whose buckets froze at 06:00 UTC, the page is showing 11.2, the buckets were
+built from 11.8 — the 05:30 tick, the last before the freeze — and the second reading landed six
+hours after they stopped moving. The buckets are not wrong; they are a correct record of what was known at
 08:00 — and the log says what that was, rather than leaving it to be inferred.
 
 That last part is why both readings are kept. A single entry carrying only the later `observed`

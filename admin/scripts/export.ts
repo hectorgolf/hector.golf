@@ -17,7 +17,7 @@
  * It exports only what the admin can author, which today is matchplay events and
  * nothing else. Firestore holds players and the other event formats too, but as
  * a mirror the admin reads, not as their source: three scheduled jobs write
- * player files and two write Hector events, twice a day in the handicaps case.
+ * player files and two write Hector events, on every tick in the handicaps case.
  * Exporting those would publish a stale mirror over a fresh scrape and revert it
  * silently — the scrape's own commit would look like the losing side of a merge
  * nobody performed. A collection joins this list on the day the admin can author

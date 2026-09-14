@@ -8,10 +8,21 @@ on:
       - 'astrosite/**/*'          # Only run when the push includes changes to the Astro website
       - '.github/workflows/**/*'  # ...or on Github Actions workflows
 
-  # Runs at 3:30am and 12:30 (UTC) every day, hopefully after
-  # the 3:00/12:00 data update has been triggered and finished:
+  # The backstop, not the usual path.
+  #
+  # A data update that commits now asks the admin service to dispatch this
+  # workflow, so a scrape publishes within a minute of finishing rather than
+  # waiting for a clock. This cron covers the day that request fails — and the
+  # `on: push` trigger above, which never fires for a scrape, because a push made
+  # with GITHUB_TOKEN does not trigger workflows.
+  #
+  # 08:00 and 13:00 sit after the data ticks rather than among them: those are
+  # every half hour from 03:00 to 07:30, and once at 12:00, in
+  # terraform/scheduler.tf. This used to be `30 3,12`, which was after the ticks
+  # when there were two of them and would now fire in the middle of the morning
+  # window, backstopping data that had not arrived yet.
   schedule:
-    - cron: "30 3,12 * * *"
+    - cron: "0 8,13 * * *"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:

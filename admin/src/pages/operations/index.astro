@@ -110,10 +110,12 @@ const now = new Date()
 	}
 
 	<p class="lede-note">
-		Cloud Scheduler starts these twice a day, at <strong>03:00</strong> and <strong>12:00 UTC</strong>
-		— one call that runs both, which is why their start times in the log sit within a minute or two of
-		each other. Run one by hand when the data is needed in between, or when the association published
-		handicaps late enough that the midday run was still too early to see them.
+		Cloud Scheduler starts these <strong>every half hour from 03:00 to 07:30 UTC</strong>, and once at
+		<strong>12:00</strong> — one call that runs both, which is why their start times in the log sit
+		within a minute or two of each other. The morning is a window rather than a moment because the
+		association publishes handicaps at no fixed time, and a handicap that lands after the first tee
+		shot is too late to be the one anyone played off. Run one by hand when the data is needed outside
+		those hours.
 	</p>
 
 	{tokenHelp && <GitHubTokenHelp mode={tokenHelp} />}
