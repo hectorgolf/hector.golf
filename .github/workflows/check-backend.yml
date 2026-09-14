@@ -1,6 +1,6 @@
 # Runs the Cloud Functions' test suites on pull requests.
 #
-# Separate from pr-checks.yml and admin-checks.yml for the same reason those are
+# Separate from check-site.yml and check-admin.yml for the same reason those are
 # separate from each other: these are different packages with different failure
 # modes, and one workflow each keeps any of them from going red for another's
 # reasons.
@@ -14,14 +14,18 @@
 # the Functions Framework locally against a freshly built dist/, with placeholder
 # API keys, and every request it makes is answered by a guard clause before the
 # function would call anything.
-name: Backend checks
+#
+# `backend/**` and this file are the whole input set: nothing here reads the root
+# manifest, the root lockfile, or `.node-version` — setup-node pins the runtime
+# version inline instead, to the one the deploy scripts name.
+name: Check backend
 
 on:
   pull_request:
     branches: ["main"]
     paths:
       - 'backend/**'
-      - '.github/workflows/backend-checks.yml'
+      - '.github/workflows/check-backend.yml'
 
 permissions:
   contents: read

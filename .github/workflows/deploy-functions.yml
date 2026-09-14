@@ -91,8 +91,8 @@ jobs:
     name: ${{ matrix.function }}
     runs-on: ubuntu-latest
 
-    # One job per function, and fail-fast off, for the reason backend-checks.yml
-    # is separate from admin-checks.yml: these fail for unrelated reasons, and a
+    # One job per function, and fail-fast off, for the reason check-backend.yml
+    # is separate from check-admin.yml: these fail for unrelated reasons, and a
     # broken leaderboard proxy should not stop the biography generator shipping.
     # The flags mirror the `npm run deploy:*` scripts in package.json exactly —
     # if one changes there, change it here.

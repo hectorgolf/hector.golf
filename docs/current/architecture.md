@@ -596,23 +596,25 @@ second, and the backstop crons land anywhere at all — so all four update workf
 staggered start times that used to keep them apart were never more than a guess about how long each
 one takes.
 
-**The deploy has two triggers, and the cron is not the main one.** `deploy-site.yml` runs on every push to
-`main` whose changes touch `astrosite/**` or `.github/workflows/**`, so ordinary human commits — a
-new event JSON, a component change — rebuild and publish the site immediately.
+**The deploy has three triggers, and the cron is not the main one.** `deploy-site.yml` runs on every
+push to `main` whose changes touch the site or anything it builds from — `astrosite/**`,
+`packages/**`, the root manifest and lockfile, `.node-version`, or `.github/workflows/**` — so
+ordinary human commits, a new event JSON or a component change, rebuild and publish the site
+immediately.
 
-The `30 3,12` cron exists to cover the one case that push cannot: commits made by the data pipeline
-itself. Pushes authenticated with `GITHUB_TOKEN` deliberately do not trigger further workflows, so
-the automated data commits cannot set off `deploy-site.yml`. The cron runs half an hour after the `:00`
-and `:15` data jobs to pick up what they committed.
+Push cannot cover commits made by the data pipeline itself: pushes authenticated with `GITHUB_TOKEN`
+deliberately do not trigger further workflows, so the automated data commits cannot set off
+`deploy-site.yml`. That case is handled by dispatch rather than by the clock. A scrape that has just
+committed calls [`request-deploy`](../../.github/actions/request-deploy/action.yml), which asks the
+admin service to dispatch `deploy-site.yml` — it is in `DISPATCHABLE_WORKFLOWS` in
+[`admin/src/lib/workflows.ts`](../../admin/src/lib/workflows.ts) for exactly this — so a scrape
+publishes within a minute of finishing rather than waiting for a fixed time after it.
 
-**This cron is still a `schedule`, and so is still delivered hours late.** Data that now arrives at
-03:05 can therefore still wait until the middle of the morning to reach the site. Fixing the scrapes
-without fixing this only moves the delay one step down the pipeline. Two ways out, neither taken
-yet: add `deploy-site.yml` to `DISPATCHABLE_WORKFLOWS` in
-[`admin/src/lib/workflows.ts`](../../admin/src/lib/workflows.ts) and give it two more Cloud Scheduler
-jobs at `:30`, or give it a `workflow_run` trigger on the four update workflows — the mechanism
-[`refresh-admin-mirror.yml`](../../.github/workflows/refresh-admin-mirror.yml) already uses, which costs
-nothing and fires as soon as a scrape finishes rather than at a fixed time after it.
+The `0 8,13` cron is the backstop under both of those, for the day the dispatch fails: late is better
+than never. Its hours sit *after* the data ticks rather than among them — those are hourly from 03:00
+to 07:00 and once at 12:00, in `terraform/scheduler.tf`. It used to be `30 3,12`, which was after the
+ticks when there were only two of them and would now fire in the middle of the morning window,
+backstopping data that had not arrived yet.
 
 **Why `update-leaderboards` is different.** Alone among the four, it writes its output through the
 **GitHub Contents API** (Octokit `createOrUpdateFileContents` against
@@ -671,12 +673,14 @@ and assigns a club **only when exactly one** club matches.
 
 | Workflow | Trigger | Runs | Permissions |
 | --- | --- | --- | --- |
-| `deploy-site.yml` | Push to `main` touching `astrosite/**` or workflows; cron `30 3,12 * * *`; manual | `withastro/action@v6` → `actions/deploy-pages@v5` | `contents: read`, `pages: write`, `id-token: write` |
-| `pr-checks.yml` | PRs targeting `main` | `npm ci` → `npm test` → `npm run build` | `contents: read` |
+| `deploy-site.yml` | Push to `main` touching `astrosite/**`, `packages/**`, the root manifest/lockfile, `.node-version`, or any workflow; cron `0 8,13 * * *`; dispatched by the admin service after a data update; manual | `npm ci` → `astro build` → `actions/deploy-pages@v5` | `contents: read`, `pages: write`, `id-token: write` |
+| `check-site.yml` | PRs targeting `main` touching `astrosite/**`, `packages/**`, the root manifest/lockfile, `.node-version`, or this file | `npm ci` → `npm test` → `npm run build` | `contents: read` |
+| `check-admin.yml` | PRs targeting `main` touching `admin/**`, `packages/**`, the root manifest/lockfile, `.node-version`, `.dockerignore`, or this file | `npm ci` → test → build → `docker build` of `admin/Dockerfile` | `contents: read` |
+| `check-backend.yml` | PRs targeting `main` touching `backend/**` or this file | `npm ci` → `npm test` → `npm run typecheck` in `backend/backend-functions` | `contents: read` |
 | `update-handicaps.yml` | Dispatched by the admin service at 03:00/12:00 UTC; cron `0 3,13 * * *` as a backstop; manual | Script + `commit-changes.sh` | `contents: write` |
 | `terraform-plan.yml` | PRs touching `terraform/**` | `fmt` → `init` → `validate` → `plan`, posted as a PR comment | `contents: read`, `id-token: write`, `pull-requests: write` |
 | `terraform-apply.yml` | Push to `main` touching `terraform/**`; manual | `terraform apply`, gated by the `infrastructure` environment | `contents: read`, `id-token: write` |
-| `deploy-admin.yml` | Push to `main` touching `admin/**`; manual | Build, push to Artifact Registry, `gcloud run deploy` | `contents: read`, `id-token: write` |
+| `deploy-admin.yml` | Push to `main` touching `admin/**`, `packages/**`, the root manifest/lockfile, `.node-version`, `.dockerignore`, or this file; manual | Build, push to Artifact Registry, `gcloud run deploy` | `contents: read`, `id-token: write` |
 | `deploy-functions.yml` | Push to `main` touching `backend/backend-functions/**`; manual | `gcloud functions deploy` for each of the four functions, in parallel, with `--service-account` and `--set-secrets` | `contents: read`, `id-token: write` |
 | `update-leaderboards.yml` | Dispatched by the admin service at 03:00/12:00 UTC; cron `15 3,12 * * *` as a backstop; manual | Script + `commit-changes.sh` | `contents: write` |
 | `update-player-biographies.yml` | Cron `30 2 10,25 * *`; manual | Script + `commit-changes.sh` | `contents: write` |
@@ -767,7 +771,7 @@ The substance lives in `backend/backend-functions/src/lib/prompts/`:
   format and row headings and emits a decision log alongside its output.
 
 **Deployment is CI's, since 2026-09-14.** `deploy-functions.yml` ships all four on every push to
-`main` touching `backend/backend-functions/**` (§9), and `backend-checks.yml` runs the test suite on
+`main` touching `backend/backend-functions/**` (§9), and `check-backend.yml` runs the test suite on
 pull requests. The `npm run deploy:*` scripts still exist and pass the same flags, so a laptop deploy
 and a CI deploy produce the same function.
 

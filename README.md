@@ -197,6 +197,7 @@ not:
 
 ## Documentation
 
-**The CI/CD table in `docs/current/architecture.md` §9 is missing rows.** `admin-checks.yml`,
-`backend-checks.yml`, `export-admin-data.yml` and `refresh-admin-mirror.yml` are not in it. Noticed
-while adding `deploy-functions.yml` to that table; left alone at the time to keep the diff narrow.
+**The CI/CD table in `docs/current/architecture.md` §9 is missing rows.** `export-admin-data.yml`
+and `refresh-admin-mirror.yml` are not in it. Noticed while adding `deploy-functions.yml` to that
+table; left alone at the time to keep the diff narrow. The two check workflows were added to it when
+they were renamed to `check-*.yml`, since that change was about their triggers anyway.

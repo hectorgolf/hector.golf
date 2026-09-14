@@ -1,9 +1,10 @@
 # Builds the admin service and rolls it out to Cloud Run.
 #
-# This workflow is inert until an `admin/` directory with a Dockerfile exists —
-# nothing matches its paths filter before then, so it will not run and will not
-# fail. It is committed alongside the infrastructure so that the deploy path is
-# reviewed once, up front, rather than improvised on the day the app is ready.
+# This workflow was committed alongside the infrastructure, before the app it
+# deploys existed, so that the deploy path was reviewed once, up front, rather
+# than improvised on the day the app was ready. It is inert until `admin/`
+# contains a Dockerfile: the guard step below skips the deploy and says so,
+# rather than failing.
 #
 # The build context is the repository root, not admin/, because the app imports
 # @hector/ui through the npm workspace. The image is built in the runner and
@@ -14,11 +15,29 @@
 # policies in terraform/artifact_registry.tf.
 name: Deploy admin.hector.golf
 
+# The paths filter is the image's whole input set, not just admin/. The build
+# context is the repository root, so a change to anything the Dockerfile copies
+# in has to reach here: the workspace packages admin imports, the root manifest
+# and lockfile `npm ci` installs from, the Node version it installs under, and
+# the root .dockerignore that decides what the context contains at all.
+#
+# `admin/**` alone was the filter until this was noticed, and it was the worst
+# place in the repo to have this gap: a merge that only touched packages/ui
+# passed check-admin.yml, went green, and then never deployed, leaving Cloud Run
+# serving the old shared UI indefinitely. deploy-site.yml has a cron that
+# eventually covers for the same mistake; this has nothing. The list mirrors
+# check-admin.yml, which builds the same image on the pull request.
 on:
   push:
     branches: ["main"]
     paths:
       - 'admin/**'
+      - 'packages/schemas/**'
+      - 'packages/ui/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.node-version'
+      - '.dockerignore'
       - '.github/workflows/deploy-admin.yml'
   workflow_dispatch:
 

@@ -370,7 +370,7 @@ rejects an empty list on its own, so the failure is loud from either direction.
 Finally, under **Settings → Environments**, create an environment called **`infrastructure`** and add
 yourself as a required reviewer. That is the approval gate on `terraform apply`.
 
-> Use a new environment, not the existing `production` one. `deploy-site.yml` and `pr-checks.yml` already
+> Use a new environment, not the existing `production` one. `deploy-site.yml` and `check-site.yml` already
 > use `production`, so adding reviewers there would make every site deploy and every PR check wait
 > for a human.
 
