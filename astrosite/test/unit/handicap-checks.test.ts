@@ -1,10 +1,5 @@
 import { expect, describe, it } from 'vitest'
-import {
-    type HandicapCheck,
-    schema,
-    latestCheck,
-    lastCheckedFor,
-} from '@hector/schemas/src/handicap-checks.ts'
+import { type HandicapCheck, schema, lastCheckedFor } from '@hector/schemas/src/handicap-checks.ts'
 
 /**
  * The sweep log: that we looked, as opposed to what we found. `handicaps.json`
@@ -34,29 +29,6 @@ describe('the handicap check schema', () => {
         const { skipped, ...withoutSkipped } = morning
         expect(schema.safeParse(withoutSkipped).success).toBe(false)
         expect(schema.parse({ ...morning, skipped: [] }).skipped).toEqual([])
-    })
-})
-
-describe('latestCheck()', () => {
-    it('is the most recent sweep', () => {
-        expect(latestCheck([morning, midday, nextMorning])).toEqual(nextMorning)
-    })
-
-    it('does not depend on the order the log happens to be in', () => {
-        expect(latestCheck([nextMorning, morning, midday])).toEqual(nextMorning)
-    })
-
-    it('is the most recent sweep at or before an instant', () => {
-        // The argument that makes a frozen event answerable: sweeps carry on twice a
-        // day for years after a split settles, and the one that explains the split is
-        // the last one before it.
-        expect(latestCheck([morning, midday, nextMorning], '2026-09-14T12:01:18Z')).toEqual(midday)
-        expect(latestCheck([morning, midday, nextMorning], '2026-09-14T12:01:17Z')).toEqual(morning)
-    })
-
-    it('is undefined when nothing had been swept yet', () => {
-        expect(latestCheck([])).toBeUndefined()
-        expect(latestCheck([midday, nextMorning], '2026-09-14T03:00:00Z')).toBeUndefined()
     })
 })
 

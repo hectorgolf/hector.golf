@@ -1,6 +1,6 @@
 import { type HectorEvent } from "@hector/schemas/src/events.ts";
 import { type HandicapHistoryEntry } from "@hector/schemas/src/handicaps.ts";
-import { type HandicapCheck, latestCheck, lastCheckedFor } from "@hector/schemas/src/handicap-checks.ts";
+import { type HandicapCheck, lastCheckedFor } from "@hector/schemas/src/handicap-checks.ts";
 import { isoInstantNow, isoDate } from "@hector/schemas/src/dates.ts";
 import { bucketsFreezeAt, hectorEvents } from "./data";
 import { getPlayerById, getPlayerName, getPlayerHandicapHistoryById } from "./players";
@@ -63,8 +63,18 @@ export type FieldHandicapEntry = {
  * provisional one without reimplementing the rule. Null for an event whose start
  * date cannot be resolved to one, which no committed Hector currently is.
  *
- * `handicaps_checked` is the field-wide version of a player's `observed`, so a page
- * can say "handicaps last checked at ..." without scanning the array.
+ * `handicaps_checked` is the field-wide freshness guarantee: the *oldest*
+ * `playing.observed` in the file, so "every handicap here was checked at least this
+ * recently" is true of all of them. A page can say "handicaps last checked at ..."
+ * from it without scanning the array.
+ *
+ * It was the latest sweep at or before the event's last day, which is a different and
+ * weaker thing: a sweep is field-wide, and the latest one may have skipped somebody
+ * in *this* field — so the number could claim a freshness no player in it had. The
+ * oldest of the per-player stamps cannot contradict them, because it is one of them.
+ *
+ * Null when any player in the field has never been checked, because then there is no
+ * such guarantee to make. That covers every event older than the sweep log.
  */
 export type FieldHandicapsPayload = {
     event: string;
@@ -111,6 +121,24 @@ const byPlayingHandicapThenName = (a: FieldHandicapEntry, b: FieldHandicapEntry)
         return x - y;
     }
     return a.name.localeCompare(b.name);
+};
+
+/**
+ * The oldest `playing.observed` in the field — what the whole file is at least as
+ * fresh as.
+ *
+ * One unchecked player and there is no guarantee left to make, so the answer is
+ * null rather than the oldest of the others: "all of these were checked by X" has to
+ * be true of all of them or it is not worth publishing.
+ */
+const freshnessGuarantee = (handicaps: readonly FieldHandicapEntry[]): string | null => {
+    if (handicaps.length === 0) return null;
+    let oldest: string | null = null;
+    for (const player of handicaps) {
+        if (player.playing.observed === null) return null;
+        if (oldest === null || player.playing.observed < oldest) oldest = player.playing.observed;
+    }
+    return oldest;
 };
 
 /** A player's placement in the split, and the handicap it was drawn on. */
@@ -207,11 +235,14 @@ export function fieldHandicaps(event: HectorEvent, now: Date = new Date()): Fiel
         checks: getHandicapChecks(),
     };
     const split = placements(event.id);
+    const handicaps = event.participants.map((id) => entryFor(id, bases, split)).sort(byPlayingHandicapThenName);
     return {
         event: event.id,
         generatedAt: isoInstantNow(now),
         bucket_freeze: bucketFreeze,
-        handicaps_checked: latestCheck(bases.checks, bases.checked.playing)?.at ?? null,
-        handicaps: event.participants.map((id) => entryFor(id, bases, split)).sort(byPlayingHandicapThenName),
+        // Derived from the entries rather than from the log, so it cannot disagree
+        // with them: it is one of the values above, not a fourth reading of the log.
+        handicaps_checked: freshnessGuarantee(handicaps),
+        handicaps,
     };
 }

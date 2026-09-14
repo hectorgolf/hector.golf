@@ -56,22 +56,6 @@ export function compareChecks(a: HandicapCheck, b: HandicapCheck): number {
 }
 
 /**
- * The most recent sweep at or before an instant, or the most recent of all when no
- * instant is given.
- *
- * The `asOf` argument is what makes a frozen event answerable. A Hector's buckets
- * settle on the first morning and the sweeps carry on twice a day for years
- * afterwards, so "when had we last checked" has to be asked as of the freeze or it
- * reports a sweep that happened long after the split it is supposed to explain.
- */
-export function latestCheck(checks: readonly HandicapCheck[], asOf?: string): HandicapCheck | undefined {
-    return [...checks]
-        .sort(compareChecks)
-        .filter((check) => !asOf || check.at <= asOf)
-        .at(-1);
-}
-
-/**
  * When a player's handicap was last checked, as of an instant.
  *
  * The latest sweep that did not skip them. A player the sources have never answered

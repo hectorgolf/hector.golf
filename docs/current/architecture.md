@@ -179,7 +179,12 @@ tell a settled split from a provisional one without reimplementing the rule; `bu
 `data.ts` is that rule, and `bucketsAreOpen()` is now defined in terms of it so the two cannot drift.
 
 Each basis's `observed` is when we last *asked* the sources about that player — the same question at
-the two ends of an event — and `handicaps_checked` is it for the field as a whole. Not when the handicap last changed: a handicap that has not moved since August is no less
+the two ends of an event. `handicaps_checked` is the field-wide **guarantee**: the oldest
+`playing.observed` in the file, so every handicap in it was checked at least that recently. It is
+derived from the entries rather than read from the log a third time, because the latest sweep is a
+weaker and different thing — a sweep is field-wide, and the latest one may have skipped somebody in
+*this* field, so it could claim a freshness no player in the file had. Null when any player has never
+been checked, because then there is no guarantee to make. Not when the handicap last changed: a handicap that has not moved since August is no less
 current for it, and "we checked at 03:02 and it is still 15.4" is what answers a player whose eBirdie
 shows something else. Each is read as of the moment its handicap settled, `bucket_freeze` and the
 event's last day respectively, because a sweep that ran after a split settled cannot be what the
