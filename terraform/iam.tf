@@ -230,8 +230,13 @@ resource "google_service_account" "functions_deployer" {
 # uploads through a signed URL it gets from generateUploadUrl, which
 # cloudfunctions.developer already covers.
 #
-# The likeliest genuine addition is serviceAccountUser on the Cloud Build
-# builder identity, since a gen2 deploy runs a build as it. Wait for the error.
+# Two additions did turn out to be needed, both from real errors on the first CI
+# deploys, and both further down this file: serviceAccountUser on
+# functions_builder, and — instead of a run permission — moving the allUsers
+# binding to cloud_run.tf so no deploy has to write IAM at all. The list has not
+# grown since; if a third looks necessary, read those two comments first,
+# because in both cases the error recommended something much broader than the
+# job needed.
 resource "google_project_iam_member" "functions_deployer_deploy" {
   project = var.project_id
   role    = "roles/cloudfunctions.developer"
