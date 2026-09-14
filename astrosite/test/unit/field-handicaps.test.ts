@@ -68,10 +68,16 @@ describe('fieldHandicaps()', () => {
         })
 
         it('gives every entry the same keys, whatever is known about the player', () => {
-            const keys = ['id', 'name', 'bucket', 'bucketing_hcp', 'bucketing_hcp_observed', 'playing_hcp', 'playing_hcp_date']
+            const keys = ['id', 'name', 'bucketing', 'playing']
             for (const event of [hector2026(), hector2014()]) {
                 for (const entry of fieldHandicaps(event).handicaps) {
                     expect(Object.keys(entry), `${event.id}/${entry.id}`).toEqual(keys)
+                    expect(Object.keys(entry.bucketing), `${event.id}/${entry.id}`).toEqual([
+                        'bucket',
+                        'hcp',
+                        'observed',
+                    ])
+                    expect(Object.keys(entry.playing), `${event.id}/${entry.id}`).toEqual(['hcp', 'observed'])
                 }
             }
         })
@@ -85,42 +91,48 @@ describe('fieldHandicaps()', () => {
 
         it('is ordered lowest playing handicap first', () => {
             const handicaps = fieldHandicaps(hector2026())
-                .handicaps.map((p) => p.playing_hcp)
+                .handicaps.map((p) => p.playing.hcp)
                 .filter((h): h is number => h !== null)
             expect(handicaps).toEqual(handicaps.slice().sort((a, b) => a - b))
         })
 
-        it('dates a handicap only where the log accounts for it', () => {
-            for (const event of [hector2026(), hector2014()]) {
-                for (const player of fieldHandicaps(event).handicaps) {
-                    if (player.bucketing_hcp === null) expect(player.bucketing_hcp_observed).toBeNull()
-                    if (player.playing_hcp === null) expect(player.playing_hcp_date).toBeNull()
-                }
-            }
-        })
-
-        it('stamps the bucketing handicap with a moment, not a day', () => {
-            // The point of the timestamp is explaining a player whose eBirdie shows
+        it('stamps both handicaps with a moment, not a day', () => {
+            // The point of the timestamps is explaining a player whose eBirdie shows
             // something else: the gap is timing, and a date alone cannot show it.
             for (const id of ['HECTOR2026', 'HECTOR2025', 'HECTOR2024', 'HECTOR2014']) {
                 for (const player of fieldHandicaps(eventById(id)).handicaps) {
-                    if (player.bucketing_hcp_observed !== null) {
-                        expect(isValidIsoInstant(player.bucketing_hcp_observed), `${player.id} in ${id}`).toBe(true)
+                    for (const stamp of [player.bucketing.observed, player.playing.observed]) {
+                        if (stamp !== null) expect(isValidIsoInstant(stamp), `${player.id} in ${id}`).toBe(true)
                     }
                 }
             }
         })
 
-        it('never dates a handicap later than the day it is read as of', () => {
+        it('never cites a sweep from after the handicap it stamps was settled', () => {
             for (const id of ['HECTOR2026', 'HECTOR2025', 'HECTOR2024', 'HECTOR2014']) {
                 const event = eventById(id)
-                for (const player of fieldHandicaps(event).handicaps) {
-                    if (player.bucketing_hcp_observed !== null) {
-                        const day = player.bucketing_hcp_observed.slice(0, 10)
-                        expect(day <= event.timing.start, `${player.id} in ${id}`).toBe(true)
+                const payload = fieldHandicaps(event)
+                for (const player of payload.handicaps) {
+                    if (player.bucketing.observed !== null) {
+                        expect(player.bucketing.observed <= payload.bucket_freeze!, `${player.id} in ${id}`).toBe(
+                            true,
+                        )
                     }
-                    if (player.playing_hcp_date !== null) {
-                        expect(player.playing_hcp_date <= event.timing.end, `${player.id} in ${id}`).toBe(true)
+                    if (player.playing.observed !== null) {
+                        const day = player.playing.observed.slice(0, 10)
+                        expect(day <= event.timing.end, `${player.id} in ${id}`).toBe(true)
+                    }
+                }
+            }
+        })
+
+        it('stamps the playing handicap no earlier than the bucketing one', () => {
+            // The two are the same question asked at the two ends of an event, so the
+            // later end cannot cite an earlier sweep.
+            for (const id of ['HECTOR2026', 'HECTOR2025', 'HECTOR2024']) {
+                for (const player of fieldHandicaps(eventById(id)).handicaps) {
+                    if (player.bucketing.observed !== null && player.playing.observed !== null) {
+                        expect(player.playing.observed >= player.bucketing.observed, player.id).toBe(true)
                     }
                 }
             }
@@ -134,13 +146,13 @@ describe('fieldHandicaps()', () => {
             expect(committed.buckets!.length).toBe(2)
             committed.buckets!.forEach((bucket, index) => {
                 for (const player of bucket) {
-                    expect(byId.get(player.id)!.bucket, player.id).toBe(index + 1)
+                    expect(byId.get(player.id)!.bucketing.bucket, player.id).toBe(index + 1)
                 }
             })
         })
 
         it('is null for a player in an event with no split', () => {
-            expect(fieldHandicaps(hector2014()).handicaps.every((p) => p.bucket === null)).toBe(true)
+            expect(fieldHandicaps(hector2014()).handicaps.every((p) => p.bucketing.bucket === null)).toBe(true)
         })
     })
 
@@ -151,7 +163,7 @@ describe('fieldHandicaps()', () => {
             const bucketed = committed.buckets!.flat()
             expect(bucketed.length).toBeGreaterThan(0)
             for (const player of bucketed) {
-                expect(byId.get(player.id)!.bucketing_hcp).toBe(player.handicap)
+                expect(byId.get(player.id)!.bucketing.hcp).toBe(player.handicap)
             }
         })
 
@@ -166,8 +178,8 @@ describe('fieldHandicaps()', () => {
             const victim = event.buckets![0][0]
             victim.handicap = 99.9
             const published = fieldHandicaps(event).handicaps.find((p) => p.id === victim.id)!
-            expect(published.bucketing_hcp).toBe(committed.buckets![0][0].handicap)
-            expect(published.bucketing_hcp).not.toBe(99.9)
+            expect(published.bucketing.hcp).toBe(committed.buckets![0][0].handicap)
+            expect(published.bucketing.hcp).not.toBe(99.9)
         })
 
         it('stops moving on the first morning, while the playing handicap does not', () => {
@@ -175,7 +187,7 @@ describe('fieldHandicaps()', () => {
             const mid = fieldHandicaps(event, new Date('2026-09-26T10:00:00Z'))
             const before = fieldHandicaps(event, wellBefore)
             // Read as of the 24th on both counts, so mid-event and a week out agree.
-            expect(mid.handicaps.map((p) => p.bucketing_hcp)).toEqual(before.handicaps.map((p) => p.bucketing_hcp))
+            expect(mid.handicaps.map((p) => p.bucketing.hcp)).toEqual(before.handicaps.map((p) => p.bucketing.hcp))
         })
 
         it('falls back to the log for an event with no split', () => {
@@ -183,26 +195,26 @@ describe('fieldHandicaps()', () => {
             // nothing to offer and says so rather than reaching forward.
             const payload = fieldHandicaps(hector2014())
             expect(payload.handicaps.length).toBeGreaterThan(0)
-            expect(payload.handicaps.every((p) => p.bucketing_hcp === null)).toBe(true)
+            expect(payload.handicaps.every((p) => p.bucketing.hcp === null)).toBe(true)
         })
     })
 
     describe('the playing handicap', () => {
         it('is what the rest of the site reports while the event is live', () => {
             for (const player of fieldHandicaps(hector2026()).handicaps) {
-                expect(player.playing_hcp).toBe(getPlayerById(player.id)?.handicap ?? null)
+                expect(player.playing.hcp).toBe(getPlayerById(player.id)?.handicap ?? null)
             }
         })
 
         it('is the handicap a past event was actually played off', () => {
             const event = eventById('HECTOR2024')
-            const played = fieldHandicaps(event).handicaps.filter((p) => p.playing_hcp !== null)
+            const played = fieldHandicaps(event).handicaps.filter((p) => p.playing.hcp !== null)
             expect(played.length).toBeGreaterThan(0)
             for (const player of played) {
                 const atTheTime = getPlayerHandicapHistoryById(player.id)
                     .filter((entry) => entry.date <= event.timing.end)
                     .at(-1)
-                expect(player.playing_hcp).toBe(atTheTime?.handicap)
+                expect(player.playing.hcp).toBe(atTheTime?.handicap)
             }
         })
 
@@ -211,7 +223,7 @@ describe('fieldHandicaps()', () => {
             // day. An event where the two never differ would mean one of them is not
             // being read as of what it claims.
             const payload = fieldHandicaps(eventById('HECTOR2024'))
-            const moved = payload.handicaps.filter((p) => p.bucketing_hcp !== p.playing_hcp)
+            const moved = payload.handicaps.filter((p) => p.bucketing.hcp !== p.playing.hcp)
             expect(moved.length).toBeGreaterThan(0)
         })
 
@@ -220,17 +232,19 @@ describe('fieldHandicaps()', () => {
             // played off in 2014, and saying today's instead would be a lie about an
             // archived field rather than a gap in it.
             const payload = fieldHandicaps(hector2014())
-            expect(payload.handicaps.every((p) => p.playing_hcp === null)).toBe(true)
+            expect(payload.handicaps.every((p) => p.playing.hcp === null)).toBe(true)
         })
     })
 })
 
 /**
- * `bucketing_hcp_observed` and `handicaps_checked` come from the sweep log, which
- * records that we looked whether or not anything had moved. The committed log is
- * empty until the first sweep after this ships, so what can be asserted against the
- * real data is the shape and the cutoffs; `handicap-checks.test.ts` carries the
- * selection rules themselves, against sweeps it can actually construct.
+ * `bucketing.observed`, `playing.observed` and `handicaps_checked` all come from the
+ * sweep log, which records that we looked whether or not anything had moved.
+ *
+ * What is asserted here is the shape and the cutoffs against the committed log,
+ * which only reaches back to the day the log was introduced — so every event before
+ * that publishes nulls, and will for good. `handicap-checks.test.ts` carries the
+ * selection rules themselves, against sweeps it can construct freely.
  */
 describe('when the handicaps were last checked', () => {
     it('is never a sweep that ran after the split froze', () => {
@@ -240,8 +254,8 @@ describe('when the handicaps were last checked', () => {
         const payload = fieldHandicaps(eventById('HECTOR2026'))
         const freeze = payload.bucket_freeze!
         for (const player of payload.handicaps) {
-            if (player.bucketing_hcp_observed !== null) {
-                expect(player.bucketing_hcp_observed <= freeze, `${player.id}`).toBe(true)
+            if (player.bucketing.observed !== null) {
+                expect(player.bucketing.observed <= freeze, `${player.id}`).toBe(true)
             }
         }
     })
@@ -257,7 +271,7 @@ describe('when the handicaps were last checked', () => {
     it('is null throughout for an event older than the sweep log', () => {
         const payload = fieldHandicaps(eventById('HECTOR2014'))
         expect(payload.handicaps_checked).toBeNull()
-        expect(payload.handicaps.every((p) => p.bucketing_hcp_observed === null)).toBe(true)
+        expect(payload.handicaps.every((p) => p.bucketing.observed === null)).toBe(true)
     })
 
     it('does not claim a sweep that postdates a finished event', () => {
@@ -288,7 +302,7 @@ describe('a finished event, a decade later', () => {
         const event = eventById('HECTOR2025')
         const now = fieldHandicaps(event)
         const later = fieldHandicaps(event, aDecadeOn)
-        expect(later.handicaps.map((p) => [p.id, p.bucket])).toEqual(now.handicaps.map((p) => [p.id, p.bucket]))
+        expect(later.handicaps.map((p) => [p.id, p.bucketing.bucket])).toEqual(now.handicaps.map((p) => [p.id, p.bucketing.bucket]))
     })
 
     it('publishes the same handicaps as it does today', () => {
@@ -305,8 +319,8 @@ describe('a finished event, a decade later', () => {
         const byId = new Map(fieldHandicaps(eventById('HECTOR2025'), aDecadeOn).handicaps.map((p) => [p.id, p]))
         committed.buckets!.forEach((bucket, index) => {
             for (const player of bucket) {
-                expect(byId.get(player.id)!.bucket, player.id).toBe(index + 1)
-                expect(byId.get(player.id)!.bucketing_hcp, player.id).toBe(player.handicap)
+                expect(byId.get(player.id)!.bucketing.bucket, player.id).toBe(index + 1)
+                expect(byId.get(player.id)!.bucketing.hcp, player.id).toBe(player.handicap)
             }
         })
     })
