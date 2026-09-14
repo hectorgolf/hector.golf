@@ -57,12 +57,16 @@ underlying Cloud Run service also has its own URL, of the shape
 `https://tournamentleaderboard-kjr7ijzijq-lz.a.run.app`, with a generated suffix you cannot predict
 before deploying. Both currently return 200.
 
-Everything written down here — `backend/README.md`, `.env.sample`, `architecture.md` §10, the avatar
-CLI's URL builder — uses the `cloudfunctions.net` form. The live `PUBLIC_LEADERBOARD_PROXY_URL`
-repository variable does not: it holds the `run.app` form, set by hand in 2026-09. So phase 6 step 1
-is not a like-for-like swap of one project name for another, and reading the new URL off
-`gcloud functions describe … --format="value(serviceConfig.uri)"` gives you the `run.app` form.
-Prefer the `cloudfunctions.net` form, which is the one the rest of the repository documents.
+Standardise on the `cloudfunctions.net` alias: it is what the repository already documents
+everywhere, and unlike the `run.app` form it is derivable from the project and function name rather
+than having to be read back after a deploy. Note that
+`gcloud functions describe … --format="value(serviceConfig.uri)"` gives you the *`run.app`* form, so
+it is the wrong thing to paste.
+
+The one place holding a `run.app` URL is the `PUBLIC_LEADERBOARD_PROXY_URL` repository variable, set
+by hand in 2026-09. That is worth knowing before phase 6 because of what it implies: the value has
+no project name in it, so it cannot be reached by substituting one project for another, and it is
+not in the tree at all, so no grep will find it. The inventory in phase 6 says what to change where.
 
 ## Before you start
 
@@ -390,21 +394,50 @@ than during cutover.
 so the site has to be rebuilt before visitors reach the new function, and the old one has to stay up
 until every cached build is gone.
 
-1. Set the `PUBLIC_LEADERBOARD_PROXY_URL` repository variable to the new URL. It currently holds a
-   `run.app` URL rather than a `cloudfunctions.net` one — see "the URLs change" above before
-   assuming this is a search-and-replace of the project name.
-2. Trigger [`deploy.yml`](../../.github/workflows/deploy.yml) — pushing to `main` or dispatching it —
-   and wait for Pages to serve the rebuilt site. Load a leaderboard page and watch the network tab
-   hit `hector-golf`.
+### What actually has to change, and where
+
+Worth reading before touching anything, because the obvious sweep — find every `run.app` URL and
+replace it with the alias — does none of the work and breaks a test. **There are no function
+`run.app` URLs in the tree.** There are two substitutions with different search patterns, plus one
+change no grep can reach.
+
+| where | holds | do |
+| --- | --- | --- |
+| **`PUBLIC_LEADERBOARD_PROXY_URL`** repository variable | ~~`tournamentleaderboard-…-lz.a.run.app`~~ → the alias | **Done 2026-09-14.** It reads `https://europe-north1-hector-golf.cloudfunctions.net/TournamentLeaderboard`. Recorded because it is the one row no grep can check: the value lives in GitHub settings, not the tree, and it was composed rather than substituted — the old value had no project name in it |
+| [`update-player-biographies.ts:174`](../../astrosite/src/workflows/update-player-biographies.ts) | old project, alias form | swap the project name — a code change |
+| [`backend/README.md`](../../backend/README.md) :79 :82 :94 :153 | old project, alias form | swap the project name |
+| `astrosite/.env.sample`, `backend/backend-functions/.env.sample`, [`architecture.md`](../current/architecture.md) §10 | `<project>` placeholder | already generic — leave alone |
+| [`generate-player-avatar.ts:35`](../../backend/backend-functions/src/cli/generate-player-avatar.ts) | built from `FUNCTION_REGION` + `GCLOUD_PROJECT_ID` | no code change; the local `.env` is what moves, in step 4 |
+| `admin/test/origin.test.ts:40` | `hector-admin-…-lz.a.run.app` | **do not touch.** The admin Cloud Run service, not a function, and the test asserts run.app behaviour — rewriting it inverts the assertion |
+
+So: `gen-lang-client-0537211409` → `hector-golf` in five places that are already in alias form, one
+repository variable set to a value that has to be composed rather than edited, and one `run.app` URL
+that must survive untouched.
+
+### The ordered steps
+
+1. Set the `PUBLIC_LEADERBOARD_PROXY_URL` repository variable, per the first row above. **Done on
+   2026-09-14**, which starts the clock described below.
+2. Trigger [`deploy.yml`](../../.github/workflows/deploy.yml) and wait for Pages to serve the
+   rebuilt site. Load a leaderboard page and watch the network tab hit `hector-golf`.
+
+   **Step 1 already commits you to this, whether or not you run it.** `deploy.yml` fires on a
+   schedule as well as on a push — `cron: "30 3,12 * * *"` — so the next scheduled build picks up
+   the new variable and cuts the site over unattended, within twelve hours of the variable changing.
+   Pushing or dispatching only decides *when*.
+
+   Two consequences. Setting the variable is the irreversible-ish moment of this phase rather than a
+   preparatory step, so do not set it until phase 5 has actually passed against the new function.
+   And a push to `main` that touches `astrosite/**` or `.github/workflows/**` triggers the same
+   thing incidentally; a docs-only commit does not.
 3. Merge the URL change in
    [`update-player-biographies.ts:174`](../../astrosite/src/workflows/update-player-biographies.ts).
    This one is hardcoded, so it is a code change rather than a variable.
 4. Update `FUNCTION_REGION` and `GCLOUD_PROJECT_ID` in your local `.env` — that is all the avatar
    CLI and [`generate-avatars.sh`](../../backend/backend-functions/generate-avatars.sh) need, since
    they build the URL from those.
-5. Update the documentation: [`backend/README.md`](../../backend/README.md) has the URL in four places,
-   [`architecture.md`](../current/architecture.md) §10 has the base-URL template, and
-   [`.env.sample`](../../astrosite/.env.sample) has the placeholder form.
+5. Update the documentation — the `backend/README.md` row above. `architecture.md` §10 and both
+   `.env.sample` files need nothing, being placeholders already.
 
 Leave both sets running. Nothing is saved by hurrying the next phase.
 
