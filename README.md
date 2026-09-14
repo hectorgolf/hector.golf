@@ -10,11 +10,15 @@ did it.
 
 ## Billing
 
-**A second budget nobody's Terraform owns.** "€1 Monthly Budget Alert", with no project filter, so
-it spans the whole billing account rather than `hector-golf`. It is the likelier source of any alert
-mail that already looks like noise, and it is worth either adopting or deleting before judging the
-managed one — "hector.golf - alert above EUR 2/month", which
-[`docs/current/gcp-setup.md`](docs/current/gcp-setup.md) describes.
+**Two projects on the billing account have no budget of their own.** `koskela-automation` and
+`gen-lang-client-0537211409` (created by AI Studio) bill to the same account as `hector-golf` and
+are watched only by the account-wide backstop, which by design notices a spike and not a steady
+leak — a few euros a month in either stays invisible until it pushes the account total past €4.
+A small budget on each closes that, and leaves the account-wide one with the job nothing else can
+do: catching projects that do not exist yet.
+
+Both budgets that do exist are described in
+[`docs/current/gcp-setup.md`](docs/current/gcp-setup.md).
 
 ## Buried in a `current/` document
 
