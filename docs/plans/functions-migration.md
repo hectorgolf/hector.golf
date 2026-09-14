@@ -104,11 +104,12 @@ accident and it is staying — see "The old project is not deleted" below. Run t
 anyway before phase 7 if time has passed, since the point is to find what nobody remembers putting
 there.
 
-Two service accounts are there as well, and neither blocks anything here. `update-hector-leaderboard@`
-is being retired by [`sheets-credential-wif.md`](sheets-credential-wif.md), whose phase 6 — deleting
-its keys and the account — is the piece of that plan still outstanding. `terraform-deployer` is
-dormant and is in the backlog. Both are recorded in [`../../README.md`](../../README.md); this plan
-does not touch either, and phase 7 does not wait for them.
+One service account is there as well, and it does not block anything here.
+`update-hector-leaderboard@` is being retired by
+[`sheets-credential-wif.md`](sheets-credential-wif.md), whose phase 6 — deleting its keys and the
+account — is the piece of that plan still outstanding. It is recorded in
+[`../../README.md`](../../README.md); this plan does not touch it, and phase 7 does not wait for it.
+`terraform-deployer`, the other account that used to be listed here, was deleted on 2026-09-14.
 
 ## What Terraform owns, and what it does not
 

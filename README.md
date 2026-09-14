@@ -21,13 +21,6 @@ The account goes with the key. It holds `roles/secretmanager.secretAccessor` and
 `roles/cloudbuild.builds.builder` in order to read one spreadsheet — leftovers from a deleted Hello
 World function — so it is worth more gone than kept.
 
-**Decide what to do with `terraform-deployer`.** A dormant identity in the old project, last
-authenticated 2025-04-06, holding `iam.serviceAccountAdmin`, `iam.serviceAccountUser` and
-`storage.admin` — enough to impersonate any service account in the project, including the one above.
-Its one never-used key is deleted; one user-managed key remains. The roles are normal for a Terraform
-identity and the dormancy is the problem, so the suggested order is disable, wait a week, then delete.
-Not urgent, and nothing about it is reachable without existing project access.
-
 ## Billing
 
 **A second budget nobody's Terraform owns.** "€1 Monthly Budget Alert", with no project filter, so
