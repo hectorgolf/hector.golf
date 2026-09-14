@@ -19,7 +19,7 @@ Everything in [`terraform/`](../../terraform/) describes it, and CI applies it:
 | Firestore database, Enterprise edition | The data store. `europe-north1`, native mode, PITR on, delete-protected |
 | Artifact Registry repository | Admin service container images, with cleanup policies |
 | Cloud Run service `hector-admin` | The admin UI and API, scaled to zero, IAP in front of it |
-| Four service accounts | One runtime identity, one for Terraform in CI, one for app deploys, one for the scheduled data updates |
+| Five service accounts | One runtime identity, one for Terraform in CI, one for app deploys, one for the scheduled data updates, and one that reads the leaderboard spreadsheets — the last holding no project roles at all |
 | Workload Identity Federation pool | Keyless GitHub Actions auth — no service account keys anywhere |
 | Secret Manager secret `github-dispatch-token` | The GitHub token the admin dispatches workflows with. Terraform creates the container; step 11 adds the value |
 | Two Cloud Scheduler jobs | Start the data-update workflows on time (03:00 and 12:00 UTC), because GitHub's own cron runs hours late. In `europe-west1`, not `europe-north1` — Cloud Scheduler does not run there |

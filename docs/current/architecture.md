@@ -686,8 +686,7 @@ npm test               # unit + astro suites
 ```
 
 `.env` is mandatory even when it is empty: `env-cmd` wraps every test and workflow script, which is
-why `npm test` begins with `touch .env`. Note that `HECTOR_APP_API_KEY` is used by
-`code/leaderboards/app.ts` and set in CI but is **missing from `.env.sample`**.
+why `npm test` begins with `touch .env`.
 
 ### Running a data workflow manually
 
@@ -700,6 +699,59 @@ npm run update-handicaps                  # or update-leaderboards,
 
 Each writes directly into `src/data/`; review the diff before committing. In CI the same scripts are
 reachable through `workflow_dispatch` on their respective workflows.
+
+#### `update-leaderboards` needs a Google identity
+
+The only one of the four that authenticates to Google. There is no key to paste: it reads
+`HECTOR2024` and `HECTOR2025` as `leaderboard-reader@hector-golf.iam.gserviceaccount.com`, which
+holds no downloadable credential and no project roles — its access to those two spreadsheets is
+that they are shared with its address. Application Default Credentials supplies the identity, and
+there are two ways to set one up.
+
+**As the service account, by impersonation — the one to use.**
+
+```bash
+gcloud auth application-default login \
+  --impersonate-service-account=leaderboard-reader@hector-golf.iam.gserviceaccount.com
+```
+
+Your laptop then runs as exactly the identity CI runs as, so a sheet you can read locally is one CI
+can read. That is the whole reason to prefer it: a sharing mistake reproduces here instead of
+appearing only in Actions. It needs `roles/iam.serviceAccountTokenCreator` on that account, granted
+through the `TF_LEADERBOARD_IMPERSONATORS` repository variable — see
+`leaderboard_reader_impersonators` in [`variables.tf`](../../terraform/variables.tf).
+
+**As yourself.**
+
+```bash
+gcloud auth application-default login
+```
+
+Nothing to grant, and it works because you own the spreadsheets — which is exactly what makes it
+prove less. A local run passes whether or not the sheets have been shared with the service account,
+so it cannot tell you whether CI will work.
+
+Either way, `npm run update-leaderboards` is unchanged, and `.env` is still needed for
+`GITHUB_ACCESS_TOKEN` and `HECTOR_APP_API_KEY`.
+
+Two things that will otherwise cost you an afternoon:
+
+- **`gcloud auth print-access-token --impersonate-service-account` cannot be used to test this.** It
+  ignores `--scopes` for impersonated accounts and hands back a `cloud-platform` token, which the
+  Sheets API rejects as an *unregistered caller* — a message that sounds like a credential problem
+  and is not one. Use `application-default login` above, or mint a scoped token explicitly through
+  `iamcredentials.googleapis.com/v1/…:generateAccessToken` with
+  `{"scope":["https://www.googleapis.com/auth/spreadsheets"]}`.
+- **A 403 is not necessarily about sharing.** `sheets.googleapis.com` has to be enabled in
+  `hector-golf`, because the consumer project of a service account's API calls is the project the
+  account lives in. It is on and in [`apis.tf`](../../terraform/apis.tf); if it is ever turned off,
+  the failure is a 403 naming a project *number*, which reads almost exactly like the
+  sheet-not-shared 403 the code reports.
+
+ADC is still a credential on disk, at `~/.config/gcloud/application_default_credentials.json`. The
+difference from the key this replaced is that it is yours, short-lived, and revocable with
+`gcloud auth application-default revoke`. Expect to re-run the login occasionally; a service account
+key never expired, which is the convenience being traded away and the point of trading it.
 
 ### Adding content
 
