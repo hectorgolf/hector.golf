@@ -192,10 +192,12 @@ resource "google_cloud_scheduler_job" "data_update" {
     uri = "${google_cloud_run_v2_service.admin.uri}/api/workflows/dispatch"
 
     # JSON rather than a form content type, and it matters: Astro's CSRF check
-    # fires on form content types and would reject a POST that arrives without a
-    # browser's Origin header. Sending JSON is what lets one endpoint serve both
-    # this and the button in the UI. The body is empty because the URL already
-    # says everything — which workflow to start.
+    # rejects a cross-origin POST that carries a form content type *or no content
+    # type at all*, and neither this nor curl sends a browser's Origin header.
+    # Sending JSON is what lets one endpoint serve both this and the button in the
+    # UI. The body is empty because the URL already says everything — which
+    # workflow to start. `.github/actions/request-deploy` has to spell the same
+    # request the same way; it did not, and returned 403 until it did.
     headers = {
       "Content-Type" = "application/json"
     }
