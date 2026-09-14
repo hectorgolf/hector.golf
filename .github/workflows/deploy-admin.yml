@@ -12,7 +12,7 @@
 # would auto-create its own `cloud-run-source-deploy` repository, which
 # Terraform does not manage and whose images therefore escape the cleanup
 # policies in terraform/artifact_registry.tf.
-name: Deploy admin service
+name: Deploy admin.hector.golf
 
 on:
   push:
