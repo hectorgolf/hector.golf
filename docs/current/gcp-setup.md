@@ -1,6 +1,7 @@
 # The GCP project
 
-_Describes `hector-golf` as it stands. Last reviewed: 2026-09-14._
+_Describes `hector-golf` as it stands. Last reviewed: 2026-09-14, after the Cloud Functions moved
+in._
 
 What is running in Google Cloud, and which of it cannot be changed. For the procedure that builds
 this from an empty project — whether for a second environment or to recover from losing this one —
@@ -19,27 +20,31 @@ Everything in [`terraform/`](../../terraform/) describes it, and CI applies it:
 | Firestore database, Enterprise edition | The data store. `europe-north1`, native mode, PITR on, delete-protected |
 | Artifact Registry repository | Admin service container images, with cleanup policies |
 | Cloud Run service `hector-admin` | The admin UI and API, scaled to zero, IAP in front of it |
-| Five service accounts | One runtime identity, one for Terraform in CI, one for app deploys, one for the scheduled data updates, and one that reads the leaderboard spreadsheets — the last holding no project roles at all |
+| Eight service accounts | Two runtime identities (the admin service, and the functions), one for Terraform in CI, two for app deploys (the admin, and the functions), one the function builds run as, one for the scheduled data updates, and one that reads the leaderboard spreadsheets. The last holds no project roles at all; the functions' runtime holds none either, only read on three secrets |
+| Cloud Run services for four Cloud Functions | `ExtractScorecardInformation`, `GeneratePlayerBiography`, `GeneratePlayerAvatar`, `TournamentLeaderboard`. Gen2 functions *are* Cloud Run services. CI deploys them; Terraform owns their identities, their secrets and the `allUsers` binding that makes them public, but deliberately not the functions themselves |
 | Workload Identity Federation pool | Keyless GitHub Actions auth — no service account keys anywhere |
-| Secret Manager secret `github-dispatch-token` | The GitHub token the admin dispatches workflows with. Terraform creates the container; step 11 adds the value |
+| Four Secret Manager secrets | `github-dispatch-token` for the admin, and `gemini-api-key`, `astrosite-api-key` and `hector-app-api-key` for the functions. Terraform creates every container and never a value — those go in by hand with `gcloud secrets versions add` |
 | Two Cloud Scheduler jobs | Start the data-update workflows on time, because GitHub's own cron runs hours late. Hourly from 03:00 to 07:00 UTC, covering the early-tee-time window, and once at 12:00. Two jobs, not six: Scheduler bills per job per month, not per execution. In `europe-west1`, not `europe-north1` — Cloud Scheduler does not run there |
 | Billing budget (optional) | Alerts above €2/month |
 
-And three workflows: [`terraform-plan.yml`](../../.github/workflows/terraform-plan.yml) on pull
-requests, [`terraform-apply.yml`](../../.github/workflows/terraform-apply.yml) on merge to `main`, and
-[`deploy-admin.yml`](../../.github/workflows/deploy-admin.yml), which stays inert until an `admin/`
-directory exists.
+And four workflows: [`terraform-plan.yml`](../../.github/workflows/terraform-plan.yml) on pull
+requests, [`terraform-apply.yml`](../../.github/workflows/terraform-apply.yml) on merge to `main`,
+[`deploy-admin.yml`](../../.github/workflows/deploy-admin.yml), and
+[`deploy-functions.yml`](../../.github/workflows/deploy-functions.yml). All four federate through the
+one Workload Identity pool, as separate identities.
 
 ## What is deliberately not here
 
 - **The public site.** `hector.golf` remains a static Astro build on GitHub Pages, deployed by
   the existing [`deploy-site.yml`](../../.github/workflows/deploy-site.yml). Nothing here touches it.
-- **The four existing Cloud Functions** in the old project (`GeneratePlayerBiography`,
-  `GeneratePlayerAvatar`, `ExtractScorecardInformation`, `TournamentLeaderboard`). They are still
-  deployed by hand from a laptop via the npm scripts in
-  [`backend/backend-functions/package.json`](../../backend/backend-functions/package.json). Importing
-  them is worthwhile eventually and is not on the path to a working admin UI. See
-  [§13 of the architecture notes](./architecture.md).
+- **The Cloud Function resources themselves.** The four functions moved into this project on
+  2026-09-14 and are listed above, but no `google_cloudfunctions2_function` describes them: CI
+  deploys them wholesale with `gcloud`, because shipping a new version must not require a
+  `terraform apply`. Terraform owns everything around them — the APIs, the three identities, the
+  secret containers, and the `allUsers` binding in
+  [`cloud_run.tf`](../../terraform/cloud_run.tf) — which is the same division as the admin service.
+- **The four *old* copies** of those functions, still running in `gen-lang-client-0537211409` until
+  they are deleted on 2026-09-21. Nothing points at them.
 - **The Terraform state bucket**, which cannot describe itself. Step 2 creates it by hand; it is the
   one piece of infrastructure not in `terraform/`.
 
