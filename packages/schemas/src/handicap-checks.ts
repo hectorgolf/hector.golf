@@ -46,6 +46,28 @@ export const schema = z.object({
      * checked would repeat the whole roster twice a day.
      */
     skipped: z.array(z.string()),
+
+    /**
+     * True when this entry was reconstructed after the fact rather than written by
+     * the sweep it describes.
+     *
+     * Absent on every entry a real sweep wrote, which is what makes the two tellable
+     * apart forever — the thing that would otherwise be lost, and the reason
+     * `handicaps.json` leaves `observed` off the entries that predate the field
+     * rather than guessing one.
+     *
+     * What a reconstructed entry is derived from, and therefore what it is worth:
+     * `at` is the moment a data commit landed, so a sweep demonstrably ran at or
+     * shortly before it — the read itself was earlier by however long the scrape and
+     * the commit took. Only sweeps that *changed* a handicap left a commit, so the
+     * reconstruction misses every quiet one and is a **lower bound**: the real answer
+     * is never older than this, and is often newer. That is the direction
+     * `handicaps_checked` guarantees in, which is why a lower bound is usable at all.
+     * `skipped` holds the players who had no club in the committed data at that
+     * commit and so could not have been asked about; a player the sources merely
+     * failed on that day is not recoverable, and is counted as checked.
+     */
+    approximate: z.boolean().optional(),
 })
 
 export type HandicapCheck = z.infer<typeof schema>;
@@ -56,7 +78,11 @@ export function compareChecks(a: HandicapCheck, b: HandicapCheck): number {
 }
 
 /**
- * When a player's handicap was last checked, as of an instant.
+ * The sweep that last checked a player, as of an instant.
+ *
+ * Returns the sweep rather than its instant, so a caller can publish `approximate`
+ * alongside `at` — a timestamp that might be reconstructed is worth nothing to a
+ * reader who cannot tell whether it was.
  *
  * The latest sweep that did not skip them. A player the sources have never answered
  * for gets undefined rather than the sweep's own timestamp, which is the point of
@@ -72,12 +98,12 @@ export function lastCheckedFor(
     checks: readonly HandicapCheck[],
     player: string,
     asOf?: string,
-): string | undefined {
+): HandicapCheck | undefined {
     return [...checks]
         .sort(compareChecks)
         .filter((check) => !asOf || check.at <= asOf)
         .filter((check) => !check.skipped.includes(player))
-        .at(-1)?.at;
+        .at(-1);
 }
 
 export default schema;

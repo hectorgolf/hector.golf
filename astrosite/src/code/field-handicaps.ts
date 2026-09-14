@@ -18,14 +18,22 @@ import { getHandicapChecks } from "./handicap-checks";
  * this is an instant and not a date: the Union's WHS batch runs at about 03:00 and
  * re-runs during office hours when the nightly run fails.
  *
- * Both fields are nullable and neither is ever omitted. A null `hcp` is not a zero —
- * scratch is a real handicap and so is a negative one — and a null `observed` means
- * no sweep at or before this basis answered for the player, which is also the whole
- * story for any event older than the sweep log.
+ * `hcp` and `observed` are nullable and neither is ever omitted. A null `hcp` is not
+ * a zero — scratch is a real handicap and so is a negative one — and a null
+ * `observed` means no sweep at or before this basis answered for the player, which
+ * is also the whole story for any event older than the sweep log.
+ *
+ * `approximate` says the sweep behind `observed` was reconstructed from the data
+ * commit it left rather than recorded when it ran, so the instant is a lower bound:
+ * we checked at least this recently, probably more so. It is false for every sweep
+ * that recorded itself, and for a null `observed` there is nothing to qualify.
+ * Render it — an approximate instant shown as an exact one is worse than no instant,
+ * because the reader cannot tell.
  */
 export type HandicapUnderBasis = {
     hcp: number | null;
     observed: string | null;
+    approximate: boolean;
 };
 
 /**
@@ -75,6 +83,10 @@ export type FieldHandicapEntry = {
  *
  * Null when any player in the field has never been checked, because then there is no
  * such guarantee to make. That covers every event older than the sweep log.
+ *
+ * `handicaps_checked_approximate` carries the `approximate` of the stamp it came
+ * from, so the field-wide number is no more exact-looking than the per-player one
+ * behind it.
  */
 export type FieldHandicapsPayload = {
     event: string;
@@ -82,6 +94,7 @@ export type FieldHandicapsPayload = {
     generatedAt: string;
     bucket_freeze: string | null;
     handicaps_checked: string | null;
+    handicaps_checked_approximate: boolean;
     handicaps: FieldHandicapEntry[];
 };
 
@@ -123,6 +136,12 @@ const byPlayingHandicapThenName = (a: FieldHandicapEntry, b: FieldHandicapEntry)
     return a.name.localeCompare(b.name);
 };
 
+/** A sweep as the payload publishes it: when, and whether that "when" is exact. */
+const stamp = (check: HandicapCheck | undefined) => ({
+    observed: check?.at ?? null,
+    approximate: check?.approximate === true,
+});
+
 /**
  * The oldest `playing.observed` in the field — what the whole file is at least as
  * fresh as.
@@ -131,14 +150,19 @@ const byPlayingHandicapThenName = (a: FieldHandicapEntry, b: FieldHandicapEntry)
  * null rather than the oldest of the others: "all of these were checked by X" has to
  * be true of all of them or it is not worth publishing.
  */
-const freshnessGuarantee = (handicaps: readonly FieldHandicapEntry[]): string | null => {
-    if (handicaps.length === 0) return null;
-    let oldest: string | null = null;
+const freshnessGuarantee = (
+    handicaps: readonly FieldHandicapEntry[],
+): { handicaps_checked: string | null; handicaps_checked_approximate: boolean } => {
+    let oldest: HandicapUnderBasis | null = null;
     for (const player of handicaps) {
-        if (player.playing.observed === null) return null;
-        if (oldest === null || player.playing.observed < oldest) oldest = player.playing.observed;
+        if (player.playing.observed === null) oldest = null;
+        else if (oldest === null || player.playing.observed < oldest.observed!) oldest = player.playing;
+        if (player.playing.observed === null) break;
     }
-    return oldest;
+    return {
+        handicaps_checked: oldest?.observed ?? null,
+        handicaps_checked_approximate: oldest?.approximate === true,
+    };
 };
 
 /** A player's placement in the split, and the handicap it was drawn on. */
@@ -198,11 +222,11 @@ const entryFor = (id: string, bases: Bases, split: Map<string, Placement>): Fiel
         bucketing: {
             bucket: placement?.bucket ?? null,
             hcp: placement?.handicap ?? atBucketing?.handicap ?? null,
-            observed: lastCheckedFor(bases.checks, id, bases.checked.bucketing ?? undefined) ?? null,
+            ...stamp(lastCheckedFor(bases.checks, id, bases.checked.bucketing ?? undefined)),
         },
         playing: {
             hcp: (bases.eventIsOver ? atPlaying?.handicap : getPlayerById(id)?.handicap) ?? null,
-            observed: lastCheckedFor(bases.checks, id, bases.checked.playing) ?? null,
+            ...stamp(lastCheckedFor(bases.checks, id, bases.checked.playing)),
         },
     };
 };
@@ -241,8 +265,9 @@ export function fieldHandicaps(event: HectorEvent, now: Date = new Date()): Fiel
         generatedAt: isoInstantNow(now),
         bucket_freeze: bucketFreeze,
         // Derived from the entries rather than from the log, so it cannot disagree
-        // with them: it is one of the values above, not a fourth reading of the log.
-        handicaps_checked: freshnessGuarantee(handicaps),
+        // with them: it is one of the values above, `approximate` and all, not a
+        // fourth reading of the log.
+        ...freshnessGuarantee(handicaps),
         handicaps,
     };
 }

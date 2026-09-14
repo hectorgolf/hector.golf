@@ -184,7 +184,13 @@ the two ends of an event. `handicaps_checked` is the field-wide **guarantee**: t
 derived from the entries rather than read from the log a third time, because the latest sweep is a
 weaker and different thing — a sweep is field-wide, and the latest one may have skipped somebody in
 *this* field, so it could claim a freshness no player in the file had. Null when any player has never
-been checked, because then there is no guarantee to make. Not when the handicap last changed: a handicap that has not moved since August is no less
+been checked, because then there is no guarantee to make.
+
+Every `observed` is paired with an `approximate` flag, and `handicaps_checked` with
+`handicaps_checked_approximate`. True means the sweep behind the instant was reconstructed after the
+fact rather than recorded when it ran, so the value is a lower bound — we checked at least that
+recently, probably more so. **Render it**: an approximate instant shown as an exact one is worse than
+no instant, because the reader cannot tell. Not when the handicap last changed: a handicap that has not moved since August is no less
 current for it, and "we checked at 03:02 and it is still 15.4" is what answers a player whose eBirdie
 shows something else. Each is read as of the moment its handicap settled, `bucket_freeze` and the
 event's last day respectively, because a sweep that ran after a split settled cannot be what the

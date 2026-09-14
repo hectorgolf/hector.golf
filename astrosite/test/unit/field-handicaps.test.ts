@@ -2,6 +2,7 @@ import { expect, describe, it } from 'vitest'
 import { fieldHandicaps } from '../../src/code/field-handicaps'
 import { getEventById } from '../../src/code/events'
 import { hectorEvents, bucketsAreOpen } from '../../src/code/data'
+import { getHandicapChecks } from '../../src/code/handicap-checks'
 import { getPlayerById, getPlayerHandicapHistoryById } from '../../src/code/players'
 import type { HectorEvent } from '@hector/schemas/src/events.ts'
 import { isValidIsoInstant } from '@hector/schemas/src/dates.ts'
@@ -76,8 +77,13 @@ describe('fieldHandicaps()', () => {
                         'bucket',
                         'hcp',
                         'observed',
+                        'approximate',
                     ])
-                    expect(Object.keys(entry.playing), `${event.id}/${entry.id}`).toEqual(['hcp', 'observed'])
+                    expect(Object.keys(entry.playing), `${event.id}/${entry.id}`).toEqual([
+                        'hcp',
+                        'observed',
+                        'approximate',
+                    ])
                 }
             }
         })
@@ -341,5 +347,65 @@ describe('a finished event, a decade later', () => {
                 expect(byId.get(player.id)!.bucketing.hcp, player.id).toBe(player.handicap)
             }
         })
+    })
+})
+
+/**
+ * The sweep log began on 2026-09-14, so HECTOR2025 had nothing to say about when its
+ * handicaps were last checked. Six entries were reconstructed for that week — five
+ * anchored to the data commits the sweeps left behind, one inferred for the first
+ * morning, which left no commit because nobody's handicap moved that day.
+ *
+ * They are marked `approximate`, and the payload carries that through, because a
+ * reconstructed instant shown as an exact one is worse than no instant at all: the
+ * reader cannot tell. What is asserted here is that the marking survives the trip.
+ */
+describe('the reconstructed 2025 sweeps', () => {
+    it('are the only approximate entries in the log', () => {
+        const checks = getHandicapChecks()
+        const approximate = checks.filter((c) => c.approximate)
+        const recorded = checks.filter((c) => !c.approximate)
+        expect(approximate.length).toBeGreaterThan(0)
+        expect(recorded.length).toBeGreaterThan(0)
+        // Nothing a real sweep wrote was relabelled, and nothing reconstructed
+        // strayed into the period that records itself.
+        expect(approximate.every((c) => c.at < '2026-01-01')).toBe(true)
+        expect(recorded.every((c) => c.at >= '2026-01-01')).toBe(true)
+    })
+
+    it('date HECTOR2025 from before its freeze and from its final day', () => {
+        const payload = fieldHandicaps(eventById('HECTOR2025'))
+        expect(payload.bucket_freeze).toBe('2025-09-25T06:00:00Z')
+        for (const player of payload.handicaps) {
+            // The first morning's sweep, not the one on the 26th.
+            expect(player.bucketing.observed, player.id).toBe('2025-09-25T03:24:00Z')
+            // The last sweep of the event's final day, not the ones after it.
+            expect(player.playing.observed, player.id).toBe('2025-09-28T03:33:25Z')
+        }
+    })
+
+    it('say so, everywhere they surface', () => {
+        const payload = fieldHandicaps(eventById('HECTOR2025'))
+        expect(payload.handicaps_checked_approximate).toBe(true)
+        for (const player of payload.handicaps) {
+            expect(player.bucketing.approximate, player.id).toBe(true)
+            expect(player.playing.approximate, player.id).toBe(true)
+        }
+    })
+
+    it('leave an event dated by real sweeps saying the opposite', () => {
+        const payload = fieldHandicaps(eventById('HECTOR2026'))
+        expect(payload.handicaps_checked_approximate).toBe(false)
+        for (const player of payload.handicaps) {
+            expect(player.bucketing.approximate, player.id).toBe(false)
+            expect(player.playing.approximate, player.id).toBe(false)
+        }
+    })
+
+    it('claim nothing for an event that predates even them', () => {
+        const payload = fieldHandicaps(eventById('HECTOR2014'))
+        expect(payload.handicaps_checked).toBeNull()
+        expect(payload.handicaps_checked_approximate).toBe(false)
+        expect(payload.handicaps.every((p) => p.bucketing.observed === null)).toBe(true)
     })
 })
