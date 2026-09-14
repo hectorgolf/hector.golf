@@ -43,7 +43,7 @@
  *
  * `deploy-site.yml` is here now, though not on the tick: it is dispatched by a scrape
  * that has just committed, which is the only moment there is something new to
- * publish. Its own `30 3,12` cron stays as the backstop.
+ * publish. Its own `0 8,13` cron stays as the backstop.
  */
 
 export type DispatchableWorkflow = {
@@ -98,7 +98,7 @@ export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
          * by the scrape itself through `[slug]/dispatch.ts`, which is the only
          * moment at which there is something new to publish.
          *
-         * `deploy-site.yml`'s own `30 3,12` cron stays as the backstop, for the same
+         * `deploy-site.yml`'s own `0 8,13` cron stays as the backstop, for the same
          * reason the workflows keep their GitHub crons: late is better than
          * never on the day this path is the broken one.
          */

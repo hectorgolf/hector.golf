@@ -7,7 +7,7 @@ description: >
 #
 # A push made with the default GITHUB_TOKEN does not trigger workflows — that is
 # GitHub's recursion guard — so deploy-site.yml's `on: push` never fired for the data
-# commits that most needed it, and the site waited for its own `30 3,12` cron.
+# commits that most needed it, and the site waited for its own twice-daily cron.
 # Dispatching deploy-site.yml from here with GITHUB_TOKEN would not work either: the
 # same rule covers API-triggered events.
 #

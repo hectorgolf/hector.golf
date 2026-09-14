@@ -1,8 +1,29 @@
-name: PR Checks
+# Runs the public site's test suites and its production build on pull requests.
+#
+# Separate from check-admin.yml and check-backend.yml: they are different packages
+# with different failure modes, and one workflow each keeps any of them from going
+# red for another's reasons. This one and check-admin.yml install from the one
+# workspace lockfile at the repository root.
+#
+# This used to run on every pull request, with no paths filter at all, which made
+# it the de facto "something changed" check — a terraform- or docs-only PR built
+# the whole site to prove nothing. The filter below is the set of things the build
+# and the suites actually read: the site itself, the two workspace packages it
+# imports, the root manifest and lockfile `npm ci` installs from, and the Node
+# version setup-node pins to.
+name: Check site
 
 on:
   pull_request:
     branches: ["main"]
+    paths:
+      - 'astrosite/**'
+      - 'packages/schemas/**'
+      - 'packages/ui/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.node-version'
+      - '.github/workflows/check-site.yml'
 
 permissions:
   contents: read

@@ -4,8 +4,21 @@ on:
   # Runs on pushes targeting the default branch
   push:
     branches: ["main"]      # Only run when the push is to the "main" branch
+    # The build below is `npm ci` at the repository root and then `astro build`
+    # in astrosite/, so the site is not the only input to it: astrosite imports
+    # @hector/ui and @hector/schemas through the workspace, installs from the one
+    # root lockfile, and takes its Node version from .node-version. Those used to
+    # be missing here, and a merge that only touched packages/ shipped nothing —
+    # the cron below eventually republished it, hours later, which is why the gap
+    # stayed invisible. This mirrors check-site.yml's filter, which runs the same
+    # build on the pull request.
     paths:
-      - 'astrosite/**/*'          # Only run when the push includes changes to the Astro website
+      - 'astrosite/**'            # Only run when the push includes changes to the Astro website
+      - 'packages/schemas/**'     # ...or to the workspace packages astrosite imports
+      - 'packages/ui/**'
+      - 'package.json'            # ...or to what `npm ci` installs at the root
+      - 'package-lock.json'
+      - '.node-version'           # ...or to the Node version it installs under
       - '.github/workflows/**/*'  # ...or on Github Actions workflows
 
   # The backstop, not the usual path.

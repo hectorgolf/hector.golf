@@ -430,7 +430,7 @@ that must survive untouched.
    rebuilt site. Load a leaderboard page and watch the network tab hit `hector-golf`.
 
    **Step 1 already commits you to this, whether or not you run it.** `deploy-site.yml` fires on a
-   schedule as well as on a push — `cron: "30 3,12 * * *"` — so the next scheduled build picks up
+   schedule as well as on a push — `cron: "0 8,13 * * *"` — so the next scheduled build picks up
    the new variable and cuts the site over unattended, within twelve hours of the variable changing.
    Pushing or dispatching only decides *when*.
 
