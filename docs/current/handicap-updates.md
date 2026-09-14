@@ -131,6 +131,41 @@ Entries that predate the field do not have one. That is honest rather than lazy 
 when they were read, and a guessed timestamp would be indistinguishable from a real one. Where one
 of those shares a day with a newer reading, the stamped one is treated as the later of the two.
 
+### It records that it looked, even when nothing changed
+
+`handicaps.json` only grows when a handicap moves. That leaves the commonest question unanswerable:
+a player whose handicap has not changed since August has no recent entry, and nothing in this
+repository says whether we last asked this morning or in the spring.
+
+`src/data/handicap-checks.json` is the other half. `update-handicaps.ts` appends one entry per run,
+whatever the run found:
+
+```json
+{
+  "at": "2026-09-14T03:02:42Z",
+  "checked": 44,
+  "skipped": ["ricke-b"]
+}
+```
+
+`skipped` names the players no source answered for — either they have no club to look up, or every
+source failed on them. The two are not told apart because nothing acts on the difference: neither
+was checked. Keeping the exceptions rather than the roster is what holds the file to a line or two
+per sweep.
+
+A sweep that answered for **nobody** is not recorded. Its entry would be the whole roster, and
+writing it would commit and deploy the site over a run that learned nothing; a total outage is a
+workflow-log problem, not a data-file one.
+
+Nothing else is dropped: the log is appended to and never pruned, like `handicaps.json`. A Hector's
+buckets are part of its record and are kept for good, so what explains them has to be kept for good
+too — the 2026 split is still on the site in 2036, and "the handicaps behind it were last checked at
+03:01 that morning" has to still be answerable then. It costs about 57KB a year.
+
+This is what `/events/hector/:id/handicaps.json` publishes as `bucketing_hcp_observed` and
+`handicaps_checked`, and the two together are what answers "my eBirdie shows something else": the
+handicap we hold, and the moment we last asked about it.
+
 ## Reading `observed` after the fact
 
 The case this was added for:

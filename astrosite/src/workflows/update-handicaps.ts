@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, existsSync, rmSync } from "fs";
+import { readFileSync, writeFileSync, appendFileSync, existsSync, rmSync } from "fs";
 import { join, dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 
@@ -12,6 +12,7 @@ import { playersData, hectorEvents, hasParticipants, bucketsAreOpen, pathToEvent
 import { getPlayerName, updatePlayerData } from "../code/players.ts";
 import type { Player } from "@hector/schemas/src/players.ts";
 import { type HandicapHistoryEntry, latestPerDay } from "@hector/schemas/src/handicaps.ts";
+import { type HandicapCheck } from "@hector/schemas/src/handicap-checks.ts";
 
 /**
  * Get the player's handicap from their history.
@@ -64,30 +65,107 @@ const readJsonFile = (pathToJsonFile: string, defaultValue: any = []): any => {
 // (__dirname is not available in ES6 modules)
 const __filename = fileURLToPath(import.meta.url);
 const pathToHandicapHistoryJson = join(dirname(__filename), "../data/handicaps.json");
+const pathToHandicapChecksJson = join(dirname(__filename), "../data/handicap-checks.json");
+
 const pathToHandicapUpdateCommitMessage = join(dirname(__filename), "../../.update-handicaps-commit");
 
-if (existsSync(pathToHandicapUpdateCommitMessage)) {
-    console.log(`Deleting pre-existing commit message file: ${resolve(pathToHandicapUpdateCommitMessage)}`);
-    rmSync(pathToHandicapUpdateCommitMessage, { force: true });
-} else {
-    console.log(`Creating an empty commit message file: ${resolve(pathToHandicapUpdateCommitMessage)}`);
-}
-writeFileSync(pathToHandicapUpdateCommitMessage, "");
+/**
+ * Start the run's commit message from empty.
+ *
+ * Inside the run rather than at module scope, because the tests import this file for
+ * `fetchUpdatedPlayerRecords` and an import must not perform a sweep — see the guard
+ * at the bottom.
+ */
+const resetCommitMessage = () => {
+    if (existsSync(pathToHandicapUpdateCommitMessage)) {
+        console.log(`Deleting pre-existing commit message file: ${resolve(pathToHandicapUpdateCommitMessage)}`);
+        rmSync(pathToHandicapUpdateCommitMessage, { force: true });
+    } else {
+        console.log(`Creating an empty commit message file: ${resolve(pathToHandicapUpdateCommitMessage)}`);
+    }
+    writeFileSync(pathToHandicapUpdateCommitMessage, "");
+};
 
 type PlayerWithHandicapChanges = Player & {
     handicapChanged?: boolean;
     handicapChangedFrom?: number;
+    /**
+     * Whether a source answered for this player at all, which is a different
+     * question from whether the answer differed from what we held.
+     *
+     * The distinction was always made — `fetchUpdatedPlayerRecords` logs "no change"
+     * on one path and a failure on the other — and was thrown away at the end of the
+     * run, because only changes were written down. `handicap-checks.json` is where it
+     * goes now.
+     */
+    handicapChecked?: boolean;
+};
+
+/**
+ * The sweep to record, or undefined when there is nothing to record.
+ *
+ * Separated from the writing so that the one decision here is testable without
+ * standing in for the filesystem, the way `fetchUpdatedPlayerRecords` already is.
+ *
+ * That decision: a sweep that reached nobody — the sources are down, or the login
+ * failed — has nothing to attest to, and recording it would be worse than silence
+ * twice over. The entry would be the entire roster under `skipped`, and writing it
+ * would commit and deploy the site over a run that learned nothing. An outage
+ * belongs in the workflow's own log, which is where it stays.
+ */
+export const sweepOf = (players: PlayerWithHandicapChanges[], at: string): HandicapCheck | undefined => {
+    const skipped = players.filter((player) => !player.handicapChecked).map((player) => player.id);
+    const checked = players.length - skipped.length;
+    return checked === 0 ? undefined : { at, checked, skipped };
+};
+
+/**
+ * Record that the sweep happened, whatever it found.
+ *
+ * Unconditional, and that is the whole point: a quiet sweep writes nothing else, so
+ * without this the twice-daily evidence that we looked at all exists only in a
+ * workflow log that expires. It also means a quiet day now produces a commit where
+ * it previously produced none — `commit-changes.sh` commits on any change under
+ * `src/data/`, and a data commit deploys the site. That cost is the price of being
+ * able to say when we last asked.
+ */
+const persistHandicapCheckToDisk = (players: PlayerWithHandicapChanges[], at: string) => {
+    const check = sweepOf(players, at);
+    if (!check) {
+        console.error(
+            `No handicap source answered for any of ${players.length} players at ${at}. Not recording a sweep.`,
+        );
+        return undefined;
+    }
+    const skipped = check.skipped;
+
+    const existing: Array<HandicapCheck> = readJsonFile(pathToHandicapChecksJson, []);
+    // Appended, never pruned. The buckets this dates are kept for good, so the
+    // explanation has to be too.
+    writeJsonFile(pathToHandicapChecksJson, existing.concat(check));
+    // Named individually up to a point and counted past it: a partial outage is worth
+    // seeing in the commit message, a roster-sized list of ids is not.
+    const named = skipped.slice(0, 5).join(", ");
+    const summary =
+        `Checked ${check.checked} of ${players.length} players' handicaps at ${at}` +
+        (skipped.length > 0
+            ? ` (skipped ${named}${skipped.length > 5 ? ` and ${skipped.length - 5} more` : ""})`
+            : "");
+    console.log(summary);
+    // Appended rather than written, because the change list is already in the file by
+    // now. On a quiet day it is the only line there, and the alternative is a commit
+    // whose message says nothing happened while the commit itself says otherwise.
+    appendFileSync(pathToHandicapUpdateCommitMessage, `${summary}\n`);
+    return check;
 };
 
 const persistHandicapHistoryToDisk = async (
     players: PlayerWithHandicapChanges[],
     handicapHistory: Array<HandicapHistoryEntry>,
+    observed: string,
 ) => {
     const newHandicapChanges: Array<HandicapHistoryEntry> = [];
     const date = isoDateToday();
-    // One stamp for the whole run: these entries were all read from the same
-    // response, and a per-entry clock would imply a precision that is not there.
-    const observed = isoInstantNow();
 
     const playersWithNewHandicap = players.filter((p) => p.handicap !== undefined).filter((p) => p.handicapChanged);
 
@@ -119,7 +197,7 @@ const persistHandicapHistoryToDisk = async (
             `- ${getPlayerName(player)}: ${JSON.stringify(player.handicapChangedFrom)} -> ${JSON.stringify(player.handicap)}`,
         );
 
-        const { handicapChanged, handicapChangedFrom, ...playerWithoutChangeFields } = player;
+        const { handicapChanged, handicapChangedFrom, handicapChecked, ...playerWithoutChangeFields } = player;
         await updatePlayerData(playerWithoutChangeFields);
     }
 
@@ -194,6 +272,7 @@ export const fetchUpdatedPlayerRecords = async (
             return await fetchFromSources(sources)
                 .then((newHandicap) => {
                     let updatedPlayer: PlayerWithHandicapChanges = { ...playerObject };
+                    updatedPlayer.handicapChecked = newHandicap !== undefined;
                     if (newHandicap !== undefined && newHandicap !== oldHandicap) {
                         updatedPlayer.handicap = newHandicap;
                         updatedPlayer.handicapChanged = true;
@@ -228,7 +307,12 @@ const updateHandicapsForAllPlayers = async () => {
     }
     const handicapHistory: Array<HandicapHistoryEntry> = readJsonFile(pathToHandicapHistoryJson, []);
     const updatedPlayers = await fetchUpdatedPlayerRecords(playersData, handicapHistory, availableSources);
-    await persistHandicapHistoryToDisk(updatedPlayers, handicapHistory);
+    // One stamp for the whole run: these readings all came from the same sweep, and a
+    // per-player clock would imply a precision that is not there. The sweep log and
+    // the observation log carry the same instant for the same reason.
+    const observed = isoInstantNow();
+    await persistHandicapHistoryToDisk(updatedPlayers, handicapHistory, observed);
+    persistHandicapCheckToDisk(updatedPlayers, observed);
 };
 
 type HectorEvent = {
@@ -315,8 +399,15 @@ const updateBucketsForUpcomingEvents = async () => {
 };
 
 const run = async () => {
+    resetCommitMessage();
     await updateHandicapsForAllPlayers();
     await updateBucketsForUpcomingEvents();
 };
 
-run();
+// Only when this file is the thing being run. The tests import it for
+// `fetchUpdatedPlayerRecords`, and without this an import scrapes the sources,
+// rewrites the buckets, and appends a sweep to `handicap-checks.json` — committed
+// data, changed by running the test suite.
+if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
+    run();
+}
