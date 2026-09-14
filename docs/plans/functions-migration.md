@@ -104,12 +104,10 @@ accident and it is staying — see "The old project is not deleted" below. Run t
 anyway before phase 7 if time has passed, since the point is to find what nobody remembers putting
 there.
 
-One service account is there as well, and it does not block anything here.
-`update-hector-leaderboard@` is being retired by
-[`sheets-credential-wif.md`](sheets-credential-wif.md), whose phase 6 — deleting its keys and the
-account — is the piece of that plan still outstanding. It is recorded in
-[`../../README.md`](../../README.md); this plan does not touch it, and phase 7 does not wait for it.
-`terraform-deployer`, the other account that used to be listed here, was deleted on 2026-09-14.
+No service accounts of ours are there any more. `update-hector-leaderboard@` was deleted on
+2026-09-14 by phase 6 of [`sheets-credential-wif.md`](sheets-credential-wif.md), and
+`terraform-deployer` the same day. What remains is the three Google creates by default — the App
+Engine and Compute defaults, and the Firebase admin SDK account — none of which phase 7 waits for.
 
 ## What Terraform owns, and what it does not
 
