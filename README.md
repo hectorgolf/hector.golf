@@ -34,51 +34,66 @@ is syntax-checked with and without the matrix's `extra_flags` — but never lint
 
 ## Security, from the same sweep
 
-**Rotate the `update-hector-leaderboard` keys.** `UpdateLeaderboard`'s source bundle contained a
-service account private key — `service_account_credentials.json`, committed into the zip that was
-sitting in `gcf-v2-sources-167706335356-europe-north1`. The zip is deleted and it was the last copy
-(bucket versioning is on, one version existed; no matching image in `gcf-artifacts`), so nothing new
-is exposed. **Deleting a copy is not revocation**, though: the key is still valid.
+**~~Rotate the `update-hector-leaderboard` keys.~~** Done on 2026-09-14, and the account is now
+nearly redundant.
 
-It is `583f23a1…`, and it is not dormant — Policy Analyzer reports it authenticating through
-2026-09-05, the end of its observation window. The account carries `roles/secretmanager.secretAccessor`,
-so that key reads every secret in the project.
+`UpdateLeaderboard`'s source bundle contained a service account private key —
+`service_account_credentials.json`, committed into the zip sitting in
+`gcf-v2-sources-167706335356-europe-north1`. The zip is deleted and it was the last copy (bucket
+versioning is on, one version existed; no matching image in `gcf-artifacts`). But deleting a copy is
+not revocation, and Policy Analyzer had that key, `583f23a1…`, authenticating through 2026-09-05 —
+on an account carrying `roles/secretmanager.secretAccessor`, which reads every secret in the
+project.
 
-Every key on the account is now accounted for, so the rotation is not blocked on anything:
+`583f23a1…` and `8fb97428…` — the latter a year-old key with no identified consumer — are both
+deleted. What remains:
 
-| key | consumer | exposed in the zip |
+| key | consumer | still needed |
 | --- | --- | --- |
-| `583f23a1…` | GitHub Actions, via `GCP_SERVICE_ACCOUNT_CREDENTIALS` | **yes** |
-| `cf542f7b…` | this laptop, `astrosite/.env.google-credentials.json` | no |
-| `8fb97428…` | none found, last used 2025-09-12 | no |
+| `cf542f7b…` | this laptop, `astrosite/.env.google-credentials.json` | only until local runs move to `gcloud auth application-default login` |
+| `1d34b5e7…` | nothing | **no** — see below |
+| `166650209…` | system-managed, not deletable | n/a |
 
-Two things settle the first row without reading the secret, which cannot be read back. `gh secret
-list --json name,updatedAt` reports `GCP_SERVICE_ACCOUNT_CREDENTIALS` as last updated **2024-09-05**
-and never since, and `583f23a1…` was created 2024-09-04 — a secret nobody has touched cannot hold a
-key minted eighteen months later. And `cf542f7b…` is on disk locally, in a file written four and a
-half hours after that key was created, holding the same `private_key_id`; `docs/current/architecture.md` §13
-already records that file as real credentials in the working tree. Nothing reads it by name —
-`google-sheets.ts` takes `GOOGLE_CREDENTIALS` from the environment — so it is a holding copy pasted
-into `.env` for a manual run, which matches a last authentication of 2026-09-01 with no cron behind
-it.
+### `GCP_SERVICE_ACCOUNT_CREDENTIALS` and the key in it can go
 
-So the rotation is narrow: **only `583f23a1…` was ever in the zip.** `cf542f7b…` needs no action.
+`1d34b5e7…` was minted during the rotation to replace `583f23a1…` in the
+`GCP_SERVICE_ACCOUNT_CREDENTIALS` secret. That turned out to be unnecessary: the Sheets scrape had
+already moved to Workload Identity, so **nothing reads that secret**.
+`update-leaderboards.yml` authenticates with `google-github-actions/auth@v3` as
+`leaderboard-reader@hector-golf.iam.gserviceaccount.com`, and `GCP_SERVICE_ACCOUNT_CREDENTIALS`
+is referenced by no workflow step. Verify with `grep -rn 'secrets\.GCP_SERVICE_ACCOUNT' .github/`,
+which returns nothing — note the `secrets.` prefix, because a plain
+`grep -rn GCP_SERVICE_ACCOUNT .github/` still finds one line: a comment in `update-leaderboards.yml`
+recording which credential the keyless exchange replaced.
 
-Before rotating, read [`docs/plans/sheets-credential-wif.md`](docs/plans/sheets-credential-wif.md), which
-retires the key rather than replacing it: the workflow already declares `id-token: write` and
-`GH_WIF_PROVIDER` already exists, so this is the last workflow still holding a downloadable
-credential. Rotating now and moving to WIF later is a reasonable order — it closes the exposure
-today — but it mints one more key into the project everything else is migrating out of.
+So three secrets and one key are disposable. `_EMAIL` and `_PRIVATE_KEY` have not been touched since
+2024-09-05 and were never read by anything; `_PRIVATE_KEY` holds the private half of the now-deleted
+`583f23a1…`, which makes it inert rather than dangerous, but it reads as live.
 
-1. Mint a new key and update `GCP_SERVICE_ACCOUNT_CREDENTIALS`.
-2. Run `update-leaderboards.yml` by hand and confirm it is green — that proves the new key works
-   before anything is destroyed.
-3. Delete `583f23a1…`, and `8fb97428…` with it: a year-old key with no identified consumer is the
-   thing you do not want left lying around.
+```bash
+gh secret delete GCP_SERVICE_ACCOUNT_CREDENTIALS --repo hectorgolf/hector.golf
+gh secret delete GCP_SERVICE_ACCOUNT_EMAIL --repo hectorgolf/hector.golf
+gh secret delete GCP_SERVICE_ACCOUNT_PRIVATE_KEY --repo hectorgolf/hector.golf
+gcloud iam service-accounts keys delete 1d34b5e78dfdd12f8f973afbb21166889071f9b3 \
+  --iam-account=update-hector-leaderboard@gen-lang-client-0537211409.iam.gserviceaccount.com \
+  --project=gen-lang-client-0537211409
+```
 
-While in there, ask whether the account needs `roles/secretmanager.secretAccessor` at all. It reads
-one Google Sheet. The role gives it every secret in the project, and it is there because of the
-Hello World function that has now been deleted.
+The lesson worth keeping, since it cost a pointless key: **check the consumer before rotating a
+credential, not only the credential.** The rotation steps were written from a reading of
+`update-leaderboards.yml` taken earlier the same day, and the workflow had changed underneath them.
+
+### What is left on the account
+
+`cf542f7b…` is the last downloadable Sheets key, and it is a local convenience rather than
+infrastructure — `google-sheets.ts` still honours `GOOGLE_CREDENTIALS` when set, so local runs work
+either way. The laptop section of
+[`docs/plans/sheets-credential-wif.md`](docs/plans/sheets-credential-wif.md) is what replaces it. Once
+that happens, `update-hector-leaderboard@` holds nothing anyone uses and the whole account can go —
+along with its `roles/secretmanager.secretAccessor` and `roles/cloudbuild.builds.builder`, which it
+holds to read one spreadsheet and which are leftovers from the deleted Hello World function.
+
+### For the next time a key needs accounting for
 
 The evidence above came from Policy Analyzer:
 
