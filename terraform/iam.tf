@@ -177,3 +177,72 @@ resource "google_service_account_iam_member" "leaderboard_reader_impersonation" 
   role               = "roles/iam.serviceAccountTokenCreator"
   member             = each.value
 }
+
+# ---------------------------------------------------------------------------
+# The Cloud Functions identities: one the four functions run as, one that
+# deploys them. Phase 1 of docs/plans/functions-migration.md.
+#
+# Same runtime/deployer split as admin_runtime and admin_deployer above, and for
+# the same reason: shipping a new version of a function should not require an
+# identity that can change infrastructure.
+#
+# Terraform deliberately does not manage the functions themselves. There is no
+# google_cloudfunctions2_function here and there should not be — deploying a new
+# version must not require a `terraform apply`, so CI ships them wholesale with
+# `gcloud`, exactly as deploy-admin.yml ships Cloud Run revisions while
+# Terraform owns the service.
+# ---------------------------------------------------------------------------
+
+# No project roles, like leaderboard_reader and for a similar reason: none of
+# the four functions calls a Google API with this identity. The three AI
+# functions authenticate to Gemini with an API key, and TournamentLeaderboard is
+# an HTTP proxy to app.hector.golf. All this account does is read the three
+# secrets granted in secrets.tf.
+resource "google_service_account" "functions_runtime" {
+  project      = var.project_id
+  account_id   = "hector-functions"
+  display_name = "hector.golf Cloud Functions (runtime)"
+  description  = "Identity the four functions run as. Reads three secrets; nothing else."
+  depends_on   = [google_project_service.enabled["iam.googleapis.com"]]
+
+}
+
+resource "google_service_account" "functions_deployer" {
+  project      = var.project_id
+  account_id   = "functions-deployer"
+  display_name = "hector.golf functions deploy (GitHub Actions)"
+  description  = "Deploys the Cloud Functions. Cannot change infrastructure."
+  depends_on   = [google_project_service.enabled["iam.googleapis.com"]]
+
+}
+
+# Deliberately the *minimum* rather than the list in deploy-functions.yml's
+# header, which was written for a cross-project setup and names six roles. Start
+# here and add only what a failed deploy actually names; a role added because a
+# real error asked for it comes with the reason attached, and one added
+# speculatively never gets removed.
+#
+# In particular, do NOT reach for roles/storage.objectAdmin. It is the obvious
+# way to let a deployer upload source, and here it would be a mistake: the
+# Terraform state bucket hector-golf-tfstate is in this same project, so a
+# project-wide storage role hands the application deploy identity the
+# infrastructure state. It is also unnecessary — `gcloud functions deploy`
+# uploads through a signed URL it gets from generateUploadUrl, which
+# cloudfunctions.developer already covers.
+#
+# The likeliest genuine addition is serviceAccountUser on the Cloud Build
+# builder identity, since a gen2 deploy runs a build as it. Wait for the error.
+resource "google_project_iam_member" "functions_deployer_deploy" {
+  project = var.project_id
+  role    = "roles/cloudfunctions.developer"
+  member  = google_service_account.functions_deployer.member
+}
+
+# Deploying a function that runs as another identity means acting as it. Scoped
+# to the one runtime account rather than granted project-wide, as with
+# admin_deployer_act_as above.
+resource "google_service_account_iam_member" "functions_deployer_act_as" {
+  service_account_id = google_service_account.functions_runtime.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = google_service_account.functions_deployer.member
+}

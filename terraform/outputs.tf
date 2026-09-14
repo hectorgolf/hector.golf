@@ -1,4 +1,4 @@
-# The first four outputs are the values that go into GitHub Actions variables.
+# The first five outputs are the values that go into GitHub Actions variables.
 # `terraform output -raw <name>` prints one without quotes.
 
 output "workload_identity_provider" {
@@ -24,6 +24,39 @@ output "leaderboard_service_account" {
     no project roles.
   EOT
   value       = google_service_account.leaderboard_reader.email
+}
+
+output "functions_deployer_service_account" {
+  description = <<-EOT
+    Value for the GH_FUNCTIONS_DEPLOYER_SA repository variable, which
+    deploy-functions.yml needs before it stops shipping inert. Pairs with the
+    existing GH_WIF_PROVIDER — the whole point of the migration is that there is
+    one pool, so there is no GH_FUNCTIONS_WIF_PROVIDER to set.
+  EOT
+  value       = google_service_account.functions_deployer.email
+}
+
+output "functions_runtime_service_account" {
+  description = <<-EOT
+    The identity the four Cloud Functions run as, for the --service-account flag
+    on `gcloud functions deploy`.
+  EOT
+  value       = google_service_account.functions_runtime.email
+}
+
+output "function_secrets" {
+  description = <<-EOT
+    The three Secret Manager containers the functions read their keys from, as
+    a map of secret id to the environment variable each is mounted as.
+    Terraform creates the containers but never a version — add the values with
+
+      printf %s "$KEY" | gcloud secrets versions add <secret-id> --data-file=-
+
+    `printf %s` rather than `echo`, so no trailing newline ends up in the
+    secret. Rendered as --set-secrets flags, this map is what phase 4 of
+    docs/plans/functions-migration.md passes to each deploy.
+  EOT
+  value       = local.function_secrets
 }
 
 output "admin_image_repository" {
