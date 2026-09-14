@@ -942,8 +942,6 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
 
 **Configuration drift**
 
-- `zod` is imported throughout `src/schemas/` and `src/code/` but is **not a declared dependency** —
-  it resolves transitively through Astro, so an Astro upgrade could break the build.
 - [`HandicapHistoryChart.ts`](../../astrosite/src/components/players/HandicapHistoryChart.ts) hardcodes
   five palette hex values (`#8b79d8`, `#cfc6f0`, `#e3b341`, `#1d1c20`, `#7c7a86`) because it is a
   bundled TS module painting onto a canvas rather than a stylesheet. It is the one place the design
