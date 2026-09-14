@@ -948,8 +948,8 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
   five palette hex values (`#8b79d8`, `#cfc6f0`, `#e3b341`, `#1d1c20`, `#7c7a86`) because it is a
   bundled TS module painting onto a canvas rather than a stylesheet. It is the one place the design
   system is restated by hand, so it will not follow a token change in `hector.css`.
-- `.env.sample` is missing `HECTOR_APP_API_KEY` (see §11) and the `MSCORECARD_EMAIL` /
-  `MSCORECARD_PASSWORD` pair the mScorecard CLI needs.
+- `astrosite/.env.sample` is missing the `MSCORECARD_EMAIL` / `MSCORECARD_PASSWORD` pair the
+  mScorecard CLI needs. `HECTOR_APP_API_KEY` used to be missing too and is now there.
 
 **Dead or unreachable code**
 
