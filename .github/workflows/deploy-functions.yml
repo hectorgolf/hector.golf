@@ -10,46 +10,40 @@
 # is how the gap was noticed: the manifest on main said one thing and the
 # running functions said another, with nothing to reconcile them.
 #
-# ## Why it ships inert
+# ## It deploys configuration, not only code
 #
-# It deliberately does nothing until three repository variables are set, in the
-# same spirit as deploy-admin.yml's Dockerfile guard: commit the deploy path so
-# it is reviewed once, up front, rather than improvised on the day it is needed.
+# This is what phases 1 to 6 of docs/plans/functions-migration.md bought. The
+# functions now run in hector-golf, the project terraform/ manages, and their
+# three keys live in Secret Manager containers that iam.tf grants the runtime
+# identity read on. So every deploy can state the whole of a function's
+# configuration — `--service-account` and `--set-secrets` below — rather than
+# inheriting whatever the last laptop happened to set.
 #
-# The reason it cannot simply reuse GH_WIF_PROVIDER and GH_DEPLOYER_SA is that
-# these functions are not in the Terraform-managed project. They live in
-# `gen-lang-client-0537211409` — the project Google AI Studio created alongside
-# the Gemini API key, which docs/playbooks/gcp-bootstrapping.md warns about landing in by
-# accident — while terraform/ manages `hector-golf`. The admin deployer has no
-# permissions there at all, and there is no Workload Identity pool in that
-# project to federate with. Activating this workflow is therefore a GCP task,
-# not a YAML one; the variables below are the seam.
+# An earlier version of this workflow deliberately passed no environment
+# variables at all, because the only way to set them was --set-env-vars from
+# somebody's .env and shipping a dependency bump had no business knowing
+# GOOGLE_GEMINI_API_KEY. That reasoning is spent: --set-secrets names a secret
+# rather than a value, so nothing secret passes through this file, this runner
+# or this repository. The values are added once with `gcloud secrets versions
+# add` and never again.
 #
-# To activate, in the functions' project:
-#   1. Create a Workload Identity pool and provider for this repository, and a
-#      deploy service account holding roles/cloudfunctions.developer,
-#      roles/run.developer, roles/cloudbuild.builds.editor,
-#      roles/artifactregistry.writer, roles/storage.objectAdmin, plus
-#      roles/iam.serviceAccountUser on each function's runtime identity.
-#   2. Set GH_FUNCTIONS_PROJECT_ID, GH_FUNCTIONS_WIF_PROVIDER and
-#      GH_FUNCTIONS_DEPLOYER_SA as repository variables.
-# Until all three are set, every run skips and says so rather than failing.
+# The consequence worth knowing is the good one. Rotating a key is now
+# `gcloud secrets versions add` on its own — the functions reference `:latest`,
+# so a new instance picks the new value up without a redeploy, and a redeploy
+# only shortens the wait.
 #
-# ## Why no environment variables are passed
+# ## Identity
 #
-# The `npm run deploy:*` scripts pass --set-env-vars because they are how the
-# keys get onto a function in the first place. This workflow does not, and must
-# not: `gcloud functions deploy`'s env-var flags are all opt-in mutations —
-# --set-env-vars "removes all existing environment variables first",
-# --clear-env-vars empties them, and --update-env-vars merges — so passing none
-# leaves whatever each function already has exactly as it is.
+# GH_WIF_PROVIDER is the same pool every other workflow here federates through,
+# which is the whole point of the migration: one project, one pool. There is no
+# GH_FUNCTIONS_WIF_PROVIDER and there should not be.
 #
-# That is the property worth having. Shipping a dependency bump has no business
-# knowing GOOGLE_GEMINI_API_KEY, ASTROSITE_API_KEY or HECTOR_APP_API_KEY, and
-# three fewer secrets in this repository is three fewer things to leak. The
-# consequence is that this workflow redeploys code, never configuration: a
-# function that has never been deployed, or one whose keys have been rotated,
-# still needs a run of the matching npm script.
+# functions-deployer holds roles/cloudfunctions.developer and
+# roles/iam.serviceAccountUser on hector-functions, and nothing else. If a
+# deploy fails naming a permission, add that role in terraform/iam.tf rather
+# than widening the account here — and see the note there about why
+# roles/storage.objectAdmin in particular is the wrong answer.
+
 name: Deploy Cloud Functions
 
 on:
@@ -74,34 +68,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  guard:
-    name: Check the deploy path is configured
-    runs-on: ubuntu-latest
-    outputs:
-      deployable: ${{ steps.check.outputs.deployable }}
-    steps:
-      - name: Check for the repository variables
-        id: check
-        env:
-          PROJECT_ID: ${{ vars.GH_FUNCTIONS_PROJECT_ID }}
-          WIF_PROVIDER: ${{ vars.GH_FUNCTIONS_WIF_PROVIDER }}
-          DEPLOYER_SA: ${{ vars.GH_FUNCTIONS_DEPLOYER_SA }}
-        run: |
-          missing=()
-          [ -n "$PROJECT_ID" ]   || missing+=("GH_FUNCTIONS_PROJECT_ID")
-          [ -n "$WIF_PROVIDER" ] || missing+=("GH_FUNCTIONS_WIF_PROVIDER")
-          [ -n "$DEPLOYER_SA" ]  || missing+=("GH_FUNCTIONS_DEPLOYER_SA")
-          if [ ${#missing[@]} -eq 0 ]; then
-            echo "deployable=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "deployable=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Not configured yet, so there is nothing to deploy. Missing repository variables: ${missing[*]}. See the header of .github/workflows/deploy-functions.yml for what to create in the functions' GCP project."
-          fi
-
   deploy:
     name: ${{ matrix.function }}
-    needs: guard
-    if: needs.guard.outputs.deployable == 'true'
     runs-on: ubuntu-latest
 
     # One job per function, and fail-fast off, for the reason backend-checks.yml
@@ -109,17 +77,24 @@ jobs:
     # broken leaderboard proxy should not stop the biography generator shipping.
     # The flags mirror the `npm run deploy:*` scripts in package.json exactly —
     # if one changes there, change it here.
+    # `secrets` is the --set-secrets argument: ENV_VAR=<secret id>:latest, and
+    # the ids are the keys of local.function_secrets in terraform/secrets.tf.
+    # Naming a secret is not naming a value, so nothing sensitive is in here.
     strategy:
       fail-fast: false
       matrix:
         include:
           - function: ExtractScorecardInformation
+            secrets: "GOOGLE_GEMINI_API_KEY=gemini-api-key:latest,ASTROSITE_API_KEY=astrosite-api-key:latest"
             extra_flags: ""
           - function: GeneratePlayerBiography
+            secrets: "GOOGLE_GEMINI_API_KEY=gemini-api-key:latest,ASTROSITE_API_KEY=astrosite-api-key:latest"
             extra_flags: "--timeout=540s"
           - function: GeneratePlayerAvatar
+            secrets: "GOOGLE_GEMINI_API_KEY=gemini-api-key:latest,ASTROSITE_API_KEY=astrosite-api-key:latest"
             extra_flags: "--timeout=540s"
           - function: TournamentLeaderboard
+            secrets: "HECTOR_APP_API_KEY=hector-app-api-key:latest"
             extra_flags: "--timeout=30s --max-instances=5"
 
     defaults:
@@ -133,7 +108,7 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: ${{ vars.GH_FUNCTIONS_WIF_PROVIDER }}
+          workload_identity_provider: ${{ vars.GH_WIF_PROVIDER }}
           service_account: ${{ vars.GH_FUNCTIONS_DEPLOYER_SA }}
 
       - name: Set up gcloud
@@ -150,13 +125,15 @@ jobs:
         run: |
           gcloud functions deploy ${{ matrix.function }} \
             --gen2 \
-            --project="${{ vars.GH_FUNCTIONS_PROJECT_ID }}" \
-            --region="${{ vars.GH_FUNCTIONS_REGION || 'europe-north1' }}" \
+            --project="${{ vars.GCP_PROJECT_ID }}" \
+            --region="${{ vars.GCP_REGION }}" \
             --runtime=nodejs24 \
             --trigger-http \
             --allow-unauthenticated \
             --entry-point=${{ matrix.function }} \
             --source=. \
+            --service-account="${{ vars.GH_FUNCTIONS_RUNTIME_SA }}" \
+            --set-secrets="${{ matrix.secrets }}" \
             ${{ matrix.extra_flags }} \
             --quiet
 
@@ -167,6 +144,7 @@ jobs:
             echo "### Deployed ${{ matrix.function }}"
             echo
             echo "- Commit: \`${GITHUB_SHA::12}\`"
-            echo "- Region: ${{ vars.GH_FUNCTIONS_REGION || 'europe-north1' }}"
-            echo "- Environment variables: left as they were (see this workflow's header)"
+            echo "- Region: ${{ vars.GCP_REGION }}"
+            echo "- Runs as: ${{ vars.GH_FUNCTIONS_RUNTIME_SA }}"
+            echo "- Secrets: \`${{ matrix.secrets }}\`"
           } >> "$GITHUB_STEP_SUMMARY"

@@ -476,6 +476,19 @@ it is not a loose end.
 
 ## Phase 8 — What this repo looks like afterwards
 
+**Done 2026-09-14.** All four bullets landed together, plus two repository variables the plan did
+not name — `GH_FUNCTIONS_DEPLOYER_SA` and `GH_FUNCTIONS_RUNTIME_SA`, the second because the workflow
+has to state `--service-account` and hardcoding an account into YAML is worse than an output.
+`GH_FUNCTIONS_PROJECT_ID` and `GH_FUNCTIONS_WIF_PROVIDER` were *not* created: the workflow uses the
+existing `GCP_PROJECT_ID`, `GCP_REGION` and `GH_WIF_PROVIDER`, which is the point.
+
+One thing is still unproven. Every deploy through phase 4 ran as a human owner, so
+`functions-deployer`'s deliberately-minimal roles have never actually been exercised — the first
+workflow run is the first time that identity deploys anything. If it fails naming a permission, add
+the role in [`iam.tf`](../../terraform/iam.tf) rather than widening anything in the workflow, and
+expect `serviceAccountUser` on the Cloud Build builder to be the one, since a gen2 deploy runs a
+build as it.
+
 The migration is not finished until these land, because they are what stops the split recurring.
 
 - **[`deploy-functions.yml`](../../.github/workflows/deploy-functions.yml) loses its guard job.** The

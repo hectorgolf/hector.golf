@@ -173,7 +173,9 @@ cd backend/backend-functions
 npm run deploy:tournament-leaderboard
 ```
 
-Needs `HECTOR_APP_API_KEY` in `.env` alongside the existing `GCLOUD_PROJECT_ID`.
+Needs `GCLOUD_PROJECT_ID` in `.env`. It no longer needs `HECTOR_APP_API_KEY`:
+the function reads that from Secret Manager, and the deploy only names the
+secret.
 
 All four deploy scripts name the target project on the command line
 (`--project=$GCLOUD_PROJECT_ID`) and set the quota project for that one
@@ -183,27 +185,32 @@ alone. Then
 set the site's `PUBLIC_LEADERBOARD_PROXY_URL` repository variable to the deployed URL —
 until that is set, the leaderboard pages render exactly as they did before.
 
-### These scripts are still how keys get set
+### CI ships these, configuration included
 
-`.github/workflows/deploy-functions.yml` redeploys all four functions when code
-lands on `main`, so a dependency bump or a code change no longer waits for
-somebody to remember to run these. It deliberately passes no `--set-env-vars`,
-though: `gcloud`'s env-var flags all mutate, and passing none leaves each
-function's existing keys alone, which keeps `GOOGLE_GEMINI_API_KEY`,
-`ASTROSITE_API_KEY` and `HECTOR_APP_API_KEY` out of GitHub entirely.
+`.github/workflows/deploy-functions.yml` redeploys all four when code lands on
+`main`, and it deploys *configuration* as well as code: every deploy states
+`--service-account` and `--set-secrets`, so a function's identity and its keys
+are whatever the workflow says rather than whatever the last laptop set.
 
-So the scripts above remain the way configuration changes. Run the matching one
-by hand when a function is deployed for the first time, or when a key is
-rotated. After that, code ships itself.
+The scripts above are therefore a convenience rather than the only path. They
+pass the same flags, so a laptop deploy and a CI deploy produce the same
+function.
 
-The workflow is also inert until its repository variables are set — these
-functions are in a different GCP project from the one `terraform/` manages, so
-it needs its own deploy identity. Its header says what to create.
+**Rotating a key no longer involves a deploy at all.** Add a new version and the
+functions pick it up, because they reference `:latest`:
 
-Both limits come from that project split, not from the design. See
-[docs/plans/functions-migration.md](../docs/plans/functions-migration.md) for the plan that
-closes it, after which the keys live in Secret Manager and the workflow deploys
-configuration along with code.
+```bash
+printf %s "$NEW_KEY" | gcloud secrets versions add gemini-api-key --project=hector-golf --data-file=-
+```
+
+A redeploy only shortens the wait for existing warm instances. Nothing here ever
+holds the value: `--set-secrets` names a container, so no key passes through
+this repository, a GitHub secret or a CI runner.
+
+This was not true before 2026-09-14, when the functions lived outside the
+Terraform-managed project and their keys reached them by `--set-env-vars` from
+somebody's `.env`. See
+[docs/plans/functions-migration.md](../docs/plans/functions-migration.md).
 
 ## Running it locally
 

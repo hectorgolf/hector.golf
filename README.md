@@ -7,30 +7,23 @@ somebody decided to do next.
 
 ## Cloud Functions
 
-**Deploy the `uuid` pin to the running functions.** [#84](https://github.com/hectorgolf/hector.golf/pull/84)
-pinned `uuid` to 11.1.1 in `backend/backend-functions/package-lock.json` and closed the Dependabot
-alert, but nothing deploys that package from CI, so all four functions are still running the
-vulnerable 8.3.2. One `npm run deploy:all` from `backend/backend-functions`, with `.env` in place,
-fixes it.
+**~~Deploy the `uuid` pin to the running functions.~~** Done, as a side effect. Phase 4 of the
+functions migration built all four from `main` on 2026-09-14, so the `hector-golf` copies run
+11.1.1. The 8.3.2 copies are the ones in `gen-lang-client-0537211409` that phase 7 deletes.
 
-Not urgent. `cloudevents` calls only `uuid.v4()`, and `v4()` was never the vulnerable path — the
-advisory is about missing bounds checks in `v3()`, `v5()` and `v6()`, which nothing in this tree
-calls. It is manifest hygiene, not an exposure.
+**~~Tighten the IAM role list in `.github/workflows/deploy-functions.yml`.~~** Done in phase 8. The
+header no longer lists roles at all, because the roles are in `terraform/iam.tf` where they are
+granted: `cloudfunctions.developer` plus `serviceAccountUser` scoped to the one runtime account, and
+nothing else. `storage.objectAdmin` was never granted — the note in `iam.tf` says why it is the
+wrong answer, given the Terraform state bucket lives in the same project.
 
-**Tighten the IAM role list in `.github/workflows/deploy-functions.yml`.** Its header names
-`cloudfunctions.developer`, `run.developer`, `cloudbuild.builds.editor`, `artifactregistry.writer`,
-`storage.objectAdmin` and `iam.serviceAccountUser`. That was written before the narrower set in
-`docs/plans/functions-migration.md` phase 1 was worked out, and it is broader than a deploy needs.
+Worth knowing that this minimum is still unproven against CI. Every deploy so far ran as a human
+owner; the first `deploy-functions.yml` run is the first time `functions-deployer` deploys anything.
+If it fails naming a role, the likeliest is `serviceAccountUser` on the Cloud Build builder, since a
+gen2 deploy runs a build as it. Add it in `iam.tf`, not in the workflow.
 
-`storage.objectAdmin` is the one that matters: granted project-wide it would reach the Terraform
-state bucket. `gcloud functions deploy` uploads through a signed URL from `generateUploadUrl`, which
-`cloudfunctions.developer` already covers, so it is unnecessary as well as risky. The migration plan
-rewrites this header in its phase 8; if the migration is deferred, fix the header anyway.
-
-**Run `actionlint` over `deploy-functions.yml`.** It was written on a machine without actionlint
-installed, so it has been checked by hand — the YAML parses to the intended structure, the guard's
-bash was exercised under `bash -e` in all three variable states, and the rendered `gcloud` command
-is syntax-checked with and without the matrix's `extra_flags` — but never linted.
+**~~Run `actionlint` over `deploy-functions.yml`.~~** Done 2026-09-14, in phase 8. `actionlint`
+reports every workflow in `.github/workflows/` clean, not just this one.
 
 ## Security, from the same sweep
 
