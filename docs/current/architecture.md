@@ -630,9 +630,9 @@ Base URL: `https://europe-north1-<project>.cloudfunctions.net/<FunctionName>`.
 
 | Function | Model | Auth | Caller |
 | --- | --- | --- | --- |
-| `GeneratePlayerBiography` | `gemini-2.5-flash` | Bearer (`ASTROSITE_API_KEY`) | `update-player-biographies.ts` — the only automated caller |
-| `GeneratePlayerAvatar` | `gemini-2.5-flash-image` | Bearer (`ASTROSITE_API_KEY`) | `generate-avatars.sh`, run by hand |
-| `ExtractScorecardInformation` | `gemini-1.5-flash` | Bearer (`ASTROSITE_API_KEY`) | No caller in this repository |
+| `GeneratePlayerBiography` | `gemini-3.5-flash-lite` | Bearer (`ASTROSITE_API_KEY`) | `update-player-biographies.ts` — the only automated caller |
+| `GeneratePlayerAvatar` | `gemini-3.1-flash-lite-image` | Bearer (`ASTROSITE_API_KEY`) | `generate-avatars.sh`, run by hand |
+| `ExtractScorecardInformation` | `gemini-3.1-flash-lite` | Bearer (`ASTROSITE_API_KEY`) | No caller in this repository |
 | `TournamentLeaderboard` | — (proxy, not Gemini) | None; CORS-limited to hector.golf | The live leaderboard in a visitor's browser |
 
 **Why the proxy exists.** app.hector.golf answers `401` without an `x-api-key`, and hector.golf is a

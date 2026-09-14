@@ -10,7 +10,7 @@ import { promptV3 } from './v3'
 function initializeGenAIModel(apiKey: string): GenerativeModel {
     const genAI = new GoogleGenerativeAI(apiKey)
     const model = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash",
+        model: "gemini-3.1-flash-lite",
         generationConfig: {
             responseMimeType: "application/json"
         }
