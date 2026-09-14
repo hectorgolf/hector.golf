@@ -10,17 +10,16 @@ did it.
 
 ## Security
 
-**The last downloadable service account key.** `cf542f7b…` on
-`update-hector-leaderboard@gen-lang-client-0537211409`, held on this laptop as
-`astrosite/.env.google-credentials.json`. It is a local convenience rather than infrastructure —
-`google-sheets.ts` still honours `GOOGLE_CREDENTIALS` when set, so local runs work either way. The
-laptop section of
-[`docs/plans/sheets-credential-wif.md`](docs/plans/sheets-credential-wif.md) is what replaces it.
+**Delete the last downloadable service account key, and the account with it.** `cf542f7b…` on
+`update-hector-leaderboard@gen-lang-client-0537211409`, with a copy on a laptop at
+`astrosite/.env.google-credentials.json`. Nothing in CI uses either; the key is a local convenience,
+and [`docs/playbooks/local-gcp-identities.md`](docs/playbooks/local-gcp-identities.md) is how to work
+without it. Phase 6 of
+[`docs/plans/sheets-credential-wif.md`](docs/plans/sheets-credential-wif.md), due 2026-09-21.
 
-Once that happens, `update-hector-leaderboard@` holds nothing anyone uses and the whole account can
-go — along with its `roles/secretmanager.secretAccessor` and `roles/cloudbuild.builds.builder`,
-which it holds in order to read one spreadsheet and which are leftovers from the deleted Hello World
-function.
+The account goes with the key. It holds `roles/secretmanager.secretAccessor` and
+`roles/cloudbuild.builds.builder` in order to read one spreadsheet — leftovers from a deleted Hello
+World function — so it is worth more gone than kept.
 
 **Decide what to do with `terraform-deployer`.** A dormant identity in the old project, last
 authenticated 2025-04-06, holding `iam.serviceAccountAdmin`, `iam.serviceAccountUser` and
