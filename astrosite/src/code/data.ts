@@ -117,12 +117,26 @@ export const BUCKETS_FREEZE_AT_HOUR = 8;
  * different one than the players were shown.
  */
 export function bucketsAreOpen(event: Event | undefined, now: Date = new Date()): boolean {
-    if (!event) return false;
+    const freezesAt = bucketsFreezeAt(event);
+    if (!freezesAt) return false;
+    return now.getTime() < freezesAt.toMillis();
+}
+
+/**
+ * The moment an event's buckets stop moving, or undefined if there is no saying.
+ *
+ * The rule itself, separated from the question `bucketsAreOpen` asks of it, because
+ * it is also published: `/events/hector/:id/handicaps.json` carries this instant so
+ * that a consumer can tell a settled split from a provisional one without
+ * reimplementing the 08:00-where-the-event-is rule and the UTC fallback below. Two
+ * copies of that rule would be one too many.
+ */
+export function bucketsFreezeAt(event: Event | undefined): DateTime | undefined {
+    if (!event) return undefined;
     const zone = event.timing.timezone ?? "UTC";
     const hour = event.timing.timezone ? BUCKETS_FREEZE_AT_HOUR : 0;
     const freezesAt = DateTime.fromISO(event.timing.start, { zone }).set({ hour });
-    if (!freezesAt.isValid) return false;
-    return now.getTime() < freezesAt.toMillis();
+    return freezesAt.isValid ? freezesAt : undefined;
 }
 
 /**

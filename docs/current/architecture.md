@@ -118,7 +118,9 @@ is vestigial.
 
 ### Routes
 
-Every dynamic route implements `getStaticPaths()`. There are no API endpoints and no `pages/api/`.
+Every dynamic route implements `getStaticPaths()`. There is no `pages/api/` and nothing is served at
+request time; the one route that is not a page is a JSON file built like any other page (see
+*Published data*, below).
 
 | File | Route | Purpose |
 | --- | --- | --- |
@@ -128,6 +130,7 @@ Every dynamic route implements `getStaticPaths()`. There are no API endpoints an
 | `events/hector/index.astro` | `/events/hector` | Hector events only |
 | `events/hector/[slug].astro` | `/events/hector/:id` | The richest page: field, buckets, rounds, winners |
 | `events/hector/[slug]/leaderboard.astro` | `/events/hector/:id/leaderboard` | Generated for events with a leaderboard JSON, or configured to poll app.hector.golf |
+| `events/hector/[slug]/handicaps.json.ts` | `/events/hector/:id/handicaps.json` | The field and its handicaps, as JSON, for app.hector.golf (see below) |
 | `events/matchplay/index.astro` | `/events/matchplay` | Matchplay events |
 | `events/matchplay/[slug].astro` | `/events/matchplay/:id` | Single-elimination bracket |
 | `players/index.astro` | `/players` | Grid, ranked by a seven-level win comparator |
@@ -137,6 +140,84 @@ Every dynamic route implements `getStaticPaths()`. There are no API endpoints an
 | `courses/[slug]/holes/[hole].astro` | `/courses/:id/holes/:n` | Per-hole page with wraparound nav |
 | `golfreport/index.astro` | `/golfreport` | Archive of magazine cover images |
 | `brand.astro` | `/brand` | The colour brandbook, generated from the stylesheet (see below) |
+
+### Published data
+
+`/events/hector/:id/handicaps.json` is the one route whose consumer is a program rather than a
+person: app.hector.golf reads a Hector's field, its handicaps, and its bucket division from it. It is
+built by `src/pages/events/hector/[slug]/handicaps.json.ts` from the payload in
+`src/code/field-handicaps.ts`, one file per Hector event, and lands in `dist/` as a real `.json`
+file.
+
+Two properties of GitHub Pages are what make a static file usable as an API, and neither is
+configured anywhere in this repository:
+
+- it types a response from the file extension, so `.json` is served as `application/json`
+- it sends `access-control-allow-origin: *` on every response, so a browser on another origin may
+  fetch it without a proxy
+
+An event gives a player two handicaps, and the file carries both because they are the same number
+for most of an event's life and diverge for the rest of it:
+
+| | Frozen | Read from |
+| --- | --- | --- |
+| `bucketing_hcp` | `bucket_freeze` — 08:00 on the first morning, local to the event | The number in the committed event file, which is what the split was computed from |
+| `playing_hcp` | When the event ends | The observation log, or `getPlayerById` while the event is live |
+
+The bucketing handicap is read from the **committed** event file rather than from the `HectorEvent`
+the payload is built from. `populateUpdatedHandicaps` (§6) replaces exactly those numbers with
+current ones for any event that is not yet past, which includes every event between its bucket freeze
+and its last day — the window in which the two handicaps differ, and the only window in which this
+file is being polled. Taking them from the enriched event would publish the playing handicap twice
+under two names.
+
+`bucket_freeze` is published as an instant so a consumer can compare it against `generatedAt` and
+tell a settled split from a provisional one without reimplementing the rule; `bucketsFreezeAt()` in
+`data.ts` is that rule, and `bucketsAreOpen()` is now defined in terms of it so the two cannot drift.
+
+`bucketing_hcp_observed` is when we last *asked* the sources about that player before the split
+froze, and `handicaps_checked` is the same question for the field as a whole. Not when the handicap
+last changed: a handicap that has not moved since August is no less current for it, and "we checked
+at 03:02 and it is still 15.4" is what answers a player whose eBirdie shows something else. Both are
+read as of `bucket_freeze` and the event's last day respectively, because a sweep that ran after a
+split settled cannot be what the split was drawn from.
+
+They come from `src/data/handicap-checks.json`, a log of sweeps that `update-handicaps.ts` appends to
+on **every** run — `handicaps.json` records what changed, this records that we looked, and a quiet
+day is exactly where the two come apart. Entries are `{ at, checked, skipped }`; `skipped` names the
+players no source answered for, either because they have no club or because every source failed, so
+"we checked everyone" is never claimed on behalf of the player likeliest to ask.
+
+It is append-only and never pruned, like the observation log beside it. A Hector's buckets and the
+handicaps they were drawn on are kept for good in the event file, so an explanation that expired
+after a season would leave the 2026 split standing in 2036 with nothing left to say about how it came
+about. At roughly 57KB a year that is not a file worth trimming — half of what `handicaps.json`
+already holds, per decade.
+
+Three consequences worth knowing:
+
+- A quiet sweep now produces a commit and a deploy where it previously produced neither, because
+  `commit-changes.sh` commits on any change under `src/data/`. Twice a day, by design.
+- A sweep that reached *nobody* is not recorded at all. Its entry would be the whole roster under
+  `skipped`, and committing it would deploy the site over a run that learned nothing; an outage
+  belongs in the workflow log. `sweepOf()` is that decision, separated from the writing so it can be
+  tested without a filesystem.
+- `update-handicaps.ts` only sweeps when it is the process entry point. It is imported by the tests
+  for `fetchUpdatedPlayerRecords`, and before the guard an import scraped the sources, rewrote the
+  buckets, and — once the sweep log existed — appended to committed data every time the suite ran.
+
+Events older than the log publish null for both fields, which is every event until the first sweep
+after this shipped.
+
+A past event is frozen at its own dates: the latest reading of a 2014 player's handicap is a fact
+about today and says nothing about the golf that was played. A handicap the log cannot reach back to
+is published as `null` rather than filled in from a later reading, which for every Hector before 2024
+means the whole field. Every field is nullable and none is ever omitted, so a consumer reads the same
+shape for a Hector played next month and one played in 2014.
+
+Freshness is deploy cadence, not live: handicaps reach the repository twice a day (§8), and the file
+is rebuilt when that commit deploys. A consumer needing the value at the moment a round starts is
+asking the wrong system.
 
 ### Layers
 
