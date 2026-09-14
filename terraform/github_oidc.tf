@@ -54,3 +54,12 @@ resource "google_service_account_iam_member" "admin_deployer_wif" {
   role               = "roles/iam.workloadIdentityUser"
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.ref/refs/heads/main"
 }
+
+# Same shape as admin_deployer above, for the same reason: the leaderboard
+# scrape only ever runs from main. It is bound to the ref alone because the
+# provider's attribute_condition has already pinned the repository.
+resource "google_service_account_iam_member" "leaderboard_reader_wif" {
+  service_account_id = google_service_account.leaderboard_reader.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.ref/refs/heads/main"
+}

@@ -136,3 +136,44 @@ resource "google_service_account_iam_member" "admin_deployer_act_as" {
   role               = "roles/iam.serviceAccountUser"
   member             = google_service_account.admin_deployer.member
 }
+
+# ---------------------------------------------------------------------------
+# The Google Sheets read identity: update-leaderboards.yml, and nothing else.
+#
+# Deliberately holds NO project roles. Sheets access is not granted by GCP IAM
+# at all — it comes from sharing the spreadsheet with this account's email
+# address — so there is nothing for a google_project_iam_member to usefully say
+# here. If a change appears to need one, that is a sign something other than
+# reading a spreadsheet is being asked of this identity.
+#
+# It replaces update-hector-leaderboard@gen-lang-client-…, which authenticated
+# with a downloadable JSON key and carried secretmanager.secretAccessor and
+# cloudbuild.builds.builder left over from a deleted Cloud Function. See
+# docs/plans/sheets-credential-wif.md.
+# ---------------------------------------------------------------------------
+
+resource "google_service_account" "leaderboard_reader" {
+  project      = var.project_id
+  account_id   = "leaderboard-reader"
+  display_name = "Reads tournament leaderboards from Google Sheets"
+  description  = "Read-only Google Sheets scrape for update-leaderboards.yml. Authenticates by Workload Identity Federation; holds no key and no project roles."
+  depends_on   = [google_project_service.enabled["iam.googleapis.com"]]
+
+}
+
+# Lets a human run the scrape locally as this exact identity:
+#
+#   gcloud auth application-default login \
+#     --impersonate-service-account=<the leaderboard_service_account output>
+#
+# Which matters because the alternative — running as yourself — proves less: you
+# own the spreadsheets, so a local run passes whether or not the sheets have
+# been shared with the service account, and a sharing mistake then shows up only
+# in Actions.
+resource "google_service_account_iam_member" "leaderboard_reader_impersonation" {
+  for_each = toset(var.leaderboard_reader_impersonators)
+
+  service_account_id = google_service_account.leaderboard_reader.name
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member             = each.value
+}
