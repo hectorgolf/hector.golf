@@ -105,6 +105,11 @@ jobs:
           # A repository variable rather than a secret: a hostname is not one,
           # and it is easier to see that CI and a laptop agree when it is visible.
           TF_VAR_admin_domain: ${{ vars.TF_ADMIN_DOMAIN }}
+          # A JSON array again, and likewise out of the tree because it is email
+          # addresses. The `|| '[]'` is load-bearing: an unset variable arrives
+          # as the empty string, and Terraform cannot parse "" as a list — it
+          # fails the run rather than reading the empty default.
+          TF_VAR_leaderboard_reader_impersonators: ${{ vars.TF_LEADERBOARD_IMPERSONATORS || '[]' }}
 
       - name: Summarise
         if: steps.guard.outputs.configured == 'true'

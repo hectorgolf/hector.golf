@@ -203,3 +203,29 @@ variable "budget_amount_eur" {
   type        = number
   default     = 2
 }
+
+variable "leaderboard_reader_impersonators" {
+  description = <<-EOT
+    Who may impersonate the leaderboard-reader service account, as IAM principal
+    strings, e.g. ["user:someone@example.com"]. Each is granted
+    roles/iam.serviceAccountTokenCreator on that account and nothing else.
+
+    This is what makes
+
+      gcloud auth application-default login \
+        --impersonate-service-account=<leaderboard_service_account>
+
+    work, which is how you run `npm run update-leaderboards` locally as the same
+    identity CI uses. Empty is fine and is the default: you can still run it as
+    yourself, it just proves less — you own the spreadsheets, so a local run
+    passes whether or not they have been shared with the service account.
+
+    Supplied from the TF_LEADERBOARD_IMPERSONATORS repository variable rather
+    than committed here, for the same reason as admin_principals: this
+    repository is public and these are people's email addresses. A variable
+    rather than a secret, because what it holds is not one — and a visible value
+    makes it easy to see that CI and a laptop agree.
+  EOT
+  type        = list(string)
+  default     = []
+}

@@ -16,6 +16,16 @@ output "deployer_service_account" {
   value       = google_service_account.admin_deployer.email
 }
 
+output "leaderboard_service_account" {
+  description = <<-EOT
+    Value for the GH_LEADERBOARD_SA repository variable, and the address the
+    HECTOR2024 and HECTOR2025 spreadsheets must be shared with (Viewer) for the
+    scrape to see them. Sharing is the whole of its access: this account holds
+    no project roles.
+  EOT
+  value       = google_service_account.leaderboard_reader.email
+}
+
 output "admin_image_repository" {
   description = "Value for the GH_IMAGE_REPO repository variable — the full image name to push to, without a tag."
   value       = local.admin_image_repo
