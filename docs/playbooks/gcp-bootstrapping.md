@@ -329,7 +329,10 @@ Read the values out of Terraform:
 terraform output
 ```
 
-Under **Settings → Secrets and variables → Actions → Variables**, add six repository variables:
+Under **Settings → Secrets and variables → Actions → Variables**, add these repository variables.
+Most are a `terraform output` away, which is the point of the outputs existing.
+
+Terraform and the admin service need these six, and nothing works without them:
 
 | Variable | Value |
 | --- | --- |
@@ -340,7 +343,27 @@ Under **Settings → Secrets and variables → Actions → Variables**, add six 
 | `GCP_PROJECT_ID` | `hector-golf` |
 | `GCP_REGION` | `europe-north1` |
 
-Under **Secrets**, add one:
+The Cloud Functions need three more. There is no `GH_FUNCTIONS_WIF_PROVIDER`: they federate through
+the pool above, which is the whole reason they were moved into this project.
+
+| Variable | Value |
+| --- | --- |
+| `GH_FUNCTIONS_DEPLOYER_SA` | `terraform output -raw functions_deployer_service_account` |
+| `GH_FUNCTIONS_RUNTIME_SA` | `terraform output -raw functions_runtime_service_account` |
+| `GH_FUNCTIONS_BUILDER_SA` | `terraform output -raw functions_builder_service_account` |
+
+And the site and the scrapes need these. Each is optional in the sense that its absence degrades one
+thing rather than breaking the project, which is exactly why a bootstrap misses them:
+
+| Variable | Value | Absent means |
+| --- | --- | --- |
+| `GH_LEADERBOARD_SA` | `terraform output -raw leaderboard_service_account` | the Google Sheets scrape cannot authenticate |
+| `PUBLIC_LEADERBOARD_PROXY_URL` | `https://europe-north1-hector-golf.cloudfunctions.net/TournamentLeaderboard` | live leaderboards are absent from the build entirely |
+| `TF_ADMIN_DOMAIN` | `admin.hector.golf` | no custom domain mapping — see the optional step near the end |
+| `TF_LEADERBOARD_IMPERSONATORS` | `["user:you@example.com"]` — a JSON array | nobody can run the scrape locally as the CI identity |
+| `GIT_COMMITTER_EMAIL` | the address the data-update workflows commit as | commits get the default Actions identity |
+
+Under **Secrets**, add three:
 
 | Secret | Value |
 | --- | --- |
@@ -348,9 +371,11 @@ Under **Secrets**, add one:
 | `TF_IAP_OAUTH_CLIENT_ID` | The client id from step 5 |
 | `TF_IAP_OAUTH_CLIENT_SECRET` | The client secret from step 5 |
 
-That one is a secret rather than a committed `.tfvars` file because this repository is public and
-those are real people's email addresses. Terraform reads complex variables from `TF_VAR_*` as JSON,
-which is why the quoting looks the way it does.
+`TF_ADMIN_PRINCIPALS` is a secret rather than a committed `.tfvars` file because this repository is
+public and those are real people's email addresses. `TF_LEADERBOARD_IMPERSONATORS` holds the same
+kind of value and is a *variable* rather than a secret, deliberately: an email address is not a
+secret, and a visible value makes it easy to see that CI and a laptop agree. Terraform reads complex
+variables from `TF_VAR_*` as JSON, which is why the quoting looks the way it does.
 
 Both Terraform workflows check for `GH_WIF_PROVIDER`, `GH_TERRAFORM_SA` and `TF_ADMIN_PRINCIPALS`
 before they authenticate, and treat two situations differently:
@@ -634,9 +659,8 @@ send `Content-Type: application/json`, which is why `terraform/scheduler.tf` and
 
 ## Adopting something that already exists
 
-If a resource is already there — because it got clicked into being before anyone read this, or
-because you are adopting the Cloud Functions under `backend/` later — do not run `terraform import`
-from a laptop. Use an [`import` block](https://developer.hashicorp.com/terraform/language/import),
+If a resource is already there — because it got clicked into being before anyone read this — do not
+run `terraform import` from a laptop. Use an [`import` block](https://developer.hashicorp.com/terraform/language/import),
 so the adoption is reviewed in a pull request and `terraform plan` says whether the committed config
 matches reality *before* anything is applied.
 
