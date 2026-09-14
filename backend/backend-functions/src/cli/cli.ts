@@ -1,6 +1,6 @@
 import 'dotenv/config'  // apply the ".env" file to process.env
 
-import { extractScorecardInformation } from '../lib/genai'
+import { extractScorecardInformation } from '../lib/prompts/scorecard-detection/genai'
 import { existsSync } from 'fs'
 
 

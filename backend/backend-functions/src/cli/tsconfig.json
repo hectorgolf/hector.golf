@@ -1,0 +1,16 @@
+{
+  // Typechecks the local CLI tools, which the other two configs deliberately leave out:
+  // `../../tsconfig.json` describes the deployable build and `../../test/tsconfig.json`
+  // the test suite, and these scripts are part of neither. Without a config of their own
+  // the editor drops them into an inferred project that ignores `types: ["node"]`, so
+  // `fs`, `process` and friends appear unresolved.
+  "extends": "../../tsconfig.json",
+  "include": ["./**/*.ts"],
+  // The base config's exclusions, minus the `src/cli/` one that is the whole point of
+  // this file.
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false
+  }
+}
