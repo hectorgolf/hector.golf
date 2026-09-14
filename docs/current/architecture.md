@@ -822,8 +822,6 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
 
 **Configuration drift**
 
-- Node versions disagree: `.node-version` and the deploy/PR workflows use 24, the four update
-  workflows pin `"22"`, and the Cloud Functions run `nodejs24`.
 - `TEETIME_CLUB_NUMBER`, `TEETIME_USERNAME`, and `TEETIME_PASSWORD` are passed to three workflows,
   but no code in `astrosite/` reads them — leftovers from a removed TeeTime integration.
 - `zod` is imported throughout `src/schemas/` and `src/code/` but is **not a declared dependency** —
