@@ -397,7 +397,7 @@ files:
 | --- | --- | --- | --- |
 | WiseGolf | `code/handicaps/wisegolf-api.ts` | Username/password → bearer token | Official WHS handicaps, club directory, club membership |
 | Ringside Golf | same module | Same token | Second player-lookup endpoint |
-| Google Sheets v4 | `code/leaderboards/google-sheets.ts` | Service account (`GOOGLE_CREDENTIALS`) | Live leaderboards for sheet-managed events |
+| Google Sheets v4 | `code/leaderboards/google-sheets.ts` | `leaderboard-reader` by Workload Identity Federation, via ADC | Live leaderboards for sheet-managed events |
 | app.hector.golf | `code/leaderboards/app.ts` | `x-api-key` | Live leaderboards for app-managed events |
 | app.hector.golf (browser) | `code/leaderboards/app-payload.ts` | None — via the `TournamentLeaderboard` proxy (§10) | The same standings, polled from the visitor's browser |
 | GitHub Contents API | `code/leaderboards/github.ts` | `GITHUB_ACCESS_TOKEN` (Octokit) | Commits leaderboard JSON directly |
@@ -613,7 +613,7 @@ functions into `hector-golf`.
 | --- | --- | --- |
 | `WISEGOLF_USERNAME` | Variable (also hardcoded in some workflow YAML) | deploy, PR checks, three update workflows |
 | `WISEGOLF_PASSWORD` | Secret | deploy, PR checks, three update workflows |
-| `GCP_SERVICE_ACCOUNT_CREDENTIALS` | Secret → `GOOGLE_CREDENTIALS` | `update-leaderboards` |
+| `GH_LEADERBOARD_SA` | Variable | `update-leaderboards` — the identity it federates to |
 | `HECTOR_APP_API_KEY` | Secret | `update-leaderboards` |
 | `ASTROSITE_API_KEY` | Secret | `update-player-biographies` |
 | `GITHUB_TOKEN` | Built-in → `GITHUB_ACCESS_TOKEN` | `update-leaderboards` |

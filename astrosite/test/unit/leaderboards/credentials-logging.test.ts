@@ -56,3 +56,28 @@ describe('a malformed GOOGLE_CREDENTIALS', () => {
         expect(logged).toContain(`${malformed.length} characters`)
     })
 })
+
+/**
+ * An unset GOOGLE_CREDENTIALS is the normal case since the move to Workload
+ * Identity Federation: Application Default Credentials resolves the identity,
+ * and the module must not treat its absence as a fault. It used to warn that
+ * "Google Sheets authentication will not work", which is now exactly backwards.
+ */
+describe('an unset GOOGLE_CREDENTIALS', () => {
+    it('imports without complaining, because ADC is the normal path', async () => {
+        vi.resetModules()
+        vi.stubEnv('GOOGLE_CREDENTIALS', '')
+        const complaints: unknown[][] = []
+        const record = (...args: unknown[]) => {
+            complaints.push(args)
+        }
+        const warn = vi.spyOn(console, 'warn').mockImplementation(record)
+        const error = vi.spyOn(console, 'error').mockImplementation(record)
+
+        await import('../../../src/code/leaderboards/google-sheets')
+
+        warn.mockRestore()
+        error.mockRestore()
+        expect(complaints.flat().map(String).join(' ')).toBe('')
+    })
+})

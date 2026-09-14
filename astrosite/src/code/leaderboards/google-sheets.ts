@@ -20,7 +20,9 @@ function acquireGoogleCredentials() {
 
     const value = process.env.GOOGLE_CREDENTIALS;
     if (!value) {
-        console.warn("GOOGLE_CREDENTIALS environment variable is not set - Google Sheets authentication will not work");
+        // Not a warning, and not a problem: unset is the normal case since the
+        // move to Workload Identity Federation. Application Default Credentials
+        // resolves the identity instead — see authenticate() below.
         return undefined;
     }
     try {
@@ -59,15 +61,31 @@ const googleCredentials = acquireGoogleCredentials();
 
 const columnName = (index: number): string => columnNames[index] || `${index}?`;
 
-const authenticate = async (): Promise<sheets_v4.Sheets> => {
-    if (!googleCredentials) {
-        throw new Error("GOOGLE_CREDENTIALS missing - cannot authenticate");
+// Omitting `credentials` is what makes GoogleAuth fall back to Application
+// Default Credentials, which is the whole of the change away from a downloadable
+// service account key: in Actions, google-github-actions/auth writes an ADC file
+// and points GOOGLE_APPLICATION_CREDENTIALS at it, and on a laptop
+// `gcloud auth application-default login` does the same. An explicit
+// GOOGLE_CREDENTIALS still wins where one is set, so nothing breaks on the way.
+const auth = new google.auth.GoogleAuth({
+    ...(googleCredentials ? { credentials: googleCredentials } : {}),
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+});
+
+// Which identity the request actually went out as, for the 403 below. Only the
+// auth library knows under ADC, and finding out can cost a token exchange, so
+// this is asked for lazily and never allowed to fail: turning a clear 403 into
+// an obscure crash of its own would defeat the point of asking.
+const actingIdentity = async (): Promise<string | undefined> => {
+    try {
+        return (await auth.getCredentials()).client_email;
+    } catch {
+        return undefined;
     }
-    const client = new google.auth.GoogleAuth({
-        credentials: googleCredentials,
-        scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-    });
-    return google.sheets({ version: "v4", auth: client });
+};
+
+const authenticate = async (): Promise<sheets_v4.Sheets> => {
+    return google.sheets({ version: "v4", auth });
 };
 
 const findCellContaining = (rows: Rows, matcher: (value: CellValue) => boolean) => {
@@ -279,11 +297,16 @@ const processRangeInSheet = async (
     return new Promise(async (resolve, reject) => {
         try {
             const sheets = await authenticate();
-            const callback: Common.BodyResponseCallback<sheets_v4.Schema$ValueRange> = (err: any, res: any) => {
+            const callback: Common.BodyResponseCallback<sheets_v4.Schema$ValueRange> = async (err: any, res: any) => {
                 if (err) {
                     if (err.response?.status === 403) {
+                        // Worth naming the identity: a sheet that has not been
+                        // shared fails here, and a 403 on an authenticated
+                        // request reads like an authentication problem, which
+                        // sends you looking in the wrong place.
+                        const email = await actingIdentity();
                         let msg = `Access to ${spreadsheetId} denied - check that you've shared the Google Sheet with the service account email address`;
-                        if (googleCredentials.client_email) msg += `: ${googleCredentials.client_email}`;
+                        if (email) msg += `: ${email}`;
                         console.error(msg);
                     } else {
                         console.error("The API returned an error.", err);

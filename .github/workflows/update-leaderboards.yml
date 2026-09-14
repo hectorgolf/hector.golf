@@ -55,13 +55,28 @@ jobs:
       # install happens there rather than inside astrosite/.
       - name: Install dependencies
         run: npm ci
+      # The same keyless exchange every other workflow here uses, replacing the
+      # downloadable service account key this one used to read from the
+      # GCP_SERVICE_ACCOUNT_CREDENTIALS secret. This writes an Application
+      # Default Credentials file and points GOOGLE_APPLICATION_CREDENTIALS at
+      # it; google-sheets.ts picks that up by omitting `credentials` when
+      # GOOGLE_CREDENTIALS is unset. `id-token: write` is declared above.
+      #
+      # leaderboard-reader holds no project roles at all. Its access to the two
+      # spreadsheets comes from their being shared with its email address, so a
+      # sheet that has not been shared fails with a 403 rather than with an
+      # authentication error. See docs/plans/sheets-credential-wif.md.
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GH_WIF_PROVIDER }}
+          service_account: ${{ vars.GH_LEADERBOARD_SA }}
       - name: Run script
         run: |
           npx tsx src/workflows/update-leaderboards.ts
         working-directory: ${{ env.BUILD_PATH }}
         env:
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GOOGLE_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_CREDENTIALS }}
           HECTOR_APP_API_KEY: ${{ secrets.HECTOR_APP_API_KEY }}
       - name: Commit changes
         run: |
