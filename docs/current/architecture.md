@@ -766,17 +766,23 @@ The substance lives in `backend/backend-functions/src/lib/prompts/`:
   scorecards into typed results. `v3` is a multi-stage pipeline that first determines the game
   format and row headings and emits a decision log alongside its output.
 
-**Deployment is manual, from a developer laptop.** `npm run deploy:*` runs
-`tsc && gcloud functions deploy … --gen2 --region=europe-north1 --runtime=nodejs24 --trigger-http
---allow-unauthenticated`. No GitHub workflow deploys the backend, and it has no tests, no linting,
-and no CI of any kind.
+**Deployment is CI's, since 2026-09-14.** `deploy-functions.yml` ships all four on every push to
+`main` touching `backend/backend-functions/**` (§9), and `backend-checks.yml` runs the test suite on
+pull requests. The `npm run deploy:*` scripts still exist and pass the same flags, so a laptop deploy
+and a CI deploy produce the same function.
 
-`--allow-unauthenticated` refers to GCP IAM only; all three functions enforce their own shared-secret
-check on the `Authorization: Bearer` header against `ASTROSITE_API_KEY`. That value reaches the
-deployed function through `--set-env-vars`, read from the deploying developer's local `.env` — the
-`.env` file itself is never uploaded, since `.gcloudignore` pulls in `.gitignore`, which excludes it.
-Locally the same file is applied to `process.env` as a side effect of the prompt modules, which
-`import 'dotenv/config'`.
+**Anonymous callers are allowed at the IAM layer, and the functions check their own keys.** The
+`allUsers` → `roles/run.invoker` binding on each of the four Cloud Run services lives in
+[`cloud_run.tf`](../../terraform/cloud_run.tf); no deploy passes `--allow-unauthenticated`, because
+that flag is an IAM write rather than a deploy setting and the deploy identity holds no run
+permissions. On top of that binding, the three Gemini functions enforce a shared-secret check on the
+`Authorization: Bearer` header against `ASTROSITE_API_KEY`, and `TournamentLeaderboard` is
+CORS-limited instead.
+
+The keys reach the functions from Secret Manager, mounted by `--set-secrets` — not from anyone's
+`.env`, which is how it worked before the migration. Locally the same values are applied to
+`process.env` by the prompt modules, which `import 'dotenv/config'`; `.env` itself is never uploaded,
+since `.gcloudignore` pulls in `.gitignore`, which excludes it.
 
 Generated avatars are the one backend output that reaches the repository, and they get there by hand:
 `generate-avatars.sh` loops over `astrosite/src/data/players/images/originals/*.jpeg` and writes PNGs

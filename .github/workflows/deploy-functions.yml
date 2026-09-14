@@ -50,6 +50,18 @@
 # as the project's default compute service account, which Google gave
 # roles/editor; the deployer would then need actAs on an editor-privileged
 # account to deploy at all.
+#
+# ## Why there is no --allow-unauthenticated
+#
+# Because it is an IAM write, not a deploy setting: gcloud turns it into
+# run.services.setIamPolicy on the underlying Cloud Run service, every time,
+# even when the binding is already there. The deployer holds no run permissions,
+# so the flag failed the first CI run *after* all four functions had already
+# updated — red build, finished deploy.
+#
+# The allUsers binding lives in terraform/cloud_run.tf now. Giving this identity
+# the permission instead would have meant roles/run.admin, which also reaches
+# hector-admin.
 
 name: Deploy Cloud Functions
 
@@ -136,7 +148,6 @@ jobs:
             --region="${{ vars.GCP_REGION }}" \
             --runtime=nodejs24 \
             --trigger-http \
-            --allow-unauthenticated \
             --entry-point=${{ matrix.function }} \
             --source=. \
             --service-account="${{ vars.GH_FUNCTIONS_RUNTIME_SA }}" \
