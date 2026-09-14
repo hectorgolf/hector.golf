@@ -8,12 +8,20 @@
 #
 # ## What it runs on
 #
-# The inputs to a Markdown lint are the Markdown and the lint configuration, so
-# the path filter names both. `.markdownlint-cli2.jsonc` is the obvious half;
-# `package-lock.json` is the other, because it pins the linter version and a bump
-# can change what passes. That does mean an unrelated dependency bump runs this,
-# which is the cheaper mistake: the alternative is a linter upgrade landing on
-# main and breaking the next docs PR instead of its own.
+# Markdown, and the configuration that decides what passes. Nothing else — the
+# filter means what its name says.
+#
+# `package-lock.json` was in this list and is deliberately not any more, because
+# it pins the linter version and a bump there can change the result without
+# `.markdownlint-cli2.jsonc` being touched: the config overrides six rules and
+# never sets `"default": false`, so every other active rule is whatever
+# markdownlint ships. That is a real gap and it is accepted knowingly. The
+# lockfile is shared by every workspace, so filtering on it would run this job on
+# every dependency bump anywhere in the repository — a filter that fires mostly
+# for reasons unrelated to its name is the thing #125 went through this directory
+# to remove. The failure it would have caught is cheap and announces itself: a
+# linter upgrade that changes what passes goes red on the next pull request that
+# touches a `.md`, which is nearly all of them.
 #
 # ## Why the install looks like that
 #
@@ -31,7 +39,6 @@ on:
     paths:
       - '**/*.md'
       - '.markdownlint-cli2.jsonc'
-      - 'package-lock.json'
       - '.github/workflows/check-markdown.yml'
 
 permissions:
