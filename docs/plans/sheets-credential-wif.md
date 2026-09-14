@@ -1,6 +1,7 @@
 # Retiring the Google Sheets service account key
 
-_Written 2026-09-14. Not executed._
+_Written 2026-09-14. **Phases 1–5 executed the same day** (#99, #101, #100). Phase 6 is deliberately
+outstanding — it waits a week, until 2026-09-21 at the earliest._
 
 `update-leaderboards.yml` reads two Google Sheets using a downloadable service account key, held in
 the `GCP_SERVICE_ACCOUNT_CREDENTIALS` repository secret. This plan replaces it with Workload
@@ -72,6 +73,19 @@ other than Sheets is being asked of this identity.
 Then add a repository **variable** `GH_LEADERBOARD_SA` with the new address, alongside the existing
 `GH_DEPLOYER_SA`. A variable, not a secret: it is an email address.
 
+## Phase 1b — Enable the Sheets API
+
+Not in the original plan, and the one thing that actually blocked it. `sheets.googleapis.com` had
+never been enabled in `hector-golf`, so `leaderboard-reader@hector-golf` could not read either sheet
+however correctly they had been shared with it: the *consumer project* of a service account's API
+calls is the project the account lives in, and moving the identity moved the consumer project with
+it. The old account lives in `gen-lang-client-…`, where the API has been on for years, which is
+exactly why nobody would think to check.
+
+It is in `apis.tf` now. Worth knowing for its own sake: the failure is a 403, like the unshared-sheet
+failure phase 2 warns about, but it is `SERVICE_DISABLED` and names a project *number* rather than
+saying anything about sharing. From inside a workflow log the two look alike.
+
 ## Phase 2 — Share the spreadsheets
 
 The manual step, and the one that cannot be automated from here. Share both sheets with
@@ -94,6 +108,14 @@ make the field optional rather than to restructure anything:
 
 The newline-normalising fallback exists only for pasted `.env` values, so it goes when the variable
 does, and the parse-failure branch goes with it.
+
+One thing this list missed, found while making the change: the 403 handler in `processRangeInSheet`
+reads `googleCredentials.client_email`, which is a `TypeError` the moment there are no parsed
+credentials to read it from — so "make the field optional" is not quite the whole of it. It asks the
+auth client instead. `GoogleAuth.getCredentials()` answers with the service account the request
+actually went out as under both federation (`BaseExternalAccountClient`) and local impersonation
+(`Impersonated`), which is the one message worth keeping accurate here, since it is what tells you a
+sheet has not been shared.
 
 That branch used to log the value it could not parse. An earlier draft of this document called that
 "the whole credential in a public repository's log", which was wrong and worth correcting here
@@ -130,6 +152,14 @@ gh run list --repo hectorgolf/hector.golf --workflow update-leaderboards.yml --l
 ```
 
 Expect `Found 2 ongoing Hector events with a live leaderboard` and a sheet id per event.
+
+That is what run [34792965107](https://github.com/hectorgolf/hector.golf/actions/runs/34792965107)
+printed on 2026-09-14, along with `Returning Hector leaderboard data range as B8:F19` for both sheets
+— parsed rows rather than an empty read, which is the distinction this phase exists to draw. The two
+events then reported `hasn't changed; skipping`, which is correct: both tournaments concluded long
+ago, and the commented-out "event finished" filter is why they are re-read at all. `GOOGLE_CREDENTIALS`
+is absent from the step's environment and `GOOGLE_APPLICATION_CREDENTIALS` points at the file
+`google-github-actions/auth` wrote.
 
 ## Phase 6 — Remove the key
 
