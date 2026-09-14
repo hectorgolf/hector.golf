@@ -473,7 +473,7 @@ Cheap everywhere, which is the point of the ordering.
 Moving the functions moves their spend under the alert in [`budget.tf`](../../terraform/budget.tf),
 which is why `budget_amount_eur` went from 1 to 2 alongside this plan. The functions themselves
 round to nothing — they scale to zero and the leaderboard proxy is capped at five instances. The
-variable is Gemini, and specifically `gemini-2.5-flash-image` behind `GeneratePlayerAvatar`, which
+variable is Gemini, and specifically `gemini-3.1-flash-lite-image` behind `GeneratePlayerAvatar`, which
 is run by hand rather than on a schedule.
 
 If the alert starts firing on ordinary use, raise the number rather than muting it. A budget alert

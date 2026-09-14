@@ -90,7 +90,7 @@ function extractGeneratedImage(result: any): { avatar: string; mimeType: string 
 function initializeGenAIModel(apiKey: string): GenerativeModel {
     const genAI = new GoogleGenerativeAI(apiKey);
     const modelParams: any = {
-        model: "gemini-2.5-flash-image",
+        model: "gemini-3.1-flash-lite-image",
         generationConfig: {
             // Request image output while still allowing text fallback in edge cases.
             responseModalities: ["IMAGE", "TEXT"],
