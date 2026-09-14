@@ -76,10 +76,10 @@ If either field is invalid, the function responds with HTTP `400` and a `details
 
 ## Example request (data URL strings)
 
-For example, when the function is deployed to `https://europe-north1-gen-lang-client-0537211409.cloudfunctions.net/GeneratePlayerAvatar`:
+For example, when the function is deployed to `https://europe-north1-hector-golf.cloudfunctions.net/GeneratePlayerAvatar`:
 
 ```bash
-curl -X POST "https://europe-north1-gen-lang-client-0537211409.cloudfunctions.net/GeneratePlayerAvatar" \
+curl -X POST "https://europe-north1-hector-golf.cloudfunctions.net/GeneratePlayerAvatar" \
     -H "Authorization: Bearer <ASTROSITE_API_KEY>" \
     -H "Content-Type: application/json" \
     -d '{
@@ -91,7 +91,7 @@ curl -X POST "https://europe-north1-gen-lang-client-0537211409.cloudfunctions.ne
 ## Example request (inlineData objects)
 
 ```bash
-curl -X POST "https://europe-north1-gen-lang-client-0537211409.cloudfunctions.net/GeneratePlayerAvatar" \
+curl -X POST "https://europe-north1-hector-golf.cloudfunctions.net/GeneratePlayerAvatar" \
     -H "Authorization: Bearer <ASTROSITE_API_KEY>" \
     -H "Content-Type: application/json" \
     -d '{
@@ -150,7 +150,7 @@ same pattern is kept in `astrosite/src/code/leaderboards/sources.ts`.
 ## Request
 
 ```bash
-curl "https://europe-north1-gen-lang-client-0537211409.cloudfunctions.net/TournamentLeaderboard?event=HECTOR2026"
+curl "https://europe-north1-hector-golf.cloudfunctions.net/TournamentLeaderboard?event=HECTOR2026"
 ```
 
 No authentication: the standings are published on the public website anyway. Browser
