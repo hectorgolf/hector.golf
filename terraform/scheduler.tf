@@ -110,12 +110,16 @@ locals {
   # detail. On 2026-09-14 the numbers landed between 06:00 and 08:22 Finnish; the
   # single 03:00 UTC scrape ran at 06:00:36 local, missed them by seconds, read
   # every player as unchanged, and the site carried yesterday's handicaps until
-  # the afternoon. Every half hour from 03:00 to 07:30 would have caught it
-  # within thirty minutes.
+  # the afternoon. Hourly from 03:00 to 07:00 would have caught it within the
+  # hour.
   #
   # The last tick before a Hector's buckets freeze matters most: the freeze is
   # 08:00 local to the event, which is 05:00 UTC for a Finnish venue and 06:00
-  # UTC for Konopiště. Both have a tick within the half hour before them.
+  # UTC for Konopiště, so the last useful tick is 04:00 and 05:00 respectively.
+  # That leaves an hour in which a handicap can arrive and miss the buckets,
+  # which is the cost of hourly over half-hourly and is accepted deliberately:
+  # the buckets are projected until the morning of the event, and a value that
+  # late is one the Union itself published late.
   #
   # ## The afternoon
   #
@@ -130,10 +134,10 @@ locals {
   # runs of a couple of minutes each. Both are inside free tiers. The workflows
   # share one `data-update` concurrency group, so a tick that arrives while the
   # previous one is still running queues rather than races — which is the
-  # interlock that makes a half-hourly cadence safe at all.
+  # interlock that makes a higher cadence safe at all.
   data_update_schedules = {
-    # Every half hour across the early-tee-time window.
-    morning = { cron = "*/30 3-7 * * *" }
+    # Hourly across the early-tee-time window.
+    morning = { cron = "0 3-7 * * *" }
     midday  = { cron = "0 12 * * *" }
   }
 }

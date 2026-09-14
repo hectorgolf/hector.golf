@@ -6,7 +6,7 @@ import { SCHEDULED_WORKFLOWS } from '../../../lib/workflows.ts'
 
 /**
  * Start everything the schedule is responsible for: the endpoint the two Cloud
- * Scheduler jobs call: every half hour from 03:00 to 07:30 UTC, and once at 12:00 UTC.
+ * Scheduler jobs call: hourly from 03:00 to 07:00 UTC, and once at 12:00 UTC.
  *
  * ## Why one endpoint rather than a job per workflow
  *

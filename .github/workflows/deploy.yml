@@ -17,7 +17,7 @@ on:
   # with GITHUB_TOKEN does not trigger workflows.
   #
   # 08:00 and 13:00 sit after the data ticks rather than among them: those are
-  # every half hour from 03:00 to 07:30, and once at 12:00, in
+  # hourly from 03:00 to 07:00, and once at 12:00, in
   # terraform/scheduler.tf. This used to be `30 3,12`, which was after the ticks
   # when there were two of them and would now fire in the middle of the morning
   # window, backstopping data that had not arrived yet.

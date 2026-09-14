@@ -6,7 +6,7 @@ name: Update tournament leaderboards
 on:
   # A backstop, not the schedule this actually runs on: GitHub delivers
   # `schedule` events hours late for this repository. Cloud Scheduler calls the
-  # admin service every half hour from 03:00 to 07:30 UTC, and once at 12:00 UTC and it dispatches this workflow along
+  # admin service hourly from 03:00 to 07:00 UTC, and once at 12:00 UTC and it dispatches this workflow along
   # with update-handicaps.yml, which arrives immediately. See
   # terraform/scheduler.tf and update-handicaps.yml for the measurements.
   #

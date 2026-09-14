@@ -10,7 +10,7 @@ on:
   # for this repository has meant hours: across the last 300 scheduled runs, the
   # 03:00 slot was a median of 2h22m late in April 2026 and 4h32m late in
   # September, and not one started on time. The real clock is Cloud Scheduler,
-  # which calls the admin service every half hour from 03:00 to 07:30 UTC, and once at 12:00 UTC, and the admin service
+  # which calls the admin service hourly from 03:00 to 07:00 UTC, and once at 12:00 UTC, and the admin service
   # dispatches this workflow — `workflow_dispatch` is delivered immediately.
   # See terraform/scheduler.tf and admin/src/lib/workflows.ts.
   #

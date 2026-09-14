@@ -22,7 +22,7 @@ Everything in [`terraform/`](../../terraform/) describes it, and CI applies it:
 | Five service accounts | One runtime identity, one for Terraform in CI, one for app deploys, one for the scheduled data updates, and one that reads the leaderboard spreadsheets — the last holding no project roles at all |
 | Workload Identity Federation pool | Keyless GitHub Actions auth — no service account keys anywhere |
 | Secret Manager secret `github-dispatch-token` | The GitHub token the admin dispatches workflows with. Terraform creates the container; step 11 adds the value |
-| Two Cloud Scheduler jobs | Start the data-update workflows on time, because GitHub's own cron runs hours late. Every half hour from 03:00 to 07:30 UTC, covering the early-tee-time window, and once at 12:00. Two jobs, not ten: Scheduler bills per job per month, not per execution. In `europe-west1`, not `europe-north1` — Cloud Scheduler does not run there |
+| Two Cloud Scheduler jobs | Start the data-update workflows on time, because GitHub's own cron runs hours late. Hourly from 03:00 to 07:00 UTC, covering the early-tee-time window, and once at 12:00. Two jobs, not six: Scheduler bills per job per month, not per execution. In `europe-west1`, not `europe-north1` — Cloud Scheduler does not run there |
 | Billing budget (optional) | Alerts above €2/month |
 
 And three workflows: [`terraform-plan.yml`](../../.github/workflows/terraform-plan.yml) on pull
