@@ -698,6 +698,29 @@ Firestore database.
 Really deleting it takes two deliberate steps: set `delete_protection_state` to
 `DELETE_PROTECTION_DISABLED` and apply, then change `deletion_policy` to `"DELETE"` and destroy.
 
+## Accounting for a service account's keys
+
+Not part of bootstrapping, and here because it is a thing you do more than once: working out whether
+a downloadable key is still in use before deleting it. The answer does not come from
+`gcloud iam service-accounts keys list`, which says what exists rather than what authenticates.
+
+```bash
+gcloud services enable policyanalyzer.googleapis.com --project=hector-golf
+gcloud policy-intelligence query-activity --activity-type=serviceAccountKeyLastAuthentication \
+  --project=<project> --format=json
+```
+
+Two traps in it. It lists keys that no longer exist — it records what has authenticated, not what is
+there — so check anything it names against `gcloud iam service-accounts keys list`. And audit logs
+cannot stand in for it: `protoPayload.authenticationInfo.serviceAccountKeyName` is never populated
+in these projects, because Data Access logging is off, so a query on that field comes back empty
+whether or not the key is in use.
+
+One lesson from the last time this was needed, because it cost a pointless key: **check the consumer
+before rotating a credential, not only the credential.** A key was minted to replace one in a
+GitHub secret that, by then, nothing read — the workflow had moved to Workload Identity earlier the
+same day, and the rotation steps had been written from a reading taken before that.
+
 ## Troubleshooting
 
 | Symptom | Cause |
