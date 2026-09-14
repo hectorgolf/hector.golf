@@ -617,7 +617,6 @@ functions into `hector-golf`.
 | `HECTOR_APP_API_KEY` | Secret | `update-leaderboards` |
 | `ASTROSITE_API_KEY` | Secret | `update-player-biographies` |
 | `GITHUB_TOKEN` | Built-in → `GITHUB_ACCESS_TOKEN` | `update-leaderboards` |
-| `TEETIME_*` | Secret/variable | Passed to three workflows; **read by no code** (see §13) |
 
 ## 10. The backend (`backend/backend-functions/`)
 
@@ -822,8 +821,6 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
 
 **Configuration drift**
 
-- `TEETIME_CLUB_NUMBER`, `TEETIME_USERNAME`, and `TEETIME_PASSWORD` are passed to three workflows,
-  but no code in `astrosite/` reads them — leftovers from a removed TeeTime integration.
 - `zod` is imported throughout `src/schemas/` and `src/code/` but is **not a declared dependency** —
   it resolves transitively through Astro, so an Astro upgrade could break the build.
 - [`HandicapHistoryChart.ts`](../../astrosite/src/components/players/HandicapHistoryChart.ts) hardcodes
@@ -831,8 +828,7 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
   bundled TS module painting onto a canvas rather than a stylesheet. It is the one place the design
   system is restated by hand, so it will not follow a token change in `hector.css`.
 - `.env.sample` is missing `HECTOR_APP_API_KEY` (see §11) and the `MSCORECARD_EMAIL` /
-  `MSCORECARD_PASSWORD` pair the mScorecard CLI needs, and its header still mentions Teetime
-  credentials that no code reads.
+  `MSCORECARD_PASSWORD` pair the mScorecard CLI needs.
 
 **Dead or unreachable code**
 
