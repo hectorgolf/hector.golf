@@ -1,6 +1,6 @@
 # Who owns which field
 
-_Decided 2026-09-12._
+*Decided 2026-09-12.*
 
 Every field in Hector's data has, or will shortly have, two possible writers: a scheduled job and a
 human in the admin UI. This is the rule for which one wins, decided before the admin UI could write

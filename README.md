@@ -113,8 +113,8 @@ Not urgent, and nothing about it is reachable without existing project access.
 
 ## Decisions before the migration runs
 
-All settled. `docs/plans/functions-migration.md` is no longer blocked on a decision, and phases 1 and 8
-stand as written.
+All settled. `docs/plans/functions-migration.md` is no longer blocked on a decision, and phases 1
+and 8 stand as written.
 
 **~~Migrate first, or activate `deploy-functions.yml` where the functions are now?~~** Migrate
 first. Standing up a second Workload Identity pool in the old project is throwaway work, and the

@@ -1,7 +1,7 @@
 # The GCP project
 
-_Describes `hector-golf` as it stands. Last reviewed: 2026-09-14, after the Cloud Functions moved
-in._
+*Describes `hector-golf` as it stands. Last reviewed: 2026-09-14, after the Cloud Functions moved
+in.*
 
 What is running in Google Cloud, and which of it cannot be changed. For the procedure that builds
 this from an empty project — whether for a second environment or to recover from losing this one —
@@ -48,7 +48,6 @@ one Workload Identity pool, as separate identities.
 - **The Terraform state bucket**, which cannot describe itself. Step 2 creates it by hand; it is the
   one piece of infrastructure not in `terraform/`.
 
-
 ## The decisions you cannot take back
 
 | Decision | Why it is permanent |
@@ -59,7 +58,6 @@ one Workload Identity pool, as separate identities.
 | Which database got the free tier | The first one created in the project keeps it |
 
 Everything else in `terraform/` can be changed by editing it and re-applying.
-
 
 ## The two things Terraform does not own
 

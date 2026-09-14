@@ -1,7 +1,7 @@
 # Retiring the Google Sheets service account key
 
-_Written 2026-09-14. **Phases 1–5 executed the same day** (#99, #101, #100). Phase 6 is deliberately
-outstanding — it waits a week, until 2026-09-21 at the earliest._
+*Written 2026-09-14. **Phases 1–5 executed the same day** (#99, #101, #100). Phase 6 is deliberately
+outstanding — it waits a week, until 2026-09-21 at the earliest.*
 
 `update-leaderboards.yml` reads two Google Sheets using a downloadable service account key, held in
 the `GCP_SERVICE_ACCOUNT_CREDENTIALS` repository secret. This plan replaces it with Workload

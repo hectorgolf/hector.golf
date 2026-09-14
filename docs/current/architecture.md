@@ -1,6 +1,6 @@
 # hector.golf — Technical Architecture
 
-_Last reviewed: 2026-09-10_
+*Last reviewed: 2026-09-10*
 
 ## 1. Overview
 
@@ -12,10 +12,10 @@ guides at <https://hector.golf>.
 The defining architectural property is that **the Git repository is the database**. There is no
 runtime server and no request-time API call anywhere in the delivered site. Instead, scheduled
 GitHub Actions run TypeScript scripts that scrape external golf systems, write the results as JSON
-into `astrosite/src/data/`, and commit that JSON back to `main`. A deploy workflow rebuilds the Astro
-site from the committed data and publishes it to GitHub Pages — on every push to `main` that touches
-`astrosite/**`, and additionally on a twice-daily cron (see §8 for why both are needed). Everything a
-visitor sees was computed at build time.
+into `astrosite/src/data/`, and commit that JSON back to `main`. A deploy workflow rebuilds the
+Astro site from the committed data and publishes it to GitHub Pages — on every push to `main` that
+touches `astrosite/**`, and additionally on a twice-daily cron (see §8 for why both are needed).
+Everything a visitor sees was computed at build time.
 
 Three moving parts:
 
@@ -69,13 +69,13 @@ graph LR
     LBP -->|"adds x-api-key"| APP
 ```
 
-Everything except the last two edges runs on a schedule: a data change is a commit, and a commit is a
-full rebuild. Those two edges are the exception — the live leaderboard reaches a visitor without
+Everything except the last two edges runs on a schedule: a data change is a commit, and a commit is
+a full rebuild. Those two edges are the exception — the live leaderboard reaches a visitor without
 waiting for a deploy.
 
 ## 2. Repository layout
 
-```
+```text
 .
 ├── astrosite/                  # Astro 7 site: pages, domain code, JSON data, workflow scripts
 │   ├── src/
@@ -189,12 +189,12 @@ been checked, because then there is no guarantee to make.
 Every `observed` is paired with an `approximate` flag, and `handicaps_checked` with
 `handicaps_checked_approximate`. True means the sweep behind the instant was reconstructed after the
 fact rather than recorded when it ran, so the value is a lower bound — we checked at least that
-recently, probably more so. **Render it**: an approximate instant shown as an exact one is worse than
-no instant, because the reader cannot tell. Not when the handicap last changed: a handicap that has not moved since August is no less
-current for it, and "we checked at 03:02 and it is still 15.4" is what answers a player whose eBirdie
-shows something else. Each is read as of the moment its handicap settled, `bucket_freeze` and the
-event's last day respectively, because a sweep that ran after a split settled cannot be what the
-split was drawn from.
+recently, probably more so. **Render it**: an approximate instant shown as an exact one is worse
+than no instant, because the reader cannot tell. Not when the handicap last changed: a handicap that
+has not moved since August is no less current for it, and "we checked at 03:02 and it is still 15.4"
+is what answers a player whose eBirdie shows something else. Each is read as of the moment its
+handicap settled, `bucket_freeze` and the event's last day respectively, because a sweep that ran
+after a split settled cannot be what the split was drawn from.
 
 They are instants rather than dates, and deliberately so: the gap this explains is measured in hours
 — the Union's WHS batch runs at about 03:00 and re-runs during office hours when the nightly run
@@ -427,8 +427,9 @@ across the entire build**. Two consequences worth internalising:
 - **Glob paths are relative to the working directory**, not to the module. Every command — build,
   tests, workflow scripts — must be run from `astrosite/`.
 - **The singletons are mutated in place.** `populateMissingParticipants()` and
-  `populateUpdatedHandicaps()` in [`src/code/events.ts`](../../astrosite/src/code/events.ts) modify the
-  shared event objects, so their effects persist across every page rendered later in the same build.
+  `populateUpdatedHandicaps()` in [`src/code/events.ts`](../../astrosite/src/code/events.ts) modify
+  the shared event objects, so their effects persist across every page rendered later in the same
+  build.
 
 A **third** mechanism exists in
 [`src/code/leaderboards/leaderboards.ts`](../../astrosite/src/code/leaderboards/leaderboards.ts): it
@@ -478,10 +479,10 @@ files:
   `yearOfEvent`) are plain string or `Date` comparisons on `timing.start` / `timing.end` rather than
   regex-matching a sentence.
 - **Round scheduling** — a round records a `day` offset into the event, not a date.
-  [`rounds.ts`](../../astrosite/src/code/rounds.ts) turns that into a real date (`dateOfRound()`, day 1
-  being the event's first day) and into a title (`titleOfRound()` → "Saturday morning"). The part of
-  day is inferred from the round's position within its day, and a day holding a single round is
-  named by its weekday alone rather than being guessed into a "morning".
+  [`rounds.ts`](../../astrosite/src/code/rounds.ts) turns that into a real date (`dateOfRound()`,
+  day 1 being the event's first day) and into a title (`titleOfRound()` → "Saturday morning"). The
+  part of day is inferred from the round's position within its day, and a day holding a single round
+  is named by its weekday alone rather than being guessed into a "morning".
 - **Privacy name shortening** — for players marked `privacy: 'shorten-last-name'`, a singleton in
   [`players.ts`](../../astrosite/src/code/players.ts) computes the *shortest unique last-name prefix*
   among players sharing a first name, so "Lasse Koskela" renders as "Lasse K" while two Johns would
@@ -570,12 +571,13 @@ are queued and delivered when GitHub has capacity. Measured across the last 300 
 | 2026-06 | 4h13m | 2h52m |
 | 2026-09 | 4h32m | 3h46m |
 
-`workflow_dispatch` has no such queue. So [`terraform/scheduler.tf`](../../terraform/scheduler.tf) runs
-**two** Cloud Scheduler jobs — hourly from 03:00 to 07:00 UTC, and once at 12:00 UTC. They are the one thing in this project not in
-`europe-north1` — Cloud Scheduler does not run there, so they sit in `europe-west1`. Each calls one endpoint on the admin service —
-`POST /api/workflows/dispatch` — which starts every workflow marked `scheduled` in
-[`admin/src/lib/workflows.ts`](../../admin/src/lib/workflows.ts), using a GitHub token read from Secret
-Manager.
+`workflow_dispatch` has no such queue. So [`terraform/scheduler.tf`](../../terraform/scheduler.tf)
+runs **two** Cloud Scheduler jobs — hourly from 03:00 to 07:00 UTC, and once at 12:00 UTC. They are
+the one thing in this project not in `europe-north1` — Cloud Scheduler does not run there, so they
+sit in `europe-west1`. Each calls one endpoint on the admin service — `POST /api/workflows/dispatch`
+— which starts every workflow marked `scheduled` in
+[`admin/src/lib/workflows.ts`](../../admin/src/lib/workflows.ts), using a GitHub token read from
+Secret Manager.
 
 The split is deliberate: **when** lives in Terraform, where `gcloud scheduler jobs list` answers it
 without anyone reading TypeScript, and **what** lives in the application, so adding a workflow to the

@@ -1,6 +1,6 @@
 # How a handicap reaches this repository
 
-_Recorded 2026-09-13._
+*Recorded 2026-09-13.*
 
 A player's official handicap is not a number we compute. It is a number the Finnish Golf Union
 computes overnight, publishes to systems like WiseGolf and Golf Gamebook, and occasionally computes
@@ -13,7 +13,7 @@ look identical may be a day apart in provenance, and nothing in the value says s
 
 ## The chain
 
-```
+```text
 Finnish Golf Union (WHS batch)  →  WiseGolf  →  update-handicaps.ts  →  handicaps.json
 ```
 
@@ -184,8 +184,9 @@ too — the 2026 split is still on the site in 2036, and "the handicaps behind i
 
 This is what `/events/hector/:id/handicaps.json` publishes as each basis's `observed` — a player's
 `bucketing.observed` and `playing.observed`, the same question asked at the two ends of an event —
-and as `handicaps_checked` for the field as a whole. Together with the handicap beside it, that is what answers "my eBirdie
-shows something else": the number we hold, and the moment we last asked about it.
+and as `handicaps_checked` for the field as a whole. Together with the handicap beside it, that is
+what answers "my eBirdie shows something else": the number we hold, and the moment we last asked
+about it.
 
 ## Reading `observed` after the fact
 
@@ -210,8 +211,8 @@ So if `observationsOn(history, "…", "2026-09-24")` gives:
 
 then for Konopiště, whose buckets froze at 06:00 UTC, the page is showing 11.2, the buckets were
 built from 11.8 — the 05:00 tick, the last before the freeze — and the second reading landed seven
-hours after they stopped moving. The buckets are not wrong; they are a correct record of what was known at
-08:00 — and the log says what that was, rather than leaving it to be inferred.
+hours after they stopped moving. The buckets are not wrong; they are a correct record of what was
+known at 08:00 — and the log says what that was, rather than leaving it to be inferred.
 
 That last part is why both readings are kept. A single entry carrying only the later `observed`
 proves a value arrived after the freeze but not which value the freeze used; recovering that would

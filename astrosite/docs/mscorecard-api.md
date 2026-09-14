@@ -80,6 +80,7 @@ if (body.accessToken) this.accessToken = body.accessToken
 Skipping this is the most likely cause of an unexplained `401` partway through a
 round. Note that rotation is silent — nothing in the response says the old token
 was invalidated.
+
 ### Calling the legacy PHP endpoints
 
 Form-encoded, and the `password` field takes the **hashed `token`** from the login
@@ -422,7 +423,6 @@ And resulting response payload is:
 ]
 ```
 
-
 Download all friends:
 
 ```shell
@@ -496,7 +496,6 @@ Game format IDs:
 
 The format decides only how a card is presented and totalled; the strokes are the
 same either way, and it can be changed on an existing round.
-
 
 ### `nine1` and `nine2` select which nines are played
 
@@ -708,7 +707,8 @@ PATCH (hole 2) ts: 1788647977927609  →  ts: 1788648144133378
 
 ### Update scores in a player's mscorecard round
 
-Player 1 (`"sid":"28456893"`) hit 5 strokes (`"st":5`) on hole 1 (`"h":1`). Player 2 (`"sid":"28456894"`) hit 7 strokes (`"st":7`). Here's how the scores are logged to the round:
+Player 1 (`"sid":"28456893"`) hit 5 strokes (`"st":5`) on hole 1 (`"h":1`). Player 2
+(`"sid":"28456894"`) hit 7 strokes (`"st":7`). Here's how the scores are logged to the round:
 
 ```shell
 curl -X PATCH 'https://www.mscorecard.com/api/v2.3/rounds/<round ID>' \
@@ -758,7 +758,6 @@ curl -X PUT 'https://www.mscorecard.com/api/v2.3/rounds/<round ID>' \
   }
 }
 ```
-
 
 ### Delete a round
 
