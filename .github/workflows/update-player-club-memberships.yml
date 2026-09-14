@@ -49,9 +49,6 @@ jobs:
           npx tsx src/workflows/update-player-club-memberships.ts
         working-directory: ${{ env.BUILD_PATH }}
         env:
-          TEETIME_CLUB_NUMBER: 0134   # Tapiola Golf
-          TEETIME_USERNAME: 2762
-          TEETIME_PASSWORD: ${{ secrets.TEETIME_PASSWORD }}
           WISEGOLF_USERNAME: ${{ secrets.WISEGOLF_USERNAME }}
           WISEGOLF_PASSWORD: ${{ secrets.WISEGOLF_PASSWORD }}
       - name: Commit changes
