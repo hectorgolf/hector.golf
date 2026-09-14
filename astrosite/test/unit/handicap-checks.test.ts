@@ -34,8 +34,10 @@ describe('the handicap check schema', () => {
 
 describe('lastCheckedFor()', () => {
     it('is the latest sweep that did not skip the player', () => {
-        expect(lastCheckedFor([morning, midday], 'lasse-k')).toBe(midday.at)
-        expect(lastCheckedFor([morning, midday], 'ricke-b')).toBe(morning.at)
+        // The sweep, not just its instant: a caller publishing the timestamp has to
+        // publish whether it was reconstructed alongside it.
+        expect(lastCheckedFor([morning, midday], 'lasse-k')).toEqual(midday)
+        expect(lastCheckedFor([morning, midday], 'ricke-b')).toEqual(morning)
     })
 
     it('is undefined for a player no sweep has answered for', () => {
@@ -47,7 +49,13 @@ describe('lastCheckedFor()', () => {
     })
 
     it('answers as of an instant', () => {
-        expect(lastCheckedFor([morning, midday, nextMorning], 'lasse-k', '2026-09-14T06:00:00Z')).toBe(morning.at)
-        expect(lastCheckedFor([morning, midday, nextMorning], 'ricke-b', '2026-09-14T23:00:00Z')).toBe(morning.at)
+        expect(lastCheckedFor([morning, midday, nextMorning], 'lasse-k', '2026-09-14T06:00:00Z')).toEqual(morning)
+        expect(lastCheckedFor([morning, midday, nextMorning], 'ricke-b', '2026-09-14T23:00:00Z')).toEqual(morning)
+    })
+
+    it('carries the sweep\'s own account of how exact it is', () => {
+        const reconstructed = { ...morning, at: '2025-09-25T03:24:00Z', approximate: true }
+        expect(lastCheckedFor([reconstructed], 'lasse-k')?.approximate).toBe(true)
+        expect(lastCheckedFor([morning], 'lasse-k')?.approximate).toBeUndefined()
     })
 })

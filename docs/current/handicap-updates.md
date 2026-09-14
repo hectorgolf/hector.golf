@@ -153,6 +153,26 @@ source failed on them. The two are not told apart because nothing acts on the di
 was checked. Keeping the exceptions rather than the roster is what holds the file to a line or two
 per sweep.
 
+An entry carrying `"approximate": true` was **reconstructed**, not recorded. The log began on
+2026-09-14, and HECTOR2025 — played the previous September — had nothing to say about when its
+handicaps were last checked. Six entries were rebuilt for that week from what survives:
+
+| Evidence | Entries |
+| --- | --- |
+| Data commits touching `handicaps.json`, whose committer date is a moment a sweep demonstrably ran at or shortly before | 26, 27, 28, 29 September and 1 October 2025 |
+| The `0 3,13` cron then in force, for the first morning, which left no commit because nobody's handicap moved that day | 25 September 2025, 03:24Z |
+
+`checked` and `skipped` come from the roster as committed at the time: 44 players, of whom four had
+no club and so could not have been asked about. A player the sources merely failed on that day
+leaves no trace and is counted as checked.
+
+What a reconstruction cannot recover is every **quiet** sweep, because only sweeps that changed a
+handicap left a commit. The result is therefore a lower bound: the real answer is never older than
+what is published, and is usually newer. That is the direction `handicaps_checked` already guarantees
+in, which is what makes a lower bound usable rather than misleading — and the `approximate` flag is
+what keeps it from being mistaken for a recording. Entries a real sweep wrote never carry the flag,
+so the two stay tellable apart for good.
+
 A sweep that answered for **nobody** is not recorded. Its entry would be the whole roster, and
 writing it would commit and deploy the site over a run that learned nothing; a total outage is a
 workflow-log problem, not a data-file one.
