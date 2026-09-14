@@ -13,14 +13,16 @@ functions migration built all four from `main` on 2026-09-14, so the `hector-gol
 
 **~~Tighten the IAM role list in `.github/workflows/deploy-functions.yml`.~~** Done in phase 8. The
 header no longer lists roles at all, because the roles are in `terraform/iam.tf` where they are
-granted: `cloudfunctions.developer` plus `serviceAccountUser` scoped to the one runtime account, and
-nothing else. `storage.objectAdmin` was never granted — the note in `iam.tf` says why it is the
-wrong answer, given the Terraform state bucket lives in the same project.
+granted. `storage.objectAdmin` was never granted — the note in `iam.tf` says why it is the wrong
+answer, given the Terraform state bucket lives in the same project.
 
-Worth knowing that this minimum is still unproven against CI. Every deploy so far ran as a human
-owner; the first `deploy-functions.yml` run is the first time `functions-deployer` deploys anything.
-If it fails naming a role, the likeliest is `serviceAccountUser` on the Cloud Build builder, since a
-gen2 deploy runs a build as it. Add it in `iam.tf`, not in the workflow.
+Proven against CI on 2026-09-14, after two rounds. `functions-deployer` needed `serviceAccountUser`
+on the identity gen2 builds run as, and something able to set the `allUsers` binding — and in both
+cases the error named a far broader grant than the need. The build got its own identity,
+`functions-builder`, rather than `actAs` on the `roles/editor` compute account; the `allUsers`
+binding moved into `cloud_run.tf` rather than the deployer getting `roles/run.admin`, which reaches
+`hector-admin`. Final state: `cloudfunctions.developer` plus `serviceAccountUser` on two named
+accounts.
 
 **~~Run `actionlint` over `deploy-functions.yml`.~~** Done 2026-09-14, in phase 8. `actionlint`
 reports every workflow in `.github/workflows/` clean, not just this one.

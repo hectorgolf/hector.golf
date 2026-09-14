@@ -489,12 +489,29 @@ has to state `--service-account` and hardcoding an account into YAML is worse th
 `GH_FUNCTIONS_PROJECT_ID` and `GH_FUNCTIONS_WIF_PROVIDER` were *not* created: the workflow uses the
 existing `GCP_PROJECT_ID`, `GCP_REGION` and `GH_WIF_PROVIDER`, which is the point.
 
-One thing is still unproven. Every deploy through phase 4 ran as a human owner, so
-`functions-deployer`'s deliberately-minimal roles have never actually been exercised — the first
-workflow run is the first time that identity deploys anything. If it fails naming a permission, add
-the role in [`iam.tf`](../../terraform/iam.tf) rather than widening anything in the workflow, and
-expect `serviceAccountUser` on the Cloud Build builder to be the one, since a gen2 deploy runs a
-build as it.
+**The minimal role set is proven.** Every deploy through phase 4 ran as a human owner, so the first
+workflow run was the first time `functions-deployer` deployed anything. It took two rounds, and both
+are worth reading before granting anything to a deploy identity, because in both the error message
+recommended a much broader grant than the situation needed.
+
+**Round one — `iam.serviceaccounts.actAs` on the default compute account.** A gen2 deploy runs a
+Cloud Build job and the deployer must act as whatever identity that build uses; unspecified, that is
+the project's default compute account, which Google gave `roles/editor`. Doing what the error said
+would have let a GitHub Actions run build as project editor. Instead the build got its own identity
+— `functions-builder`, holding `roles/cloudbuild.builds.builder` and nothing else — named on every
+deploy with `--build-service-account`.
+
+**Round two — `run.services.setIamPolicy`, after all four functions had already deployed.**
+`--allow-unauthenticated` is an IAM write rather than a deploy setting, re-asserted on every deploy
+even when the binding is already right, so a finished deploy reported a failure. The permission
+would have meant `roles/run.admin`, which also reaches `hector-admin`. Instead the `allUsers`
+binding moved to [`cloud_run.tf`](../../terraform/cloud_run.tf) and no deploy passes the flag.
+
+So `functions-deployer` still holds `roles/cloudfunctions.developer` and `serviceAccountUser` on two
+named accounts — `hector-functions` and `functions-builder` — and nothing else. The rule that got
+there: when a deploy fails naming a permission, check what the account it names can already do
+before granting anything, and prefer giving the job its own identity over borrowing a privileged
+one.
 
 The migration is not finished until these land, because they are what stops the split recurring.
 
