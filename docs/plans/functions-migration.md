@@ -359,6 +359,13 @@ ship the fix into the project phase 7 deletes.
 [`iap.tf`](../../terraform/iap.tf) — so no domain-restricted-sharing policy blocks an `allUsers`
 binding.
 
+**Superseded after phase 8.** The flag is an IAM write — `gcloud` turns it into
+`run.services.setIamPolicy` on the underlying Cloud Run service on *every* deploy, even when the
+binding is already there — and the CI deploy identity holds no run permissions, so it failed the
+first workflow run after all four functions had already updated. The `allUsers` binding is in
+[`cloud_run.tf`](../../terraform/cloud_run.tf) now and no deploy passes the flag. It is still correct
+for the by-hand deploy this phase describes, if you are running as somebody who can set IAM.
+
 ## Phase 5 — Verify, before anything points at them
 
 Both projects' functions are now live and nothing in the site or the workflows has changed yet, so

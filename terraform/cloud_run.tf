@@ -130,3 +130,47 @@ resource "google_cloud_run_v2_service" "admin" {
     google_project_service.enabled["iap.googleapis.com"],
   ]
 }
+
+# ---------------------------------------------------------------------------
+# Public access to the four functions.
+#
+# A gen2 Cloud Function is a Cloud Run service, and `--allow-unauthenticated` is
+# not a deploy setting: it is an allUsers -> roles/run.invoker binding on that
+# service. gcloud sets it by calling run.services.setIamPolicy on every deploy,
+# whether or not the binding is already there.
+#
+# That is why the first CI deploy went red while succeeding. All four functions
+# updated, and then the flag re-asserted a binding that already existed and got
+# a 403, because functions-deployer holds no run permissions. Nothing was
+# broken; the build simply reported a failure that had not happened.
+#
+# The fix is not to give the deployer that permission. roles/run.admin would
+# also let it redeploy or delete hector-admin, which is not a thing the function
+# deploy identity should be able to reach, and a narrower binding scoped per
+# service has the same ordering problem as this does with none of the benefit.
+#
+# So the binding moves here, where IAM already lives, and the deploys stop
+# asserting it. Which is the better home for it anyway: allUsers on a public
+# endpoint is exactly the kind of grant that should be reviewed in a diff rather
+# than implied by a flag in an npm script.
+#
+# ORDERING. These four services are created by `gcloud functions deploy`, not by
+# this configuration, so Terraform can only bind IAM on them once they exist. On
+# a fresh project the sequence is: deploy the functions, then apply. Until the
+# apply they answer 403 to anonymous callers. See docs/playbooks/gcp-bootstrapping.md.
+# ---------------------------------------------------------------------------
+
+resource "google_cloud_run_v2_service_iam_member" "functions_public" {
+  for_each = toset([
+    "extractscorecardinformation",
+    "generateplayeravatar",
+    "generateplayerbiography",
+    "tournamentleaderboard",
+  ])
+
+  project  = var.project_id
+  location = var.region
+  name     = each.value
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
