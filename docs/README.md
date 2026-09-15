@@ -21,10 +21,17 @@ will mislead you.
 
 | | | executed? |
 | --- | --- | --- |
+| [`biography-locking.md`](plans/biography-locking.md) | `player.biographyLocked`, so the twice-monthly regeneration stops overwriting edited biographies | **No.** The field is in no schema, page or script |
+| [`bucket-locking.md`](plans/bucket-locking.md) | `event.bucketsLocked`, so an announced split can be settled before the first morning | **No,** and it argues with itself about whether it should be. Read its last section first |
 | [`functions-migration.md`](plans/functions-migration.md) | Moving the four Cloud Functions out of `gen-lang-client-0537211409` into `hector-golf` | **Nearly.** Phases 1–6 and 8 done 2026-09-14; phase 7 waits until 2026-09-21 |
 | [`sheets-credential-wif.md`](plans/sheets-credential-wif.md) | Retiring the last downloadable service account key, in favour of Workload Identity | **Partly.** Phases 1–5 applied 2026-09-14; phase 6 waits until 2026-09-21 |
 
-A partly-executed plan is the case the lifecycle below does not cover, and both of these are now in
+The two locking plans came out of `current/data-ownership.md`, which specified both fields as part
+of a decision that was otherwise a description of how things already are. A proposal in a
+descriptive document is read as description by everybody who did not write it, which is how two
+fields that do not exist came to be documented beside seven that do.
+
+A partly-executed plan is the case the lifecycle below does not cover, and the other two are now in
 it: neither is finished, neither is untouched, and what each is waiting on is a calendar rather than
 a decision. They come due the same day, 2026-09-21 — `sheets-credential-wif.md` phase 6 and
 `functions-migration.md` phase 7, both of which delete a credential a week after the thing that
@@ -64,5 +71,6 @@ that section belongs in the backlog, or that the whole document belongs in `plan
 
 Two of these documents had exactly that problem when this split was made. `data-ownership.md`
 proposed two fields that do not exist, and `gcp-bootstrapping.md` ended with four next steps of
-which two were still outstanding. Both are now in the backlog as well, so `current/` can be read as
-description without checking whether each paragraph is a promise.
+which two were still outstanding. The first is now two plans of its own, and the second is in the
+backlog, so `current/` can be read as description without checking whether each paragraph is a
+promise.
