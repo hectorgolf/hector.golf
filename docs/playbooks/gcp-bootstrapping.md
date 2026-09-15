@@ -360,21 +360,25 @@ thing rather than breaking the project, which is exactly why a bootstrap misses 
 | `PUBLIC_LEADERBOARD_PROXY_URL` | `https://europe-north1-hector-golf.cloudfunctions.net/TournamentLeaderboard` | live leaderboards are absent from the build entirely |
 | `TF_ADMIN_DOMAIN` | `admin.hector.golf` | no custom domain mapping — see the optional step near the end |
 | `TF_LEADERBOARD_IMPERSONATORS` | `["user:you@example.com"]` — a JSON array | nobody can run the scrape locally as the CI identity |
-| `GIT_COMMITTER_EMAIL` | the address the data-update workflows commit as | commits get the default Actions identity |
 
-Under **Secrets**, add three:
+Under **Secrets**, add four:
 
 | Secret | Value |
 | --- | --- |
 | `TF_ADMIN_PRINCIPALS` | `["user:you@example.com"]` — a JSON array |
 | `TF_IAP_OAUTH_CLIENT_ID` | The client id from step 5 |
 | `TF_IAP_OAUTH_CLIENT_SECRET` | The client secret from step 5 |
+| `GIT_COMMITTER_EMAIL` | The address the data-update workflows commit as. Absent, commits get the default Actions identity |
 
 `TF_ADMIN_PRINCIPALS` is a secret rather than a committed `.tfvars` file because this repository is
 public and those are real people's email addresses. `TF_LEADERBOARD_IMPERSONATORS` holds the same
 kind of value and is a *variable* rather than a secret, deliberately: an email address is not a
 secret, and a visible value makes it easy to see that CI and a laptop agree. Terraform reads complex
 variables from `TF_VAR_*` as JSON, which is why the quoting looks the way it does.
+
+`GIT_COMMITTER_EMAIL` is in that table for a duller reason: the five workflows that commit read
+`secrets.GIT_COMMITTER_EMAIL`, so a *variable* of that name is never read at all. It is the one
+entry here whose misplacement is silent — see the troubleshooting table.
 
 Both Terraform workflows check for `GH_WIF_PROVIDER`, `GH_TERRAFORM_SA` and `TF_ADMIN_PRINCIPALS`
 before they authenticate, and treat two situations differently:
@@ -735,6 +739,7 @@ same day, and the rotation steps had been written from a reading taken before th
 | Browser shows "Empty Google Account OAuth client ID(s)/secret(s)" | IAP is on but has no OAuth client. This project is outside an organization and its users are external, so Google's managed client cannot be used — do step 5 |
 | Browser shows "Your client does not have permission to get URL from this server" | The IAP service agent is missing `roles/run.invoker`. Re-apply; if it persists, redeploy the Cloud Run service — IAP caches the backend |
 | Sign-in succeeds, then 403 | Your address is not in `admin_principals` / `TF_ADMIN_PRINCIPALS` |
+| Data-update commits are authored by `github-actions[bot]` rather than your address | `GIT_COMMITTER_EMAIL` is set as a *variable*. The workflows read `secrets.GIT_COMMITTER_EMAIL`, which expands to an empty string, and git falls back to the default Actions identity. Nothing fails and nothing is logged, so this one is only ever noticed in `git log`. Move it to **Secrets** — a variable and a secret of the same name are different values, and deleting the variable is not what fixes it |
 | CI: `the GitHub Action workflow must specify exactly one of "workload_identity_provider" or "credentials_json"` | `GH_WIF_PROVIDER` is unset, so it expands to an empty string. The action's message about forks and Dependabot is a red herring — do step 6 |
 | `SERVICE_DISABLED`, e.g. `Identity and Access Management (IAM) API has not been used in project … before or it is disabled` | The API is missing from `apis.tf`, or a resource that needs it has no `depends_on` and got created first. Enable it by hand — `gcloud services enable <api> --project=hector-golf` — then add both to `apis.tf` so it does not recur. Enabling by hand is not optional once the affected resources already exist: `depends_on` orders *creation*, and Terraform refreshes everything in state before it applies anything, so the refresh fails before it can reach the resource that would enable the API. Allow a few minutes for the enablement to propagate before re-running, or you will see the same error against an API that is already on |
 | A plan proposes `client_id = "…" -> null` on `google_iap_settings` | The OAuth secrets are not reaching that run, and applying it would clear IAP's client and lock the service. `TF_IAP_OAUTH_CLIENT_ID` / `TF_IAP_OAUTH_CLIENT_SECRET` are missing or misnamed — an unset GitHub secret arrives as an empty string, so check the names rather than assuming they are unset |
