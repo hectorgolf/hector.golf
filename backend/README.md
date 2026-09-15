@@ -1,6 +1,19 @@
 # hector.golf backend
 
-This is an Express.js based REST API for the hector.golf website.
+This is not an application. It is one npm package that builds four independent,
+HTTP-triggered **GCP Cloud Functions gen2** — no Express app, no router, no database,
+no shared state. `@google-cloud/functions-framework` supplies Express-compatible
+request and response types and nothing else.
+
+One of the four is public (`TournamentLeaderboard`, polled by the website's live
+leaderboard from a visitor's browser) and three are private, requiring
+`Authorization: Bearer <ASTROSITE_API_KEY>`. Two of those three —
+`GeneratePlayerAvatar` and `ExtractScorecardInformation` — are experiments that are
+deployed but called by nothing; see [docs/experiments/](../docs/experiments/).
+
+[docs/current/architecture.md §10](../docs/current/architecture.md) is the full
+description: what each function is for, how the private ones authenticate, and how
+deployment and secrets work.
 
 # Configuration
 
@@ -59,6 +72,10 @@ ever broke the framework, since it boots the Functions Framework CLI against a
 real build.
 
 # GeneratePlayerAvatar API
+
+*An experiment, deployed but unused — see
+[docs/experiments/player-avatar-generation.md](../docs/experiments/player-avatar-generation.md)
+for why. The API below is accurate; nothing calls it.*
 
 `GeneratePlayerAvatar` expects a JSON body with two fields:
 

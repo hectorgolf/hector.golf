@@ -1,6 +1,6 @@
 # Documentation
 
-Three kinds of document, kept in three directories, because the difference decides how you read one.
+Four kinds of document, kept in four directories, because the difference decides how you read one.
 
 ## [`current/`](current/) — how things are
 
@@ -38,6 +38,27 @@ a decision. They come due the same day, 2026-09-21 — `sheets-credential-wif.md
 replaced it went live. Leave them in `plans/` until then, then make the move-or-delete call on both.
 The column is what keeps them honest in the meantime.
 
+## [`experiments/`](experiments/) — what was built and not adopted
+
+Descriptive, like `current/`, but about the parts of the system that do nothing. An experiment is
+deployed code with no caller: it exists, it runs, and nothing depends on it.
+
+| | | verdict |
+| --- | --- | --- |
+| [`player-avatar-generation.md`](experiments/player-avatar-generation.md) | `GeneratePlayerAvatar` — a cartoon headshot from a photograph | **Not adopted.** Uniformity across arbitrary source photos was never good enough |
+| [`scorecard-extraction.md`](experiments/scorecard-extraction.md) | `ExtractScorecardInformation` — a scorecard screenshot read into typed scores | **Not adopted.** Accuracy never convinced us; three prompt generations, the third unfinished |
+
+Both are Cloud Functions, both deploy on every push to `main`, and neither is called by a workflow,
+by the site, or by the Admin UI. They were in `current/architecture.md` §10 until 2026-09-15, which
+is what this directory was made to fix. That section opened by dividing the four functions into
+"three Gemini wrappers and a proxy", gave three of four table rows to Gemini, and spent its only
+deep dive on the prompts — two of the three belonging to functions nobody calls. It read as a
+description of an AI backend. The running system is a leaderboard proxy and a biography writer.
+
+`experiments/README.md` says what each of these files owes you, and the fourth item on that list is
+the one that matters: what would have to be true to adopt it, or to delete it. An experiment nobody
+can state a resumption condition for is a deletion waiting to be approved.
+
 ## [`playbooks/`](playbooks/) — how to do a thing, again
 
 Procedural, and unlike a plan, **running one does not use it up**. A playbook stays valid after it
@@ -48,9 +69,9 @@ has been followed, because the next person will need it too.
 | [`gcp-bootstrapping.md`](playbooks/gcp-bootstrapping.md) | Taking an empty GCP project to a working, CI-deployed admin service. The disaster-recovery procedure |
 | [`local-gcp-identities.md`](playbooks/local-gcp-identities.md) | Running things locally as the right GCP identity, without a browser round trip every time you switch |
 
-That distinction is the reason for a third directory rather than filing playbooks under `plans/`. A
-plan is finished when it has been executed and becomes misleading if left in place; a playbook is
-finished when it is accurate, and is *supposed* to sit there unused.
+That distinction is the reason for a separate directory rather than filing playbooks under
+`plans/`. A plan is finished when it has been executed and becomes misleading if left in place; a
+playbook is finished when it is accurate, and is *supposed* to sit there unused.
 
 ## The lifecycle
 
@@ -62,6 +83,10 @@ is worth making deliberately rather than leaving the file where it is:
   its tense says the opposite of the truth.
 - **It was scaffolding** — delete it, and fold whatever is still true into `architecture.md`. The
   pull request that executed it is the record of how it was done.
+
+An experiment leaves `experiments/` the same way and for the same reason: adopted, its description
+moves into `current/` and the file goes; abandoned, the code and the file are deleted together. The
+failure mode is identical in both directories — a file whose tense says the opposite of the truth.
 
 ## Where the outstanding work is
 
