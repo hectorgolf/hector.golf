@@ -1,6 +1,6 @@
 # hector.golf — Technical Architecture
 
-*Last reviewed: 2026-09-10*
+*Last reviewed: 2026-09-15*
 
 ## 1. Overview
 
@@ -22,7 +22,7 @@ Three moving parts:
 | Part | Location | Role |
 | --- | --- | --- |
 | Astro site | `astrosite/` | Static site generator, domain logic, committed JSON data, and the workflow scripts |
-| Cloud Functions | `backend/backend-functions/` | Four HTTP-triggered GCP functions: three Google Gemini wrappers plus the leaderboard proxy |
+| Cloud Functions | `backend/backend-functions/` | Four independent HTTP-triggered GCP functions: one public leaderboard proxy, one private biography writer, two dormant experiments |
 | CI/CD | `.github/workflows/` | Nine workflows: one deploy, one PR check, four scheduled data updates, two Terraform, one admin deploy |
 | Infrastructure | `terraform/` | The `hector-golf` GCP project: Firestore, Cloud Run, IAP, Artifact Registry, CI identities |
 
@@ -37,7 +37,7 @@ graph LR
     end
 
     subgraph gcp["GCP (europe-north1)"]
-        CF["Cloud Functions gen2<br/>biography / avatar / scorecard"]
+        CF["GeneratePlayerBiography<br/>private, bearer token"]
         LBP["TournamentLeaderboard<br/>app.hector.golf proxy"]
     end
 
@@ -91,10 +91,10 @@ waiting for a deploy.
 │   ├── docs/mscorecard-api.md  # Reverse-engineered mScorecard protocol notes
 │   ├── scripts/commit-changes.sh
 │   └── test/{unit,astro}/
-├── backend/backend-functions/  # GCP Cloud Functions gen2 (Gemini wrappers + leaderboard proxy)
+├── backend/backend-functions/  # GCP Cloud Functions gen2 (leaderboard proxy, biography writer, 2 experiments)
 ├── terraform/                  # The hector-golf GCP project (see docs/current/gcp-setup.md)
 ├── .github/workflows/          # Nine workflows
-└── docs/                       # current/ describes, plans/ proposes, playbooks/ instructs
+└── docs/                       # current/ describes, plans/ proposes, playbooks/ instructs, experiments/ records what was not adopted
 ```
 
 There is **no monorepo tooling**. `astrosite/` and `backend/backend-functions/` are two independent
@@ -522,7 +522,7 @@ files:
 | app.hector.golf | `code/leaderboards/app.ts` | `x-api-key` | Live leaderboards for app-managed events |
 | app.hector.golf (browser) | `code/leaderboards/app-payload.ts` | None — via the `TournamentLeaderboard` proxy (§10) | The same standings, polled from the visitor's browser |
 | GitHub Contents API | `code/leaderboards/github.ts` | `GITHUB_ACCESS_TOKEN` (Octokit) | Commits leaderboard JSON directly |
-| Google Gemini | via `backend/` functions | Bearer (`ASTROSITE_API_KEY`) | Biography and avatar generation |
+| Google Gemini | via `GeneratePlayerBiography` (§10) | Bearer (`ASTROSITE_API_KEY`) | Player biography prose. Two further Gemini functions exist and are dormant — `docs/experiments/` |
 
 Notable details:
 
@@ -753,68 +753,161 @@ were consequences of the project split, which
 
 ## 10. The backend (`backend/backend-functions/`)
 
-Four HTTP-triggered **GCP Cloud Functions gen2**, deployed to `europe-north1` on the `nodejs24`
-runtime. Three are thin wrappers over Google Gemini via `@google/generative-ai`; the fourth is the
-leaderboard proxy. There is no Express app, no database, and no persistent storage — the Functions
-Framework merely supplies Express-compatible request and response types.
+**There is no backend application.** `backend/backend-functions/` is one npm package that builds
+four independent **HTTP-triggered GCP Cloud Functions gen2** — each its own entry point, its own
+URL, its own secrets, its own timeout. No Express app, no router, no database, no shared state;
+`@google-cloud/functions-framework` supplies Express-compatible request and response types and
+nothing else. None of the four calls another, and deleting one would not disturb the rest. The
+package is a build and deploy unit, not a program.
 
-Base URL: `https://europe-north1-hector-golf.cloudfunctions.net/<FunctionName>`. A gen2 function
-also answers on its underlying Cloud Run URL, of the shape
+They run in `europe-north1` on the `nodejs24` runtime, in the `hector-golf` project, as
+`hector-functions@hector-golf` — an identity that holds read on three Secret Manager secrets and no
+other access. Base URL: `https://europe-north1-hector-golf.cloudfunctions.net/<FunctionName>`. A
+gen2 function also answers on its underlying Cloud Run URL, of the shape
 `https://<function>-<suffix>-lz.a.run.app`, whose suffix is generated at deploy time; the
 `cloudfunctions.net` alias is the form this repository uses everywhere.
 
-The three keys are mounted from Secret Manager at runtime — `gemini-api-key`, `astrosite-api-key`
-and `hector-app-api-key`, read by `hector-functions@hector-golf`, which holds no other access.
+### Public and private
 
-| Function | Model | Auth | Caller |
+The four divide by who calls them, and that division decides how each is protected.
+
+**Public** means called from a visitor's browser, on a page the site has already published. Such a
+function cannot demand a key, because the browser would have to carry one and the site is static —
+publishing a key in page source is the exact problem the function exists to solve. So it is open,
+and safe to be open only because it does one fixed thing with one constrained parameter.
+
+**Private** means called from our own automation: a scheduled GitHub Actions workflow, or a script
+on a laptop. The caller is a machine we control and can be handed a shared secret, so every private
+function demands one.
+
+| Function | Reach | Called by | Purpose |
 | --- | --- | --- | --- |
-| `GeneratePlayerBiography` | `gemini-3.5-flash-lite` | Bearer (`ASTROSITE_API_KEY`) | `update-player-biographies.ts` — the only automated caller |
-| `GeneratePlayerAvatar` | `gemini-3.1-flash-lite-image` | Bearer (`ASTROSITE_API_KEY`) | `generate-avatars.sh`, run by hand |
-| `ExtractScorecardInformation` | `gemini-3.1-flash-lite` | Bearer (`ASTROSITE_API_KEY`) | No caller in this repository |
-| `TournamentLeaderboard` | — (proxy, not Gemini) | None; CORS-limited to hector.golf | The live leaderboard in a visitor's browser |
+| `TournamentLeaderboard` | **Public** | The live leaderboard in a visitor's browser, polling every 30s | Proxies `app.hector.golf/api/tournament`, adding the `x-api-key` the upstream requires |
+| `GeneratePlayerBiography` | **Private** | `update-player-biographies.ts`, run by `update-player-biographies.yml` on the 10th and 25th of each month | Writes a player's profile prose from their tournament history |
+| `GeneratePlayerAvatar` | **Private** | Nothing automated. `generate-avatars.sh`, by hand | *[Experiment](../experiments/player-avatar-generation.md)* — a cartoon headshot from a photograph |
+| `ExtractScorecardInformation` | **Private** | Nothing | *[Experiment](../experiments/scorecard-extraction.md)* — a scorecard screenshot read into typed scores |
 
-**Why the proxy exists.** app.hector.golf answers `401` without an `x-api-key`, and hector.golf is a
-static site, so polling it from the browser would mean publishing `HECTOR_APP_API_KEY` in page
-source. The function holds the key server-side and returns the upstream payload verbatim, which
-keeps all reading and normalising in the site's own tested code. It is not an open proxy: the
-upstream URL is a fixed template and the only caller-controlled input is an `event` id constrained to
+**Two of the four are experiments**, deployed and reachable and called by nothing. What they do,
+why neither was adopted, and what would have to be true to adopt or delete one is in
+[`docs/experiments/`](../experiments/) rather than here — a document describing what the system
+does should not spend its length on the parts of it that do nothing. Everything below about
+authentication and deployment applies to them unchanged: same runtime identity, same bearer-token
+check, same workflow ships them.
+
+**`TournamentLeaderboard`, the public one.** app.hector.golf answers `401` without an `x-api-key`,
+and hector.golf is a static site, so polling the upstream from the browser would mean publishing
+`HECTOR_APP_API_KEY` in page source. The function holds the key server-side and returns the
+upstream payload verbatim, which keeps all the reading and normalising in the site's own tested
+code (`code/leaderboards/app-payload.ts`). It is not an open proxy: the upstream URL is a fixed
+template and the only caller-controlled input is an `event` id constrained to
 `^[A-Za-z0-9_-]{1,64}$` — the same pattern `code/leaderboards/sources.ts` keeps on the site side.
-Failures answer `502` and are never cached, so the next poll retries. The site reaches it through
-`PUBLIC_LEADERBOARD_PROXY_URL`; unset, the live leaderboard is absent from the build entirely.
+Browsers are limited by CORS to the hector.golf origins plus localhost, which keeps it from quietly
+becoming somebody else's free API rather than keeping anything secret. Failures answer `502` and are
+never cached, so the next poll retries. The site reaches it through `PUBLIC_LEADERBOARD_PROXY_URL`;
+unset, the live leaderboard is absent from the build entirely.
 
-The substance lives in `backend/backend-functions/src/lib/prompts/`:
+**`GeneratePlayerBiography`, the private one in use.** `update-player-biographies.ts` assembles a
+`PlayerBiographyInput` per player and POSTs it (§8); the function calls `gemini-3.5-flash-lite` in
+JSON mode and returns `{biography: string[], error?}`. The substance is the prompt in
+[`src/lib/prompts/biography/genai.ts`](../../backend/backend-functions/src/lib/prompts/biography/genai.ts):
+a response schema plus a system instruction defining the persona (formal golf journalist, first
+names only), the Hector Trophée domain, strict factual constraints, and injection points for
+tournament history and for the biographies already generated in the same run, so the model does not
+repeat its own phrasing. One request writes one player and the script loops, so a full regeneration
+is one call per player rather than one long one — the function's 540s timeout is headroom, not a
+requirement. The script hardcodes the function's URL rather than reading it from the environment,
+unlike the site's `PUBLIC_LEADERBOARD_PROXY_URL`.
 
-- **`biography/genai.ts`** — a JSON-mode response schema (`{biography: string[], error?}`) plus a
-  system instruction defining the persona (formal golf journalist, first names only), the Hector
-  Trophée domain, strict factual constraints, and injection points for tournament history and
-  previously generated biographies.
-- **`avatar/genai.ts`** — image-out generation: image 1 is the identity source, image 2 a style
-  reference only; white polo, `#cccccc` background, 9:16 portrait PNG.
-- **`scorecard-detection/v1.ts` / `v2.ts` / `v3.ts`** — three prompt generations for OCR-ing golf
-  scorecards into typed results. `v3` is a multi-stage pipeline that first determines the game
-  format and row headings and emits a decision log alongside its output.
+### Authentication and authorization
 
-**Deployment is CI's, since 2026-09-14.** `deploy-functions.yml` ships all four on every push to
-`main` touching `backend/backend-functions/**` (§9), and `check-backend.yml` runs the test suite on
-pull requests. The `npm run deploy:*` scripts still exist and pass the same flags, so a laptop deploy
-and a CI deploy produce the same function.
+**At the IAM layer, all four are anonymous, and the functions check their own keys.** The
+`allUsers` → `roles/run.invoker` binding on each of the four underlying Cloud Run services lives in
+[`cloud_run.tf`](../../terraform/cloud_run.tf), not in a deploy flag. No deploy passes
+`--allow-unauthenticated`, because that flag is an IAM write rather than a deploy setting: gcloud
+turns it into `run.services.setIamPolicy` on every deploy, and the deploy identity holds no run
+permissions. The first CI run failed on exactly that, *after* all four functions had already
+updated — a red build and a finished deploy. Terraform is the better home for it anyway: `allUsers`
+on a public endpoint is a grant that should be reviewed in a diff.
 
-**Anonymous callers are allowed at the IAM layer, and the functions check their own keys.** The
-`allUsers` → `roles/run.invoker` binding on each of the four Cloud Run services lives in
-[`cloud_run.tf`](../../terraform/cloud_run.tf); no deploy passes `--allow-unauthenticated`, because
-that flag is an IAM write rather than a deploy setting and the deploy identity holds no run
-permissions. On top of that binding, the three Gemini functions enforce a shared-secret check on the
-`Authorization: Bearer` header against `ASTROSITE_API_KEY`, and `TournamentLeaderboard` is
-CORS-limited instead.
+**So authentication is the private functions' own job, and it is one shared secret.** Each reads
+`Authorization: Bearer <token>`, compares it to `ASTROSITE_API_KEY` from its environment, and
+answers `401 Valid API key required` on a mismatch or a missing header. A function that finds the
+secret itself unset answers `500` rather than accepting anything, so a misconfigured deploy fails
+closed. The same value is held by the site's `.env` and by the `ASTROSITE_API_KEY` GitHub secret
+that `update-player-biographies.yml` passes to the workflow script.
 
-The keys reach the functions from Secret Manager, mounted by `--set-secrets` — not from anyone's
-`.env`, which is how it worked before the migration. Locally the same values are applied to
-`process.env` by the prompt modules, which `import 'dotenv/config'`; `.env` itself is never uploaded,
-since `.gcloudignore` pulls in `.gitignore`, which excludes it.
+**There is no authorization** — no scopes, no per-caller identity, no rate limiting. The token is a
+single shared secret that grants everything a private function can do, so anyone holding it is
+every caller. That is proportionate to what the private functions are: two experiments and a
+biography writer whose worst case is a Gemini bill and some prose nobody asked for. It would not be
+proportionate to a function that wrote to the repository, and none of them do — every output
+reaches the repository through the workflow that called out, never through the function.
 
-Generated avatars are the one backend output that reaches the repository, and they get there by hand:
-`generate-avatars.sh` loops over `astrosite/src/data/players/images/originals/*.jpeg` and writes PNGs
-into the sibling `avatars/` directory, which a human then commits.
+`TournamentLeaderboard` has no bearer check at all. It is CORS-limited instead, and the standings
+it returns are published on the public website anyway.
+
+### Deployment
+
+**CI ships all four, since 2026-09-14.**
+[`deploy-functions.yml`](../../.github/workflows/deploy-functions.yml) runs on every push to `main`
+touching `backend/backend-functions/**`, one matrix job per function, `fail-fast: false` so a broken
+leaderboard proxy does not stop the biography generator shipping. In-progress runs are *not*
+cancelled: the workflow walks four independent functions, so a cancellation leaves some on the new
+code and some on the old with nothing recording which. `check-backend.yml` runs the test suite on
+pull requests (§9).
+
+It federates to `functions-deployer@` through the same Workload Identity pool as every other
+workflow here — there is no functions-specific provider. That account holds
+`roles/cloudfunctions.developer` and `roles/iam.serviceAccountUser` on two accounts and nothing
+else: `hector-functions`, which the functions run as, and `functions-builder`, which their builds
+run as. `--build-service-account` is not optional dressing; omit it and the build runs as the
+project's default compute account, which Google gave `roles/editor`, and the deployer would then
+need `actAs` on an editor-privileged account to deploy at all.
+
+`--source=.` uploads the directory and Cloud Build runs the buildpack against it, installing from
+`package-lock.json` and then running the `gcp-build` script to compile TypeScript. Nothing is built
+on the runner. `.gcloudignore` excludes `node_modules`, `test/` and `samples/`, and pulls in
+`.gitignore` — whose one entry is `.env` — so no key is uploaded even by accident.
+
+**Secrets are named, never passed.** Every deploy states `--set-secrets` with `ENV_VAR=<secret
+id>:latest`, so what reaches the function is a reference to a Secret Manager container rather than a
+value:
+
+| Function | `--set-secrets` |
+| --- | --- |
+| `GeneratePlayerBiography` | `GOOGLE_GEMINI_API_KEY=gemini-api-key:latest,ASTROSITE_API_KEY=astrosite-api-key:latest` |
+| `GeneratePlayerAvatar` | the same pair |
+| `ExtractScorecardInformation` | the same pair |
+| `TournamentLeaderboard` | `HECTOR_APP_API_KEY=hector-app-api-key:latest` |
+
+The three secret ids are the keys of `local.function_secrets` in
+[`terraform/secrets.tf`](../../terraform/secrets.tf), which creates the containers and grants
+`hector-functions` `roles/secretmanager.secretAccessor` on each — read versions, and nothing else:
+the runtime cannot list, create, disable or destroy them. The grant is per secret rather than
+project-wide, so `TournamentLeaderboard`'s identity could be split off later without touching the
+other two.
+
+No key passes through this repository, a GitHub secret, or a CI runner: naming a secret is not
+naming a value, which is why a dependency bump can now deploy a function's whole configuration
+alongside its code without knowing any of it.
+
+**Rotating a key involves no deploy.** The functions reference `:latest`, so a new version is picked
+up by the next cold instance:
+
+```bash
+printf %s "$NEW_KEY" | gcloud secrets versions add gemini-api-key --project=hector-golf --data-file=-
+```
+
+A redeploy only shortens the wait for instances that are already warm.
+
+**A laptop deploy is still supported and produces the same function.** The `npm run deploy:*`
+scripts in `package.json` pass the same flags as the workflow — if one changes, change the other.
+They need only `GCLOUD_PROJECT_ID` in `backend/backend-functions/.env`, since `--set-secrets` means
+a deploy no longer needs the keys themselves; they name the project on the command line and set the
+quota project for that one invocation, so they never modify your active `gcloud` configuration.
+Before 2026-09-14 this was the *only* path, the functions lived outside the Terraform-managed
+project, and their keys reached them by `--set-env-vars` from somebody's `.env`. See
+[`docs/plans/functions-migration.md`](../plans/functions-migration.md).
 
 ## 11. Local development and operations
 
@@ -987,9 +1080,15 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
 - `backend/backend-functions/src/cli/cli.ts` cannot run as `npm run cli`: the script hardcodes
   `samples/1.png`, and no `samples/` directory exists, so it exits on its own `existsSync` check. It
   used to import a non-existent `../lib/genai` as well; that is now fixed. The `uploadImage` branch
-  in `scorecard-detection/genai.ts` reads `process.env.API_KEY`, which is never set.
-- The generated avatars under `src/data/players/images/` are unreferenced — no player JSON sets an
-  `image` field, and the facelift did not start using them.
+  in `scorecard-detection/genai.ts` reads `process.env.API_KEY`, which is never set. Both belong to
+  a dormant experiment — [`docs/experiments/scorecard-extraction.md`](../experiments/scorecard-extraction.md),
+  which also records that `v3` of that prompt returns after its first stage.
+- Two of the four Cloud Functions are deployed and called by nothing. That is deliberate and
+  documented rather than drift: see [`docs/experiments/`](../experiments/).
+- `astrosite/src/data/players/images/originals/` holds 40 player photographs that nothing reads.
+  The 35 avatars generated from them were committed and then removed again in `8c6d8d0`
+  (2026-09-10) — no player JSON sets the optional `image` field `packages/schemas/src/players.ts`
+  defines, so the repository was carrying some 55 MB of binaries nothing rendered.
 - `src/code/mscorecard/` — a complete SDK and CLI with its own tests and protocol documentation, but
   nothing in the site or the workflows imports it. It is a developer tool living in the site's
   package, not a part of the site. `src/code/scoring.ts` is the one piece written to serve both.
@@ -997,8 +1096,6 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
 **Documentation**
 
 - `astrosite/README.md` is still the unmodified Astro "Basics" starter template.
-- `backend/README.md` opens by calling the functions "an Express.js based REST API"; they are GCP
-  Cloud Functions gen2.
 - The root `README.md` reads `# TODO`.
 
 **Noise**
