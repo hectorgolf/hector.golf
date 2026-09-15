@@ -22,17 +22,17 @@ Both budgets that do exist are described in
 
 ## Buried in a `current/` document
 
-Both of these were tracked nowhere but inside a document that otherwise describes how things are,
-which is what the `docs/plans` and `docs/current` split was made to surface. See
+Tracked nowhere but inside a document that otherwise describes how things are, which is what the
+`docs/plans` and `docs/current` split was made to surface. See
 [`docs/README.md`](docs/README.md).
 
-**`event.bucketsLocked` and `player.biographyLocked` do not exist.**
-[`docs/current/data-ownership.md`](docs/current/data-ownership.md) specifies both — separate empty
-guard fields, so that no existing value is silently reinterpreted as a deliberate lock — and says
-plainly that they are not implemented. Nothing in any schema, page or script has them.
-
-`bucketsLocked` is now the narrower of the two: `bucketsAreOpen()` already stops CI at 08:00 on the
-first morning, so the field is only about locking buckets *earlier* than that.
+The other item that was here — `event.bucketsLocked` and `player.biographyLocked`, specified by
+`data-ownership.md` and implemented by nothing — has become two plans, which is where something
+that has not happened belongs: [`docs/plans/biography-locking.md`](docs/plans/biography-locking.md)
+and [`docs/plans/bucket-locking.md`](docs/plans/bucket-locking.md). The biography one is the live
+problem of the two. `update-player-biographies` rewrites all 45 biographies on every run, twice a
+month, so the field `data-ownership.md` classes as authored is in practice CI's, and a hand-edited
+biography has a fortnight to live.
 
 **Two of the four next steps the GCP setup was aiming at are still open.** They used to live at the
 end of the setup document, which is why nobody saw them; splitting that document moved them here and
