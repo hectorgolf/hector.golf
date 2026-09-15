@@ -709,6 +709,8 @@ and assigns a club **only when exactly one** club matches.
 | `update-leaderboards.yml` | Dispatched by the admin service at 03:00/12:00 UTC; cron `15 3,12 * * *` as a backstop; manual | Script + `commit-changes.sh` | `contents: write` |
 | `update-player-biographies.yml` | Cron `30 2 10,25 * *`; manual | Script + `commit-changes.sh` | `contents: write` |
 | `update-player-club-memberships.yml` | Cron `15 22 15 * *`; manual | Script + `commit-changes.sh` | `contents: write` |
+| `export-admin-data.yml` | Manual only — an export publishes an edit, so there is no cron | Guard on `GH_WIF_PROVIDER`/`GH_DEPLOYER_SA` → `npm ci` → WIF auth → `npm run export` in `admin/` → `git add -A astrosite/src/data/events/matchplay` and push | `contents: write`, `id-token: write` |
+| `refresh-admin-mirror.yml` | `workflow_run` completion of the four update workflows, successful runs only; manual | Same guard → `npm ci` → WIF auth → `npm run seed` in `admin/` | `contents: read`, `id-token: write` |
 
 **Deployment target is GitHub Pages**, with the custom domain supplied by
 [`public/CNAME`](../../astrosite/public/CNAME) (`hector.golf`; `www` 301s to it). The build step passes
@@ -740,16 +742,38 @@ were consequences of the project split, which
 
 ### Secrets and variables
 
+[gcp-bootstrapping.md](../playbooks/gcp-bootstrapping.md) is where the values come from and what
+their absence degrades; this is what reads them.
+
 | Name | Kind | Used by |
 | --- | --- | --- |
-| `WISEGOLF_USERNAME` | Variable (also hardcoded in some workflow YAML) | deploy, PR checks, three update workflows |
-| `WISEGOLF_PASSWORD` | Secret | deploy, PR checks, three update workflows |
+| `GH_WIF_PROVIDER` | Variable | every job that touches GCP — both Terraform workflows, `deploy-admin`, `deploy-functions`, the four update workflows, `export-admin-data`, `refresh-admin-mirror` |
+| `GCP_PROJECT_ID` | Variable | the same set minus the two Terraform workflows, which get the project from their backend config |
+| `GCP_REGION` | Variable | `deploy-admin`, `deploy-functions` |
+| `GH_DEPLOYER_SA` | Variable | `deploy-admin`, `export-admin-data`, `refresh-admin-mirror` — the identity they federate to |
+| `GH_TERRAFORM_SA` | Variable | `terraform-plan`, `terraform-apply` — the identity they federate to |
 | `GH_LEADERBOARD_SA` | Variable | `update-leaderboards` — the identity it federates to |
 | `GH_FUNCTIONS_DEPLOYER_SA` | Variable | `deploy-functions` — the identity it federates to |
 | `GH_FUNCTIONS_RUNTIME_SA` | Variable | `deploy-functions` — what it passes to `--service-account` |
-| `HECTOR_APP_API_KEY` | Secret | `update-leaderboards` |
+| `GH_FUNCTIONS_BUILDER_SA` | Variable | `deploy-functions` — what it passes to `--build-service-account` |
+| `GH_IMAGE_REPO` | Variable | `deploy-admin` — the Artifact Registry repository the image is tagged into |
+| `TF_ADMIN_DOMAIN` | Variable | both Terraform workflows; also the four update workflows, which pass it to `request-deploy` |
+| `TF_LEADERBOARD_IMPERSONATORS` | Variable (a JSON array) | `terraform-plan`, `terraform-apply` |
+| `TF_ADMIN_PRINCIPALS` | Secret (a JSON array) | `terraform-plan`, `terraform-apply` — a secret only because the repository is public and these are real addresses |
+| `TF_IAP_OAUTH_CLIENT_ID` | Secret | both Terraform workflows; also the four update workflows, which pass it to `request-deploy` |
+| `TF_IAP_OAUTH_CLIENT_SECRET` | Secret | `terraform-plan`, `terraform-apply` |
+| `PUBLIC_LEADERBOARD_PROXY_URL` | Variable | `deploy-site`, `check-site` — absent, live leaderboards drop out of the build |
+| `WISEGOLF_USERNAME` | Secret | deploy, PR checks, three update workflows |
+| `WISEGOLF_PASSWORD` | Secret | deploy, PR checks, three update workflows |
+| `HECTOR_APP_API_KEY` | Secret | `update-leaderboards`, `check-site` |
 | `ASTROSITE_API_KEY` | Secret | `update-player-biographies` |
+| `GIT_COMMITTER_EMAIL` | Secret | the four update workflows and `export-admin-data` — the address they commit as |
 | `GITHUB_TOKEN` | Built-in → `GITHUB_ACCESS_TOKEN` | `update-leaderboards` |
+
+The four update workflows reach beyond their own scrape because each ends in the `request-deploy`
+composite action: a push made with `GITHUB_TOKEN` does not trigger workflows, so they ask the admin
+service to dispatch the deploy instead — which is why an IAP client id and the admin domain appear
+in a handicap scrape.
 
 ## 10. The backend (`backend/backend-functions/`)
 
