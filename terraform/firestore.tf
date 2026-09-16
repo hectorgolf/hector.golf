@@ -22,10 +22,16 @@ resource "google_firestore_database" "hector" {
   mongodb_compatible_data_access_mode = "DATA_ACCESS_MODE_DISABLED"
   realtime_updates_mode               = "REALTIME_UPDATES_MODE_DISABLED"
 
-  # PITR gives 7 days of recoverable history. It is explicitly outside the
-  # no-cost quota ($0.00020 per GiB-hour), but the whole dataset is well under a
-  # megabyte, so this is fractions of a cent a month for the only undo button
-  # this data has once it stops living in Git.
+  # PITR gives 7 days of recoverable history. It is explicitly outside the free
+  # tier, and billed on the database size at a rate in the same order as storing
+  # the data itself. The whole dataset is well under a megabyte, so this is
+  # fractions of a cent a month for the only undo button this data has once it
+  # stops living in Git.
+  #
+  # Rates move, so read them rather than trusting a comment:
+  # https://cloud.google.com/firestore/enterprise/pricing — the *Enterprise*
+  # sheet, because that is the edition below. The Standard one is what search
+  # engines return and it prices some of the same lines differently.
   point_in_time_recovery_enablement = "POINT_IN_TIME_RECOVERY_ENABLED"
 
   # The two most important lines in this repository.
@@ -40,4 +46,67 @@ resource "google_firestore_database" "hector" {
   deletion_policy         = "ABANDON"
 
   depends_on = [google_project_service.enabled["firestore.googleapis.com"]]
+}
+
+# Weekly backups, kept for four weeks.
+#
+# This is the second half of the undo button, and it covers a different failure
+# than PITR above. PITR is for the mistake you notice: seven days of history at
+# one-minute granularity, so a bad write on Tuesday is recoverable on Friday.
+# Backups are for the mistake nobody noticed — a tournament quietly mangled in
+# March and spotted in April — which is the failure this data actually has,
+# because almost nothing reads the old rows until someone goes looking.
+#
+# Weekly only, and no daily schedule beside it. A database may have one of each,
+# but a daily schedule would cover days 1-7, which is exactly the window PITR
+# already covers and covers better. Weekly picks up where PITR stops.
+resource "google_firestore_backup_schedule" "weekly" {
+  project  = var.project_id
+  database = google_firestore_database.hector.name
+
+  # Seconds, because the API takes a duration. var.firestore_backup_retention_weeks
+  # is where the number and its ceiling are argued.
+  retention = "${var.firestore_backup_retention_weeks * 7 * 24 * 60 * 60}s"
+
+  # Wednesday. The backup worth having is the one holding a *settled* weekend,
+  # and the weekend does not settle at the weekend.
+  #
+  # Monday is the obvious choice and the wrong one. Sunday's rounds only become
+  # rows here once the Golf Union has computed them and a sweep has read them:
+  # the batch runs overnight at about 03:00 Finnish, and the ticks in
+  # scheduler.tf collect at 03:00, 05:00, 07:00 and 12:00 UTC. Worse, Firestore
+  # picks the hour of a backup itself and documents that it varies, and the API
+  # defines this day in UTC — so "MONDAY" includes the three hours before
+  # Monday's first tick has run. That backup would be a whole weekend behind,
+  # and only in some weeks, which is the worst way for it to be wrong.
+  #
+  # Tuesday closes that gap but not the real one. A weekend of tournaments is
+  # exactly when the Golf Union has larger corrections to make by hand, and
+  # nothing guarantees they land on Monday — scheduler.tf's note on the morning
+  # window is about the same unpredictability, one day earlier in the chain. A
+  # failed batch is re-run during office hours; a correction that needs a person
+  # can slip a day past that.
+  #
+  # Wednesday buys that second working day. The price is that each backup is up
+  # to two days staler than it could be, which matters not at all: PITR covers
+  # the preceding seven days underneath this, so the recent past is not what
+  # these copies are for.
+  weekly_recurrence {
+    day = "WEDNESDAY"
+  }
+
+  # Matches the database above, and for the same reason rather than out of
+  # symmetry. `terraform destroy` leaves the database alive by design; if it
+  # deleted this, it would leave a live database with nothing backing it up and
+  # no error anywhere to say so. The two have to be abandoned together.
+  #
+  # The cost is the same as the database's: after an abandon, a fresh apply
+  # fails with ALREADY_EXISTS rather than adopting what is there. Recover it
+  # with an `import` block — the id format is
+  # projects/{project}/databases/{database}/backupSchedules/{name}, and the name
+  # is a server-assigned uuid you read from
+  # `gcloud firestore backups schedules list --database=hector`. The import
+  # section near the end of docs/playbooks/gcp-bootstrapping.md has the
+  # procedure.
+  deletion_policy = "ABANDON"
 }

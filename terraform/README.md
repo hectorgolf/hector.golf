@@ -12,7 +12,7 @@ bucket has to exist before `terraform init` will work.
 | `versions.tf` | Provider and version pins, the GCS state backend, the project data source |
 | `variables.tf` | Every input, with why it exists |
 | `apis.tf` | The Google APIs this project needs |
-| `firestore.tf` | The database — Enterprise edition, delete-protected |
+| `firestore.tf` | The database — Enterprise edition, delete-protected — and its weekly backup schedule |
 | `artifact_registry.tf` | Admin container images and their cleanup policies |
 | `cloud_run.tf` | The `hector-admin` service |
 | `iap.tf` | Identity-Aware Proxy: the service agent binding and who may sign in |
