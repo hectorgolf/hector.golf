@@ -250,22 +250,43 @@ describe('what the twice-daily tick starts', () => {
      * workflow at all. An entry silently dropping out of it would be a scrape
      * that quietly stops running, with the jobs still green.
      */
-    it('is every workflow marked scheduled, and only those', () => {
+    it('is every workflow the tick considers, and only those', () => {
         expect(SCHEDULED_WORKFLOWS.map((workflow) => workflow.slug)).toEqual(
-            DISPATCHABLE_WORKFLOWS.filter((workflow) => workflow.scheduled).map((workflow) => workflow.slug)
+            DISPATCHABLE_WORKFLOWS.filter((workflow) => workflow.cadence !== 'manual').map((workflow) => workflow.slug)
         )
-        expect(SCHEDULED_WORKFLOWS.every((workflow) => workflow.scheduled)).toBe(true)
+        expect(SCHEDULED_WORKFLOWS.every((workflow) => workflow.cadence !== 'manual')).toBe(true)
     })
 
-    it('currently covers both scrapes, in the order they should queue', () => {
+    it('currently covers all four scrapes and the deploy backstop, in the order they queue', () => {
         expect(SCHEDULED_WORKFLOWS.map((workflow) => workflow.file)).toEqual([
             'update-handicaps.yml',
             'update-leaderboards.yml',
+            'update-player-biographies.yml',
+            'update-player-club-memberships.yml',
+            'deploy-site.yml',
         ])
     })
 
-    it('is not empty, which would be a tick that does nothing twice a day', () => {
+    it('is not empty, which would be a tick that does nothing four times a day', () => {
         expect(SCHEDULED_WORKFLOWS.length).toBeGreaterThan(0)
+    })
+
+    it('covers every workflow that used to carry a GitHub cron', () => {
+        /*
+         * The crons were deleted on 2026-09-16 and this tick became the only
+         * clock, so a workflow missing from here is not "running on its own
+         * schedule" any more — it is a scrape that has silently stopped, with
+         * nothing red anywhere to say so. That is the failure this pins.
+         */
+        expect(SCHEDULED_WORKFLOWS.map((workflow) => workflow.file).sort()).toEqual(
+            [
+                'deploy-site.yml',
+                'update-handicaps.yml',
+                'update-leaderboards.yml',
+                'update-player-biographies.yml',
+                'update-player-club-memberships.yml',
+            ].sort()
+        )
     })
 })
 

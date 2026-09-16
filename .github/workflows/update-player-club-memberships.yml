@@ -4,9 +4,24 @@
 name: Update club memberships
 
 on:
-  # Runs at 22:15 UTC on day 15 of every month
-  schedule:
-    - cron: "15 22 15 * *"
+  # No `schedule:` here, deliberately. Cloud Scheduler is the only clock.
+  #
+  # GitHub queues `schedule` events and delivers them when it has capacity, which
+  # for this repository has meant hours: on 2026-09-16 the last scheduled
+  # delivery of each workflow here was between two and five hours late, and one
+  # of them landed on the wrong calendar day. A cron kept "as a backstop" is
+  # therefore a second clock that is always wrong, and its runs are duplicates
+  # somebody has to explain every time they read the Actions tab.
+  #
+  # What starts this now is `terraform/scheduler.tf` -> the admin service ->
+  # `workflow_dispatch`, which GitHub delivers immediately. Which workflows the
+  # tick starts, and how often, is `DISPATCHABLE_WORKFLOWS` in
+  # `admin/src/lib/workflows.ts`; `admin/src/lib/cadence.ts` explains the
+  # intervals and why they are intervals rather than crons.
+  #
+  # The cost, chosen knowingly: if Cloud Scheduler or the admin service is down,
+  # this does not run, and nothing goes red to say so. Before, it would merely
+  # have been late.
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
