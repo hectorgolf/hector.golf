@@ -150,7 +150,8 @@ None of these needed the season, a deploy, or a decision.
   existing rule in [`secrets.tf`](../../terraform/secrets.tf): Terraform creates the container and
   never the value, and the container spec never names a secret version.
 - `secrets.ts` generalised past its single hardcoded GitHub token.
-- The GitHub token gains `Contents: read and write`. Note the consequence in *Decisions* below.
+- The GitHub token gains `Contents: read and write` — done 2026-09-16, see below. Note the
+  consequence in *Decisions* below.
 - Firestore: `handicap-observations`, `job-runs`, `job-locks`.
 - The offline replay test: 1,406 committed entries → Firestore documents → rendered NDJSON, asserted
   equal to today's `handicaps.json` under `latestPerDay`.
@@ -165,10 +166,25 @@ handicaps produces nine entries it considers equal. The rendered file's line ord
 have depended on the order Firestore returned documents in, and the append-only guard would have
 refused the result. The render breaks the tie on `player`; the shared comparator is left alone.
 
-**Still outstanding from this list:** the GitHub token's `Contents: read and write`. Nothing has
-needed it yet, because a shadow run never commits — step 2 is where a missing scope would first bite.
-[`docs/playbooks/gcp-bootstrapping.md`](../playbooks/gcp-bootstrapping.md) Step 11 is where the token
-is created; the scope has to be widened on the existing one.
+**The token's `Contents: read and write` was granted on 2026-09-16**, and it is worth being precise
+about what that did and did not change, because the obvious reading is wrong.
+
+It did not fix reading. This repository is public, and a fine-grained token gets public read access
+whatever its Contents permission says — which is why the very first shadow run's reconcile pulled
+`handicaps.json` down and reported `0 changes` rather than throwing. The read path has worked all
+along and proves nothing about the write path.
+
+What it enables is the commit in step 2, and **nothing exercises it until then**. A `Contents` scope
+that is still wrong will surface as a failed commit at the moment `dryRun` goes off, not before. The
+cheap way to find out earlier, which does not write anything:
+
+```bash
+TOKEN=$(gcloud secrets versions access latest --secret=github-dispatch-token --project=hector-golf)
+curl -s -H "Authorization: Bearer $TOKEN" https://api.github.com/repos/hectorgolf/hector.golf \
+  | python3 -c 'import json,sys; print(json.load(sys.stdin)["permissions"])'
+```
+
+`push: True` is the answer that means step 2 can commit.
 
 ### Step 1 — shadow ✅ *deployed 2026-09-16 08:26 UTC*
 
