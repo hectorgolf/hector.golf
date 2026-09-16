@@ -277,7 +277,10 @@ async function main(): Promise<void> {
     }
 
     const roster = writeStandInRoster()
-    console.log(`WiseGolf stand-in: drifting ${roster.players} players' handicaps (roster at ${roster.path})`)
+    console.log(
+        `WiseGolf stand-in: drifting ${roster.players} players' handicaps (roster at ${roster.path}).` +
+            ' Some move every five minutes; WISEGOLF_STAND_IN_TICK=10s makes that visible sooner.'
+    )
 
     const admin: ChildProcess = spawn(tsxBinary(), [join(here, 'dev-iap.ts')], {
         cwd: join(here, '..'),

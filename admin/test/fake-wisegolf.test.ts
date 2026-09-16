@@ -14,7 +14,7 @@ import {
     TICK_MS,
     type RosterEntry,
 } from '@hector/wisegolf/src/drifting-handicap-source.ts'
-import { rosterFrom, standInFromRoster } from '@hector/wisegolf/src/stand-in.ts'
+import { rosterFrom, standInFromRoster, tickFrom } from '@hector/wisegolf/src/stand-in.ts'
 
 /** Two dozen, the size `dev-fake.ts` builds and the size the rules are stated for. */
 const roster: RosterEntry[] = Array.from({ length: 24 }, (_, index) => ({
@@ -246,5 +246,66 @@ describe('choosing the stand-in', () => {
         expect(() => rosterFrom(rosterFile([]))).toThrow(/non-empty array/)
         expect(() => rosterFrom(rosterFile([{ firstName: 'A' }]))).toThrow(/firstName, lastName, club/)
         expect(() => rosterFrom(rosterFile([{ firstName: 'A', lastName: 'B', club: 'V' }]))).toThrow(/handicap/)
+    })
+})
+
+/**
+ * How long a tick lasts.
+ *
+ * Five minutes is right for leaving the stand-in running and badly wrong for the
+ * first ten minutes of using it: a handicap that moves every five minutes is
+ * invisible for the whole length of anybody's patience, and "no changes" reads
+ * as "the drift is broken" rather than as "you are inside tick zero".
+ */
+describe('how long a tick lasts', () => {
+    it('is five minutes unless somebody says otherwise', () => {
+        expect(tickFrom(undefined)).toBe(TICK_MS)
+        expect(tickFrom('')).toBe(TICK_MS)
+    })
+
+    it('is spelled the way this repository spells a cadence', () => {
+        expect(tickFrom('10s')).toBe(10_000)
+        expect(tickFrom('30 s')).toBe(30_000)
+        expect(tickFrom('5m')).toBe(5 * 60_000)
+        expect(tickFrom('2H')).toBe(2 * 3_600_000)
+    })
+
+    /**
+     * Refused rather than ignored. Falling back to five minutes on a typo is
+     * indistinguishable from the drift being broken, which is the exact
+     * confusion this option exists to end.
+     */
+    it('refuses a value it cannot read, rather than quietly using the default', () => {
+        expect(() => tickFrom('10')).toThrow(/duration/)
+        expect(() => tickFrom('soon')).toThrow(/duration/)
+        expect(() => tickFrom('10 minutes')).toThrow(/duration/)
+        expect(() => tickFrom('1d')).toThrow(/duration/)
+        expect(() => tickFrom('0s')).toThrow(/longer than nothing/)
+    })
+})
+
+describe('when the next handicaps move', () => {
+    const at = (elapsedMs: number, tickMs: number) =>
+        new DriftingHandicapSource({ roster, seed, startedAt: 0, tickMs, now: () => elapsedMs })
+
+    it('counts down within the current tick', () => {
+        expect(at(0, 10_000).msUntilNextTick()).toBe(10_000)
+        expect(at(4_000, 10_000).msUntilNextTick()).toBe(6_000)
+        expect(at(9_999, 10_000).msUntilNextTick()).toBe(1)
+    })
+
+    it('starts again on the next tick', () => {
+        expect(at(10_000, 10_000).msUntilNextTick()).toBe(10_000)
+        expect(at(12_000, 10_000).msUntilNextTick()).toBe(8_000)
+    })
+
+    it('drives the drift at whatever interval it was given', async () => {
+        const fast = at(30_000, 10_000)
+        expect(fast.tick()).toBe(3)
+
+        const readings = await Promise.all(
+            roster.map((entry) => fast.getPlayerHandicap(entry.firstName, entry.lastName, entry.club))
+        )
+        expect(readings.filter((handicap, index) => handicap !== roster[index]!.handicap).length).toBeGreaterThan(0)
     })
 })
