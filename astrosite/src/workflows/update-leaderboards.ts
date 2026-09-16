@@ -1,12 +1,12 @@
 import { type HectorEvent } from "@hector/schemas/src/events.ts";
 import { isoDateToday } from "@hector/schemas/src/dates.ts";
-import { playersData, eventsData, pathToEventJson, isHectorEvent } from "../code/data.ts";
+import { playersData, eventsData, isHectorEvent } from "../code/data.ts";
 import { redact } from "../code/strings.ts";
 import { fetchHectorLeaderboardData, fetchVictorLeaderboardData } from "../code/leaderboards/google-sheets.ts";
 import { updateHectorEventLeaderboard } from "../code/leaderboards/github.ts";
 import { fetchHectorLeaderboardDataFromApp } from "../code/leaderboards/app.ts";
 import { splitCompetitorNames } from "../code/leaderboards/presentation.ts";
-import { writeJsonFile } from "../code/json.ts";
+import { writeEvent } from "./store.ts";
 import {
     googleSheetIdFromLeaderboardUrl,
     isAppHectorGolfLeaderboard,
@@ -94,9 +94,8 @@ async function updateLeaderboardsWithData(
                     const winners = rawEvent.results?.winners || { hector: [], victor: [] };
                     rawEvent.results = { teams: leaderboardTeams as Array<HectorTeam>, winners };
                     console.log(`Added ${leaderboardTeams.length} teams for ${event.name} from live leaderboard data`);
-                    const filePath = pathToEventJson(rawEvent);
-                    writeJsonFile(filePath, rawEvent);
-                    console.log(`Updated team pairings in ${filePath}`);
+                    await writeEvent(rawEvent);
+                    console.log(`Updated team pairings for ${rawEvent.id}`);
                     return true;
                 }
             }

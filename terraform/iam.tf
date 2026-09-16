@@ -304,3 +304,23 @@ resource "google_service_account_iam_member" "functions_deployer_act_as_builder"
   role               = "roles/iam.serviceAccountUser"
   member             = google_service_account.functions_deployer.member
 }
+
+# The leaderboard scrape writes to Firestore now, as well as reading Sheets.
+#
+# Before the data moved out of the repository — docs/plans/everything-to-firestore.md
+# — update-leaderboards.yml read two spreadsheets and wrote JSON files, so this
+# identity deliberately held no project roles at all: its entire access came from
+# those sheets being shared with its email address, and a sheet that had not been
+# shared failed with a 403 rather than an authentication error.
+#
+# That property is worth keeping as much of as possible, which is why this is
+# `datastore.user` — read and write documents, but not create, delete or
+# reconfigure the database — and not something broader. The alternative was to run
+# the scrape as GH_DEPLOYER_SA like the other three, which would have meant the
+# Sheets credential and the deploy credential becoming the same identity. Granting
+# one narrow role to the narrow identity is the smaller change.
+resource "google_project_iam_member" "leaderboard_reader_firestore" {
+  project = var.project_id
+  role    = "roles/datastore.user"
+  member  = google_service_account.leaderboard_reader.member
+}

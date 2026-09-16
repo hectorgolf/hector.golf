@@ -87,6 +87,41 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # The site no longer builds from files in this repository — the data lives
+      # in Firestore and the admin service serves it. See
+      # docs/plans/everything-to-firestore.md.
+      #
+      # An ID token for IAP, not an access token: the build calls the admin
+      # service through the same front door as everything else, and the audience
+      # has to be the OAuth client in front of it or the call is rejected. Same
+      # mechanism as .github/actions/request-deploy.
+      #
+      # If these are missing, the build falls back to the committed snapshot and
+      # says so very loudly in its log. That is correct for a fork and wrong for
+      # this workflow, which is why the guard below fails rather than warns.
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GH_WIF_PROVIDER }}
+          service_account: hector-scheduler@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+          token_format: id_token
+          id_token_audience: ${{ secrets.TF_IAP_OAUTH_CLIENT_ID }}
+          id_token_include_email: true
+
+      # A deploy that silently published the fallback would be indistinguishable
+      # from a working one until somebody noticed the handicaps had stopped
+      # moving. The build itself refuses to fall back when it *has* credentials;
+      # this refuses to run without them in the first place.
+      - name: Refuse to deploy without live data
+        run: |
+          if [ -z "${{ steps.auth.outputs.id_token }}" ] || [ -z "${{ vars.TF_ADMIN_DOMAIN }}" ]; then
+            echo "::error::No credentials for the admin service, so this build would publish the committed"
+            echo "::error::fallback snapshot instead of live data. Check GH_WIF_PROVIDER, TF_ADMIN_DOMAIN"
+            echo "::error::and TF_IAP_OAUTH_CLIENT_ID. See docs/plans/everything-to-firestore.md."
+            exit 1
+          fi
+
       - name: Build the site
         working-directory: astrosite
         run: |
@@ -99,6 +134,9 @@ jobs:
           # Public URL of the leaderboard proxy. Unset simply leaves the live
           # leaderboard off, and every page renders from the last published snapshot.
           PUBLIC_LEADERBOARD_PROXY_URL: ${{ vars.PUBLIC_LEADERBOARD_PROXY_URL }}
+          # Where the data comes from. `src/code/data-source.ts` reads both.
+          HECTOR_ADMIN_ORIGIN: https://${{ vars.TF_ADMIN_DOMAIN }}
+          HECTOR_ADMIN_ID_TOKEN: ${{ steps.auth.outputs.id_token }}
 
       - name: Upload the built site
         uses: actions/upload-pages-artifact@v5

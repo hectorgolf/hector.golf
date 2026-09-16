@@ -1,6 +1,8 @@
 import { type HandicapCheck, schema as HandicapCheckSchema } from "@hector/schemas/src/handicap-checks.ts";
 
-import checkData from "../data/handicap-checks.json";
+import { snapshot } from "./data-source.ts";
+
+const checkData = (await snapshot()).handicapChecks;
 
 /**
  * Every recorded sweep of the handicap sources, oldest first.

@@ -3,15 +3,19 @@ import { type Player, schema as PlayerSchema } from '@hector/schemas/src/players
 import { type HandicapHistoryEntry } from '@hector/schemas/src/handicaps.ts';
 import { getPlayerHandicapHistoryById as getPlayerHandicapHistoryByIdImplementation } from './handicaps';
 import { getAllEvents } from './events';
-import { playersData, playerDataPath, endDateOfEvent, isHectorEvent, isMatchplayEvent, isFinnkampenEvent } from './data';
-import { writeJsonFile } from './json';
+import { playersData, endDateOfEvent, isHectorEvent, isMatchplayEvent, isFinnkampenEvent } from './data';
+import { writePlayer } from '../workflows/store';
 
+/**
+ * Save a player.
+ *
+ * This used to find the player's file by opening all 45 and matching on `id`,
+ * because the filenames never matched the ids (`anders-forss.json` held
+ * `"id": "anders-f"`). A Firestore document is keyed by the id, so the lookup —
+ * and the regression test that guarded it — are gone.
+ */
 export async function updatePlayerData(player: Player): Promise<void> {
-    const path = await playerDataPath(player);
-    if (!path) {
-        return Promise.reject(`No path found for player ${player.id}`);
-    }
-    writeJsonFile(path, player);
+    await writePlayer(player);
 }
 
 export function getAllPlayerIds(): Array<string> {

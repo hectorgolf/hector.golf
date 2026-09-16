@@ -1,7 +1,3 @@
-import { readFileSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
-import { glob } from "glob";
 import { DateTime } from "luxon";
 
 import {
@@ -15,7 +11,17 @@ import { type Course, schema as CourseSchema } from "@hector/schemas/src/courses
 import { type Player, schema as PlayerSchema } from "@hector/schemas/src/players.ts";
 import { isoDateToday, parseIsoDate } from "@hector/schemas/src/dates.ts";
 
-const __filename = fileURLToPath(import.meta.url);
+import { snapshot } from "./data-source.ts";
+
+/**
+ * Everything below reads from this rather than from `src/data/`.
+ *
+ * Fetched once, at module scope, which is how these loaders already worked — the
+ * `await glob(...)` they replace was also a top-level await. That is why moving
+ * the data out of the repository left every consumer of `playersData`,
+ * `eventsData` and the rest untouched.
+ */
+const data = await snapshot();
 
 /**
  * The path an event's data file lives at.
@@ -27,9 +33,15 @@ const __filename = fileURLToPath(import.meta.url);
  * player counterpart to this function. Use `playerDataPath()` below, which finds
  * the file by reading it, and `updatePlayerData()` in `players.ts` to write one.
  */
-export function pathToEventJson(event: Event): string {
-    return join(dirname(__filename), `../data/events/${event.format}/${event.id}.json`);
-}
+/**
+ * Gone: there is no file to point at any more.
+ *
+ * Kept as a deliberate compile error rather than deleted silently, because the
+ * thing it was used for — `update-handicaps.ts` writing an event's recomputed
+ * buckets — still has to happen, and now happens through `writeEvent()` in
+ * `workflows/store.ts`. A reader who finds this comment is a reader who was
+ * about to write a file.
+ */
 
 /**
  * Filter function for dropping undefined values.
@@ -178,37 +190,29 @@ export function hasParticipants(event: Event | undefined): boolean {
 /**
  * All `Event` objects found from `src/data/events/`.
  */
-export const eventsData: Event[] = (await glob("src/data/events/**/*.json"))
-    .map((filePath) => {
-        return EventSchema.safeParse(JSON.parse(readFileSync(filePath, "utf-8"))).data;
-    })
+export const eventsData: Event[] = data.events
+    .map((record) => EventSchema.safeParse(record).data)
     .filter(nonUndefined);
 
 /**
  * All `Event` objects found from `src/data/events/`.
  */
-export const hectorEvents: HectorEvent[] = (await glob("src/data/events/**/*.json"))
-    .map((filePath) => {
-        return EventSchema.safeParse(JSON.parse(readFileSync(filePath, "utf-8"))).data;
-    })
+export const hectorEvents: HectorEvent[] = data.events
+    .map((record) => EventSchema.safeParse(record).data)
     .filter(isHectorEvent);
 
 /**
  * All `Course` objects found from `src/data/courses/`.
  */
-export const coursesData: Course[] = (await glob("src/data/courses/**/*.json"))
-    .map((filePath) => {
-        return CourseSchema.safeParse(JSON.parse(readFileSync(filePath, "utf-8"))).data;
-    })
+export const coursesData: Course[] = data.courses
+    .map((record) => CourseSchema.safeParse(record).data)
     .filter(nonUndefined);
 
 /**
  * All `Player` objects found from `src/data/players/`.
  */
-export const playersData: Player[] = (await glob("src/data/players/**/*.json"))
-    .map((filePath) => {
-        return PlayerSchema.safeParse(JSON.parse(readFileSync(filePath, "utf-8"))).data;
-    })
+export const playersData: Player[] = data.players
+    .map((record) => PlayerSchema.safeParse(record).data)
     .filter(nonUndefined);
 
 /**
@@ -222,9 +226,13 @@ export const playersData: Player[] = (await glob("src/data/players/**/*.json"))
  * @param player The Player object or player ID to find the path for.
  * @returns The path to the player's data file, or `undefined` if the player is not found.
  */
-export async function playerDataPath(player: Player|string): Promise<string | undefined> {
-    return (await glob("src/data/players/**/*.json")).find((filePath) => {
-        const p = PlayerSchema.safeParse(JSON.parse(readFileSync(filePath, "utf-8"))).data;
-        return p?.id === player || p?.id === (player as Player)?.id;
-    });
-}
+/**
+ * Gone with the files it searched.
+ *
+ * It existed because a player's filename never matched their id
+ * (`anders-forss.json` holds `"id": "anders-f"`), so the only way to find a
+ * player's file was to open all 45 and match. A Firestore document is keyed by
+ * the id, so the whole problem it solved does not arise — and
+ * `test/unit/player-data-paths.test.ts`, which guarded the mismatch, went with
+ * it.
+ */
