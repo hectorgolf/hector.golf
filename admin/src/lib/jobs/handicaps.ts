@@ -4,7 +4,7 @@ import type { Player } from '@hector/schemas/src/players.ts'
 import type { HandicapSource } from '@hector/wisegolf/src/handicap-source-api.ts'
 import { createWisegolfSession } from '@hector/wisegolf/src/wisegolf-api.ts'
 
-import { all, insertMissing, parse, render } from '../handicaps/observations.ts'
+import { all, documentId, insertMissing, parse, render } from '../handicaps/observations.ts'
 import { listPlayers } from '../repository/events.ts'
 import { wisegolfCredentials } from '../secrets.ts'
 import type { Change } from './log.ts'
@@ -181,9 +181,10 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
 
     // 1. Bring Firestore up to date with whatever the old pipeline committed.
     const legacy = await dependencies.readFile(LEGACY_PATH)
-    if (legacy !== undefined) {
-        const committed = JSON.parse(legacy) as HandicapHistoryEntry[]
-        const inserted = dryRun ? [] : await insertMissing(committed)
+    const committed: HandicapHistoryEntry[] = legacy === undefined ? [] : JSON.parse(legacy)
+
+    if (!dryRun && committed.length > 0) {
+        const inserted = await insertMissing(committed)
         if (inserted.length > 0) {
             console.log(`Reconciled ${inserted.length} observations from ${LEGACY_PATH} into Firestore`)
         }
@@ -210,8 +211,19 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
         console.log(`No source answered for ${skipped.length} of ${players.length} players`, { skipped })
     }
 
-    // 3. Decide what is new, against what Firestore holds.
-    const history = await all()
+    // 3. Decide what is new, against what the store holds — or *would* hold.
+    //
+    // The distinction is the whole of shadow mode. A dry run skips the insert
+    // above, so Firestore stays empty however many times it runs, and deciding
+    // against it would report all 45 players as changed from nothing on every
+    // tick, for ever. The shadow diff would be noise rather than evidence, which
+    // is the one thing the shadow period exists to produce.
+    //
+    // So a dry run decides against the history it would have had: what Firestore
+    // holds, plus what the reconcile would have added. The non-dry path has
+    // already done that for real and reads it back.
+    const stored = await all()
+    const history = dryRun ? withCommitted(stored, committed) : stored
     const { entries, changes } = decide(history, readings, now)
 
     if (dryRun) {
@@ -240,11 +252,27 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
         changes.length > 0
             ? `Update ${changes.length} ${changes.length === 1 ? "player's" : "players'"} handicap`
             : 'Reconcile the handicap observation log'
-    const committed = await dependencies.commit(BACKUP_PATH, rendered, message)
+    const written = await dependencies.commit(BACKUP_PATH, rendered, message)
 
-    return committed.ok
-        ? { outcome: 'ok', changes, commit: committed.commit }
-        : { outcome: 'failed', detail: committed.detail, changes }
+    return written.ok
+        ? { outcome: 'ok', changes, commit: written.commit }
+        : { outcome: 'failed', detail: written.detail, changes }
+}
+
+/**
+ * The stored observations plus any committed one the store does not have yet,
+ * without writing anything.
+ *
+ * Keyed on `documentId` so "does not have yet" means exactly what the reconcile
+ * means by it — the two deciding differently is how a shadow run would report a
+ * change the real run would not make.
+ */
+export function withCommitted(
+    stored: readonly HandicapHistoryEntry[],
+    committed: readonly HandicapHistoryEntry[]
+): HandicapHistoryEntry[] {
+    const known = new Set(stored.map(documentId))
+    return [...stored, ...committed.filter((entry) => !known.has(documentId(entry)))]
 }
 
 /** Re-exported for the tests, which pin the backup's shape rather than the write. */

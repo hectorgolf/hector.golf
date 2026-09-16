@@ -36,6 +36,16 @@ export type Job = {
      * reviewed.
      */
     dryRun: boolean
+    /**
+     * Whether the twice-daily Cloud Scheduler tick runs this one.
+     *
+     * The same flag `workflows.ts` carries, and deliberately the same word: the
+     * schedule's two jobs call one endpoint, which starts everything marked
+     * `scheduled` — workflows on GitHub and jobs in this process alike. Adding
+     * either to the tick is an entry in a list rather than an infrastructure
+     * change, which is what keeps `terraform/scheduler.tf` down to two jobs.
+     */
+    scheduled: boolean
     run(dryRun: boolean): Promise<JobOutcome>
 }
 
@@ -137,9 +147,19 @@ export const JOBS: readonly Job[] = [
         // Shadow mode. Step 2 of the plan flips this, in its own commit, once the
         // run log has shown a week of boring diffs.
         dryRun: true,
+        // On the tick from the start, because shadow mode is only worth anything
+        // if it runs as often as the thing it is shadowing. The tick also
+        // dispatches `update-handicaps.yml`, so each run produces a pair of
+        // decisions made against the same base state — see the note in
+        // `api/workflows/dispatch.ts` on why that ordering is what makes the
+        // comparison meaningful.
+        scheduled: true,
         run: (dryRun) => handicaps.run({ readFile, commit, now: () => new Date() }, dryRun),
     },
 ]
+
+/** What the scheduled tick runs in this process, in the order it runs them. */
+export const SCHEDULED_JOBS: readonly Job[] = JOBS.filter((job) => job.scheduled)
 
 export function jobBySlug(slug: string | undefined): Job | undefined {
     return JOBS.find((job) => job.slug === slug)

@@ -1,8 +1,7 @@
 import type { APIRoute } from 'astro'
 
 import { viewerFromHeaders } from '../../../../lib/identity.ts'
-import { acquire } from '../../../../lib/jobs/lock.ts'
-import { record } from '../../../../lib/jobs/log.ts'
+import { execute } from '../../../../lib/jobs/execute.ts'
 import { jobBySlug } from '../../../../lib/jobs/registry.ts'
 
 /**
@@ -10,7 +9,11 @@ import { jobBySlug } from '../../../../lib/jobs/registry.ts'
  *
  * The counterpart to `../../workflows/[slug]/dispatch.ts`: that one asks GitHub
  * to run a workflow and returns as soon as GitHub accepts, this one does the
- * work in the request. Everything about who may call it is the same, and is a
+ * work in the request. The schedule does not call this — it calls
+ * `../../workflows/dispatch`, which runs every job marked `scheduled` alongside
+ * the workflows. This is the "run one now" door, and both go through
+ * `lib/jobs/execute.ts` so that a run started here and one started by the tick
+ * contend for the same lease. Everything about who may call it is the same, and is a
  * property of the deployment rather than of this code — only the IAP service
  * agent holds `roles/run.invoker`, so a request that did not come through IAP
  * never reaches this process, and IAP admits only principals holding
@@ -57,61 +60,16 @@ export const POST: APIRoute = async ({ params, request, redirect }) => {
     }
 
     const viewer = viewerFromHeaders(request.headers)
-    const by = viewer.email ?? 'unidentified caller admitted by IAP'
-    const startedAt = new Date().toISOString()
+    const result = await execute(job, viewer.email ?? 'unidentified caller admitted by IAP')
 
-    // The holder identifies the run, not the caller: two ticks started by the
-    // same scheduler account must not look like the same holder, or the second
-    // one's release would free the first one's lease.
-    const held = await acquire(job.slug, `${startedAt} (${by})`)
-    if (!held.acquired) {
-        // 409, and not a retry-worthy status. A tick that arrives while the
-        // previous one is still going should be dropped rather than queued: the
-        // next tick is an hour away and will read the same sources. This is the
-        // in-process equivalent of GitHub keeping one run pending per
-        // concurrency group.
-        console.log('Skipping a job run because another holds the lease', { slug: job.slug, heldBy: held.heldBy })
-        await record({
-            slug: job.slug,
-            startedAt,
-            finishedAt: new Date().toISOString(),
-            by,
-            dryRun: job.dryRun,
-            outcome: 'skipped',
-            detail: `another run has been going since ${held.since}`,
-            changes: [],
-        })
+    if (result.outcome === 'skipped') {
+        // 409, and not a retry-worthy status. A run that arrives while another
+        // is going should be dropped rather than queued: the next tick is an
+        // hour away at most and will read the same sources.
         return wantsHtml(request)
             ? redirect(`/operations?failed=${job.slug}&reason=already-running`, 303)
-            : json({ skipped: job.slug, heldBy: held.heldBy, since: held.since }, 409)
+            : json({ skipped: job.slug, heldBy: result.heldBy, detail: result.detail }, 409)
     }
-
-    console.log('Running a job', { job: job.slug, dryRun: job.dryRun, by })
-
-    let result: Awaited<ReturnType<typeof job.run>>
-    try {
-        result = await job.run(job.dryRun)
-    } catch (error) {
-        // An unhandled failure is still a run that happened, and the log is the
-        // only place that will say so — the caller gets a 500 it may well not be
-        // reading, and Cloud Logging expires.
-        console.error('A job threw', { job: job.slug }, error)
-        result = { outcome: 'failed', detail: 'the job threw; see Cloud Logging', changes: [] }
-    } finally {
-        await held.lease.release()
-    }
-
-    await record({
-        slug: job.slug,
-        startedAt,
-        finishedAt: new Date().toISOString(),
-        by,
-        dryRun: job.dryRun,
-        outcome: result.outcome,
-        detail: result.detail,
-        changes: result.changes,
-        commit: result.commit,
-    })
 
     if (wantsHtml(request)) {
         // 303 so a reload of the page it lands on does not start a second run.
@@ -124,5 +82,5 @@ export const POST: APIRoute = async ({ params, request, redirect }) => {
     // is written, and the body says what it did.
     return result.outcome === 'ok'
         ? json({ ran: job.slug, dryRun: job.dryRun, changes: result.changes, commit: result.commit }, 200)
-        : json({ error: result.detail ?? 'the job failed', job: job.slug, changes: result.changes }, 502)
+        : json({ error: result.detail ?? 'the job failed', job: job.slug }, 502)
 }

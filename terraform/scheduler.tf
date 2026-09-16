@@ -130,11 +130,20 @@ locals {
   #
   # ## What a tick costs
   #
-  # A wake-up of the admin service, which scales to zero, and two GitHub workflow
-  # runs of a couple of minutes each. Both are inside free tiers. The workflows
-  # share one `data-update` concurrency group, so a tick that arrives while the
-  # previous one is still running queues rather than races — which is the
-  # interlock that makes a higher cadence safe at all.
+  # A wake-up of the admin service, which scales to zero; two GitHub workflow runs
+  # of a couple of minutes each; and however long the in-process jobs take, which
+  # is a 45-player WiseGolf sweep. All inside free tiers.
+  #
+  # Two interlocks, one per list. The workflows share a `data-update` concurrency
+  # group, so a tick arriving while the previous one still runs queues rather
+  # than races. The jobs take a lease in Firestore, so the same tick's job is
+  # skipped rather than queued — see `admin/src/lib/jobs/lock.ts`.
+  #
+  # The cost worth naming: while the handicaps job shadows `update-handicaps.yml`,
+  # every tick sweeps WiseGolf twice — once from the runner and once from here.
+  # Six ticks a day makes twelve sweeps. That is the price of a comparison
+  # against live data, it lasts as long as the shadow period does, and it is the
+  # reason the shadow period is measured in days rather than months.
   data_update_schedules = {
     # Hourly across the early-tee-time window.
     morning = { cron = "0 3-7 * * *" }
@@ -164,11 +173,25 @@ resource "google_cloud_scheduler_job" "data_update" {
   # the year each.
   time_zone = "Etc/UTC"
 
-  # Generous for a call that asks GitHub to do something and returns: the service
-  # scales to zero, so the slow case is a cold start plus a secret read plus one
-  # API call, not the workflow itself — which runs on GitHub long after this
-  # request has been answered.
-  attempt_deadline = "120s"
+  # 120s was right while this endpoint only asked GitHub to do things: a cold
+  # start plus a secret read plus two API calls, with the workflows themselves
+  # running long after the request was answered.
+  #
+  # It is not right now. The same endpoint also runs the jobs in
+  # `admin/src/lib/jobs/registry.ts`, which scrape 45 players against WiseGolf
+  # inside the request — see the note in `api/workflows/dispatch.ts` on why the
+  # work happens there rather than in a job of its own.
+  #
+  # A deadline shorter than the work does not cancel anything. Cloud Scheduler
+  # stops waiting, the Cloud Run request carries on to completion, and the retry
+  # starts a second sweep on top of the first. The lease in
+  # `admin/src/lib/jobs/lock.ts` is what actually prevents that; this number is
+  # what stops it being routine.
+  #
+  # 540s sits under the service's own 600s timeout, so the service gives up
+  # first and the failure has a log line attached to it rather than being a
+  # client-side deadline with nothing on the other end.
+  attempt_deadline = "540s"
 
   retry_config {
     # GitHub being briefly unreachable should not cost a day's update.
@@ -225,95 +248,3 @@ resource "google_cloud_scheduler_job" "data_update" {
   ]
 }
 
-# ---------------------------------------------------------------------------
-# The third job: the handicaps job running inside the admin service.
-#
-# This is the tick for docs/plans/handicaps-to-firestore.md. It is a job of its
-# own rather than another entry in the fan-out above, for two reasons that both
-# come down to it doing the work rather than delegating it.
-#
-# ## It is the last free job
-#
-# Cloud Scheduler's free tier is three jobs per billing account. The comment on
-# `data_update_schedules` above says there is one spare and that it is not spent
-# there; this is what it is spent on. There is no fourth, so when the other three
-# scrapes follow, they join *this* job's fan-out rather than getting their own —
-# which is why `admin/src/lib/jobs/registry.ts` is a list from the first day it
-# holds one entry.
-#
-# ## Its deadline is a real number rather than a generous one
-#
-# The fan-out above returns as soon as GitHub accepts a dispatch, so 120s is
-# slack it never uses. This one holds the request open for the whole sweep, and a
-# deadline shorter than the work does not cancel the run — Cloud Scheduler stops
-# waiting, the Cloud Run request carries on, and the retry starts a second sweep
-# on top of the first. The lease in the application is what actually prevents
-# that; this number is what stops it being routine.
-#
-# 540s sits under the service's own 600s timeout, so the service is the thing
-# that gives up first and the failure has a log line attached to it rather than
-# being a client-side deadline with nothing on the other end.
-#
-# ## Why it runs an hour after the morning window
-#
-# While step 1 of the plan is running this job is in shadow mode, and its whole
-# purpose is to be compared against what `update-handicaps.yml` wrote. Running it
-# after the window rather than inside it means it reads a `handicaps.json` that
-# the old pipeline has finished with, so a disagreement is a real disagreement
-# rather than a race.
-#
-# That ordering is also the transition's blind spot, and the plan says so: the
-# reconcile means this job usually imports the old pipeline's rows before
-# deciding, so its own change detection is rarely exercised. The shadow diffs in
-# the run log are what make that visible.
-# ---------------------------------------------------------------------------
-resource "google_cloud_scheduler_job" "handicaps_job" {
-  count = local.iap_configured ? 1 : 0
-
-  project = var.project_id
-  # NOT var.region, for the same reason as the jobs above.
-  region      = var.scheduler_region
-  name        = "hector-handicaps-job"
-  description = "Runs the admin service's own handicaps job. See docs/plans/handicaps-to-firestore.md."
-
-  # 08:00 UTC: an hour after the last morning tick of the fan-out above, and
-  # before the 08:00 deploy backstop has anything to publish.
-  schedule  = "0 8 * * *"
-  time_zone = "Etc/UTC"
-
-  attempt_deadline = "540s"
-
-  retry_config {
-    # One retry, not three. A retry here is another full sweep of WiseGolf rather
-    # than another API call, and the run it would be retrying may still be going.
-    # The cost of not retrying is a missed shadow run; the cost of retrying hard
-    # is hammering somebody else's API on the morning it is already struggling.
-    retry_count          = 1
-    min_backoff_duration = "60s"
-    max_backoff_duration = "300s"
-  }
-
-  http_target {
-    http_method = "POST"
-    uri         = "${google_cloud_run_v2_service.admin.uri}/api/jobs/handicaps/run"
-
-    # Same spelling as the jobs above, and for the same Astro CSRF reason: a POST
-    # with no content type at all is rejected, not only a form-typed one.
-    headers = {
-      "Content-Type" = "application/json"
-    }
-    body = base64encode("{}")
-
-    oidc_token {
-      service_account_email = google_service_account.scheduler.email
-      audience              = local.iap_client_id
-    }
-  }
-
-  depends_on = [
-    google_project_service.enabled["cloudscheduler.googleapis.com"],
-    google_service_account_iam_member.scheduler_agent_mints_tokens,
-    google_iap_web_cloud_run_service_iam_member.scheduler,
-    google_project_iam_member.terraform_ci,
-  ]
-}

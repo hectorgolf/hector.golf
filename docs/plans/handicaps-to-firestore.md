@@ -153,12 +153,36 @@ None of these need the season, a deploy, or a decision.
 [`request-deploy`](../../.github/actions/request-deploy/action.yml) pattern of WIF → ID token for the
 IAP audience. Not an API key — see *Decisions*.
 
-Triggered by Cloud Scheduler, either as a third job or inline in the existing fan-out. **Not** by a
-GitHub `schedule:` cron, which is the mechanism [`workflows.ts`](../../admin/src/lib/workflows.ts)
+Triggered by the **existing** Cloud Scheduler tick, not by a job of its own. The two jobs already
+call `/api/workflows/dispatch`, which fans out over everything marked `scheduled` — now the jobs in
+`jobs/registry.ts` as well as the workflows in `workflows.ts`. Adding a dataset to the tick is an
+entry in a list rather than an infrastructure change, and Cloud Scheduler's free three jobs stay at
+two.
+
+Not a GitHub `schedule:` cron, which is the mechanism [`workflows.ts`](../../admin/src/lib/workflows.ts)
 documents as running 2–4½ hours late and is the reason Cloud Scheduler exists at all.
 
-`dryRun` is on: the run reconciles, scrapes, computes the diff, writes it to the run log, and touches
-neither Firestore nor git. `update-handicaps.yml` continues untouched and remains the only writer.
+**The tick dispatches the workflows first and runs the jobs second, and that ordering is what makes
+the shadow period worth running.** The job reads `handicaps.json` at the start of its run, seconds
+after the dispatch and minutes before `update-handicaps.yml` commits anything — so both pipelines
+decide against the same base state and their answers are directly comparable. A job scheduled an hour
+*later* would read a file the workflow had already updated, and would agree with it by construction,
+having been told the answer. That was the blind spot in the first draft of this plan, and the fix was
+free.
+
+It costs a second WiseGolf sweep per tick — twelve a day rather than six — for as long as the shadow
+period lasts. That is the price of comparing against live data.
+
+`dryRun` is on: the run reconciles *in memory*, scrapes, computes the diff, writes it to the run log,
+and touches neither the observations collection nor git. The in-memory part matters: a dry run that
+skipped the reconcile and then compared against an empty Firestore would report all 45 players as
+changed on every tick, which is noise rather than evidence. `update-handicaps.yml` continues untouched
+and remains the only writer.
+
+A failing job does not fail the tick. A failed *dispatch* returns 502 and Cloud Scheduler retries; a
+failed *job* is recorded and the tick still succeeds, because otherwise a job broken for a boring
+reason — no WiseGolf credentials yet — would have every retry re-dispatch the workflows and re-run
+the scrape. The next tick is the retry, and there are six a day.
 
 Watch the run log until the diffs are boring.
 
