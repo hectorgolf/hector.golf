@@ -115,6 +115,8 @@ locals {
   #
   # ## Every two hours, not every hour
   #
+  # *Decided 2026-09-16, with the Finnish-venue cost below on the table.*
+  #
   # This was hourly. It is every two hours because the scrape stopped being one
   # sweep: while the handicaps job shadows `update-handicaps.yml` each tick reads
   # WiseGolf twice, and six ticks a day meant twelve sweeps of somebody else's
@@ -128,10 +130,14 @@ locals {
   # Finnish venue loses the 04:00 tick, so a handicap published between 03:00 and
   # 05:00 UTC now misses the buckets where before it had a second chance.
   #
-  # That is a real regression and it is accepted on the same grounds the hourly
-  # version accepted its own: the buckets are projected until the morning of the
-  # event, and a value arriving that late is one the Union itself published late.
-  # Reverting is one character.
+  # That is a real regression. It was raised as one and accepted on the same
+  # grounds the hourly version accepted its own smaller one: the buckets are
+  # projected until the morning of the event, and a value arriving that late is
+  # one the Union itself published late.
+  #
+  # Which is to say it is a decision rather than an oversight, and the thing to
+  # reconsider if a Finnish Hector is ever split off a stale handicap. Reverting
+  # is one character.
   #
   # ## The afternoon
   #
