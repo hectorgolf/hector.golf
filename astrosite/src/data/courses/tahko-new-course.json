@@ -131,7 +131,7 @@
             ],
             "ladies": null
         },
-        "descriptions_fi": [
+        "descriptions_local": [
             { "hole":  1, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/1.png", "description": "Kentän lyhin par 5. Vasemmalla vesi koko matkan ja oikealla tilaa. Aloituksessa lisää puristusta mailaan antaa tiiauspaikan välittömässä läheisyydessä oleva uuden ison klubin terassi. Griinin edessä kolmen bunkkerin vartio ja näin griinille on tultava ilmassa." },
             { "hole":  2, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/2.png", "description": "Ei pisin, mutta yksi kentän vaikeimmista väylistä HCP:llä 1. Huomaa valkean tiin avauspaikka :). Avauksessa on oltava tarkkana linjan kanssa, sillä vettä on vasemmalla koko matkan. Lähestyminen griinille, joka on kuin ylösalaisin oleva syvä lautanen. Griinin ympärykset viettävät voimakkaasti puroon. Griinin takaa löytyy kuitenkin tilaa." },
             { "hole":  3, "shape": "wide", "layout": "/images/courses/tahko-new-course/holes/3.png", "description": "Helpohko par 3, joka näkyy klubille kokonaisuudessaan. Ole tarkkana mailavalinnan kanssa, sillä griini on leveä mutta lyhyt, ja bunkkerit vartioivat edessä. Griini on tasainen ja siksi helppo putata." },

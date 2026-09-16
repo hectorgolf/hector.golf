@@ -127,7 +127,7 @@
             ],
             "ladies": null
         },
-        "descriptions_fi": [
+        "descriptions_local": [
             { "hole":  1, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/1.png", "description": "Suora ja pitkä avaus tai rohkeasti vasemman puuston yli / läpi. Suoralla lyönnillä veteen on matkaa 245 m. tavoitella greeniä kahdella pitkällä lyönnillä. Reilun 220 m avauksen jälkeen, pitkä rauta tai pieni puu ja reilusti vedestä vasemmalle kohti bunkkereita. Lähestymislyönti pitkähkölle greenille, jossa bunkkerit etuvasemmalla, kumpuja ja istutuksia oikealla. Greeni keskeltä reunoille kalteva, kumpareiden ympäröimä." },
             { "hole":  2, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/2.png", "description": "Varma avaus keskipitkällä raudalla keskelle väylää 150-170 m. Huomioikaa, että n. 100:sta metristä näkee hyvin greenin. Pitkä- ja tarkkalyöntiset voivat tavoitella avauslyönnillä greeniä. Oikealla puita ja out, vasemmalla tiheää metsää. Reilun 160 m avauksen jälkeen, kapeahkolle greenille korkea lähestymislyönti lyhyellä raudalla. Greenin takana syvä bunkkeri ja edessä pieniä kumpuja. Greeni voimakkaasti kalteva." },
             { "hole":  3, "shape": "wide", "layout": "/images/courses/tahko-old-course/holes/3.png", "description": "Avaus keskelle tai lievästi väylän vasempaan reunaan, metsä vaanii oikealla. Puusto pysäyttää lyhyet ja liikaa oikealle avautuvat lyönnit. Lähestymislyönti 80-120 metristä lievään ylämäkeen, matala bunkkeri välittömästi greenin vasemmalla puolella. Greeni on lievästi kalteva, mutta suuri, näyttävien kumpujen ympäröimänä." },
