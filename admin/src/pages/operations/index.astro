@@ -6,6 +6,9 @@ import GitHubTokenHelp from "../../components/GitHubTokenHelp.astro";
 import { FAILURE_MESSAGES, github, type GitHubFailure, type RunsOutcome, type WorkflowRun } from "../../lib/github.ts";
 import { ageInWords, formatUtc, labelOf, toneOf, triggerInWords } from "../../lib/runs.ts";
 import { DISPATCHABLE_WORKFLOWS, workflowBySlug } from "../../lib/workflows.ts";
+import { JOBS, jobBySlug } from "../../lib/jobs/registry.ts";
+import { recent, type JobRun } from "../../lib/jobs/log.ts";
+import { changesInWords, labelOfJob, requesterInWords, toneOfJob } from "../../lib/jobs/presentation.ts";
 
 /*
  * The outcome of a dispatch arrives as query parameters rather than as anything
@@ -22,7 +25,22 @@ const ranParam = Astro.url.searchParams.get("ran");
 const ranAll = ranParam === "scheduled";
 const ran = workflowBySlug(ranParam ?? undefined);
 const failed = workflowBySlug(Astro.url.searchParams.get("failed") ?? undefined);
-const reason = Astro.url.searchParams.get("reason") as GitHubFailure | null;
+/*
+ * Jobs report through their own parameters, because a slug is only unique within
+ * its own list: `handicaps` names both `update-handicaps.yml` and the in-process
+ * job that shadows it. Sharing `ran`/`failed` would mean whichever list the page
+ * checked first claimed every press.
+ */
+const failedJob = jobBySlug(Astro.url.searchParams.get("failedJob") ?? undefined);
+/*
+ * Read twice, deliberately. The GitHub endpoints redirect with a `GitHubFailure`
+ * and the job endpoint with reasons of its own, so the cast below is only valid
+ * for the first kind — `rawReason` is what the job branch compares against, and
+ * keeping them apart is what stopped `already-running` being quietly treated as
+ * a GitHub failure with no message.
+ */
+const rawReason = Astro.url.searchParams.get("reason");
+const reason = rawReason as GitHubFailure | null;
 const failureMessage = reason && reason in FAILURE_MESSAGES ? FAILURE_MESSAGES[reason] : undefined;
 
 /*
@@ -84,6 +102,34 @@ const TONE_PILL = {
 	neutral: "pill-outline",
 } as const;
 
+/*
+ * The jobs this service runs itself, and their recent history.
+ *
+ * Read from Firestore rather than from GitHub, because there is no GitHub run to
+ * read: the work happens in this process. That is the whole reason `job-runs`
+ * exists — without it this half of the page would be blank for precisely the
+ * thing nobody is yet sure about.
+ *
+ * Five each rather than the workflows' ten. A job run carries its change list,
+ * so a row is a sentence rather than a timestamp, and five of those is already
+ * more to read than ten of the others.
+ */
+const jobHistories = new Map<string, JobRun[]>(
+	await Promise.all(JOBS.map(async (job) => [job.slug, await recent(job.slug, 5)] as const)),
+);
+
+const jobLog: JobRun[] = JOBS.flatMap((job) => jobHistories.get(job.slug) ?? []).sort((a, b) =>
+	b.startedAt.localeCompare(a.startedAt),
+);
+
+const ranJob = jobBySlug(Astro.url.searchParams.get("ranJob") ?? undefined);
+
+const JOB_TONE_PILL = {
+	good: "pill-victor",
+	bad: "pill-matchplay",
+	neutral: "pill-outline",
+} as const;
+
 const now = new Date();
 ---
 
@@ -94,25 +140,41 @@ const now = new Date();
 	/>
 
 	{
-		(ran || ranAll) && (
+		ranJob ? (
 			<p class="notice good">
-				Asked GitHub to run <strong>{ran ? ran.label : "the scheduled updates"}</strong>. A run takes a minute
-				or two to appear in the log below, and the site rebuilds after it commits.
+				Ran <strong>{ranJob.label}</strong>. Unlike a workflow, this one finished before the page loaded — its
+				result is in the job log below.
 			</p>
+		) : (
+			(ran || ranAll) && (
+				<p class="notice good">
+					Asked GitHub to run <strong>{ran ? ran.label : "the scheduled updates"}</strong>. A run takes a
+					minute or two to appear in the log below, and the site rebuilds after it commits.
+				</p>
+			)
 		)
 	}
 
 	{
-		failed && (
+		failedJob ? (
 			<p class="notice bad">
-				Could not start <strong>{failed.label}</strong>.{" "}
-				{failureMessage ?? "GitHub refused the request. The details are in Cloud Logging."}
+				<strong>{failedJob.label}</strong> did not finish.{" "}
+				{rawReason === "already-running"
+					? "Another run of it was already going, so this one was dropped rather than queued."
+					: "The reason is in the job log below, and the detail is in Cloud Logging."}
 			</p>
+		) : (
+			failed && (
+				<p class="notice bad">
+					Could not start <strong>{failed.label}</strong>.{" "}
+					{failureMessage ?? "GitHub refused the request. The details are in Cloud Logging."}
+				</p>
+			)
 		)
 	}
 
 	<p class="lede-note">
-		Cloud Scheduler starts these <strong>hourly from 03:00 to 07:00 UTC</strong><span>, and once at </span>
+		Cloud Scheduler starts these <strong>every two hours from 03:00 to 07:00 UTC</strong><span>, and once at </span>
 		<strong>12:00 UTC</strong> — one call that runs both, which is why their start times in the log sit within a minute
 		or two of each other. The morning is a window rather than a moment because the association publishes handicaps at
 		no fixed time, and a handicap that lands after the first tee shot is too late to be the one anyone played off. Run
@@ -163,8 +225,90 @@ const now = new Date();
 		}
 	</div>
 
+	<section class="jobs">
+		<h2>Jobs this service runs itself</h2>
+		<p class="lede-note">
+			These do not go to GitHub — the work happens in this service, in the request. The same Cloud Scheduler call
+			that dispatches the workflows above runs every job marked scheduled, so their histories line up. A
+			<strong>shadow</strong> run computes what it would have written and writes nothing; see
+			<code>docs/plans/handicaps-to-firestore.md</code>.
+		</p>
+
+		<div class="workflows">
+			{
+				JOBS.map((job) => {
+					const latest = jobHistories.get(job.slug)?.[0];
+
+					return (
+						<article class="card workflow">
+							<div class="row-between">
+								<h3>{job.label}</h3>
+								{/*
+								 * Same shape as the workflow buttons above: a form,
+								 * because this changes something, and no client
+								 * JavaScript. It will sit here for the length of a
+								 * 45-player scrape before redirecting back, which is
+								 * why the label says so.
+								 */}
+								<form method="POST" action={`/api/jobs/${job.slug}/run`}>
+									<button type="submit">{job.dryRun ? "Shadow run" : "Run now"}</button>
+								</form>
+							</div>
+
+							<p class="blurb">{job.blurb}</p>
+
+							{latest ? (
+								<p class="last-run">
+									Last run <time datetime={latest.startedAt}>{ageInWords(latest.startedAt, now)}</time>{" "}
+									— <span class:list={["pill", JOB_TONE_PILL[toneOfJob(latest)]]}>{labelOfJob(latest)}</span>{" "}
+									<span class="muted">{latest.detail ?? changesInWords(latest.changes)}</span>
+								</p>
+							) : (
+								<p class="last-run muted">No runs recorded yet.</p>
+							)}
+						</article>
+					);
+				})
+			}
+		</div>
+
+		{
+			jobLog.length > 0 && (
+				<div class="tablewrap">
+					<table class="datagrid">
+						<thead>
+							<tr>
+								<th>Started (UTC)</th>
+								<th>Job</th>
+								<th>Started by</th>
+								<th>Outcome</th>
+								<th>What it found</th>
+							</tr>
+						</thead>
+						<tbody>
+							{jobLog.map((run) => (
+								<tr>
+									<td class="num">
+										<time datetime={run.startedAt}>{formatUtc(run.startedAt)}</time>
+										<span class="muted age">{ageInWords(run.startedAt, now)}</span>
+									</td>
+									<td>{jobBySlug(run.slug)?.label ?? run.slug}</td>
+									<td>{requesterInWords(run)}</td>
+									<td>
+										<span class:list={["pill", JOB_TONE_PILL[toneOfJob(run)]]}>{labelOfJob(run)}</span>
+									</td>
+									<td>{run.detail ?? changesInWords(run.changes)}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			)
+		}
+	</section>
+
 	<section class="log">
-		<h2>Recent executions</h2>
+		<h2>Recent workflow runs</h2>
 		<p class="lede-note">
 			Every start time is UTC, to the second. The pattern down the column is what says when the next scheduled run
 			is due — a repeating <code>03:00:xx</code> means tonight at three.

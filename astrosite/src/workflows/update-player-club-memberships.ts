@@ -2,8 +2,8 @@ import { writeFileSync, existsSync, rmSync } from "fs";
 import { join, dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 
-import type { GolfClub, HandicapSource } from "../code/handicaps/handicap-source-api.ts";
-import { createWisegolfSession } from "../code/handicaps/wisegolf-api.ts";
+import type { GolfClub, HandicapSource } from "@hector/wisegolf/src/handicap-source-api.ts";
+import { createWisegolfSession } from "@hector/wisegolf/src/wisegolf-api.ts";
 
 import { playersData } from "../code/data.ts";
 import type { Player } from "@hector/schemas/src/players.ts";

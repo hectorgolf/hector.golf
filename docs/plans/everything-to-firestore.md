@@ -1,14 +1,13 @@
 # Moving all of the site's data into Firestore, at once
 
+*Written 2026-09-16. **Not taken.** The incremental plan was chosen and its first two steps shipped
+the same day — see [`handicaps-to-firestore.md`](./handicaps-to-firestore.md). This document and the
+branch it lives on are kept as a worked alternative rather than as a proposal: the code is real and
+runs, which is what makes the comparison at the end worth anything. Read
+[Which one](#which-one) for what the choice actually turned on.*
+
 Every JSON file under `astrosite/src/data/` becomes a Firestore collection, the files are deleted,
 and the site builds by asking the admin service for the data instead of reading the repository.
-
-This is the **alternative** to [`handicaps-to-firestore.md`](./handicaps-to-firestore.md), which
-reaches the same destination one dataset at a time. Both are written up because the choice between
-them is a real one and mostly not technical: they differ in how much is unknown at the moment of
-cutover, and in how long the project spends in a state nobody has seen before.
-
-Read [the comparison](#which-one) first if you are choosing. The rest is what this one involves.
 
 ## What moves
 
@@ -20,7 +19,7 @@ Read [the comparison](#which-one) first if you are choosing. The rest is what th
 | Events | 18 | `update-leaderboards`, the admin, hand edits | `events` |
 | Courses | 17 | by hand, only | `courses` |
 | Leaderboards | 6 | `update-leaderboards` | `leaderboards` |
-| Handicap observations | 1 (1,406 entries) | `update-handicaps` | `handicap-observations` |
+| Handicap observations | 1 (1,407 entries) | `update-handicaps` | `handicap-observations` |
 | Handicap sweeps | 1 | `update-handicaps` | `handicap-checks` |
 | Clubs | 1 | `update-player-biographies` | `clubs` |
 
@@ -128,6 +127,13 @@ to git.
 The plan for the writers is therefore the same as the incremental plan's, applied four times in one
 change instead of once. It is not avoided by doing everything at once. It is only compressed.
 
+That harness now exists on `main` — `admin/src/lib/jobs/` has the lease, the run log and the
+append-only guard, and `/operations` has the buttons — built for one scrape rather than four. So this
+branch's version of the writers, which keeps them on GitHub runners and points them at Firestore
+through `astrosite/src/workflows/store.ts`, is the part most clearly superseded by the road actually
+taken. It is left as written because rewriting it against a harness this plan did not choose would be
+inventing history.
+
 ### What `export.ts` and `seed.ts` become
 
 Both are deleted. They are the two halves of the mirror, and the mirror is the thing this removes:
@@ -201,12 +207,40 @@ it is shared, and the scheduler comments explaining it all go away with the comm
 | `data-ownership.md` | Grows a transition section per dataset | Loses several sections |
 
 The honest summary: **the incremental plan is slower and the big-bang plan is riskier**, and neither
-of those is a tiebreak on its own. What should decide it is the answer to a question this document
-cannot answer, which is how much confidence there is in the schema validation. Everything that makes
-the big-bang version dangerous is downstream of one thing — 89 files being read back as the same
-data they were written as — and that is testable offline, today, against the files that already
-exist, before a single decision is made. The migration script in step 1 does exactly that check and
-prints the differences.
+of those is a tiebreak on its own. What should decide it is how much confidence there is in the
+schema validation — everything that makes the big-bang version dangerous is downstream of one thing,
+89 files being read back as the same data they were written as, and `npm run migrate -- --check`
+answers that offline in seconds.
 
-Run it. If it is clean across all 89 files, the big-bang version's risk is much smaller than it
-looks. If it is not clean, the incremental version is not safer either — it just finds out later.
+### What the check actually said
+
+Run on 2026-09-16, it reported **13 of 17 course files carrying fields the schema did not read**:
+`images.hero` on eight, `name_cz` on the Konopiště tees, `par_ladies` at Sand Valley, and 70-odd
+Finnish per-hole descriptions across the two Tahko courses. Harmless while the files are the source
+of truth — the text simply sat there, unrendered. Fatal in this plan, where step 5 deletes the only
+copy after a migration has read it through the schema.
+
+That was fixed at the source rather than worked around: the schema now reads every one of those
+fields, `course-schema-coverage.test.ts` pins the property, and the stray `description_deste` was
+deleted from the data. The check now reports **1,658 records across 7 collections, all parsing, all
+keying uniquely, and nothing dropped**.
+
+So the question the comparison said should decide it has been answered, and it answers in this
+plan's favour. It was still not taken, and the reason is the finding the check could not have made:
+
+### The thing that decided it
+
+Deleting `src/data/` emptied the Astro content collections in `content.config.ts` — a second reader
+nobody had counted — and **nothing failed**. `astro check` passed. The build passed. It produced 77
+pages instead of 328, with every course page and all 306 hole pages silently absent, because an empty
+collection is a legal collection and `getStaticPaths` returning nothing is a legal answer.
+
+It was caught by reading a page count in a build log. Not by a test, not by a type, not by CI.
+
+That is the whole argument against doing this in one move, and it is not about schemas: it is that a
+cutover of this size has a blast radius equal to the site, and the toolchain will not object to
+shipping an empty one. The incremental plan's equivalent mistake breaks the handicap chart.
+
+Both lessons outlive the decision. A schema that lags its data is a delete rather than a waste the
+moment the files are gone, and any collection this repository migrates should assert its page count
+somewhere. `data-snapshot.test.ts` on this branch is that assertion for these seven.

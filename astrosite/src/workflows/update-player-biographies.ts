@@ -7,8 +7,8 @@ import { getAllPlayers, getPlayerName, updatePlayerData } from "../code/players.
 import { type Player } from "@hector/schemas/src/players.ts";
 import { type EventTiming, type HectorEvent } from "@hector/schemas/src/events.ts";
 
-import { createWisegolfSession } from "../code/handicaps/wisegolf-api";
-import { type GolfClub, type HandicapSource } from "../code/handicaps/handicap-source-api";
+import { createWisegolfSession } from "@hector/wisegolf/src/wisegolf-api.ts";
+import { type GolfClub, type HandicapSource } from "@hector/wisegolf/src/handicap-source-api.ts";
 import { parseIsoDate } from "@hector/schemas/src/dates.ts";
 import { replaceClubs } from "./store.ts";
 import { formatForPrinting } from "../code/strings.ts";

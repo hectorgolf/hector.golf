@@ -20,6 +20,7 @@
     "@google-cloud/secret-manager": "^7.1.0",
     "@hector/schemas": "*",
     "@hector/ui": "*",
+    "@hector/wisegolf": "*",
     "astro": "^7.2.9",
     "typescript": "^6.0.3"
   },

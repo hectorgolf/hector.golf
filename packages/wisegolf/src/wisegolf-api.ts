@@ -2,11 +2,25 @@ import { fetch } from "fetch-h2";
 import { memoize } from "micro-memoize";
 import { ms } from "itty-time";
 import { pRateLimit } from "p-ratelimit";
-import { redact } from "../strings";
+import { redact } from "./strings";
 
 import { NullHandicapSource, type GolfClub, type HandicapSource } from "./handicap-source-api";
 
 export type WisegolfSession = HandicapSource;
+
+/**
+ * What it takes to log in, from wherever the caller keeps it.
+ *
+ * The environment is no longer the only answer. The admin service reads these
+ * out of Secret Manager, per use and asynchronously, so that a rotation takes
+ * effect without a redeploy — see `admin/src/lib/secrets.ts` for why it is done
+ * that way. A module that resolved `process.env` at import time could not be
+ * handed those values at all.
+ */
+export type WisegolfCredentials = {
+    username: string;
+    password: string;
+};
 
 export type WisegolfClub = {
     name: string;
@@ -24,14 +38,33 @@ export type WisegolfPlayer = {
 };
 
 const ENV = import.meta.env || process.env || {};
-const wisegolfUsername = ENV.WISEGOLF_USERNAME;
-const wisegolfPassword = ENV.WISEGOLF_PASSWORD;
 
-console.log(`wisegolfUsername:   ${redact(wisegolfUsername)}`);
-console.log(`wisegolfPassword:   ${redact(wisegolfPassword)}`);
-if (!wisegolfUsername || !wisegolfPassword) {
-    console.error(`Functionality is likely impaired - please provide the missing environment variables.`);
-}
+/**
+ * Credentials handed in by a caller, which win over the environment.
+ *
+ * Module state rather than a parameter threaded through every function, because
+ * the two entry points that need them — `createWisegolfSession` and the memoized
+ * `getWisegolfPlayerHandicap` — are separated by four layers of memoization that
+ * would each have to grow a cache key for a credential that never varies within
+ * a process.
+ */
+let providedCredentials: WisegolfCredentials | undefined;
+
+/**
+ * The credentials to log in with, or `undefined` when nobody has supplied any.
+ *
+ * Resolved per call rather than at import time. That is the whole point of the
+ * change: this module used to read `process.env` while it was being imported,
+ * which meant a consumer holding its credentials anywhere else — Secret Manager,
+ * a config file, a test — could not supply them at all, and meant importing the
+ * module for a type printed two lines of redacted logging as a side effect.
+ */
+const credentials = (): WisegolfCredentials | undefined => {
+    if (providedCredentials) return providedCredentials;
+    const username = ENV.WISEGOLF_USERNAME;
+    const password = ENV.WISEGOLF_PASSWORD;
+    return username && password ? { username, password } : undefined;
+};
 
 const standardRequestHeaders = {
     Accept: "application/json",
@@ -89,14 +122,37 @@ function convertWisegolfClubToGolfClub(club: WisegolfClub): GolfClub {
     };
 }
 
-export const createWisegolfSession = async (): Promise<WisegolfSession> => {
-    if (!wisegolfUsername || !wisegolfPassword) {
+/**
+ * Log in and hand back a source, or a `NullHandicapSource` when there is nothing
+ * to log in with.
+ *
+ * `supplied` is how a caller that does not keep its credentials in the
+ * environment provides them; omitting it keeps the environment behaviour the
+ * four `astrosite` workflows have always had. Supplying them sets them for the
+ * process, because the memoized lookups below reach for them long after this
+ * function has returned.
+ *
+ * Missing credentials stay a warning and a null source rather than a throw. That
+ * is not new, and it is load-bearing: `update-handicaps.ts` gathers its sources
+ * with `Promise.allSettled` and carries on with whichever answered, so a site
+ * build on a laptop with no credentials produces a run that finds nothing rather
+ * than a crash.
+ */
+export const createWisegolfSession = async (supplied?: WisegolfCredentials): Promise<WisegolfSession> => {
+    if (supplied) {
+        providedCredentials = supplied;
+    }
+
+    const configured = credentials();
+    if (!configured) {
         console.warn(`Missing WiseGolf credentials: initializing a NullHandicapSource instead of Wisegolf`);
         return new NullHandicapSource(SOURCE_NAME);
     }
+    console.log(`wisegolfUsername:   ${redact(configured.username)}`);
+    console.log(`wisegolfPassword:   ${redact(configured.password)}`);
 
     try {
-        const token = await login(wisegolfUsername, wisegolfPassword);
+        const token = await login(configured.username, configured.password);
         await fetchClubs(token); // pre-fetch clubs
         return {
             name: SOURCE_NAME,
@@ -285,11 +341,12 @@ const getWisegolfPlayerHandicap = memoize(
         providedToken?: string,
     ): Promise<number | undefined> => {
         if (clubNameOrAbbreviation) {
-            if (!!wisegolfUsername && !!wisegolfPassword) {
+            const configured = credentials();
+            if (configured) {
                 console.log(
                     `Fetching handicap for ${firstName} ${lastName} at ${clubNameOrAbbreviation} from ${SOURCE_NAME}`,
                 );
-                const token = providedToken || (await login(wisegolfUsername, wisegolfPassword));
+                const token = providedToken || (await login(configured.username, configured.password));
                 const clubNumber = await resolveClubNumber(clubNameOrAbbreviation, token);
                 if (clubNumber) {
                     return await fetchHandicap(token, clubNumber, firstName, lastName);

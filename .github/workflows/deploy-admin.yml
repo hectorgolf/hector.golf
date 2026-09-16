@@ -34,6 +34,7 @@ on:
       - 'admin/**'
       - 'packages/schemas/**'
       - 'packages/ui/**'
+      - 'packages/wisegolf/**'
       - 'package.json'
       - 'package-lock.json'
       - '.node-version'

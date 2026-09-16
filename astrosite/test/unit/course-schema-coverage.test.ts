@@ -42,19 +42,13 @@ import { schema as CourseSchema } from "@hector/schemas/src/courses.ts";
  * `data-snapshot.test.ts` is the neighbouring check and a weaker one: it asserts
  * every course record *parses*. This asserts that parsing keeps everything.
  *
- * ## The one exception
+ * ## No exceptions
  *
- * The `konopiste-radecky` record carries `description_deste` — a paragraph about the
- * *d'Este* course, in the *Radecký* course's file, which `konopiste-deste.json`
- * does not contain and no page renders. It is a copy-paste leftover rather than
- * a field, so the fix is to delete it from the data, not to describe it in the
- * schema. It is listed here so that the test passes today and starts failing the
- * moment somebody does delete it — at which point this block comes out too.
+ * There was one — `konopiste-radecky` carried a `description_deste` paragraph
+ * describing the *d'Este* course, which that course's own record does not
+ * contain and no page renders. It has been deleted from the data rather than
+ * described in the schema, which is what a copy-paste leftover deserves.
  */
-
-const KNOWN_STRAY: Record<string, string[]> = {
-    "konopiste-radecky": ["description_deste"],
-};
 
 /** Every leaf path in an object, as dotted/indexed strings. */
 function leafPaths(value: unknown): Set<string> {
@@ -89,11 +83,7 @@ describe("the course schema", () => {
         expect(parsed.success).toBe(true);
 
         const kept = leafPaths(parsed.data);
-        const stray = KNOWN_STRAY[id] ?? [];
-        const dropped = [...leafPaths(raw)]
-            .filter((path) => !kept.has(path))
-            // A stray entry covers the field and anything nested under it.
-            .filter((path) => !stray.some((known) => path === known || path.startsWith(`${known}.`)));
+        const dropped = [...leafPaths(raw)].filter((path) => !kept.has(path));
 
         expect(dropped).toEqual([]);
     });

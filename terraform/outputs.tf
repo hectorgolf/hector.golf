@@ -114,3 +114,25 @@ output "admin_dns_records" {
   EOT
   value       = try(google_cloud_run_domain_mapping.admin[0].status[0].resource_records, [])
 }
+
+output "wisegolf_username_secret" {
+  description = <<-EOT
+    The Secret Manager secret the admin service reads its WiseGolf username from.
+    As with the GitHub token, Terraform creates the container and never a
+    version — add it with
+
+      printf '%s' 'the-username' | gcloud secrets versions add "$(terraform output -raw wisegolf_username_secret)" --data-file=-
+
+    See the WiseGolf credentials step in docs/playbooks/gcp-bootstrapping.md.
+  EOT
+  value       = google_secret_manager_secret.wisegolf["wisegolf-username"].secret_id
+}
+
+output "wisegolf_password_secret" {
+  description = <<-EOT
+    The Secret Manager secret the admin service reads its WiseGolf password from.
+    Separate from the username so that rotating the password does not mean
+    rewriting the username beside it — Secret Manager versions the whole payload.
+  EOT
+  value       = google_secret_manager_secret.wisegolf["wisegolf-password"].secret_id
+}

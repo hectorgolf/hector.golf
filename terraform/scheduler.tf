@@ -110,16 +110,34 @@ locals {
   # detail. On 2026-09-14 the numbers landed between 06:00 and 08:22 Finnish; the
   # single 03:00 UTC scrape ran at 06:00:36 local, missed them by seconds, read
   # every player as unchanged, and the site carried yesterday's handicaps until
-  # the afternoon. Hourly from 03:00 to 07:00 would have caught it within the
-  # hour.
+  # the afternoon. A window of ticks across the morning catches that; one time
+  # inside it does not.
   #
-  # The last tick before a Hector's buckets freeze matters most: the freeze is
-  # 08:00 local to the event, which is 05:00 UTC for a Finnish venue and 06:00
-  # UTC for Konopiště, so the last useful tick is 04:00 and 05:00 respectively.
-  # That leaves an hour in which a handicap can arrive and miss the buckets,
-  # which is the cost of hourly over half-hourly and is accepted deliberately:
-  # the buckets are projected until the morning of the event, and a value that
-  # late is one the Union itself published late.
+  # ## Every two hours, not every hour
+  #
+  # *Decided 2026-09-16, with the Finnish-venue cost below on the table.*
+  #
+  # This was hourly. It is every two hours because the scrape stopped being one
+  # sweep: while the handicaps job shadows `update-handicaps.yml` each tick reads
+  # WiseGolf twice, and six ticks a day meant twelve sweeps of somebody else's
+  # API to learn what four would.
+  #
+  # What it costs is worst-case staleness within the morning, which doubles from
+  # an hour to two. The bound that actually matters is the last tick before a
+  # Hector's buckets freeze: the freeze is 08:00 local to the event, so 05:00 UTC
+  # at a Finnish venue and 06:00 UTC at Konopiště. Konopiště is unaffected — the
+  # 05:00 tick was the last useful one when this was hourly and still is. A
+  # Finnish venue loses the 04:00 tick, so a handicap published between 03:00 and
+  # 05:00 UTC now misses the buckets where before it had a second chance.
+  #
+  # That is a real regression. It was raised as one and accepted on the same
+  # grounds the hourly version accepted its own smaller one: the buckets are
+  # projected until the morning of the event, and a value arriving that late is
+  # one the Union itself published late.
+  #
+  # Which is to say it is a decision rather than an oversight, and the thing to
+  # reconsider if a Finnish Hector is ever split off a stale handicap. Reverting
+  # is one character.
   #
   # ## The afternoon
   #
@@ -130,14 +148,22 @@ locals {
   #
   # ## What a tick costs
   #
-  # A wake-up of the admin service, which scales to zero, and two GitHub workflow
-  # runs of a couple of minutes each. Both are inside free tiers. The workflows
-  # share one `data-update` concurrency group, so a tick that arrives while the
-  # previous one is still running queues rather than races — which is the
-  # interlock that makes a higher cadence safe at all.
+  # A wake-up of the admin service, which scales to zero; two GitHub workflow runs
+  # of a couple of minutes each; and however long the in-process jobs take, which
+  # is a 45-player WiseGolf sweep. All inside free tiers. Four ticks a day.
+  #
+  # Two interlocks, one per list. The workflows share a `data-update` concurrency
+  # group, so a tick arriving while the previous one still runs queues rather
+  # than races. The jobs take a lease in Firestore, so the same tick's job is
+  # skipped rather than queued — see `admin/src/lib/jobs/lock.ts`.
+  #
+  # The cost worth naming: while the handicaps job shadows `update-handicaps.yml`,
+  # every tick sweeps WiseGolf twice — once from the runner and once from here.
+  # Four ticks a day makes eight sweeps, against four once the shadow period
+  # ends. Halving the morning cadence above is what keeps that number sane.
   data_update_schedules = {
-    # Hourly across the early-tee-time window.
-    morning = { cron = "0 3-7 * * *" }
+    # Every two hours across the early-tee-time window: 03:00, 05:00, 07:00.
+    morning = { cron = "0 3-7/2 * * *" }
     midday  = { cron = "0 12 * * *" }
   }
 }
@@ -164,11 +190,25 @@ resource "google_cloud_scheduler_job" "data_update" {
   # the year each.
   time_zone = "Etc/UTC"
 
-  # Generous for a call that asks GitHub to do something and returns: the service
-  # scales to zero, so the slow case is a cold start plus a secret read plus one
-  # API call, not the workflow itself — which runs on GitHub long after this
-  # request has been answered.
-  attempt_deadline = "120s"
+  # 120s was right while this endpoint only asked GitHub to do things: a cold
+  # start plus a secret read plus two API calls, with the workflows themselves
+  # running long after the request was answered.
+  #
+  # It is not right now. The same endpoint also runs the jobs in
+  # `admin/src/lib/jobs/registry.ts`, which scrape 45 players against WiseGolf
+  # inside the request — see the note in `api/workflows/dispatch.ts` on why the
+  # work happens there rather than in a job of its own.
+  #
+  # A deadline shorter than the work does not cancel anything. Cloud Scheduler
+  # stops waiting, the Cloud Run request carries on to completion, and the retry
+  # starts a second sweep on top of the first. The lease in
+  # `admin/src/lib/jobs/lock.ts` is what actually prevents that; this number is
+  # what stops it being routine.
+  #
+  # 540s sits under the service's own 600s timeout, so the service gives up
+  # first and the failure has a log line attached to it rather than being a
+  # client-side deadline with nothing on the other end.
+  attempt_deadline = "540s"
 
   retry_config {
     # GitHub being briefly unreachable should not cost a day's update.
@@ -224,3 +264,4 @@ resource "google_cloud_scheduler_job" "data_update" {
     google_project_iam_member.terraform_ci,
   ]
 }
+
