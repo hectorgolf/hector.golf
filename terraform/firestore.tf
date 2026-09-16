@@ -68,13 +68,25 @@ resource "google_firestore_backup_schedule" "weekly" {
   # is where the number and its ceiling are argued.
   retention = "${var.firestore_backup_retention_weeks * 7 * 24 * 60 * 60}s"
 
-  # Monday, so the backup that exists for most of the week is the one taken
-  # after the weekend — which is when rounds get played and when the data
-  # actually moves. The day is the only timing control there is: Firestore picks
-  # the hour itself and documents that it varies, so there is no point trying to
-  # place this relative to the scheduler jobs in scheduler.tf.
+  # Tuesday, and not Monday, which is the obvious choice and the wrong one.
+  #
+  # The weekend is when rounds get played, so the backup worth having is the one
+  # holding the weekend's handicap changes. Those do not land at the weekend:
+  # WiseGolf's own nightly batch runs at about 03:00 Finnish time, and the sweeps
+  # in scheduler.tf collect the results at 03:00, 05:00, 07:00 and 12:00 UTC.
+  # Sunday's rounds therefore become rows in this database during *Monday*.
+  #
+  # The day is the only control there is — Firestore picks the hour itself and
+  # documents that it varies — and the API defines the day in UTC. So "MONDAY"
+  # means any moment between Monday 00:00 and 23:59 UTC, which includes the three
+  # hours before Monday's first sweep has run. Land there and the backup is a
+  # whole weekend behind, on the day that looked safest.
+  #
+  # Tuesday cannot land in that gap. Its worst case is 00:00 UTC, twelve hours
+  # after Monday's last tick at 12:00; its best is thirty-six. The margin is
+  # never negative, whichever hour Firestore picks.
   weekly_recurrence {
-    day = "MONDAY"
+    day = "TUESDAY"
   }
 
   # Matches the database above, and for the same reason rather than out of
