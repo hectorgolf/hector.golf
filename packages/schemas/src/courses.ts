@@ -72,6 +72,16 @@ export const schema = z.object({
     description_long: MultimediaDescriptionSchema,
     images: z.object({
         hero: AbsoluteOrRelativeImageURL.optional(),
+        /**
+         * An aerial shot of the course, where one exists. Penáti's two courses
+         * have them and nothing else does.
+         *
+         * Here for the same reason as `hero`, which it sits beside in those two
+         * files and which was added a commit earlier: the field was in the data
+         * and not in the schema, so it was being dropped on every read. Nothing
+         * renders it yet.
+         */
+        aerial: AbsoluteOrRelativeImageURL.optional(),
         course_layout: AbsoluteOrRelativeImageURL.optional(),
     }),
     course: z
