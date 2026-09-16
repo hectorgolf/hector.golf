@@ -69,6 +69,7 @@ import { existsSync } from 'node:fs'
 import http, { type IncomingHttpHeaders, type IncomingMessage, type ServerResponse } from 'node:http'
 import net from 'node:net'
 import { dirname, join } from 'node:path'
+import type { Duplex } from 'node:stream'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 /** IAP prefixes both identity headers with the provider that authenticated you. */
@@ -254,6 +255,63 @@ function redirect(res: ServerResponse, location: string, cookie?: string): void 
     res.end()
 }
 
+
+/**
+ * The 101 to send the browser, rebuilt from the one upstream sent.
+ *
+ * From `rawHeaders` rather than `headers`, which is a parsed object: it lowercases
+ * names, and it collapses a repeated header into one comma-joined value. Neither
+ * matters for the three headers a websocket handshake carries today, and both are
+ * the kind of lossy that is discovered years later by something that did care.
+ */
+export function handshakeResponse(rawHeaders: readonly string[]): string {
+    const lines: string[] = []
+    for (let index = 0; index + 1 < rawHeaders.length; index += 2) {
+        lines.push(`${rawHeaders[index]}: ${rawHeaders[index + 1]}`)
+    }
+    return `HTTP/1.1 101 Switching Protocols\r\n${lines.join('\r\n')}\r\n\r\n`
+}
+
+/**
+ * Join the two upgraded sockets, leftovers and all.
+ *
+ * The leftovers are the whole of the difficulty, and the reason this is a named
+ * function with a test rather than four lines inside the handler.
+ *
+ * Both sides can arrive with bytes that were read *past* the handshake, because
+ * TCP does not preserve anybody's idea of where a message ends: if the peer's
+ * first websocket frame shares a segment with the last byte of the handshake,
+ * the HTTP parser hands that frame over as a `head` buffer instead of leaving it
+ * on the socket. Each one therefore has exactly one correct destination, and it
+ * is the *other* socket:
+ *
+ *     upstreamHead  are bytes the dev server sent  → write to the browser
+ *     clientHead    are bytes the browser sent     → write to the dev server
+ *
+ * Getting that backwards does not fail cleanly. Pushing `upstreamHead` back onto
+ * the browser socket's *readable* side — which is what `unshift` does — means the
+ * pipe below promptly delivers the dev server's own frame back to the dev server,
+ * as though the browser had sent it. And since a server's frames are unmasked
+ * while a client's must be masked, `ws` rejects it with
+ *
+ *     RangeError: Invalid WebSocket frame: MASK must be set
+ *
+ * which names neither the proxy nor the direction, and appears only when the
+ * race lands — which is to say occasionally, on one page load in a few, with the
+ * frame that was bounced also never reaching the browser.
+ */
+export function joinUpgradedSockets(
+    client: Duplex,
+    upstream: Duplex,
+    clientHead: Buffer,
+    upstreamHead: Buffer
+): void {
+    if (upstreamHead.length > 0) client.write(upstreamHead)
+    if (clientHead.length > 0) upstream.write(clientHead)
+    upstream.pipe(client)
+    client.pipe(upstream)
+}
+
 /** Waits for `astro dev` to start listening, so the first request does not race it. */
 async function waitForPort(port: number, timeoutMs = 30_000): Promise<void> {
     const deadline = Date.now() + timeoutMs
@@ -435,13 +493,14 @@ async function main(): Promise<void> {
             headers: forwardedHeaders(req.headers, email),
         })
         upstream.on('upgrade', (response, upstreamSocket, upstreamHead) => {
-            const lines = Object.entries(response.headers).map(([name, value]) => `${name}: ${value}`)
-            socket.write(`HTTP/1.1 101 Switching Protocols\r\n${lines.join('\r\n')}\r\n\r\n`)
-            if (upstreamHead.length > 0) socket.unshift(upstreamHead)
-            upstreamSocket.pipe(socket).pipe(upstreamSocket)
+            socket.write(handshakeResponse(response.rawHeaders))
+            joinUpgradedSockets(socket, upstreamSocket, head, upstreamHead)
         })
         upstream.on('error', () => socket.destroy())
-        if (head.length > 0) upstream.write(head)
+        // `head` is forwarded above, on the upgraded socket. Writing it here
+        // instead would put the browser's first frame in the *request body*,
+        // chunk-framed and ahead of the 101, which corrupts the stream in a
+        // second way.
         upstream.end()
     })
 

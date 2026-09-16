@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs'
+import { Duplex } from 'node:stream'
 
 import { describe, expect, it } from 'vitest'
 
@@ -6,6 +7,8 @@ import { viewerFromHeaders } from '../src/lib/identity.ts'
 import {
     accountsFrom,
     exitMessage,
+    handshakeResponse,
+    joinUpgradedSockets,
     forwardedHeaders,
     FOREGROUND_FLAGS,
     foregroundEnvironment,
@@ -221,5 +224,100 @@ describe('what it says when the dev server stops', () => {
 
     it('says "signal" rather than "null" for a server that was killed', () => {
         expect(exitMessage(null, 10_000)).toContain('(signal)')
+    })
+})
+
+/**
+ * One end of the proxy, as a stream that remembers what was written to it and
+ * lets the test decide what it has to say.
+ */
+function socketDouble() {
+    const written: Buffer[] = []
+    const duplex = new Duplex({
+        read() {},
+        write(chunk, _encoding, callback) {
+            written.push(Buffer.from(chunk))
+            callback()
+        },
+    })
+    return { duplex, text: () => Buffer.concat(written).toString('utf-8') }
+}
+
+/**
+ * The hot-reload websocket, and the bug that took a while to place because the
+ * error names nothing involved in it.
+ *
+ * TCP does not preserve anybody's idea of where a message ends, so either peer's
+ * first websocket frame can share a segment with the last byte of the handshake
+ * — and then Node's HTTP parser hands that frame over as a `head` buffer rather
+ * than leaving it on the socket. Each leftover has exactly one correct
+ * destination, and it is the *other* socket.
+ *
+ * Sent the wrong way, the dev server receives its own frame back as though the
+ * browser had sent it. A server's frames are unmasked and a client's must be
+ * masked, so `ws` rejects it with `RangeError: Invalid WebSocket frame: MASK
+ * must be set` — an error that mentions neither the proxy nor the direction, and
+ * that appears only when the race lands.
+ */
+describe('joining the two ends of an upgraded websocket', () => {
+    it("gives the dev server's leftover bytes to the browser, and not back to the dev server", () => {
+        const client = socketDouble()
+        const upstream = socketDouble()
+
+        // An unmasked frame, which is what a server sends and what a server
+        // refuses to receive.
+        const fromServer = Buffer.from([0x81, 0x03, 0x68, 0x69])
+        joinUpgradedSockets(client.duplex, upstream.duplex, Buffer.alloc(0), fromServer)
+
+        expect(client.text()).toContain('hi')
+        // The bug, stated as the thing that must not happen: bounced back, this
+        // is the unmasked frame `ws` rejects.
+        expect(upstream.text()).toBe('')
+    })
+
+    it("gives the browser's leftover bytes to the dev server", () => {
+        const client = socketDouble()
+        const upstream = socketDouble()
+
+        joinUpgradedSockets(client.duplex, upstream.duplex, Buffer.from('masked-frame'), Buffer.alloc(0))
+
+        expect(upstream.text()).toContain('masked-frame')
+        expect(client.text()).toBe('')
+    })
+
+    it('carries on forwarding both ways once the leftovers are out of the way', async () => {
+        const client = socketDouble()
+        const upstream = socketDouble()
+        joinUpgradedSockets(client.duplex, upstream.duplex, Buffer.alloc(0), Buffer.alloc(0))
+
+        client.duplex.push('from the browser')
+        upstream.duplex.push('from the dev server')
+        await new Promise((resolve) => setImmediate(resolve))
+
+        expect(upstream.text()).toBe('from the browser')
+        expect(client.text()).toBe('from the dev server')
+    })
+})
+
+describe('the handshake sent back to the browser', () => {
+    it('is built from the raw headers, so nothing is lowercased or collapsed', () => {
+        const response = handshakeResponse([
+            'Upgrade',
+            'websocket',
+            'Connection',
+            'Upgrade',
+            'Sec-WebSocket-Accept',
+            's3pPLMBiTxaQ9kYGzzhZRbK+xOo=',
+        ])
+
+        expect(response.startsWith('HTTP/1.1 101 Switching Protocols\r\n')).toBe(true)
+        // Casing preserved: `rawHeaders` is the reason to use it over `headers`.
+        expect(response).toContain('Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=')
+        expect(response.endsWith('\r\n\r\n')).toBe(true)
+    })
+
+    it('keeps a repeated header repeated rather than comma-joining it', () => {
+        const response = handshakeResponse(['X-Thing', 'one', 'X-Thing', 'two'])
+        expect(response).toContain('X-Thing: one\r\nX-Thing: two')
     })
 })
