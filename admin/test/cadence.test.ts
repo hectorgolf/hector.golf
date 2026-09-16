@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { type Cadence, due } from '../src/lib/cadence.ts'
 import type { WorkflowRun } from '../src/lib/github.ts'
+import { DISPATCHABLE_WORKFLOWS } from '../src/lib/workflows.ts'
 
 /**
  * Which workflows a tick starts, now that the tick is the only clock.
@@ -41,7 +42,7 @@ describe('a workflow that is started by hand only', () => {
 })
 
 describe('a workflow on an interval', () => {
-    const fortnightly: Cadence = { everyDays: 15 }
+    const fortnightly: Cadence = { every: '15d' }
 
     it('is due when the interval has elapsed', () => {
         expect(due(fortnightly, ranDaysAgo(15), NOW).due).toBe(true)
@@ -60,8 +61,8 @@ describe('a workflow on an interval', () => {
     })
 
     it('says how stale it is, in both directions', () => {
-        expect(due(fortnightly, ranDaysAgo(20), NOW).because).toBe('last ran 20 days ago, and wants every 15')
-        expect(due(fortnightly, ranDaysAgo(3), NOW).because).toBe('last ran 3 days ago, and wants every 15')
+        expect(due(fortnightly, ranDaysAgo(20), NOW).because).toBe('last ran 20 days ago, and wants every 15d')
+        expect(due(fortnightly, ranDaysAgo(3), NOW).because).toBe('last ran 3 days ago, and wants every 15d')
     })
 })
 
@@ -77,7 +78,7 @@ describe('when the run history cannot be read', () => {
          * fortnightly job can afford six hours; it cannot afford four runs a day
          * for a week.
          */
-        expect(due({ everyDays: 15 }, null, NOW)).toEqual({
+        expect(due({ every: '15d' }, null, NOW)).toEqual({
             due: false,
             because: 'could not read the run history, so staleness is unknown',
         })
@@ -85,7 +86,7 @@ describe('when the run history cannot be read', () => {
 
     it('treats an unparseable start time the same way', () => {
         const broken = { ...ranDaysAgo(99), startedAt: 'not a date' }
-        expect(due({ everyDays: 15 }, broken, NOW).due).toBe(false)
+        expect(due({ every: '15d' }, broken, NOW).due).toBe(false)
     })
 
     it('does not stop a tick-scheduled workflow, which never asks', () => {
@@ -99,10 +100,80 @@ describe('the deploy backstop', () => {
     it('does not fire while deploys are happening normally', () => {
         // A scrape dispatches the deploy when it commits. The daily interval is
         // only there for when that request fails.
-        expect(due({ everyDays: 1 }, ranDaysAgo(0.25), NOW).due).toBe(false)
+        expect(due({ every: '1d' }, ranDaysAgo(0.25), NOW).due).toBe(false)
     })
 
     it('fires once a day has passed with no deploy at all', () => {
-        expect(due({ everyDays: 1 }, ranDaysAgo(1.1), NOW).due).toBe(true)
+        expect(due({ every: '1d' }, ranDaysAgo(1.1), NOW).due).toBe(true)
+    })
+})
+
+describe('the duration syntax', () => {
+    it('takes the compact forms', () => {
+        expect(due({ every: '7d' }, ranDaysAgo(8), NOW).due).toBe(true)
+        expect(due({ every: '7d' }, ranDaysAgo(6), NOW).due).toBe(false)
+        expect(due({ every: '1w' }, ranDaysAgo(8), NOW).due).toBe(true)
+        expect(due({ every: '4h' }, ranDaysAgo(0.5), NOW).due).toBe(true)
+        expect(due({ every: '36h' }, ranDaysAgo(1), NOW).due).toBe(false)
+    })
+
+    it('takes the spelled-out forms too, for where they read better', () => {
+        expect(due({ every: '15 days' }, ranDaysAgo(16), NOW).due).toBe(true)
+        expect(due({ every: '15 days' }, ranDaysAgo(14), NOW).due).toBe(false)
+    })
+
+    it('reads `3m` as three minutes, not three months', () => {
+        /*
+         * The trap worth pinning rather than only documenting. `m` is minutes
+         * and `mo` is months, which is the usual convention and the opposite of
+         * what somebody writing a monthly cadence types. Getting it wrong turns
+         * a monthly scrape into one that runs on every tick.
+         */
+        expect(due({ every: '3m' }, ranDaysAgo(0.01), NOW).due).toBe(true)
+        expect(due({ every: '3mo' }, ranDaysAgo(60), NOW).due).toBe(false)
+        expect(due({ every: '3mo' }, ranDaysAgo(120), NOW).due).toBe(true)
+    })
+
+    it('refuses a duration it cannot read, rather than guessing', () => {
+        /*
+         * `itty-time`, already a dependency of this repository, would have meant
+         * no new package — and answers `ms('15 dayz')` with **15**. Fifteen
+         * milliseconds: a typo would make a fortnightly job due on every tick,
+         * for ever, silently. This is why the parser was chosen for its failure
+         * mode rather than its syntax.
+         */
+        for (const nonsense of ['15 dayz', '', 'abc', 'soon']) {
+            expect(due({ every: nonsense }, ranDaysAgo(365), NOW).due).toBe(false)
+        }
+    })
+
+    it('refuses a zero or negative interval, which would mean every tick', () => {
+        expect(due({ every: '0d' }, ranDaysAgo(1), NOW).due).toBe(false)
+        expect(due({ every: '-5d' }, ranDaysAgo(1), NOW).due).toBe(false)
+    })
+})
+
+describe('every cadence this repository actually configures', () => {
+    it('is one the parser can read', () => {
+        /*
+         * The test that matters most. A mistyped duration is not a runtime
+         * condition — it is a typo in `workflows.ts` — and its consequence is a
+         * workflow that silently never runs again, or one that runs on every
+         * tick. Neither shows up as a failure anywhere. This fails in CI instead.
+         */
+        const intervals = DISPATCHABLE_WORKFLOWS.filter(
+            (workflow) => typeof workflow.cadence === 'object'
+        )
+        expect(intervals.length).toBeGreaterThan(0)
+
+        for (const workflow of intervals) {
+            const verdict = due(workflow.cadence, undefined, NOW)
+            // `undefined` history means "never run", which is due for any
+            // readable interval — so a `false` here can only be an unreadable one.
+            expect(verdict, `${workflow.file}: ${verdict.because}`).toEqual({
+                due: true,
+                because: 'has never run',
+            })
+        }
     })
 })

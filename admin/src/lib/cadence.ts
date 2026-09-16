@@ -1,3 +1,5 @@
+import parseDuration from 'parse-duration'
+
 import type { WorkflowRun } from './github.ts'
 
 /**
@@ -48,14 +50,58 @@ export type Cadence =
     | 'tick'
     /** Never on the tick. The button on `/operations`, and nothing else. */
     | 'manual'
-    /** Dispatch when the last run started more than this many days ago. */
-    | { everyDays: number }
+    /**
+     * Dispatch when the last run started longer ago than this.
+     *
+     * A duration string, parsed by `parse-duration`: `'15d'`, `'4h'`, `'1w'`,
+     * `'36h'`, and the spelled-out `'15 days'` if that reads better at the call
+     * site. Compound works too — `'1h30m'`.
+     *
+     * ## The one that will catch somebody
+     *
+     * **`'3m'` is three minutes, not three months.** Months are `'3mo'`. That is
+     * `parse-duration`'s convention and it is the usual one, but it is the
+     * opposite of what somebody writing a monthly cadence means to type, and
+     * getting it wrong turns a monthly scrape into one that runs on every tick.
+     * Prefer `'90d'` over `'3mo'` for anything on this list: days are what the
+     * intervals are actually reasoned about in, and a number of days cannot be
+     * misread.
+     *
+     * ## Why a library rather than `itty-time`, which is already here
+     *
+     * `itty-time`'s `ms()` is used in `@hector/wisegolf` and would have meant no
+     * new dependency. It does not take the compact forms — `ms('7d')` is `NaN` —
+     * and, worse, `ms('15 dayz')` returns **15**. Fifteen milliseconds: a typo
+     * would make a fortnightly job due on every tick, for ever, with nothing
+     * anywhere reporting a problem.
+     *
+     * `parse-duration` returns `null` for anything it cannot read, which is the
+     * behaviour worth having. It has no dependencies of its own.
+     */
+    | { every: string }
 
 export type Due =
     | { due: true; because: string }
     | { due: false; because: string }
 
 const DAY = 24 * 60 * 60 * 1000
+const HOUR = 60 * 60 * 1000
+
+/**
+ * How long ago, at the coarsest resolution that is still useful.
+ *
+ * The same judgement `runs.ts` makes about workflow runs: the question these
+ * strings answer is "is this stale", not "exactly when", and they are read on
+ * the Operations page and in Cloud Logging rather than parsed.
+ */
+function inWords(elapsed: number): string {
+    if (elapsed >= DAY) {
+        const days = Math.floor(elapsed / DAY)
+        return `${days} ${days === 1 ? 'day' : 'days'}`
+    }
+    const hours = Math.floor(elapsed / HOUR)
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'}`
+}
 
 /**
  * Whether the tick should start this workflow now.
@@ -78,6 +124,17 @@ export function due(cadence: Cadence, latest: WorkflowRun | undefined | null, no
     if (cadence === 'manual') return { due: false, because: 'started by hand only' }
     if (cadence === 'tick') return { due: true, because: 'every tick' }
 
+    const interval = parseDuration(cadence.every)
+    if (interval === null || interval === undefined || interval <= 0) {
+        // A cadence that cannot be read is a typo in this repository rather than
+        // anything happening at runtime, and `cadence.test.ts` fails on it before
+        // it can ship. Handled anyway, and handled as *not* due, because the
+        // alternative is a workflow whose interval says nothing running on every
+        // tick — which for the biographies is 45 Gemini calls a tick.
+        console.error('A workflow has an unreadable cadence and will not be dispatched', { every: cadence.every })
+        return { due: false, because: `'${cadence.every}' is not a duration this can read` }
+    }
+
     if (latest === null) {
         return { due: false, because: 'could not read the run history, so staleness is unknown' }
     }
@@ -93,8 +150,7 @@ export function due(cadence: Cadence, latest: WorkflowRun | undefined | null, no
         return { due: false, because: 'the last run has an unreadable start time' }
     }
 
-    const days = (now.getTime() - started) / DAY
-    return days >= cadence.everyDays
-        ? { due: true, because: `last ran ${Math.floor(days)} days ago, and wants every ${cadence.everyDays}` }
-        : { due: false, because: `last ran ${Math.floor(days)} days ago, and wants every ${cadence.everyDays}` }
+    const elapsed = now.getTime() - started
+    const because = `last ran ${inWords(elapsed)} ago, and wants every ${cadence.every}`
+    return elapsed >= interval ? { due: true, because } : { due: false, because }
 }
