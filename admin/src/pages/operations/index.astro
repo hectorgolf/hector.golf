@@ -146,20 +146,20 @@ const now = new Date();
 
 	{
 		ranJob ? (
-			<p class="notice good">
+			<p class="notice good" data-transient>
 				Ran <strong>{ranJob.label}</strong>. Unlike a workflow, this one finished before the page loaded — its
 				result is in the job log below.
 			</p>
 		) : (
 			ranAll ? (
-				<p class="notice good">
+				<p class="notice good" data-transient>
 					Ran a tick. Workflows that were due have been dispatched and take a minute or two to appear in the
 					log below; anything on an interval that was not yet stale was skipped, and this service's own jobs
 					have already finished — their results are in the job log.
 				</p>
 			) : (
 				ran && (
-					<p class="notice good">
+					<p class="notice good" data-transient>
 						Asked GitHub to run <strong>{ran.label}</strong>. A run takes a minute or two to appear in the
 						log below, and the site rebuilds after it commits.
 					</p>
@@ -179,12 +179,12 @@ const now = new Date();
 			 * disregard the red banners.
 			 */
 			rawReason === "already-running" ? (
-				<p class="notice">
+				<p class="notice" data-transient>
 					<strong>{failedJob.label}</strong> did not run. Another run of it was already going, so this one
 					was dropped rather than queued — the next tick reads the same sources anyway.
 				</p>
 			) : rawReason === "not-configured" ? (
-				<p class="notice">
+				<p class="notice" data-transient>
 					<strong>{failedJob.label}</strong> did not run. This service has no GitHub token, so it stopped
 					before it started rather than part way through: nothing was read and nothing was written. Setting
 					one is described further down this page.
@@ -478,6 +478,15 @@ const now = new Date();
 	.workflow form,
 	.tick form {
 		margin: 0;
+	}
+
+	/*
+	 * A notice on its way out. Only `lib/run-now.ts` adds this, so without
+	 * JavaScript nothing ever fades and nothing needs to.
+	 */
+	.notice.dismissing {
+		opacity: 0;
+		transition: opacity 0.4s ease-out;
 	}
 
 	/*
