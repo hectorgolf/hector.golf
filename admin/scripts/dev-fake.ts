@@ -221,6 +221,36 @@ function writeStandInRoster(): { path: string; players: number } {
     return { path, players: roster.length }
 }
 
+/**
+ * Fill a brand-new emulator, so the admin has something to be about.
+ *
+ * Only one we started, by the same ownership rule as stopping it: an emulator
+ * that was already running holds somebody's data and is not ours to write over.
+ * One we just started is empty by definition, and an empty admin is not a useful
+ * place to arrive — the rosters are blank, the events are gone, and the
+ * handicaps job fails with nobody to read handicaps for.
+ *
+ * Through the real `seed` script rather than a second implementation of it,
+ * because the reason `scripts/store.ts` exists at all is that the seed and the
+ * service once disagreed about which database they meant.
+ */
+function seedEmulator(hostPort: string): Promise<void> {
+    console.log('Firestore emulator: seeding it, since it is new and therefore empty')
+    return new Promise((resolve, reject) => {
+        const seed = spawn(tsxBinary(), [join(here, 'seed.ts'), '--bootstrap'], {
+            cwd: join(here, '..'),
+            stdio: ['ignore', 'inherit', 'inherit'],
+            env: { ...process.env, FIRESTORE_EMULATOR_HOST: hostPort },
+        })
+        seed.on('error', reject)
+        seed.on('exit', (code) =>
+            code === 0
+                ? resolve()
+                : reject(new Error(`the seed exited ${code ?? 'on a signal'}; the admin will have no data`))
+        )
+    })
+}
+
 async function main(): Promise<void> {
     if (process.env.NODE_ENV === 'production') {
         console.error('dev-fake is a development tool and refuses to run with NODE_ENV=production.')
@@ -241,6 +271,10 @@ async function main(): Promise<void> {
     console.log(`fake-github: on http://127.0.0.1:${fakeGitHubPort}, answering for ${repository}`)
 
     const emulator = await ensureEmulator()
+
+    if (emulator.ours) {
+        await seedEmulator(emulator.hostPort)
+    }
 
     const roster = writeStandInRoster()
     console.log(`WiseGolf stand-in: drifting ${roster.players} players' handicaps (roster at ${roster.path})`)
@@ -264,8 +298,8 @@ async function main(): Promise<void> {
         },
     })
 
-    console.log('\nIf the admin looks empty, its database is: FIRESTORE_EMULATOR_HOST=' + emulator.hostPort)
-    console.log('  npm run seed -- --bootstrap\n')
+    console.log(`\nIts database is the emulator on ${emulator.hostPort}. To refill it by hand:`)
+    console.log(`  FIRESTORE_EMULATOR_HOST=${emulator.hostPort} npm run seed -- --bootstrap\n`)
 
     /**
      * One way out, however it was reached.
