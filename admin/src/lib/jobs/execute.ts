@@ -44,7 +44,7 @@ export async function execute(job: Job, by: string): Promise<Execution> {
         // will read the same sources, so waiting buys nothing and holding a
         // Cloud Run request open to wait costs the instance.
         console.log("Skipping a job run because another holds the lease", { slug: job.slug, heldBy: held.heldBy });
-        await record({
+        const skippedJobRun: JobRun = {
             slug: job.slug,
             startedAt,
             finishedAt: new Date().toISOString(),
@@ -53,7 +53,9 @@ export async function execute(job: Job, by: string): Promise<Execution> {
             outcome: "skipped",
             detail: `another run has been going since ${held.since}`,
             changes: [],
-        });
+        };
+        await record(skippedJobRun);
+        console.log(`Recorded skipping a job run because another run holds the lease`, skippedJobRun);
         return { slug: job.slug, outcome: "skipped", changes: 0, heldBy: held.heldBy };
     }
 
