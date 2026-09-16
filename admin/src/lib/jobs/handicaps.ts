@@ -216,8 +216,18 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
 
     if (dryRun) {
         // The entire output of a shadow run: what it would have done, in the run
-        // log, having touched neither store.
-        console.log(`Shadow run: ${changes.length} observations would have been written`)
+        // log and in Cloud Logging, having touched neither store.
+        //
+        // The changes are serialised onto the one line rather than passed as a
+        // second argument the way the rest of this service logs objects. That
+        // form is nicer to read locally and wrong here: Node pretty-prints an
+        // array of 45 objects across dozens of lines, and Cloud Run's logging
+        // agent makes a separate log entry out of every line it reads from
+        // stdout — so the one thing worth reading arrives shredded, and a filter
+        // matching "Shadow run" returns the sentence without the evidence.
+        console.log(
+            `Shadow run: ${changes.length} observation(s) would have been written: ${JSON.stringify(changes)}`
+        )
         return { outcome: 'ok', changes }
     }
 
