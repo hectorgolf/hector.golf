@@ -93,17 +93,20 @@ type Report = {
  * The schema validates; it does not filter. That distinction is the single most
  * important line in this script, and it was written the other way round first.
  *
- * `courses` is why. Thirteen of the seventeen course files carry fields the
- * course schema does not mention — `images.hero` on eight of them, `name_cz` on
- * the Konopiště tees, `par_ladies` at Sand Valley, and 70-odd Finnish per-hole
- * descriptions across the two Tahko courses. Zod strips unknown keys, so a
- * migration that stored `parsed.data` would write those files to Firestore
- * without them.
+ * `courses` is why. When this was written, thirteen of the seventeen course
+ * files carried fields the course schema did not mention — `images.hero` on
+ * eight of them, `name_cz` on the Konopiště tees, `par_ladies` at Sand Valley,
+ * and 70-odd Finnish per-hole descriptions across the two Tahko courses. Zod
+ * strips unknown keys, so a migration that stored `parsed.data` would have
+ * written those files to Firestore without them.
  *
- * Today that is harmless: nothing reads those fields, and the files are the
- * source of truth, so the dormant content sits in git waiting for somebody to
- * render it. After step 5 deletes the files it would be gone — quietly, with the
- * only copy overwritten by a migration that reported success.
+ * Most of that has since been fixed in the schema, which is the better fix and
+ * came out of running `--check`. Five records still carry something the schema
+ * does not read, and the number is not the point: the *class* of bug is
+ * permanent, because a schema is allowed to lag its data and zod will not say
+ * so. While the files are the source of truth a lagging schema is merely a
+ * waste. After step 5 deletes the files it is a delete — quietly, with the only
+ * copy overwritten by a migration that reported success.
  *
  * So: parse to prove the record is readable, store the original.
  *

@@ -390,7 +390,7 @@
         "phone": "+358407700612"
       },
       "club": "PGC",
-      "handicap": 11.8,
+      "handicap": 12,
       "biography": [
         "Lauri, representing Pickala Golf Club, is poised to make his sixth appearance in the esteemed Hector Trophée. His consistent engagement across five prior editions underscores a profound devotion to this unique annual competition, firmly establishing him as a persistent presence on its challenging fairways.",
         "Throughout his previous ventures, Lauri has consistently demonstrated a precision-focused approach to every aspect of his game. While the ultimate distinction of lifting the coveted Hector Trophée with a partner, or claiming the individual Victor Trophy, has remained an aspiration, his journey has been marked by resilient performances and a tireless quest for competitive excellence.",
@@ -3189,12 +3189,12 @@
             "handicap": 11.2
           },
           {
-            "id": "lauri-p",
-            "handicap": 11.8
-          },
-          {
             "id": "harri-v",
             "handicap": 11.9
+          },
+          {
+            "id": "lauri-p",
+            "handicap": 12
           },
           {
             "id": "lassi-k",
@@ -6085,7 +6085,7 @@
         "tees": [
           {
             "name": "white",
-            "name_cz": "bílá",
+            "name_local": "bílá",
             "color": "#ffffff",
             "stroke": "#000000",
             "length": 6086,
@@ -6101,49 +6101,49 @@
           },
           {
             "name": "yellow",
-            "name_cz": "žlutá",
+            "name_local": "žlutá",
             "color": "#dddd00",
             "stroke": "#000000",
             "length": 5730,
             "par": 72,
             "rating": {
               "men": 71.7,
-              "ladies": null
+              "ladies": 78.4
             },
             "slope": {
               "men": 140,
-              "ladies": null
+              "ladies": 150
             }
           },
           {
             "name": "blue",
-            "name_cz": "modrá",
+            "name_local": "modrá",
             "color": "#0000dd",
             "stroke": "#000000",
             "length": 5372,
             "par": 72,
             "rating": {
-              "men": null,
+              "men": 69.6,
               "ladies": 75.8
             },
             "slope": {
-              "men": null,
+              "men": 136,
               "ladies": 145
             }
           },
           {
             "name": "red",
-            "name_cz": "červená",
+            "name_local": "červená",
             "color": "#dd0000",
             "stroke": "#000000",
             "length": 5011,
             "par": 72,
             "rating": {
-              "men": null,
+              "men": 67.6,
               "ladies": 73.9
             },
             "slope": {
-              "men": null,
+              "men": 131,
               "ladies": 139
             }
           }
@@ -6508,7 +6508,7 @@
         "tees": [
           {
             "name": "black",
-            "name_cz": "černá",
+            "name_local": "černá",
             "color": "#000000",
             "stroke": "#ffffff",
             "length": 6484,
@@ -6524,7 +6524,7 @@
           },
           {
             "name": "white",
-            "name_cz": "bílá",
+            "name_local": "bílá",
             "color": "#ffffff",
             "length": 6168,
             "par": 72,
@@ -6539,46 +6539,46 @@
           },
           {
             "name": "yellow",
-            "name_cz": "žlutá",
+            "name_local": "žlutá",
             "color": "#dddd00",
             "length": 5859,
             "par": 72,
             "rating": {
               "men": 72.2,
-              "ladies": null
+              "ladies": 78.4
             },
             "slope": {
               "men": 142,
-              "ladies": null
+              "ladies": 151
             }
           },
           {
             "name": "blue",
-            "name_cz": "modrá",
+            "name_local": "modrá",
             "color": "#0000dd",
             "length": 5522,
             "par": 72,
             "rating": {
-              "men": null,
+              "men": 70.2,
               "ladies": 76.1
             },
             "slope": {
-              "men": null,
+              "men": 137,
               "ladies": 145
             }
           },
           {
             "name": "red",
-            "name_cz": "červená",
+            "name_local": "červená",
             "color": "#dd0000",
             "length": 5221,
             "par": 72,
             "rating": {
-              "men": null,
+              "men": 68.6,
               "ladies": 74.2
             },
             "slope": {
-              "men": null,
+              "men": 132,
               "ladies": 140
             }
           }
@@ -20452,6 +20452,12 @@
       "player": "jarkko-k",
       "handicap": 12.9,
       "observed": "2026-09-14T05:22:46Z"
+    },
+    {
+      "date": "2026-09-16",
+      "player": "lauri-p",
+      "handicap": 12,
+      "observed": "2026-09-16T04:01:23Z"
     }
   ],
   "handicapChecks": [
@@ -20691,6 +20697,62 @@
     },
     {
       "at": "2026-09-15T17:23:59Z",
+      "checked": 37,
+      "skipped": [
+        "riku-l",
+        "ricke-b",
+        "panu-l",
+        "matias-v",
+        "lauri-s",
+        "joni-v",
+        "joakim-g",
+        "eero-s"
+      ]
+    },
+    {
+      "at": "2026-09-16T03:01:10Z",
+      "checked": 37,
+      "skipped": [
+        "riku-l",
+        "ricke-b",
+        "panu-l",
+        "matias-v",
+        "lauri-s",
+        "joni-v",
+        "joakim-g",
+        "eero-s"
+      ]
+    },
+    {
+      "at": "2026-09-16T04:01:23Z",
+      "checked": 37,
+      "skipped": [
+        "riku-l",
+        "ricke-b",
+        "panu-l",
+        "matias-v",
+        "lauri-s",
+        "joni-v",
+        "joakim-g",
+        "eero-s"
+      ]
+    },
+    {
+      "at": "2026-09-16T05:00:47Z",
+      "checked": 37,
+      "skipped": [
+        "riku-l",
+        "ricke-b",
+        "panu-l",
+        "matias-v",
+        "lauri-s",
+        "joni-v",
+        "joakim-g",
+        "eero-s"
+      ]
+    },
+    {
+      "at": "2026-09-16T06:01:19Z",
       "checked": 37,
       "skipped": [
         "riku-l",

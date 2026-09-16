@@ -129,6 +129,7 @@ describe("Parsing app.hector.golf tournament responses", () => {
     });
 
     it("reports an unparseable payload rather than pretending the leaderboard is empty", async () => {
+        // points should be a number, not a string!
         serve({ ...UPCOMING, victor: [{ points: "36" }] });
 
         // An empty result would be published over the live standings; undefined
