@@ -270,6 +270,75 @@ async function waitForPort(port: number, timeoutMs = 30_000): Promise<void> {
 }
 
 /**
+ * The flags and environment that keep `astro dev` in the foreground.
+ *
+ * This stand-in proxies to a server it supervises: it waits for the port, it
+ * dies when the server dies, and the server dies when it is stopped. A dev
+ * server that daemonises is no longer that server — the spawned process exits
+ * immediately, the `exit` handler below fires, and the stand-in shuts itself
+ * down about a second after starting, having printed `astro dev exited (0)`.
+ * Which is exactly what it did, and says nothing about why.
+ *
+ * Astro 7.3 daemonises **on its own**, without `--background`, when
+ * `am-i-vibing` recognises the surrounding process as an AI coding agent. That
+ * is a sensible default for a tool being driven by an agent and the wrong one
+ * here, and it means this script broke only for the people running it from an
+ * agent — Claude Code, Cursor and the like — which is how this repository is
+ * mostly worked on.
+ *
+ * `astro/dist/cli/dev/index.js` decides it like this:
+ *
+ *     const agentDetected = !process.env.ASTRO_DEV_BACKGROUND && isRunByAgent()
+ *     const wantsBackground = !!flags.background || agentDetected
+ *
+ * So a set `ASTRO_DEV_BACKGROUND` turns the detection off. The name reads
+ * backwards for this purpose: it is Astro's internal marker for "you *are* the
+ * backgrounded child, do not background yourself again", and setting it from
+ * outside borrows that meaning. `test/dev-iap.test.ts` pins the mechanism
+ * against Astro's own source, so an upgrade that changes it fails there rather
+ * than by quietly bringing the breakage back.
+ *
+ * `--ignore-lock` is the other half. Without it Astro writes a lock file that
+ * `astro dev stop` and `astro dev status` act on, and this server is not theirs
+ * to find: it lives on a private port, it is an implementation detail of the
+ * stand-in, and `waitForPort` below is how its readiness is established rather
+ * than the lock file. It also fails *loudly* if Astro ever backgrounds despite
+ * the variable — the two are refused in combination — which is a better way to
+ * meet this bug again than the silent exit it caused the first time.
+ */
+export const FOREGROUND_FLAGS = ['--ignore-lock'] as const
+
+export const foregroundEnvironment = (environment: NodeJS.ProcessEnv): NodeJS.ProcessEnv => ({
+    ...environment,
+    // Any non-empty value does it; Astro only tests truthiness. This one says
+    // what it is for, since it shows up in `ps` beside a variable whose name
+    // suggests the opposite of what it is doing.
+    ASTRO_DEV_BACKGROUND: environment.ASTRO_DEV_BACKGROUND ?? 'dev-iap-supervises-this-server',
+})
+
+/**
+ * What to say when the dev server exits.
+ *
+ * A prompt, clean exit is the signature of the daemonising above rather than of
+ * a server that ran and stopped: nothing else finishes successfully in under a
+ * second. Worth telling apart, because the two want completely different things
+ * from the reader, and the unhelpful version of this message is what made the
+ * bug take a while to place the first time.
+ */
+export const QUICK_EXIT_MS = 2_000
+
+export function exitMessage(code: number | null, elapsedMs: number): string {
+    if (code === 0 && elapsedMs < QUICK_EXIT_MS) {
+        return (
+            'astro dev exited immediately and successfully, which means it daemonised instead of running here.\n' +
+            'The stand-in can only proxy to a server it supervises, so it is stopping too.\n' +
+            'See FOREGROUND_FLAGS in scripts/dev-iap.ts: something is starting the dev server in the background.'
+        )
+    }
+    return `astro dev exited (${code ?? 'signal'}); stopping the stand-in too.`
+}
+
+/**
  * Astro's own binary, run directly rather than through `npm run dev`.
  *
  * An npm in between is a second process to kill, and the one that gets missed:
@@ -294,13 +363,14 @@ async function main(): Promise<void> {
     const accounts = accountsFrom(process.env.IAP_DEV_ACCOUNTS)
     const adminDir = join(dirname(fileURLToPath(import.meta.url)), '..')
 
+    const startedAt = Date.now()
     const astro: ChildProcess = spawn(
         astroBinary(adminDir),
-        ['dev', '--port', String(appPort), '--host', '127.0.0.1'],
-        { cwd: adminDir, stdio: ['ignore', 'inherit', 'inherit'] }
+        ['dev', '--port', String(appPort), '--host', '127.0.0.1', ...FOREGROUND_FLAGS],
+        { cwd: adminDir, stdio: ['ignore', 'inherit', 'inherit'], env: foregroundEnvironment(process.env) }
     )
     astro.on('exit', (code) => {
-        console.error(`astro dev exited (${code ?? 'signal'}); stopping the stand-in too.`)
+        console.error(exitMessage(code, Date.now() - startedAt))
         process.exit(code ?? 1)
     })
 
