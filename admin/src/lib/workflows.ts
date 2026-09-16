@@ -79,37 +79,28 @@ export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
         file: 'update-handicaps.yml',
         label: "Players' official handicaps",
         blurb: 'Reads every player\'s current handicap from WiseGolf and re-sorts the buckets of any event whose buckets are still open.',
-        cadence: 'tick',
+        cadence: { every: '60s' }, // every 60 seconds, at most
     },
     {
         slug: 'leaderboards',
         file: 'update-leaderboards.yml',
         label: 'Tournament leaderboards',
         blurb: 'Refreshes the leaderboards of events that have started, from Google Sheets or app.hector.golf.',
-        cadence: 'tick',
+        cadence: { every: '60s' }, // every 60 seconds, at most
     },
     {
         slug: 'biographies',
         file: 'update-player-biographies.yml',
         label: "Players' biographies",
         blurb: 'Regenerates every player biography with Gemini. Rewrites all 45, so an edit made in the admin does not survive it.',
-        // Was `30 2 10,25 * *` — twice a month, delivered up to five hours late.
-        //
-        // Fortnightly rather than "on the 10th and 25th", because the tick cannot
-        // express a date it does not fire on and staleness is the property that
-        // was actually wanted. It is also the one entry where running too often
-        // costs real money and real edits: every run is 45 Gemini calls and
-        // overwrites every biography.
-        cadence: { every: '15d' },
+        cadence: { every: '15d' }, // ~twice a month
     },
     {
         slug: 'club-memberships',
         file: 'update-player-club-memberships.yml',
         label: "Players' club memberships",
         blurb: "Fills in a player's home club from WiseGolf, for players who do not have one yet. Never overwrites a club somebody set.",
-        // Was `15 22 15 * *`. Its last scheduled run started at 00:19 on the
-        // *16th*, which is the lateness problem arriving as a wrong calendar day.
-        cadence: { every: '30d' },
+        cadence: { every: '30d' }, // ~once a month
     },
     {
         slug: 'deploy',
@@ -117,20 +108,21 @@ export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
         label: 'Deploy hector.golf',
         blurb: 'Rebuilds and publishes the public site. Started automatically when a data update commits something, and available here for when you want it anyway.',
         /*
-         * Not on every tick, and not because it is expensive.
+         * We don't build and deploy the hector.golf site on every tick, and not
+         * only because it is expensive.
          *
          * The tick starts the scrapes, which have not committed anything yet
          * when it fires — a deploy in the same second would publish the data
          * that was already there. The normal path is a scrape dispatching this
-         * itself through `[slug]/dispatch.ts` once it has committed, which is the
-         * only moment at which there is something new to publish.
+         * itself through `[slug]/dispatch.ts` once it has committed, which is
+         * the only moment at which there is something new to publish.
          *
-         * A day is the backstop for when that request fails. `deploy-site.yml`
-         * used to carry a `0 8,13` cron for exactly this, and deleting the crons
-         * would have deleted the backstop with them — so it is expressed here
-         * instead, in the mechanism that replaced them. It fires only when no
-         * deploy has happened in 24 hours, which is to say only when the normal
-         * path is already broken.
+         * This is merely a backstop for when that normal after-edits request
+         * fails. `deploy-site.yml` used to carry a `0 8,13` cron for exactly
+         * this purpose, and deleting the crons would have deleted the backstop
+         * with them — so it is expressed here instead, in the mechanism that
+         * replaced them. It fires only when no deploy has happened in 24 hours,
+         * which is to say only when the normal path is already broken.
          */
         cadence: { every: '1d' },
     },
