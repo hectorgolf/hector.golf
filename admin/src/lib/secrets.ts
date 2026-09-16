@@ -1,8 +1,9 @@
 import { SecretManagerServiceClient } from '@google-cloud/secret-manager'
 
 /**
- * Reading the one secret this service holds: the GitHub token it dispatches
- * workflows with.
+ * Reading the secrets this service holds: the GitHub token it dispatches
+ * workflows and commits with, and the WiseGolf login the handicaps job scrapes
+ * with.
  *
  * ## Why it is fetched at runtime rather than mounted as an environment variable
  *
@@ -24,11 +25,12 @@ import { SecretManagerServiceClient } from '@google-cloud/secret-manager'
  * resolves once per revision and would need a redeploy nobody would remember to
  * do.
  *
- * The cost of asking every time is one API call per GitHub call: four a day from
- * the two scheduled ticks, two more each time somebody opens the Operations
- * page, and one per button press. Secret Manager's free tier is 10,000 access
- * operations a month, so this rounds to nothing and no cache is worth the
- * staleness it would introduce.
+ * The cost of asking every time is one API call per use: a handful a day from
+ * the scheduled ticks, two more each time somebody opens the Operations page,
+ * and one per button press. The handicaps job adds three per run — two for the
+ * WiseGolf login and one for the commit — against six runs a day. Secret
+ * Manager's free tier is 10,000 access operations a month, so this rounds to
+ * nothing and no cache is worth the staleness it would introduce.
  */
 
 /**
@@ -44,6 +46,22 @@ export const githubTokenSecret = process.env.GITHUB_DISPATCH_TOKEN_SECRET
  * secret above is the only source.
  */
 const githubTokenFromEnvironment = process.env.GITHUB_DISPATCH_TOKEN
+
+/**
+ * Where the WiseGolf login lives, by the same rule as the GitHub token above:
+ * the *location* is configuration and the value never is.
+ *
+ * Two secrets rather than one document with both, because Secret Manager
+ * versions the whole payload and a password rotation should not require
+ * rewriting the username beside it.
+ *
+ * Unset is a supported state. A deployment that has not been given WiseGolf
+ * credentials runs the handicaps job against a `NullHandicapSource`, which finds
+ * nothing and records a sweep that reached nobody — see `sweepOf` in
+ * `update-handicaps.ts` for why that is deliberately not an error.
+ */
+export const wisegolfUsernameSecret = process.env.WISEGOLF_USERNAME_SECRET
+export const wisegolfPasswordSecret = process.env.WISEGOLF_PASSWORD_SECRET
 
 export type SecretLocation = { project: string; secretId: string }
 
@@ -93,14 +111,61 @@ function secrets(): SecretManagerServiceClient {
  * the page cannot do anything useful with the distinction and the log can.
  */
 export async function githubToken(): Promise<string | undefined> {
-    if (githubTokenFromEnvironment) return githubTokenFromEnvironment
-    if (!githubTokenSecret) return undefined
+    return readSecret(githubTokenSecret, githubTokenFromEnvironment, 'the GitHub token')
+}
+
+/**
+ * The WiseGolf login, or `undefined` unless *both* halves resolved.
+ *
+ * All-or-nothing because half a login is not a degraded credential, it is a
+ * guaranteed failed authentication that would look like WiseGolf being down.
+ * `@hector/wisegolf` already treats absent credentials as "run disabled and say
+ * so", which is the honest outcome, so the useful thing to hand it is nothing
+ * rather than a username.
+ *
+ * The environment fallbacks are the same variables the four GitHub Actions
+ * workflows already use, so `npm run dev` against a laptop `.env` works without
+ * a second spelling to remember.
+ */
+export async function wisegolfCredentials(): Promise<{ username: string; password: string } | undefined> {
+    const [username, password] = await Promise.all([
+        readSecret(wisegolfUsernameSecret, process.env.WISEGOLF_USERNAME, 'the WiseGolf username'),
+        readSecret(wisegolfPasswordSecret, process.env.WISEGOLF_PASSWORD, 'the WiseGolf password'),
+    ])
+    if (!username || !password) {
+        // Logged at info rather than error: a deployment with no WiseGolf
+        // credentials is a real, supported state — a fresh project, or one whose
+        // owner has not put them in yet — and the job reports it as a sweep that
+        // reached nobody.
+        if (username || password) {
+            console.warn('Only half of the WiseGolf login resolved, so the scrape will run disabled')
+        }
+        return undefined
+    }
+    return { username, password }
+}
+
+/**
+ * One secret, from the environment if a laptop supplied it and from Secret
+ * Manager otherwise.
+ *
+ * `describedAs` exists because of the rule below: the resource name must not be
+ * interpolated into the log line, so the message needs some other way to say
+ * which of the three secrets could not be read.
+ */
+async function readSecret(
+    resourceName: string | undefined,
+    fromEnvironment: string | undefined,
+    describedAs: string
+): Promise<string | undefined> {
+    if (fromEnvironment) return fromEnvironment
+    if (!resourceName) return undefined
 
     try {
-        const [version] = await secrets().accessSecretVersion({ name: githubTokenSecret })
-        // Secret Manager hands back bytes; the payload is a token written by a
-        // human, so trailing whitespace from a shell heredoc is likely enough to
-        // be worth trimming rather than sending to GitHub as part of the token.
+        const [version] = await secrets().accessSecretVersion({ name: resourceName })
+        // Secret Manager hands back bytes; the payload is written by a human, so
+        // trailing whitespace from a shell heredoc is likely enough to be worth
+        // trimming rather than sending to GitHub as part of the token.
         const payload = version.payload?.data?.toString().trim()
         return payload || undefined
     } catch (error) {
@@ -111,9 +176,9 @@ export async function githubToken(): Promise<string | undefined> {
         // than a credential, but the rule cannot tell those apart and is right to
         // be suspicious of the shape.
         //
-        // Nothing is lost: this service has exactly one secret, and the Secret
-        // Manager client's own error names the resource it failed to read.
-        console.error('Could not read the GitHub token from Secret Manager', error)
+        // Nothing is lost: `describedAs` says which secret this was, and the
+        // Secret Manager client's own error names the resource it failed to read.
+        console.error(`Could not read ${describedAs} from Secret Manager`, error)
         return undefined
     }
 }
