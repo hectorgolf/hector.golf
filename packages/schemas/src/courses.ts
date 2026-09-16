@@ -38,6 +38,7 @@ export const schema = z.object({
                     stroke: z.string().optional(),
                     length: z.number().min(1).max(9999),
                     par: z.number().min(1).max(99),
+                    par_ladies: z.number().min(1).max(99).optional(),
                     rating: z.object({
                         men: z.number().min(1).max(199).or(z.null()),
                         ladies: z.number().min(1).max(199).or(z.null()),
