@@ -1,11 +1,17 @@
+import { existsSync, readFileSync } from 'node:fs'
+
 import { describe, expect, it } from 'vitest'
 
 import { viewerFromHeaders } from '../src/lib/identity.ts'
 import {
     accountsFrom,
+    exitMessage,
     forwardedHeaders,
+    FOREGROUND_FLAGS,
+    foregroundEnvironment,
     identityHeaders,
     JWT_ASSERTION_STAND_IN,
+    QUICK_EXIT_MS,
     readCookie,
     safeContinue,
     withoutSpoofedIdentity,
@@ -145,5 +151,75 @@ describe('reading the cookie back', () => {
     it('is undefined when there is none, rather than empty', () => {
         expect(readCookie('other=1', 'dev_iap_user')).toBeUndefined()
         expect(readCookie(undefined, 'dev_iap_user')).toBeUndefined()
+    })
+})
+
+/**
+ * The stand-in proxies to a server it supervises, so a dev server that
+ * daemonises is fatal to it: the spawned process exits at once, the stand-in
+ * follows it down, and the whole thing is over about a second after it started.
+ *
+ * Astro 7.3 daemonises on its own when `am-i-vibing` recognises an AI coding
+ * agent around it, so this broke for exactly the people running it from one and
+ * for nobody else — which is a good deal of why it sat there.
+ *
+ * Pinned against Astro's own source rather than described in prose, the way
+ * `origin.test.ts` pins the CSRF callers. The mechanism is undocumented and
+ * belongs to somebody else, so the thing worth defending is that an upgrade
+ * which changes it fails here instead of quietly restoring the bug.
+ */
+describe('keeping the dev server in the foreground', () => {
+    // Hoisted to the workspace root or kept local, the same two places
+    // `astroBinary` looks for the binary.
+    const astroDevSource = ['../node_modules', '../../node_modules']
+        .map((base) => new URL(`${base}/astro/dist/cli/dev/index.js`, import.meta.url))
+        .filter((candidate) => existsSync(candidate))
+        .map((candidate) => readFileSync(candidate, 'utf-8'))[0]!
+
+    it('still turns off the agent detection Astro backgrounds for', () => {
+        // The line this rests on:
+        //   const agentDetected = !process.env.ASTRO_DEV_BACKGROUND && isRunByAgent()
+        expect(astroDevSource).toContain('!process.env.ASTRO_DEV_BACKGROUND')
+        expect(astroDevSource).toContain('isRunByAgent()')
+    })
+
+    it('sets the variable to something non-empty, since Astro only tests truthiness', () => {
+        const value = foregroundEnvironment({}).ASTRO_DEV_BACKGROUND
+        expect(value).toBeTruthy()
+        // An empty string would read as unset and put the detection straight back.
+        expect(value).not.toBe('')
+    })
+
+    it('leaves a value already in the environment alone', () => {
+        expect(foregroundEnvironment({ ASTRO_DEV_BACKGROUND: 'theirs' }).ASTRO_DEV_BACKGROUND).toBe('theirs')
+    })
+
+    it('keeps the rest of the environment, which is where PATH and the emulator host live', () => {
+        const environment = foregroundEnvironment({ FIRESTORE_EMULATOR_HOST: 'localhost:8432' })
+        expect(environment.FIRESTORE_EMULATOR_HOST).toBe('localhost:8432')
+    })
+
+    it('asks for no lock file, because this server is not one `astro dev stop` should find', () => {
+        expect(FOREGROUND_FLAGS).toContain('--ignore-lock')
+        // And Astro still refuses that flag alongside backgrounding, which is
+        // what makes a regression here loud rather than silent.
+        expect(astroDevSource).toContain('getBackgroundIgnoreLockConflict')
+    })
+})
+
+describe('what it says when the dev server stops', () => {
+    it('names the cause when the exit is immediate and clean, which only daemonising is', () => {
+        const message = exitMessage(0, QUICK_EXIT_MS - 1)
+        expect(message).toContain('daemonised')
+        expect(message).toContain('FOREGROUND_FLAGS')
+    })
+
+    it('reports a server that ran and then stopped as just that', () => {
+        expect(exitMessage(0, QUICK_EXIT_MS + 1)).toBe('astro dev exited (0); stopping the stand-in too.')
+        expect(exitMessage(1, 50)).toBe('astro dev exited (1); stopping the stand-in too.')
+    })
+
+    it('says "signal" rather than "null" for a server that was killed', () => {
+        expect(exitMessage(null, 10_000)).toContain('(signal)')
     })
 })
