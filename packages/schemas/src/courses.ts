@@ -82,6 +82,7 @@ export const schema = z.object({
                 ladies: z.array(ScorecardHoleSchema).optional().or(z.null()),
             }),
             descriptions: z.array(HoleDescriptionSchema).optional().or(z.null()),
+            descriptions_local: z.array(HoleDescriptionSchema).optional().or(z.null()),
         })
         .optional(),
     datasources: z.array(DatasourceSchema),
