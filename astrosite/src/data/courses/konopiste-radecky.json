@@ -98,11 +98,11 @@
                 "par": 72,
                 "rating": {
                     "men": 72.2,
-                    "ladies": null
+                    "ladies": 78.4
                 },
                 "slope": {
                     "men": 142,
-                    "ladies": null
+                    "ladies": 151
                 }
             },
             {
@@ -112,11 +112,11 @@
                 "length": 5522,
                 "par": 72,
                 "rating": {
-                    "men": null,
+                    "men": 70.2,
                     "ladies": 76.1
                 },
                 "slope": {
-                    "men": null,
+                    "men": 137,
                     "ladies": 145
                 }
             },
@@ -127,11 +127,11 @@
                 "length": 5221,
                 "par": 72,
                 "rating": {
-                    "men": null,
+                    "men": 68.6,
                     "ladies": 74.2
                 },
                 "slope": {
-                    "men": null,
+                    "men": 132,
                     "ladies": 140
                 }
             }
