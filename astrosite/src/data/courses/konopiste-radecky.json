@@ -61,7 +61,7 @@
         "tees": [
             {
                 "name": "black",
-                "name_cz": "černá",
+                "name_local": "černá",
                 "color": "#000000",
                 "stroke": "#ffffff",
                 "length": 6484,
@@ -77,7 +77,7 @@
             },
             {
                 "name": "white",
-                "name_cz": "bílá",
+                "name_local": "bílá",
                 "color": "#ffffff",
                 "length": 6168,
                 "par": 72,
@@ -92,46 +92,46 @@
             },
             {
                 "name": "yellow",
-                "name_cz": "žlutá",
+                "name_local": "žlutá",
                 "color": "#dddd00",
                 "length": 5859,
                 "par": 72,
                 "rating": {
                     "men": 72.2,
-                    "ladies": null
+                    "ladies": 78.4
                 },
                 "slope": {
                     "men": 142,
-                    "ladies": null
+                    "ladies": 151
                 }
             },
             {
                 "name": "blue",
-                "name_cz": "modrá",
+                "name_local": "modrá",
                 "color": "#0000dd",
                 "length": 5522,
                 "par": 72,
                 "rating": {
-                    "men": null,
+                    "men": 70.2,
                     "ladies": 76.1
                 },
                 "slope": {
-                    "men": null,
+                    "men": 137,
                     "ladies": 145
                 }
             },
             {
                 "name": "red",
-                "name_cz": "červená",
+                "name_local": "červená",
                 "color": "#dd0000",
                 "length": 5221,
                 "par": 72,
                 "rating": {
-                    "men": null,
+                    "men": 68.6,
                     "ladies": 74.2
                 },
                 "slope": {
-                    "men": null,
+                    "men": 132,
                     "ladies": 140
                 }
             }
