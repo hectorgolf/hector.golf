@@ -5,6 +5,7 @@ import { pRateLimit } from "p-ratelimit";
 import { redact } from "./strings";
 
 import { NullHandicapSource, type GolfClub, type HandicapSource } from "./handicap-source-api";
+import { standInFromRoster } from "./stand-in.ts";
 
 export type WisegolfSession = HandicapSource;
 
@@ -142,6 +143,13 @@ export const createWisegolfSession = async (supplied?: WisegolfCredentials): Pro
     if (supplied) {
         providedCredentials = supplied;
     }
+
+    // Before the credentials, because a laptop running against the stand-in has
+    // none and should not be told off for it. See `stand-in.ts` for why the
+    // variable names a roster file rather than switching on a mode, and for the
+    // refusal that keeps it away from anything deployed.
+    const standIn = await standInFromRoster(process.env.WISEGOLF_STAND_IN_ROSTER);
+    if (standIn) return standIn;
 
     const configured = credentials();
     if (!configured) {
