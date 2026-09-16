@@ -5,7 +5,11 @@ import Breadcrumb from '@hector/ui/components/Breadcrumb.astro'
 import EventDetailsFields from '../../../../components/EventDetailsFields.astro'
 
 import { matchplayEventSchema } from '@hector/schemas/src/events.ts'
-import { getMatchplayEvent, saveMatchplayEvent } from '../../../../lib/repository/events.ts'
+import {
+	deleteMatchplayEvent,
+	getMatchplayEvent,
+	saveMatchplayEvent,
+} from '../../../../lib/repository/events.ts'
 import { detailsFromForm } from '../../../../lib/matchplay/details.ts'
 import { viewerFromHeaders } from '../../../../lib/identity.ts'
 
@@ -27,21 +31,38 @@ let submitted: Record<string, string> = {
 	description: event.description ?? '',
 }
 
+// Two forms post here, so the fields are read into a local first and only become
+// what the details boxes show if the details form was the one submitted. A
+// refused delete otherwise blanks the five boxes it never touched.
 if (Astro.request.method === 'POST') {
 	const form = await Astro.request.formData()
-	submitted = Object.fromEntries([...form.entries()].map(([k, v]) => [k, String(v)]))
+	const fields = Object.fromEntries([...form.entries()].map(([k, v]) => [k, String(v)]))
+	const viewer = viewerFromHeaders(Astro.request.headers)
 
-	// The whole event rather than the four changed fields. The chronology rule
-	// lives on the timing pair and only fires when both dates are present, and a
-	// tournament that has been played carries a bracket that has to survive the
-	// round trip intact.
-	const parsed = matchplayEventSchema.safeParse({ ...event, ...detailsFromForm(submitted) })
-	if (!parsed.success) {
-		error = parsed.error.issues.map((i) => `${i.path.join('.') || 'form'}: ${i.message}`).join('; ')
+	if (fields.action === 'delete') {
+		// Typing the id is the whole confirmation, and it is judged here rather
+		// than in the browser: a `confirm()` is one blocked dialog away from
+		// deleting the tournament anyway, and no other page here needs script.
+		if (fields.confirmId?.trim().toUpperCase() !== event.id) {
+			error = `Type ${event.id} to confirm. Nothing was deleted.`
+		} else {
+			await deleteMatchplayEvent(event.id, viewer.email ?? 'unknown')
+			return Astro.redirect(`/events/matchplay?deleted=${encodeURIComponent(event.name)}`)
+		}
 	} else {
-		const viewer = viewerFromHeaders(Astro.request.headers)
-		await saveMatchplayEvent(parsed.data, viewer.email ?? 'unknown')
-		return Astro.redirect(`/events/matchplay/${event.id}?saved=details`)
+		submitted = fields
+
+		// The whole event rather than the four changed fields. The chronology rule
+		// lives on the timing pair and only fires when both dates are present, and a
+		// tournament that has been played carries a bracket that has to survive the
+		// round trip intact.
+		const parsed = matchplayEventSchema.safeParse({ ...event, ...detailsFromForm(submitted) })
+		if (!parsed.success) {
+			error = parsed.error.issues.map((i) => `${i.path.join('.') || 'form'}: ${i.message}`).join('; ')
+		} else {
+			await saveMatchplayEvent(parsed.data, viewer.email ?? 'unknown')
+			return Astro.redirect(`/events/matchplay/${event.id}?saved=details`)
+		}
 	}
 }
 ---
@@ -80,11 +101,54 @@ if (Astro.request.method === 'POST') {
 			<a href={`/events/matchplay/${event.id}`}><button type="button" class="secondary">Cancel</button></a>
 		</div>
 	</form>
+
+	<section class="stack danger-zone">
+		<h2>Delete this tournament</h2>
+		<p class="hint">
+			Deletes {event.name} and its {event.participants.length}-player field{
+				event.results?.bracket ? ' and bracket' : ''
+			}. The public site loses it at the next export — as a commit, so a deletion made by mistake
+			is undone by reverting that commit and seeding.
+		</p>
+
+		<form method="POST" class="stack">
+			<input type="hidden" name="action" value="delete" />
+			<div class="field">
+				<label for="confirmId">Type <code>{event.id}</code> to confirm</label>
+				<input id="confirmId" name="confirmId" type="text" required autocomplete="off" spellcheck="false" />
+			</div>
+			<div class="actions">
+				<button type="submit" class="danger">Delete tournament</button>
+			</div>
+		</form>
+	</section>
 </AdminLayout>
 
 <style>
 	form {
 		max-width: 34rem;
+	}
+
+	.danger-zone {
+		max-width: 34rem;
+		margin-top: 2.5rem;
+		border-top: 1px solid var(--line);
+		padding-top: 1.5rem;
+	}
+
+	h2 {
+		margin: 0;
+		font-family: var(--font-serif);
+		font-size: 1.2rem;
+	}
+
+	.hint {
+		font-size: 0.8rem;
+		color: var(--text-dim);
+	}
+
+	code {
+		font-size: 0.95em;
 	}
 
 	input:disabled {

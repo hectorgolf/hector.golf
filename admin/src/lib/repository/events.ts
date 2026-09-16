@@ -102,6 +102,34 @@ export async function saveMatchplayEvent(event: MatchplayEvent, updatedBy: strin
     await firestore().collection(EVENTS).doc(validated.id).set(record)
 }
 
+/**
+ * Removes a tournament, and refuses to remove anything else.
+ *
+ * The guard is the point. The admin owns matchplay and only matchplay — every
+ * other format in this collection is a mirror a scheduled job writes, so
+ * deleting one here would either be undone on the next tick or, worse, survive
+ * until the next export published the hole to the public site. Reading the
+ * document first costs one round trip and makes the wrong id a no-op instead.
+ *
+ * There is no undo in Firestore. There is one in git: the event's committed JSON
+ * under `astrosite/src/data/events/matchplay/` is removed by the next export, as
+ * a reviewable commit, so a deletion made in error is recovered by reverting it
+ * and seeding. The log line below is the other half of that trail — it is the
+ * only provenance a deletion can leave, `updatedBy` having gone with the record.
+ *
+ * Returns false when the id is not a matchplay event, whether because it is a
+ * Hector event or because it is nothing at all; the caller has the same thing to
+ * say about either.
+ */
+export async function deleteMatchplayEvent(id: string, deletedBy: string): Promise<boolean> {
+    const event = await getMatchplayEvent(id)
+    if (!event) return false
+
+    await firestore().collection(EVENTS).doc(id).delete()
+    console.log(`Deleted matchplay event ${id} ("${event.name}") on behalf of ${deletedBy}`)
+    return true
+}
+
 export async function eventExists(id: string): Promise<boolean> {
     return (await firestore().collection(EVENTS).doc(id).get()).exists
 }

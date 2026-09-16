@@ -16,6 +16,10 @@ try {
 	error = 'Could not read the tournaments. Check the service logs.'
 }
 
+// The edit page deletes and redirects here, the tournament it would have named
+// being gone by the time this renders. Astro escapes it on the way out.
+const deleted = Astro.url.searchParams.get('deleted')
+
 const STATUS_PILL = {
 	signup: 'pill-outline',
 	started: 'pill-matchplay',
@@ -30,6 +34,8 @@ const STATUS_PILL = {
 		<PageHeader title="Matchplay" lede="Every Hector Matchplay tournament." />
 		<a href="/events/matchplay/new"><button>New tournament</button></a>
 	</div>
+
+	{deleted && <p class="notice good">Deleted {deleted}.</p>}
 
 	{error && <p class="notice bad">{error}</p>}
 
