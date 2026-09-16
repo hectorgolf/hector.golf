@@ -6,9 +6,19 @@ script; nothing reads it and nothing writes it. Split out of
 [`data-ownership.md`](../current/data-ownership.md), which proposed it inside a document that
 otherwise describes how things already are.*
 
-`event.buckets` is derived. `update-handicaps.ts` recomputes it at 03:00 and 13:00 UTC for every
-Hector that has participants and whose buckets are still open, by sorting the field by handicap and
-cutting it in half. `bucketsLocked` would be the one thing that stops it doing so.
+`event.buckets` is derived. `update-handicaps.ts` recomputes it on every scheduled tick — 03:00,
+05:00 and 07:00 UTC, and once at 12:00 — for every Hector that has participants and whose buckets are
+still open, by sorting the field by handicap and cutting it in half. `bucketsLocked` would be the one
+thing that stops it doing so.
+
+Two notes on that schedule, because both bear on how much this field would buy. It used to be hourly
+across the morning and was halved on 2026-09-16 to pay for the handicaps job sweeping WiseGolf
+alongside the workflow — which means a Finnish venue lost the 04:00 tick before its 05:00 freeze, so
+a handicap published between 03:00 and 05:00 UTC now misses the buckets where it previously had a
+second chance. See `terraform/scheduler.tf`. And the recomputation itself is one of the four outputs
+of `update-handicaps.ts` that [`handicaps-to-firestore.md`](./handicaps-to-firestore.md) has to find
+a home for before it can delete that workflow; whichever plan lands first, this field would attach to
+whatever ends up recomputing the split.
 
 ## Why
 
