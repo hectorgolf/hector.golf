@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
+import { join } from "path";
 
-import { glob } from "glob";
 import { describe, expect, it } from "vitest";
 
 import { schema as CourseSchema } from "@hector/schemas/src/courses.ts";
@@ -29,9 +29,22 @@ import { schema as CourseSchema } from "@hector/schemas/src/courses.ts";
  * schema**, optional if only one course has it. Adding a field to a course file
  * without adding it here fails the test rather than quietly doing nothing.
  *
+ * ## Read from the snapshot, not from files
+ *
+ * There are no course files any more —
+ * [`docs/plans/everything-to-firestore.md`](../../../docs/plans/everything-to-firestore.md) moved
+ * them into Firestore — so this reads the committed snapshot instead. The
+ * property is unchanged and the reason for it is stronger: on `main` a lagging
+ * schema wasted hand-written text, and here it would delete it, because the
+ * snapshot is written *through* the schema-validating migration and the files it
+ * came from are gone.
+ *
+ * `data-snapshot.test.ts` is the neighbouring check and a weaker one: it asserts
+ * every course record *parses*. This asserts that parsing keeps everything.
+ *
  * ## The one exception
  *
- * `konopiste-radecky.json` carries `description_deste` — a paragraph about the
+ * The `konopiste-radecky` record carries `description_deste` — a paragraph about the
  * *d'Este* course, in the *Radecký* course's file, which `konopiste-deste.json`
  * does not contain and no page renders. It is a copy-paste leftover rather than
  * a field, so the fix is to delete it from the data, not to describe it in the
@@ -40,7 +53,7 @@ import { schema as CourseSchema } from "@hector/schemas/src/courses.ts";
  */
 
 const KNOWN_STRAY: Record<string, string[]> = {
-    "konopiste-radecky.json": ["description_deste"],
+    "konopiste-radecky": ["description_deste"],
 };
 
 /** Every leaf path in an object, as dotted/indexed strings. */
@@ -61,20 +74,22 @@ function leafPaths(value: unknown): Set<string> {
     return found;
 }
 
-const files = (await glob("src/data/courses/**/*.json")).sort();
+const snapshot = JSON.parse(readFileSync(join(process.cwd(), "src/data/snapshot.json"), "utf-8"));
+const courses = (snapshot.courses as Array<Record<string, unknown>>)
+    .map((course) => [String(course.id), course] as const)
+    .sort(([a], [b]) => a.localeCompare(b));
 
 describe("the course schema", () => {
-    it("has course files to check, so a glob mistake cannot make this vacuous", () => {
-        expect(files.length).toBeGreaterThanOrEqual(17);
+    it("has courses to check, so an empty snapshot cannot make this vacuous", () => {
+        expect(courses.length).toBeGreaterThanOrEqual(17);
     });
 
-    it.each(files)("reads every field in %s", (file) => {
-        const raw = JSON.parse(readFileSync(file, "utf-8"));
+    it.each(courses)("reads every field in %s", (id, raw) => {
         const parsed = CourseSchema.safeParse(raw);
         expect(parsed.success).toBe(true);
 
         const kept = leafPaths(parsed.data);
-        const stray = KNOWN_STRAY[file.split("/").pop() ?? ""] ?? [];
+        const stray = KNOWN_STRAY[id] ?? [];
         const dropped = [...leafPaths(raw)]
             .filter((path) => !kept.has(path))
             // A stray entry covers the field and anything nested under it.
