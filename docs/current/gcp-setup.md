@@ -24,7 +24,7 @@ Everything in [`terraform/`](../../terraform/) describes it, and CI applies it:
 | Cloud Run services for four Cloud Functions | `ExtractScorecardInformation`, `GeneratePlayerBiography`, `GeneratePlayerAvatar`, `TournamentLeaderboard`. Gen2 functions *are* Cloud Run services. CI deploys them; Terraform owns their identities, their secrets and the `allUsers` binding that makes them public, but deliberately not the functions themselves |
 | Workload Identity Federation pool | Keyless GitHub Actions auth — no service account keys anywhere |
 | Four Secret Manager secrets | `github-dispatch-token` for the admin, and `gemini-api-key`, `astrosite-api-key` and `hector-app-api-key` for the functions. Terraform creates every container and never a value — those go in by hand with `gcloud secrets versions add` |
-| Two Cloud Scheduler jobs | Start the data-update workflows on time, because GitHub's own cron runs hours late. Hourly from 03:00 to 07:00 UTC, covering the early-tee-time window, and once at 12:00. Two jobs, not six: Scheduler bills per job per month, not per execution. In `europe-west1`, not `europe-north1` — Cloud Scheduler does not run there |
+| Two Cloud Scheduler jobs | Start the data-update workflows on time, because GitHub's own cron runs hours late. Every two hours from 03:00 to 07:00 UTC, covering the early-tee-time window, and once at 12:00. Two jobs, not six: Scheduler bills per job per month, not per execution. In `europe-west1`, not `europe-north1` — Cloud Scheduler does not run there |
 | Billing budget (optional) | Alerts above €2/month |
 
 And four workflows: [`terraform-plan.yml`](../../.github/workflows/terraform-plan.yml) on pull

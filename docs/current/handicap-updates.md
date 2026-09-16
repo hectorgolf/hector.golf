@@ -44,29 +44,33 @@ which tells you retrospectively that the earlier one was wrong — and only if y
 
 ## What this repository does about it
 
-### It scrapes hourly through the morning, and once after lunch
+### It scrapes every two hours through the morning, and once after lunch
 
 Cloud Scheduler starts the updates — `terraform/scheduler.tf`. The workflows keep their own crons as
 a backstop, but those are delivered hours late and are not the real clock.
 
 | Ticks | UTC | Summer (EEST) | Winter (EET) |
 | --- | --- | --- | --- |
-| Hourly | 03:00 – 07:00 | 06:00 – 10:00 | 05:00 – 09:00 |
+| Every two hours | 03:00, 05:00, 07:00 | 06:00, 08:00, 10:00 | 05:00, 07:00, 09:00 |
 | Once | 12:00 | 15:00 | 14:00 |
 
 **The morning is a window rather than a moment because the thing it waits for does not keep to a
 time.** On 2026-09-14 the Union's numbers landed between 06:00 and 08:22 Finnish. The scrape that
 day ran at 06:00:36 — inside that window and past it by seconds — so all 37 players read as
-unchanged and the site carried yesterday's handicaps until the afternoon. Hourly, the worst case is
-an hour stale rather than most of a day.
+unchanged and the site carried yesterday's handicaps until the afternoon. With a window of ticks the
+worst case is two hours stale rather than most of a day.
 
 The window is sized to the golf, not to the Union: we play in Europe and a realistic early tee time
 is 04:00 to 07:00 UTC. A handicap arriving after the first tee shot is too late to be the one anyone
 played off. The ticks cover that whole range. The last one before a Hector's buckets freeze — 08:00
-local, so 05:00 UTC in Finland and 06:00 at Konopiště — is therefore 04:00 and 05:00 respectively,
-which leaves an hour in which a handicap can arrive and still miss the buckets. That is the accepted
-cost of hourly over half-hourly: the buckets are projected until the morning of the event, and a
-value arriving that late is one the Union itself published late.
+local, so 05:00 UTC in Finland and 06:00 at Konopiště — is therefore 03:00 and 05:00 respectively.
+Konopiště is unchanged from when this was hourly; a Finnish venue lost its 04:00 tick, so a handicap
+published between 03:00 and 05:00 UTC now misses the buckets where before it had a second chance.
+
+That is the accepted cost, on the same grounds the hourly version accepted its own smaller one: the
+buckets are projected until the morning of the event, and a value arriving that late is one the Union
+itself published late. What bought it is halving the load on WiseGolf — see `terraform/scheduler.tf`,
+where the cadence and the reason for it live together.
 
 The afternoon tick is a single one, for a retry that finished during office hours. By then the round
 is under way and the handicaps are whatever they were at the first tee, so it is about the site
@@ -199,7 +203,7 @@ The case this was added for:
 With `observed`, that reconstructs in one step, and the reconstruction is a comparison rather than an
 assumption. A Hector's buckets stop moving at 08:00 local — 05:00 UTC for a Finnish venue, 06:00 UTC
 for Konopiště — so **which readings the buckets could have used is whichever ticks fell before that
-time**, and `observed` says which ones those were. Half-hourly ticks mean the answer is no longer
+time**, and `observed` says which ones those were. A busier tick schedule means the answer is no longer
 "the morning scrape" but a specific instant you can read off the entry.
 
 So if `observationsOn(history, "…", "2026-09-24")` gives:

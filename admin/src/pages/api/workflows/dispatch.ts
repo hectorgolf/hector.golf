@@ -8,7 +8,8 @@ import { SCHEDULED_WORKFLOWS } from '../../../lib/workflows.ts'
 
 /**
  * Start everything the schedule is responsible for: the endpoint the two Cloud
- * Scheduler jobs call: hourly from 03:00 to 07:00 UTC, and once at 12:00 UTC.
+ * Scheduler jobs call: every two hours from 03:00 to 07:00 UTC, and once at
+ * 12:00 UTC.
  *
  * ## Why one endpoint rather than a job per workflow
  *
@@ -71,7 +72,7 @@ import { SCHEDULED_WORKFLOWS } from '../../../lib/workflows.ts'
  * on a fresh project, say — would fail every tick, and every retry would
  * re-dispatch the workflows that had already succeeded and re-run the scrape.
  * Four sweeps of somebody else's API per tick, to retry something a retry cannot
- * fix. The next tick is the retry, and there are six a day.
+ * fix. The next tick is the retry, and there are four a day.
  *
  * See `[slug]/dispatch.ts` for the single-workflow endpoint behind the buttons,
  * and for the note on who is allowed to call either of these.

@@ -110,16 +110,28 @@ locals {
   # detail. On 2026-09-14 the numbers landed between 06:00 and 08:22 Finnish; the
   # single 03:00 UTC scrape ran at 06:00:36 local, missed them by seconds, read
   # every player as unchanged, and the site carried yesterday's handicaps until
-  # the afternoon. Hourly from 03:00 to 07:00 would have caught it within the
-  # hour.
+  # the afternoon. A window of ticks across the morning catches that; one time
+  # inside it does not.
   #
-  # The last tick before a Hector's buckets freeze matters most: the freeze is
-  # 08:00 local to the event, which is 05:00 UTC for a Finnish venue and 06:00
-  # UTC for Konopiště, so the last useful tick is 04:00 and 05:00 respectively.
-  # That leaves an hour in which a handicap can arrive and miss the buckets,
-  # which is the cost of hourly over half-hourly and is accepted deliberately:
-  # the buckets are projected until the morning of the event, and a value that
-  # late is one the Union itself published late.
+  # ## Every two hours, not every hour
+  #
+  # This was hourly. It is every two hours because the scrape stopped being one
+  # sweep: while the handicaps job shadows `update-handicaps.yml` each tick reads
+  # WiseGolf twice, and six ticks a day meant twelve sweeps of somebody else's
+  # API to learn what four would.
+  #
+  # What it costs is worst-case staleness within the morning, which doubles from
+  # an hour to two. The bound that actually matters is the last tick before a
+  # Hector's buckets freeze: the freeze is 08:00 local to the event, so 05:00 UTC
+  # at a Finnish venue and 06:00 UTC at Konopiště. Konopiště is unaffected — the
+  # 05:00 tick was the last useful one when this was hourly and still is. A
+  # Finnish venue loses the 04:00 tick, so a handicap published between 03:00 and
+  # 05:00 UTC now misses the buckets where before it had a second chance.
+  #
+  # That is a real regression and it is accepted on the same grounds the hourly
+  # version accepted its own: the buckets are projected until the morning of the
+  # event, and a value arriving that late is one the Union itself published late.
+  # Reverting is one character.
   #
   # ## The afternoon
   #
@@ -132,7 +144,7 @@ locals {
   #
   # A wake-up of the admin service, which scales to zero; two GitHub workflow runs
   # of a couple of minutes each; and however long the in-process jobs take, which
-  # is a 45-player WiseGolf sweep. All inside free tiers.
+  # is a 45-player WiseGolf sweep. All inside free tiers. Four ticks a day.
   #
   # Two interlocks, one per list. The workflows share a `data-update` concurrency
   # group, so a tick arriving while the previous one still runs queues rather
@@ -141,12 +153,11 @@ locals {
   #
   # The cost worth naming: while the handicaps job shadows `update-handicaps.yml`,
   # every tick sweeps WiseGolf twice — once from the runner and once from here.
-  # Six ticks a day makes twelve sweeps. That is the price of a comparison
-  # against live data, it lasts as long as the shadow period does, and it is the
-  # reason the shadow period is measured in days rather than months.
+  # Four ticks a day makes eight sweeps, against four once the shadow period
+  # ends. Halving the morning cadence above is what keeps that number sane.
   data_update_schedules = {
-    # Hourly across the early-tee-time window.
-    morning = { cron = "0 3-7 * * *" }
+    # Every two hours across the early-tee-time window: 03:00, 05:00, 07:00.
+    morning = { cron = "0 3-7/2 * * *" }
     midday  = { cron = "0 12 * * *" }
   }
 }

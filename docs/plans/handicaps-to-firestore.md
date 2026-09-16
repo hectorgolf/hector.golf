@@ -105,7 +105,7 @@ self-healing, makes retries free, and collapses the git→Firestore backfill and
 render into one operation rather than two half-syncs pointing in opposite directions.
 
 **A lock, in Firestore.** The four data workflows share the `data-update` GitHub concurrency group
-*because they all push to git*. Move them into a service with `max_instance_count = 2`, six ticks a
+*because they all push to git*. Move them into a service with `max_instance_count = 2`, four ticks a
 day and `retry_count = 3`, and that interlock is gone. A transaction on a `job-locks` document
 restores it. This is the single most important thing to get right before job number two exists.
 
@@ -170,8 +170,9 @@ decide against the same base state and their answers are directly comparable. A 
 having been told the answer. That was the blind spot in the first draft of this plan, and the fix was
 free.
 
-It costs a second WiseGolf sweep per tick — twelve a day rather than six — for as long as the shadow
-period lasts. That is the price of comparing against live data.
+It costs a second WiseGolf sweep per tick. The morning cadence dropped from hourly to two-hourly to
+pay for it, so that is eight sweeps a day during the shadow period against four after it, rather
+than twelve against six.
 
 `dryRun` is on: the run reconciles *in memory*, scrapes, computes the diff, writes it to the run log,
 and touches neither the observations collection nor git. The in-memory part matters: a dry run that
@@ -182,7 +183,7 @@ and remains the only writer.
 A failing job does not fail the tick. A failed *dispatch* returns 502 and Cloud Scheduler retries; a
 failed *job* is recorded and the tick still succeeds, because otherwise a job broken for a boring
 reason — no WiseGolf credentials yet — would have every retry re-dispatch the workflows and re-run
-the scrape. The next tick is the retry, and there are six a day.
+the scrape. The next tick is the retry, and there are four a day.
 
 Watch the run log until the diffs are boring.
 

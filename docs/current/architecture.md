@@ -593,7 +593,8 @@ are queued and delivered when GitHub has capacity. Measured across the last 300 
 | 2026-09 | 4h32m | 3h46m |
 
 `workflow_dispatch` has no such queue. So [`terraform/scheduler.tf`](../../terraform/scheduler.tf)
-runs **two** Cloud Scheduler jobs — hourly from 03:00 to 07:00 UTC, and once at 12:00 UTC. They are
+runs **two** Cloud Scheduler jobs — every two hours from 03:00 to 07:00 UTC, and once at 12:00 UTC.
+They are
 the one thing in this project not in `europe-north1` — Cloud Scheduler does not run there, so they
 sit in `europe-west1`. Each calls one endpoint on the admin service — `POST /api/workflows/dispatch`
 — which starts every workflow marked `scheduled` in
@@ -634,7 +635,8 @@ admin service to dispatch `deploy-site.yml` — it is in `DISPATCHABLE_WORKFLOWS
 publishes within a minute of finishing rather than waiting for a fixed time after it.
 
 The `0 8,13` cron is the backstop under both of those, for the day the dispatch fails: late is better
-than never. Its hours sit *after* the data ticks rather than among them — those are hourly from 03:00
+than never. Its hours sit *after* the data ticks rather than among them — those are every two hours
+from 03:00
 to 07:00 and once at 12:00, in `terraform/scheduler.tf`. It used to be `30 3,12`, which was after the
 ticks when there were only two of them and would now fire in the middle of the morning window,
 backstopping data that had not arrived yet.
@@ -664,8 +666,8 @@ the history.
 
 | Script | Schedule (UTC) | Reads | Writes |
 | --- | --- | --- | --- |
-| `update-handicaps.ts` | Hourly 03:00–07:00, and 12:00, by Cloud Scheduler (cron `0 3,13 * * *` as a late backstop) | WiseGolf | `handicaps.json`, `players/*.json`, event `buckets` |
-| `update-leaderboards.ts` | Hourly 03:00–07:00, and 12:00, by Cloud Scheduler (cron `15 3,12 * * *` as a late backstop) | Sheets / app.hector.golf | `leaderboards/*.json` (via API), event `results.teams` |
+| `update-handicaps.ts` | Every two hours 03:00–07:00, and 12:00, by Cloud Scheduler (cron `0 3,13 * * *` as a late backstop) | WiseGolf | `handicaps.json`, `players/*.json`, event `buckets` |
+| `update-leaderboards.ts` | Every two hours 03:00–07:00, and 12:00, by Cloud Scheduler (cron `15 3,12 * * *` as a late backstop) | Sheets / app.hector.golf | `leaderboards/*.json` (via API), event `results.teams` |
 | `update-player-biographies.ts` | `30 2 10,25 * *` | GCP function, WiseGolf | `players/*.json` `biography`, `clubs.json` |
 | `update-player-club-memberships.ts` | `15 22 15 * *` | WiseGolf | `players/*.json` `club` |
 
