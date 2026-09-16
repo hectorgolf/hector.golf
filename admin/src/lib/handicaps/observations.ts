@@ -89,10 +89,22 @@ export type StoreOptions = { db?: Firestore }
  * an unstamped `observed` is absent rather than null in these documents, which a
  * Firestore `orderBy` would drop from the results entirely.
  *
- * Reading the whole collection every run is 1,400 document reads against a free
- * tier of 50,000 a day, at six runs a day. That is 8,400, and the alternative —
- * reading only what changed — would mean the render could not be compared
- * against the committed file, which is the one thing making this self-healing.
+ * ## What it costs, and why it is still the right shape
+ *
+ * One scan is ~1,400 document reads and grows with a log that is append-only and
+ * never pruned — call it 2,400 in a year. At four runs a day that is 6,000 reads
+ * today and 10,000 in a year, against a free tier of 50,000 a day. Comfortable.
+ *
+ * It is worth stating the number because it was wrong once. This comment used to
+ * claim 8,400 a day on the assumption of one scan per run, while `run()` in fact
+ * scanned four times — two of its own and two inside a writer that re-read the
+ * collection to find out what was missing. That was 23,000 reads a day, and
+ * closer to 39,000 a year from now: most of the allowance, for a job whose
+ * output is a handful of rows. Callers read once now and pass the result around.
+ *
+ * Reading everything rather than only what changed is still deliberate. The
+ * render is compared against the committed file in full, and that comparison is
+ * the one thing making the two stores self-healing.
  */
 export async function all(options: StoreOptions = {}): Promise<HandicapHistoryEntry[]> {
     const db = options.db ?? firestore()
@@ -102,36 +114,57 @@ export async function all(options: StoreOptions = {}): Promise<HandicapHistoryEn
 }
 
 /**
- * Add entries that are not there yet, and report how many were new.
+ * Which of `candidates` the store does not already hold.
  *
- * `create` rather than `set`, per entry, inside a batch: an entry that already
- * exists must not be rewritten, because rewriting it is how a reconcile turns
- * into a silent edit of history. The pre-read below is what keeps the batch from
- * failing on the first duplicate — `create` on an existing document throws,
- * which for a reconcile that runs on every tick would mean it fails every time
- * after the first.
+ * Pure, and separate from the write, because the alternative cost more than it
+ * looked. This used to live inside the writer, which read the whole collection
+ * to find out what was missing — and the job called the writer twice and `all()`
+ * twice more, so one run scanned a 1,400-document collection four times.
+ *
+ * At four runs a day that was 23,000 reads against a free tier of 50,000, rising
+ * with a log that is append-only and never pruned: about 78% of the allowance a
+ * year from now, for a job whose entire output is a handful of rows. The caller
+ * now reads once and passes the result around.
+ *
+ * Keyed on `documentId`, so "already holds" means exactly what a `create` would
+ * mean by it.
  */
-export async function insertMissing(
-    entries: readonly HandicapHistoryEntry[],
-    options: StoreOptions = {}
-): Promise<HandicapHistoryEntry[]> {
+export function missingFrom(
+    stored: readonly HandicapHistoryEntry[],
+    candidates: readonly HandicapHistoryEntry[]
+): HandicapHistoryEntry[] {
+    const known = new Set(stored.map(documentId))
+    return candidates.filter((entry) => !known.has(documentId(entry)))
+}
+
+/**
+ * Write observations that are known not to exist.
+ *
+ * `create` rather than `set`, per entry: an observation is a fact about a moment
+ * and rewriting one is never correct, so a document that unexpectedly exists
+ * should fail the run rather than be silently overwritten.
+ *
+ * That makes the caller responsible for having filtered with `missingFrom`
+ * first, which is safe here because the job holds the lease while it runs and
+ * nothing else writes this collection. A failure therefore means a real bug, and
+ * is worth hearing about.
+ *
+ * Firestore batches cap at 500 writes. The first reconcile writes 1,406, so that
+ * is not a limit to respect politely — it is the first run. A batch that fails
+ * partway leaves the earlier batches committed, which the next run repairs
+ * because it reads the collection and filters again.
+ */
+export async function insert(entries: readonly HandicapHistoryEntry[], options: StoreOptions = {}): Promise<void> {
+    if (entries.length === 0) return
     const db = options.db ?? firestore()
-    if (entries.length === 0) return []
 
-    const existing = new Set((await all(options)).map(documentId))
-    const missing = entries.filter((entry) => !existing.has(documentId(entry)))
-    if (missing.length === 0) return []
-
-    // Firestore batches cap at 500 writes. The first reconcile writes 1,406, so
-    // this is not a theoretical limit to respect politely — it is the first run.
-    for (let index = 0; index < missing.length; index += 400) {
+    for (let index = 0; index < entries.length; index += 400) {
         const batch = db.batch()
-        for (const entry of missing.slice(index, index + 400)) {
+        for (const entry of entries.slice(index, index + 400)) {
             batch.create(db.collection(OBSERVATIONS).doc(documentId(entry)), entry)
         }
         await batch.commit()
     }
-    return missing
 }
 
 /**

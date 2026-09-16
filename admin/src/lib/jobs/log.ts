@@ -86,6 +86,14 @@ export async function record(run: JobRun, options: RecordOptions = {}): Promise<
     }
 }
 
+/**
+ * Drop everything past `KEEP_PER_JOB`.
+ *
+ * `offset()` is billed as reads for the documents it skips, so this costs about
+ * fifty reads a run whatever it finds — a few hundred a day, against a free tier
+ * of fifty thousand. Worth knowing rather than worth optimising: the alternative
+ * is tracking a cursor in another document, which is a read too.
+ */
 async function trim(db: Firestore, slug: string): Promise<void> {
     const snapshot = await db
         .collection(RUNS)
