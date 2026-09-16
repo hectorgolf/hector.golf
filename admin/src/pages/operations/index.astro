@@ -20,6 +20,11 @@ import { changesInWords, labelOfJob, requesterInWords, toneOfJob } from "../../l
  * rendered. They are looked up: the slug against the workflow list, the reason
  * against the failure messages. Anything that does not resolve falls back to
  * wording of our own, so nothing a stranger can put in a link reaches the page.
+ *
+ * This is still the only route by which a press reports back. `lib/run-now.ts`
+ * does the POST with fetch rather than by navigating, but it follows the same
+ * redirect and renders the same page at the same address — deliberately, so that
+ * the scripted path and the no-script path cannot tell different stories.
  */
 const ranParam = Astro.url.searchParams.get("ran");
 const ranAll = ranParam === "scheduled";
@@ -181,6 +186,21 @@ const now = new Date();
 		)
 	}
 
+	{/*
+	 * The one outcome the server cannot render, because the server is what went
+	 * quiet. Written here rather than built in `lib/run-now.ts` so that the page's
+	 * wording all lives in the page; the script only unhides it.
+	 *
+	 * The likeliest cause by far is an IAP session that expired under a tab left
+	 * open overnight, which is why this says reload rather than try again — the
+	 * reload is what takes you back through sign-in, and a second press would at
+	 * best be dropped by the lease.
+	 */}
+	<p class="notice bad" id="lost-contact" role="alert" hidden>
+		Lost contact with the service while that was running. It may well have finished — <strong>reload the page</strong>
+		to see, rather than pressing again. A tab that has been open a long time is usually a sign-in that has expired.
+	</p>
+
 	<p class="lede-note">
 		Cloud Scheduler starts these <strong>every two hours from 03:00 to 07:00 UTC</strong><span>, and once at </span>
 		<strong>12:00 UTC</strong> — one call that starts everything, which is why their start times in the log sit
@@ -207,12 +227,12 @@ const now = new Date();
 				</p>
 			</div>
 			<form method="POST" action="/api/workflows/dispatch">
-				<button type="submit">Tick</button>
+				<button type="submit" data-busy="Ticking…">Tick</button>
 			</form>
 		</div>
 		<p class="last-run muted">
-			The page waits for it. The workflows are dispatched in a moment, but this service's own jobs run inside the
-			request — a handicap sweep is tens of seconds.
+			Nothing here is fire-and-forget: the workflows are dispatched in a moment, but this service's own jobs run
+			inside the request, and a handicap sweep is tens of seconds. The button says so while it waits.
 		</p>
 	</article>
 
@@ -230,12 +250,15 @@ const now = new Date();
 							<h2>{workflow.label}</h2>
 							{/*
 							 * A form rather than a link, because this changes
-							 * something. The admin ships no client JavaScript, so
-							 * the button is the submit and the endpoint redirects
-							 * back here.
+							 * something: the button is the submit and the endpoint
+							 * redirects back here. `lib/run-now.ts` intercepts the
+							 * submit and does the same thing with fetch, so the
+							 * press is visible while it waits — `data-busy` is what
+							 * marks a button as one of the ones it drives, and
+							 * carries the label it wears meanwhile.
 							 */}
 							<form method="POST" action={`/api/workflows/${workflow.slug}/dispatch`}>
-								<button type="submit">Run now</button>
+								<button type="submit" data-busy="Running…">Run now</button>
 							</form>
 						</div>
 
@@ -279,14 +302,16 @@ const now = new Date();
 							<div class="row-between">
 								<h3>{job.label}</h3>
 								{/*
-								 * Same shape as the workflow buttons above: a form,
-								 * because this changes something, and no client
-								 * JavaScript. It will sit here for the length of a
-								 * 45-player scrape before redirecting back, which is
-								 * why the label says so.
+								 * Same shape as the workflow buttons above, and the
+								 * one this page was scripted for: it waits out a
+								 * 45-player scrape before the reply comes back, and
+								 * a button that sits there unmoved for that long is
+								 * a button an admin presses twice.
 								 */}
 								<form method="POST" action={`/api/jobs/${job.slug}/run`}>
-									<button type="submit">{job.dryRun ? "Shadow run" : "Run now"}</button>
+									<button type="submit" data-busy="Running…">
+										{job.dryRun ? "Shadow run" : "Run now"}
+									</button>
 								</form>
 							</div>
 
@@ -395,6 +420,18 @@ const now = new Date();
 	</section>
 </AdminLayout>
 
+{/*
+ * The admin's only client-side script, and deliberately the only page that has
+ * one — see `lib/run-now.ts` for why this page and not the others. Everything
+ * here still works without it: the forms are real forms, and the endpoints still
+ * answer them with the redirect they always did.
+ */}
+<script>
+	import { enhance } from "../../lib/run-now.ts";
+
+	enhance(document);
+</script>
+
 <style>
 	.lede-note {
 		color: var(--text-muted);
@@ -422,6 +459,17 @@ const now = new Date();
 	.workflow form,
 	.tick form {
 		margin: 0;
+	}
+
+	/*
+	 * Every button goes out of service while one of them is working, and the
+	 * global `button:disabled` fades them to 0.45 — right for the ones that are
+	 * merely unavailable, wrong for the one whose label is the status. This
+	 * keeps the working button readable and puts the waiting cursor on it.
+	 */
+	button[aria-busy="true"]:disabled {
+		opacity: 0.8;
+		cursor: progress;
 	}
 
 	/*
