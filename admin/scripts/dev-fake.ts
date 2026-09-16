@@ -33,10 +33,13 @@
  */
 import { spawn, type ChildProcess } from 'node:child_process'
 import { once } from 'node:events'
-import { existsSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import net from 'node:net'
+import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+import { glob } from 'glob'
 
 import { createServer, DEFAULT_PORT as FAKE_GITHUB_PORT, emptyState, seedHistory } from './fake-github.ts'
 
@@ -44,6 +47,16 @@ const here = dirname(fileURLToPath(import.meta.url))
 
 /** Where the emulator is put when this starts one. Not 8080, which Cloud Run uses. */
 const EMULATOR_HOST = '127.0.0.1:8432'
+
+/**
+ * How many of the committed players the WiseGolf stand-in pretends about.
+ *
+ * Not all forty-five, on purpose. A roster that covers everybody hides the
+ * `skipped` path — the sweep's answer for a player no source has heard of — and
+ * that path is a real one: WiseGolf does not know every Hector player either.
+ * Two dozen leaves plenty of both.
+ */
+const STAND_IN_ROSTER_SIZE = 24
 
 /**
  * `tsx`, wherever npm put it.
@@ -179,6 +192,35 @@ async function stopEmulator(emulator: Emulator): Promise<void> {
     }
 }
 
+/**
+ * The roster the WiseGolf stand-in drifts, written where it can be pointed at.
+ *
+ * Built from the committed player files rather than invented, so the handicaps
+ * start where the site says they are and the names are ones the job will
+ * actually ask about. A roster of made-up players would answer `undefined` for
+ * all forty-five and leave the sweep exactly as stuck as no stand-in at all.
+ */
+function writeStandInRoster(): { path: string; players: number } {
+    const dataDir = join(here, '../../astrosite/src/data/players')
+    const files = glob.sync('*.json', { cwd: dataDir, absolute: true }).sort()
+
+    const roster = files
+        .map((file): Record<string, any> => JSON.parse(readFileSync(file, 'utf-8')))
+        .filter((player) => player?.name?.first && player?.name?.last && player?.club)
+        .filter((player) => typeof player.handicap === 'number')
+        .slice(0, STAND_IN_ROSTER_SIZE)
+        .map((player) => ({
+            firstName: player.name.first,
+            lastName: player.name.last,
+            club: player.club,
+            handicap: player.handicap,
+        }))
+
+    const path = join(mkdtempSync(join(tmpdir(), 'hector-standin-')), 'roster.json')
+    writeFileSync(path, JSON.stringify(roster, null, 2))
+    return { path, players: roster.length }
+}
+
 async function main(): Promise<void> {
     if (process.env.NODE_ENV === 'production') {
         console.error('dev-fake is a development tool and refuses to run with NODE_ENV=production.')
@@ -200,6 +242,9 @@ async function main(): Promise<void> {
 
     const emulator = await ensureEmulator()
 
+    const roster = writeStandInRoster()
+    console.log(`WiseGolf stand-in: drifting ${roster.players} players' handicaps (roster at ${roster.path})`)
+
     const admin: ChildProcess = spawn(tsxBinary(), [join(here, 'dev-iap.ts')], {
         cwd: join(here, '..'),
         stdio: ['ignore', 'inherit', 'inherit'],
@@ -213,6 +258,9 @@ async function main(): Promise<void> {
             GITHUB_DISPATCH_TOKEN: process.env.GITHUB_DISPATCH_TOKEN ?? 'fake-github-does-not-check-this',
             GITHUB_API_BASE_URL: `http://127.0.0.1:${fakeGitHubPort}`,
             GITHUB_REPOSITORY: repository,
+            // A path rather than a mode: what this carries is the players to
+            // pretend about. See `packages/wisegolf/src/stand-in.ts`.
+            WISEGOLF_STAND_IN_ROSTER: roster.path,
         },
     })
 
