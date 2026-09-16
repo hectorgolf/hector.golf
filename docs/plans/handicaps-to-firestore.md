@@ -1,5 +1,9 @@
 # Moving the handicap scrape into Firestore
 
+*Written 2026-09-15. **Steps 0 and 1 are done and deployed** — the job has been shadowing
+`update-handicaps.yml` on every scheduled tick since 2026-09-16. Step 2 is next, and is the one
+with a deadline. What each step did, and what it cost, is recorded under the step.*
+
 The handicap history is the first dataset to move from "a JSON file in git, written by a GitHub
 Actions runner" to "a Firestore collection, written by the admin service". This document is the plan
 for that move, and — because three more scrapes follow it — for the harness the move is built on.
@@ -49,8 +53,12 @@ dual-running in late September yields something like 19 changes across 6 days �
 see the shape. The same week started in late October yields approximately nothing, and the choice
 then is between shipping on no evidence and waiting until March.
 
-**If the live comparison is wanted, step 1 needs to be running by early October.** Most of the
-validation does not need to wait, which is what makes a short window survivable:
+**Step 1 has been running since 16 September**, so the window was met with about three weeks to
+spare. What remains of the deadline applies to step 2: the shadow period has to see enough paired
+decisions to be worth having *before* the changes stop, and at 2.7 a day that is days rather than
+weeks of waiting — as long as somebody looks.
+
+Most of the validation did not need to wait at all, which is what made the short window survivable:
 
 - The git → Firestore reconcile is deterministic given the 1,406 existing entries. Replay it offline
   and diff. There is a test for this in step 0.
@@ -131,9 +139,9 @@ reader **once**, straight to the API, rather than to the NDJSON and then off it 
 
 ## The steps
 
-### Step 0 — prerequisites
+### Step 0 — prerequisites ✅ *done 2026-09-16*
 
-None of these need the season, a deploy, or a decision.
+None of these needed the season, a deploy, or a decision.
 
 - `packages/wisegolf/`: lift `handicap-source-api.ts`, `wisegolf-api.ts` and `http-helpers.ts` out of
   `astrosite/src/code/handicaps/`. Two other workflows already import them, so this pays for itself
@@ -147,7 +155,22 @@ None of these need the season, a deploy, or a decision.
 - The offline replay test: 1,406 committed entries → Firestore documents → rendered NDJSON, asserted
   equal to today's `handicaps.json` under `latestPerDay`.
 
-### Step 1 — shadow
+**What it turned up.** Lifting the WiseGolf client needed one change rather than a move: it read
+`process.env` at import time, which a service holding its credentials in Secret Manager cannot use,
+so `createWisegolfSession` grew an optional credentials argument.
+
+The replay found something the plan had not anticipated. `compareObservations` in `@hector/schemas`
+is not a *total* order — a sweep stamps every reading with one instant, so a morning that moves nine
+handicaps produces nine entries it considers equal. The rendered file's line order would therefore
+have depended on the order Firestore returned documents in, and the append-only guard would have
+refused the result. The render breaks the tie on `player`; the shared comparator is left alone.
+
+**Still outstanding from this list:** the GitHub token's `Contents: read and write`. Nothing has
+needed it yet, because a shadow run never commits — step 2 is where a missing scope would first bite.
+[`docs/playbooks/gcp-bootstrapping.md`](../playbooks/gcp-bootstrapping.md) Step 11 is where the token
+is created; the scope has to be widened on the existing one.
+
+### Step 1 — shadow ✅ *deployed 2026-09-16 08:26 UTC*
 
 `POST /api/jobs/handicaps/run`, authenticated the way everything else here is: IAP, via the
 [`request-deploy`](../../.github/actions/request-deploy/action.yml) pattern of WIF → ID token for the
@@ -185,9 +208,34 @@ failed *job* is recorded and the tick still succeeds, because otherwise a job br
 reason — no WiseGolf credentials yet — would have every retry re-dispatch the workflows and re-run
 the scrape. The next tick is the retry, and there are four a day.
 
-Watch the run log until the diffs are boring.
+Watch the run log until the diffs are boring. The run log is on `/operations`, under **Jobs this
+service runs itself** — a card per job with a **Shadow run** button, and the last five runs with what
+each one found. It reads `job-runs` rather than GitHub, because there is no GitHub run to read.
 
-### Step 2 — live writes
+**What step 1 turned up once it was live.**
+
+Two bugs, neither in the job. The first shadow run computed the right answer and then failed to
+record it: `execute.ts` builds its run with every key set, so a successful run passes
+`detail: undefined`, and Firestore rejects `undefined` outright. `record` swallowed the throw — a job
+that did its work must not be reported failed because the bookkeeping failed — so the page said "No
+runs recorded yet" about a run that had worked perfectly. The second was that `handicaps` names both
+the workflow and the job, deliberately, and both endpoints redirected with `?ran=<slug>`; the job's
+notice would have claimed presses of the workflow's button. Jobs now report through `ranJob`.
+
+Separately, the job was scanning the observation log **four times** per run — twice of its own and
+twice inside a writer that re-read the collection to find what was missing. At 1,400 observations and
+four runs a day that was 23,000 Firestore reads against a free tier of 50,000, and about 39,000 a
+year from now. One scan costs 6,000 a day. That was a bug rather than a property of the design, and
+it would have surfaced as a bill rather than an error.
+
+**What the shadow period is still waiting for.** As of 2026-09-16 it has not yet seen a handicap
+move. The day's only change — `lauri-p` → 12 — was committed at 04:01 UTC, four and a half hours
+before the job was deployed. A manual run after the morning window cannot show one either: by then
+`handicaps.json` holds the day's values, the job reconciles them in, and WiseGolf agrees. The
+evidence comes from the scheduled ticks at 03:00, 05:00 and 07:00 UTC, where the job and the workflow
+decide against the same pre-publication state within a minute of each other.
+
+### Step 2 — live writes ⏳ *next*
 
 Flip `dryRun` off. Firestore and the NDJSON backup both become real, with the append-only guard
 armed. `handicaps.json` is still the build input and still written by the old workflow, so the two
@@ -272,8 +320,24 @@ paragraph a statement about the fallback rather than about the build. `architect
 workflow inventory both describe the old pipeline. None of this is optional tidying: those documents
 are the reason anyone can reconstruct why this looks the way it does.
 
-## The alternative
+## The alternative, and why this one was taken
 
-[`everything-to-firestore.md`](./everything-to-firestore.md) is the same destination reached in one
-move instead of four, for every dataset at once. It is worth reading before starting this one, if
-only to be able to say why not.
+The same destination reached in one move instead of four — every dataset at once, all 89 committed
+JSON files deleted, the site built from an API — is written up and implemented in
+[PR #145](https://github.com/hectorgolf/hector.golf/pull/145). It is a draft, and deliberately not
+merged: the document lives on that branch rather than here, because a plan nobody is following is
+better read next to the code that would carry it out.
+
+Two things it turned up are worth knowing even though it was not taken, because both apply to this
+plan's later steps.
+
+**A schema that lags its data is a delete, not a waste, once the files are gone.** Thirteen of the
+seventeen course files carried fields the course schema did not mention, and a migration that stored
+the parsed record would have dropped them permanently. Fixed on `main` since, and
+`course-schema-coverage.test.ts` now pins it — but the lesson generalises to every collection this
+plan eventually moves.
+
+**`src/data/` had two readers, and the second failed silently.** Deleting the directories emptied
+the Astro content collections, and nothing failed: `astro check` passed, the build passed, and it
+produced 77 pages instead of 328. A successful deploy of an empty site is the worst outcome available
+to any of this, and nothing in the toolchain objects to it.
