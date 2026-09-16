@@ -21,21 +21,34 @@ on:
       - '.node-version'           # ...or to the Node version it installs under
       - '.github/workflows/**/*'  # ...or on Github Actions workflows
 
-  # The backstop, not the usual path.
+  # The usual path is not a clock at all: a data update that commits asks the
+  # admin service to dispatch this workflow, so a scrape publishes within a
+  # minute of finishing. The `on: push` trigger above never fires for a scrape,
+  # because a push made with GITHUB_TOKEN does not trigger workflows.
   #
-  # A data update that commits now asks the admin service to dispatch this
-  # workflow, so a scrape publishes within a minute of finishing rather than
-  # waiting for a clock. This cron covers the day that request fails — and the
-  # `on: push` trigger above, which never fires for a scrape, because a push made
-  # with GITHUB_TOKEN does not trigger workflows.
+  # The backstop for a failed deploy request used to be a `0 8,13` cron here. It
+  # is now an entry in `DISPATCHABLE_WORKFLOWS` with a one-day interval, so the
+  # tick dispatches this only when no deploy has happened in 24 hours — which is
+  # to say only when the normal path is already broken. Same backstop, expressed
+  # in the mechanism that replaced the crons rather than in the one it replaced.
+  # No `schedule:` here, deliberately. Cloud Scheduler is the only clock.
   #
-  # 08:00 and 13:00 sit after the data ticks rather than among them: those are
-  # every two hours from 03:00 to 07:00, and once at 12:00, in
-  # terraform/scheduler.tf. This used to be `30 3,12`, which was after the ticks
-  # when there were two of them and would now fire in the middle of the morning
-  # window, backstopping data that had not arrived yet.
-  schedule:
-    - cron: "0 8,13 * * *"
+  # GitHub queues `schedule` events and delivers them when it has capacity, which
+  # for this repository has meant hours: on 2026-09-16 the last scheduled
+  # delivery of each workflow here was between two and five hours late, and one
+  # of them landed on the wrong calendar day. A cron kept "as a backstop" is
+  # therefore a second clock that is always wrong, and its runs are duplicates
+  # somebody has to explain every time they read the Actions tab.
+  #
+  # What starts this now is `terraform/scheduler.tf` -> the admin service ->
+  # `workflow_dispatch`, which GitHub delivers immediately. Which workflows the
+  # tick starts, and how often, is `DISPATCHABLE_WORKFLOWS` in
+  # `admin/src/lib/workflows.ts`; `admin/src/lib/cadence.ts` explains the
+  # intervals and why they are intervals rather than crons.
+  #
+  # The cost, chosen knowingly: if Cloud Scheduler or the admin service is down,
+  # this does not run, and nothing goes red to say so. Before, it would merely
+  # have been late.
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:

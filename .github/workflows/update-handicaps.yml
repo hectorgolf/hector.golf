@@ -4,23 +4,24 @@
 name: Update players' official handicaps
 
 on:
-  # A backstop, not the schedule this actually runs on.
+  # No `schedule:` here, deliberately. Cloud Scheduler is the only clock.
   #
   # GitHub queues `schedule` events and delivers them when it has capacity, which
-  # for this repository has meant hours: across the last 300 scheduled runs, the
-  # 03:00 slot was a median of 2h22m late in April 2026 and 4h32m late in
-  # September, and not one started on time. The real clock is Cloud Scheduler,
-  # which calls the admin service every two hours from 03:00 to 07:00 UTC, and once at 12:00 UTC, and the admin service
-  # dispatches this workflow — `workflow_dispatch` is delivered immediately.
-  # See terraform/scheduler.tf and admin/src/lib/workflows.ts.
+  # for this repository has meant hours: on 2026-09-16 the last scheduled
+  # delivery of each workflow here was between two and five hours late, and one
+  # of them landed on the wrong calendar day. A cron kept "as a backstop" is
+  # therefore a second clock that is always wrong, and its runs are duplicates
+  # somebody has to explain every time they read the Actions tab.
   #
-  # This stays because late is better than never on the day the admin service is
-  # the broken one. When both fire, the concurrency group below serialises them,
-  # and a second run in one day is a supported outcome rather than a mess: every
-  # reading is kept, and `latestPerDay` in @hector/schemas decides which one the
-  # site shows. A run that reads the same value twice costs a row.
-  schedule:
-    - cron: "0 3,13 * * *"
+  # What starts this now is `terraform/scheduler.tf` -> the admin service ->
+  # `workflow_dispatch`, which GitHub delivers immediately. Which workflows the
+  # tick starts, and how often, is `DISPATCHABLE_WORKFLOWS` in
+  # `admin/src/lib/workflows.ts`; `admin/src/lib/cadence.ts` explains the
+  # intervals and why they are intervals rather than crons.
+  #
+  # The cost, chosen knowingly: if Cloud Scheduler or the admin service is down,
+  # this does not run, and nothing goes red to say so. Before, it would merely
+  # have been late.
 
   # Allows you to run this workflow manually from the Actions tab. This is also
   # what the "Run now" button in the admin UI and the Cloud Scheduler jobs use.
@@ -37,13 +38,13 @@ permissions:
 #
 # Every one of them ends in `git pull -r && git push` in commit-changes.sh, so
 # any two that overlap race over the same push and the loser fails. They used to
-# be kept apart by starting at different times, which stopped being true twice
-# over: the Cloud Scheduler tick starts handicaps and leaderboards in the same
-# second, and GitHub's own crons — still live as a backstop — are delivered hours
-# late and therefore land anywhere at all.
+# be kept apart by starting at different times, which stopped being true when the
+# Cloud Scheduler tick began starting them within a second of each other — and is
+# now the only thing keeping them apart, since the crons that also used to land
+# anywhere at all have been deleted.
 #
-# Serialising them costs nothing. These are scrapes of minutes, twice a day, and
-# a run that waits for another to finish is a run that still happens.
+# Serialising them costs nothing. These are scrapes of minutes, four times a day,
+# and a run that waits for another to finish is a run that still happens.
 #
 # `cancel-in-progress: false` so a queued run waits rather than dropping. Note
 # that GitHub keeps at most one run pending per group, so a third arriving while

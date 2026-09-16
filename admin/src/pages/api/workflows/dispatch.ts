@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro'
 
+import { due } from '../../../lib/cadence.ts'
 import { github } from '../../../lib/github.ts'
 import { viewerFromHeaders } from '../../../lib/identity.ts'
 import { execute } from '../../../lib/jobs/execute.ts'
@@ -10,6 +11,20 @@ import { SCHEDULED_WORKFLOWS } from '../../../lib/workflows.ts'
  * Start everything the schedule is responsible for: the endpoint the two Cloud
  * Scheduler jobs call: every two hours from 03:00 to 07:00 UTC, and once at
  * 12:00 UTC.
+ *
+ * ## It is the only clock
+ *
+ * The workflows no longer carry `schedule:` crons. They did until 2026-09-16,
+ * as a backstop, and the backstop cost more than it bought: two clocks per
+ * workflow, one of them hours late, and duplicate runs that had to be explained
+ * every time somebody read the Actions tab. This tick is now the only thing that
+ * starts a scheduled workflow, which also means a Cloud Scheduler or admin
+ * outage stops all of them — deliberately chosen, with the trade understood.
+ *
+ * Not everything here runs on every tick. `SCHEDULED_WORKFLOWS` is what the tick
+ * *considers*; `lib/cadence.ts` decides which of them are due, by asking GitHub
+ * when each last ran. That is what lets a fortnightly job share a tick with a
+ * four-times-daily one without a second Cloud Scheduler job.
  *
  * ## Why one endpoint rather than a job per workflow
  *
@@ -91,10 +106,36 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     // the ordering GitHub sees is the order they queue in, and the concurrency
     // group then runs them in that order. Two calls to GitHub is not a latency
     // problem worth trading that away for.
-    const results: Array<{ slug: string; ok: boolean; reason?: string }> = []
+    const now = new Date()
+    const results: Array<{ slug: string; ok: boolean; skipped?: true; because?: string; reason?: string }> = []
+
     for (const workflow of SCHEDULED_WORKFLOWS) {
+        // Only the interval-scheduled ones cost a call. `'tick'` is due by
+        // definition, and asking GitHub about it every tick would be a request
+        // per workflow per tick to learn nothing.
+        const latest =
+            workflow.cadence === 'tick'
+                ? undefined
+                : await github()
+                      .recentRuns(workflow, 1)
+                      // `null` is "could not read", which `due` treats differently
+                      // from "has never run" — see the note there on why an
+                      // unreadable history must not dispatch.
+                      .then((outcome) => (outcome.ok ? outcome.runs[0] : null))
+
+        const verdict = due(workflow.cadence, latest, now)
+        if (!verdict.due) {
+            console.log('Not due on this tick', { workflow: workflow.file, because: verdict.because })
+            results.push({ slug: workflow.slug, ok: true, skipped: true, because: verdict.because })
+            continue
+        }
+
         const outcome = await github().dispatch(workflow)
-        results.push(outcome.ok ? { slug: workflow.slug, ok: true } : { slug: workflow.slug, ok: false, reason: outcome.reason })
+        results.push(
+            outcome.ok
+                ? { slug: workflow.slug, ok: true, because: verdict.because }
+                : { slug: workflow.slug, ok: false, reason: outcome.reason }
+        )
     }
 
     const failures = results.filter((result) => !result.ok)

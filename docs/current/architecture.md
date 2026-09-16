@@ -14,7 +14,8 @@ runtime server and no request-time API call anywhere in the delivered site. Inst
 GitHub Actions run TypeScript scripts that scrape external golf systems, write the results as JSON
 into `astrosite/src/data/`, and commit that JSON back to `main`. A deploy workflow rebuilds the
 Astro site from the committed data and publishes it to GitHub Pages — on every push to `main` that
-touches `astrosite/**`, and additionally on a twice-daily cron (see §8 for why both are needed).
+touches `astrosite/**`, and as a daily backstop from the Cloud Scheduler tick (see §8 for why both
+are needed).
 Everything a visitor sees was computed at build time.
 
 Three moving parts:
@@ -566,7 +567,7 @@ sequenceDiagram
 
     Sched->>Admin: POST /api/workflows/handicaps/dispatch (03:00 / 12:00 UTC)
     Admin->>Cron: POST /actions/workflows/…/dispatches
-    Note over Sched,Cron: The workflows' own `schedule:` crons remain<br/>as a backstop, and run hours late (see below)
+    Note over Sched,Cron: The workflows' own `schedule:` crons were deleted<br/>on 2026-09-16; the tick is the only clock (see below)
     Cron->>Script: npx tsx
     Script->>Ext: fetch handicaps / leaderboards / biographies
     Ext-->>Script: JSON
@@ -575,7 +576,7 @@ sequenceDiagram
     Cron->>Tree: scripts/commit-changes.sh
     Tree->>Repo: git commit -F … && git pull -r && git push
     Note over Repo,Deploy: GITHUB_TOKEN push triggers no workflow<br/>(a human push here would deploy directly)
-    Cron->>Deploy: so the :30 cron picks it up instead
+    Cron->>Deploy: so a scrape dispatches the deploy instead
     Deploy->>Repo: checkout
     Deploy->>Pages: astro build → actions/deploy-pages
 ```
@@ -613,12 +614,33 @@ of recent runs with start times to the second: a repeating `03:00:xx` down the c
 knows when the next scheduled run is due, without this code keeping its own copy of the schedule to
 disagree with Terraform's.
 
-The `schedule:` blocks stay in the workflow files as a backstop for the day the admin service is the
-broken one. That leaves several ways for two scrapes to overlap — the tick starts both in the same
-second, and the backstop crons land anywhere at all — so all four update workflows now share one
-`concurrency` group, `data-update`. They all end in the same `git pull -r && git push`, and the
-staggered start times that used to keep them apart were never more than a guess about how long each
-one takes.
+**There are no `schedule:` blocks left.** They were deleted on 2026-09-16 and the tick is now the
+only clock. They had been kept as a backstop, and the backstop cost more than it bought: every
+workflow had two clocks, one of them hours late — measured that day, the last scheduled delivery of
+each was between two and five hours late, and `update-player-club-memberships` landed on the wrong
+calendar day — and its runs were duplicates somebody had to explain every time they read the Actions
+tab.
+
+The cost is stated plainly because it is real: **if Cloud Scheduler or the admin service is down,
+nothing runs, and nothing goes red to say so.** Before, a broken admin meant late rather than absent.
+The replacement for redundancy is that the tick fires four times a day and the Operations page shows
+when each workflow last ran.
+
+Two scrapes can still overlap — the tick starts them within a second of each other — so all four
+update workflows share one `concurrency` group, `data-update`. They all end in the same
+`git pull -r && git push`, and the staggered start times that used to keep them apart were never more
+than a guess about how long each one takes.
+
+**Not everything on the tick runs on every tick.** `SCHEDULED_WORKFLOWS` is what the tick
+*considers*; [`admin/src/lib/cadence.ts`](../../admin/src/lib/cadence.ts) decides which are due, by
+asking GitHub when each last started. Handicaps and leaderboards want every tick; the two player
+scrapes want roughly monthly; the deploy wants a day. That is what lets a fortnightly job share a
+tick with a four-times-daily one without a second Cloud Scheduler job — the free tier allows three
+and this project spends two.
+
+An interval rather than a cron because a cron cannot be matched against a tick it does not fire on:
+`30 2 10,25 * *` has minute 30 and every tick is at minute 0. An interval is also self-healing, which
+is what the backstop used to provide — "it has been 15 days" stays true through a missed tick.
 
 **The deploy has three triggers, and the cron is not the main one.** `deploy-site.yml` runs on every
 push to `main` whose changes touch the site or anything it builds from — `astrosite/**`,
@@ -634,12 +656,11 @@ admin service to dispatch `deploy-site.yml` — it is in `DISPATCHABLE_WORKFLOWS
 [`admin/src/lib/workflows.ts`](../../admin/src/lib/workflows.ts) for exactly this — so a scrape
 publishes within a minute of finishing rather than waiting for a fixed time after it.
 
-The `0 8,13` cron is the backstop under both of those, for the day the dispatch fails: late is better
-than never. Its hours sit *after* the data ticks rather than among them — those are every two hours
-from 03:00
-to 07:00 and once at 12:00, in `terraform/scheduler.tf`. It used to be `30 3,12`, which was after the
-ticks when there were only two of them and would now fire in the middle of the morning window,
-backstopping data that had not arrived yet.
+The backstop under both of those, for the day the dispatch fails, used to be a `0 8,13` cron in the
+workflow. It is now a one-day interval on the deploy's entry in `DISPATCHABLE_WORKFLOWS`: the tick
+dispatches `deploy-site.yml` only when no deploy has happened in 24 hours, which is to say only when
+the normal path is already broken. Same backstop, expressed in the mechanism that replaced the
+crons.
 
 **Why `update-leaderboards` is different.** Alone among the four, it writes its output through the
 **GitHub Contents API** (Octokit `createOrUpdateFileContents` against
@@ -666,8 +687,8 @@ the history.
 
 | Script | Schedule (UTC) | Reads | Writes |
 | --- | --- | --- | --- |
-| `update-handicaps.ts` | Every two hours 03:00–07:00, and 12:00, by Cloud Scheduler (cron `0 3,13 * * *` as a late backstop) | WiseGolf | `handicaps.json`, `players/*.json`, event `buckets` |
-| `update-leaderboards.ts` | Every two hours 03:00–07:00, and 12:00, by Cloud Scheduler (cron `15 3,12 * * *` as a late backstop) | Sheets / app.hector.golf | `leaderboards/*.json` (via API), event `results.teams` |
+| `update-handicaps.ts` | Every two hours 03:00–07:00, and 12:00, by Cloud Scheduler. No cron | WiseGolf | `handicaps.json`, `players/*.json`, event `buckets` |
+| `update-leaderboards.ts` | Every two hours 03:00–07:00, and 12:00, by Cloud Scheduler. No cron | Sheets / app.hector.golf | `leaderboards/*.json` (via API), event `results.teams` |
 | `update-player-biographies.ts` | `30 2 10,25 * *` | GCP function, WiseGolf | `players/*.json` `biography`, `clubs.json` |
 | `update-player-club-memberships.ts` | `15 22 15 * *` | WiseGolf | `players/*.json` `club` |
 
@@ -698,19 +719,19 @@ and assigns a club **only when exactly one** club matches.
 
 | Workflow | Trigger | Runs | Permissions |
 | --- | --- | --- | --- |
-| `deploy-site.yml` | Push to `main` touching `astrosite/**`, `packages/**`, the root manifest/lockfile, `.node-version`, or any workflow; cron `0 8,13 * * *`; dispatched by the admin service after a data update; manual | `npm ci` → `astro build` → `actions/deploy-pages@v5` | `contents: read`, `pages: write`, `id-token: write` |
+| `deploy-site.yml` | Push to `main` touching `astrosite/**`, `packages/**`, the root manifest/lockfile, `.node-version`, or any workflow; dispatched by the admin service after a data update, and by the tick when no deploy has happened in a day; manual | `npm ci` → `astro build` → `actions/deploy-pages@v5` | `contents: read`, `pages: write`, `id-token: write` |
 | `check-site.yml` | PRs targeting `main` touching `astrosite/**`, `packages/**`, the root manifest/lockfile, `.node-version`, or this file | `npm ci` → `npm test` → `npm run build` | `contents: read` |
 | `check-admin.yml` | PRs targeting `main` touching `admin/**`, `packages/**`, the root manifest/lockfile, `.node-version`, `.dockerignore`, or this file | `npm ci` → test → build → `docker build` of `admin/Dockerfile` | `contents: read` |
 | `check-backend.yml` | PRs targeting `main` touching `backend/**` or this file | `npm ci` → `npm test` → `npm run typecheck` in `backend/backend-functions` | `contents: read` |
 | `check-markdown.yml` | PRs targeting `main` touching any `**/*.md`, `.markdownlint-cli2.jsonc`, or this file | root-only `npm ci` → `npm run lint:md` over every `.md` in the repository | `contents: read` |
-| `update-handicaps.yml` | Dispatched by the admin service at 03:00/12:00 UTC; cron `0 3,13 * * *` as a backstop; manual | Script + `commit-changes.sh` | `contents: write` |
+| `update-handicaps.yml` | Dispatched by the admin service on every tick; manual | Script + `commit-changes.sh` | `contents: write` |
 | `terraform-plan.yml` | PRs touching `terraform/**` | `fmt` → `init` → `validate` → `plan`, posted as a PR comment | `contents: read`, `id-token: write`, `pull-requests: write` |
 | `terraform-apply.yml` | Push to `main` touching `terraform/**`; manual | `terraform apply`, gated by the `infrastructure` environment | `contents: read`, `id-token: write` |
 | `deploy-admin.yml` | Push to `main` touching `admin/**`, `packages/**`, the root manifest/lockfile, `.node-version`, `.dockerignore`, or this file; manual | Build, push to Artifact Registry, `gcloud run deploy` | `contents: read`, `id-token: write` |
 | `deploy-functions.yml` | Push to `main` touching `backend/backend-functions/**`; manual | `gcloud functions deploy` for each of the four functions, in parallel, with `--service-account` and `--set-secrets` | `contents: read`, `id-token: write` |
-| `update-leaderboards.yml` | Dispatched by the admin service at 03:00/12:00 UTC; cron `15 3,12 * * *` as a backstop; manual | Script + `commit-changes.sh` | `contents: write` |
-| `update-player-biographies.yml` | Cron `30 2 10,25 * *`; manual | Script + `commit-changes.sh` | `contents: write` |
-| `update-player-club-memberships.yml` | Cron `15 22 15 * *`; manual | Script + `commit-changes.sh` | `contents: write` |
+| `update-leaderboards.yml` | Dispatched by the admin service on every tick; manual | Script + `commit-changes.sh` | `contents: write` |
+| `update-player-biographies.yml` | Dispatched by the admin service when it last ran 15+ days ago; manual | Script + `commit-changes.sh` | `contents: write` |
+| `update-player-club-memberships.yml` | Dispatched by the admin service when it last ran 30+ days ago; manual | Script + `commit-changes.sh` | `contents: write` |
 | `export-admin-data.yml` | Manual only — an export publishes an edit, so there is no cron | Guard on `GH_WIF_PROVIDER`/`GH_DEPLOYER_SA` → `npm ci` → WIF auth → `npm run export` in `admin/` → `git add -A astrosite/src/data/events/matchplay` and push | `contents: write`, `id-token: write` |
 | `refresh-admin-mirror.yml` | `workflow_run` completion of the four update workflows, successful runs only; manual | Same guard → `npm ci` → WIF auth → `npm run seed` in `admin/` | `contents: read`, `id-token: write` |
 

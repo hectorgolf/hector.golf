@@ -46,6 +46,8 @@
  * publish. Its own `0 8,13` cron stays as the backstop.
  */
 
+import type { Cadence } from './cadence.ts'
+
 export type DispatchableWorkflow = {
     /** URL segment and form value. */
     slug: string
@@ -59,14 +61,16 @@ export type DispatchableWorkflow = {
     /** One line, shown beside the button that starts it. */
     blurb: string
     /**
-     * Whether the twice-daily Cloud Scheduler tick starts this one.
+     * How often the Cloud Scheduler tick should start this one.
      *
-     * `false` does not mean unreachable — it means "only when a person asks",
-     * and the button on the Operations page still works. That is the setting for
-     * anything expensive or disruptive enough that a human should be the one
-     * deciding, which is why the flag exists before anything needs it.
+     * This replaced a boolean when the GitHub `schedule:` crons were deleted and
+     * the tick became the only trigger — see `cadence.ts` for the whole of why.
+     * A boolean could only say "every tick", which is right for the two daily
+     * scrapes and 30 times too often for the two monthly ones.
+     *
+     * `'manual'` means the button and nothing else.
      */
-    scheduled: boolean
+    cadence: Cadence
 }
 
 export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
@@ -75,14 +79,37 @@ export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
         file: 'update-handicaps.yml',
         label: "Players' official handicaps",
         blurb: 'Reads every player\'s current handicap from WiseGolf and re-sorts the buckets of any event whose buckets are still open.',
-        scheduled: true,
+        cadence: 'tick',
     },
     {
         slug: 'leaderboards',
         file: 'update-leaderboards.yml',
         label: 'Tournament leaderboards',
         blurb: 'Refreshes the leaderboards of events that have started, from Google Sheets or app.hector.golf.',
-        scheduled: true,
+        cadence: 'tick',
+    },
+    {
+        slug: 'biographies',
+        file: 'update-player-biographies.yml',
+        label: "Players' biographies",
+        blurb: 'Regenerates every player biography with Gemini. Rewrites all 45, so an edit made in the admin does not survive it.',
+        // Was `30 2 10,25 * *` — twice a month, delivered up to five hours late.
+        //
+        // Fortnightly rather than "on the 10th and 25th", because the tick cannot
+        // express a date it does not fire on and staleness is the property that
+        // was actually wanted. It is also the one entry where running too often
+        // costs real money and real edits: every run is 45 Gemini calls and
+        // overwrites every biography.
+        cadence: { everyDays: 15 },
+    },
+    {
+        slug: 'club-memberships',
+        file: 'update-player-club-memberships.yml',
+        label: "Players' club memberships",
+        blurb: "Fills in a player's home club from WiseGolf, for players who do not have one yet. Never overwrites a club somebody set.",
+        // Was `15 22 15 * *`. Its last scheduled run started at 00:19 on the
+        // *16th*, which is the lateness problem arriving as a wrong calendar day.
+        cadence: { everyDays: 30 },
     },
     {
         slug: 'deploy',
@@ -90,32 +117,38 @@ export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
         label: 'Deploy hector.golf',
         blurb: 'Rebuilds and publishes the public site. Started automatically when a data update commits something, and available here for when you want it anyway.',
         /*
-         * Not on the twice-daily tick, and not because it is expensive.
+         * Not on every tick, and not because it is expensive.
          *
          * The tick starts the scrapes, which have not committed anything yet
          * when it fires — a deploy in the same second would publish the data
-         * that was already there. This runs *after* a scrape commits, dispatched
-         * by the scrape itself through `[slug]/dispatch.ts`, which is the only
-         * moment at which there is something new to publish.
+         * that was already there. The normal path is a scrape dispatching this
+         * itself through `[slug]/dispatch.ts` once it has committed, which is the
+         * only moment at which there is something new to publish.
          *
-         * `deploy-site.yml`'s own `0 8,13` cron stays as the backstop, for the same
-         * reason the workflows keep their GitHub crons: late is better than
-         * never on the day this path is the broken one.
+         * A day is the backstop for when that request fails. `deploy-site.yml`
+         * used to carry a `0 8,13` cron for exactly this, and deleting the crons
+         * would have deleted the backstop with them — so it is expressed here
+         * instead, in the mechanism that replaced them. It fires only when no
+         * deploy has happened in 24 hours, which is to say only when the normal
+         * path is already broken.
          */
-        scheduled: false,
+        cadence: { everyDays: 1 },
     },
 ]
 
 /**
- * What the scheduled tick starts, in the order it starts them.
+ * What the tick considers, in the order it considers them.
  *
- * Order is not cosmetic. Both workflows commit to `main`, so they share one
- * GitHub concurrency group and the second to be dispatched waits for the first
- * to finish. Handicaps is first because the buckets it writes are the thing an
- * event page is most wrong about when it is stale.
+ * Order is not cosmetic. These all commit to `main`, so they share one GitHub
+ * concurrency group and each waits for the one before it. Handicaps is first
+ * because the buckets it writes are the thing an event page is most wrong about
+ * when it is stale; deploy is last because it publishes whatever the others did.
+ *
+ * "Considers" rather than "starts": everything here is on the tick, but a
+ * workflow with an interval is only dispatched when it is due. See `cadence.ts`.
  */
 export const SCHEDULED_WORKFLOWS: readonly DispatchableWorkflow[] = DISPATCHABLE_WORKFLOWS.filter(
-    (workflow) => workflow.scheduled
+    (workflow) => workflow.cadence !== 'manual'
 )
 
 export function workflowBySlug(slug: string | undefined): DispatchableWorkflow | undefined {

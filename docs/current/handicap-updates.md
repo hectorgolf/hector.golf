@@ -46,8 +46,11 @@ which tells you retrospectively that the earlier one was wrong — and only if y
 
 ### It scrapes every two hours through the morning, and once after lunch
 
-Cloud Scheduler starts the updates — `terraform/scheduler.tf`. The workflows keep their own crons as
-a backstop, but those are delivered hours late and are not the real clock.
+Cloud Scheduler starts the updates — `terraform/scheduler.tf` — and since 2026-09-16 it is the only
+thing that does. The workflows used to keep their own `schedule:` crons as a backstop; those were
+delivered hours late, which made them a second clock that was always wrong, and they were deleted.
+The trade is that a Cloud Scheduler or admin outage now means no updates at all, silently, where it
+previously meant late ones.
 
 | Ticks | UTC | Summer (EEST) | Winter (EET) |
 | --- | --- | --- | --- |
