@@ -264,7 +264,7 @@ const now = new Date();
 		<h2>Jobs this service runs itself</h2>
 		<p class="lede-note">
 			These do not go to GitHub — the work happens in this service, in the request. The same Cloud Scheduler call
-			that dispatches the workflows above runs every job marked scheduled, so their histories line up. A
+			that dispatches the workflows above runs every job marked scheduled, so their histories line up. A{" "}
 			<strong>shadow</strong> run computes what it would have written and writes nothing; see
 			<code>docs/plans/handicaps-to-firestore.md</code>.
 		</p>
