@@ -58,7 +58,14 @@ import { workflowBySlug } from '../../../../lib/workflows.ts'
  * application/json` and an empty body, as `terraform/scheduler.tf` already did.
  */
 
-/** The `Accept` a browser sends, and Cloud Scheduler does not. */
+/**
+ * The `Accept` a browser sends, and Cloud Scheduler does not.
+ *
+ * The Operations page's script sends it too, on purpose: it takes the redirect
+ * branch and follows it, so the page it lands on stays this service's decision
+ * rather than something reconstructed from the JSON. See `lib/run-now.ts` before
+ * "simplifying" that caller to ask for JSON instead.
+ */
 const wantsHtml = (request: Request) => (request.headers.get('accept') ?? '').includes('text/html')
 
 const json = (body: unknown, status: number) =>

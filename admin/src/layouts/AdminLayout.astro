@@ -46,9 +46,11 @@ const viewer = viewerFromHeaders(Astro.request.headers)
 			{
 				viewer.authenticated ? (
 					/*
-					 * A <details> rather than a scripted menu: the admin ships no client
-					 * JavaScript at all, and one button behind a disclosure does not need
-					 * to be the thing that changes that.
+					 * A <details> rather than a scripted menu. The admin ships one
+					 * client-side script, on /operations, and it is there because a
+					 * button that holds the request open for a 45-player scrape looks
+					 * broken without it — see admin/src/lib/run-now.ts. A menu that
+					 * opens instantly has no such problem, so it stays markup.
 					 */
 					<details class="account">
 						<summary class="who">{viewer.email}</summary>
