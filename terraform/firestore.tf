@@ -22,10 +22,16 @@ resource "google_firestore_database" "hector" {
   mongodb_compatible_data_access_mode = "DATA_ACCESS_MODE_DISABLED"
   realtime_updates_mode               = "REALTIME_UPDATES_MODE_DISABLED"
 
-  # PITR gives 7 days of recoverable history. It is explicitly outside the
-  # no-cost quota ($0.00020 per GiB-hour), but the whole dataset is well under a
-  # megabyte, so this is fractions of a cent a month for the only undo button
-  # this data has once it stops living in Git.
+  # PITR gives 7 days of recoverable history. It is explicitly outside the free
+  # tier, and billed on the database size at a rate in the same order as storing
+  # the data itself. The whole dataset is well under a megabyte, so this is
+  # fractions of a cent a month for the only undo button this data has once it
+  # stops living in Git.
+  #
+  # Rates move, so read them rather than trusting a comment:
+  # https://cloud.google.com/firestore/enterprise/pricing — the *Enterprise*
+  # sheet, because that is the edition below. The Standard one is what search
+  # engines return and it prices some of the same lines differently.
   point_in_time_recovery_enablement = "POINT_IN_TIME_RECOVERY_ENABLED"
 
   # The two most important lines in this repository.

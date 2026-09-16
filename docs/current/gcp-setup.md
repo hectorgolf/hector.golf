@@ -83,6 +83,13 @@ retention. That is why `deletion_policy = "ABANDON"` is set on it, matching the 
 `terraform destroy` is meant to leave both alone, and a destroy that removed only the schedule would
 leave a live database silently unbacked-up.
 
+Both features are outside the free tier, and both are billed on the size of a database that is well
+under a megabyte, so together they are a fraction of a cent a month — far enough below the budget
+above that neither is worth optimising. Rates are deliberately not quoted here, because they move;
+read them from the [Enterprise edition pricing page](https://cloud.google.com/firestore/enterprise/pricing).
+That is the right sheet for this database, and it is not the one search engines return — the
+Standard edition page prices some of the same lines differently.
+
 ## The decisions you cannot take back
 
 | Decision | Why it is permanent |

@@ -71,21 +71,26 @@ variable "firestore_backup_retention_weeks" {
 
     Cost is not really the constraint, but it is the reason the number could
     have been larger. Backup data is one of the features explicitly outside the
-    free tier, at $0.033 per GiB-month for Enterprise edition in europe-north1 —
-    an eighth of the $0.264 the live data costs and a fifth of PITR's $0.165 —
-    and billed pro rata for the part of the month each backup is retained. Note
-    that those are the *Enterprise* rates: the Standard edition sheet is the one
-    search engines return, and it prices stored data at $0.165 rather than
-    $0.264. Backup data happens to cost the same on both.
+    free tier, billed pro rata for the part of the month each backup is
+    retained, at a per-GiB rate roughly an order of magnitude below what the
+    live data costs.
 
-    What the number actually controls is how many backups exist at once, which
-    is retention divided by the interval: four weeks weekly is four copies. So
-    the monthly bill is 4 x database size x $0.033, and at the ~0.5 MB this
-    dataset is, that is hundredths of a cent. It stays a rounding error until
-    the database approaches a gibibyte, which is also where the free tier's 1
-    GiB of stored data runs out. Retention is the one field that can be changed
-    without recreating the schedule, so raising it later is a one-line edit with
-    no replacement.
+    What this number actually controls is how many copies exist at once, which
+    is retention divided by the interval: four weeks weekly is four copies. The
+    bill is that count times the database size times the backup rate. At the
+    half megabyte this dataset is, four copies is hundredths of a cent a month,
+    and it stays a rounding error until the database approaches a gibibyte —
+    which is also where the free tier's 1 GiB of stored data runs out. Weekly
+    against daily is the same arithmetic: seven times fewer copies, seven times
+    less money, and still nothing at this size.
+
+    Rates move, so read them rather than trusting this comment:
+    https://cloud.google.com/firestore/enterprise/pricing — the *Enterprise*
+    sheet, because that is the edition firestore.tf creates. The Standard one is
+    what search engines return and it prices some of the same lines differently.
+
+    Retention is the one field that can be changed without recreating the
+    schedule, so raising it later is a one-line edit with no replacement.
   EOT
   type        = number
   default     = 4
