@@ -101,12 +101,13 @@ type Report = {
  * written those files to Firestore without them.
  *
  * Most of that has since been fixed in the schema, which is the better fix and
- * came out of running `--check`. Five records still carry something the schema
- * does not read, and the number is not the point: the *class* of bug is
- * permanent, because a schema is allowed to lag its data and zod will not say
- * so. While the files are the source of truth a lagging schema is merely a
- * waste. After step 5 deletes the files it is a delete — quietly, with the only
- * copy overwritten by a migration that reported success.
+ * came out of running `--check`. The remaining count is deliberately not quoted
+ * here, because it changes and is not the point: the *class* of bug is
+ * permanent, since a schema is allowed to lag its data and zod will not say so.
+ * While the files are the source of truth a lagging schema is merely a waste.
+ * After step 5 deletes the files it is a delete — quietly, with the only copy
+ * overwritten by a migration that reported success. Run `--check` for today's
+ * list.
  *
  * So: parse to prove the record is readable, store the original.
  *
