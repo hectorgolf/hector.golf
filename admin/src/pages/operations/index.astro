@@ -170,12 +170,31 @@ const now = new Date();
 
 	{
 		failedJob ? (
-			<p class="notice bad">
-				<strong>{failedJob.label}</strong> did not finish.{" "}
-				{rawReason === "already-running"
-					? "Another run of it was already going, so this one was dropped rather than queued."
-					: "The reason is in the job log below, and the detail is in Cloud Logging."}
-			</p>
+			/*
+			 * Three outcomes wearing one word until now. Two of these are skips —
+			 * the run did not happen — and only the third is a failure, which is
+			 * the distinction `lib/jobs/execute.ts` draws and the job log has
+			 * always drawn with a neutral pill. The notice matches the pill: a
+			 * red banner over "the next tick will do it" teaches an admin to
+			 * disregard the red banners.
+			 */
+			rawReason === "already-running" ? (
+				<p class="notice">
+					<strong>{failedJob.label}</strong> did not run. Another run of it was already going, so this one
+					was dropped rather than queued — the next tick reads the same sources anyway.
+				</p>
+			) : rawReason === "not-configured" ? (
+				<p class="notice">
+					<strong>{failedJob.label}</strong> did not run. This service has no GitHub token, so it stopped
+					before it started rather than part way through: nothing was read and nothing was written. Setting
+					one is described further down this page.
+				</p>
+			) : (
+				<p class="notice bad">
+					<strong>{failedJob.label}</strong> did not finish. The reason is in the job log below, and the
+					detail is in Cloud Logging.
+				</p>
+			)
 		) : (
 			failed && (
 				<p class="notice bad">
