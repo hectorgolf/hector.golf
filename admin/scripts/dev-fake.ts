@@ -32,6 +32,7 @@
  * lives in `scripts/`, which the container image does not copy.
  */
 import { spawn, type ChildProcess } from 'node:child_process'
+import { once } from 'node:events'
 import { existsSync } from 'node:fs'
 import net from 'node:net'
 import { dirname, join } from 'node:path'
@@ -84,20 +85,36 @@ async function waitUntilListening(hostPort: string, timeoutMs = 60_000): Promise
 }
 
 /**
+ * Which emulator we ended up with, and whether stopping it is ours to do.
+ *
+ * The distinction is the whole of the shutdown logic below: an emulator that was
+ * already running belongs to whoever started it, holds data they may want, and
+ * must survive this process exiting.
+ */
+type Emulator = { hostPort: string; ours: boolean }
+
+/**
  * The Firestore emulator, started only if one is not already there.
  *
  * The component ships with gcloud rather than with this repository, so the
  * failure worth handling well is its absence: the message says the one command
  * that fixes it, because "spawn gcloud ENOENT" does not.
+ *
+ * The check happens whether or not `FIRESTORE_EMULATOR_HOST` was set, which it
+ * did not used to. Unset, this went straight to spawning on the default address
+ * — and then `waitUntilListening` was satisfied by the emulator that was already
+ * there, so a run that had failed to start its own with "Address already in use"
+ * looked exactly like a run that had succeeded, and quietly used somebody else's
+ * database.
  */
-async function ensureEmulator(): Promise<{ child?: ChildProcess; hostPort: string }> {
-    const configured = process.env.FIRESTORE_EMULATOR_HOST
-    if (configured && (await listening(configured))) {
-        console.log(`Firestore emulator: using the one already on ${configured}`)
-        return { hostPort: configured }
+async function ensureEmulator(): Promise<Emulator> {
+    const hostPort = process.env.FIRESTORE_EMULATOR_HOST ?? EMULATOR_HOST
+
+    if (await listening(hostPort)) {
+        console.log(`Firestore emulator: using the one already on ${hostPort} (leaving it running on exit)`)
+        return { hostPort, ours: false }
     }
 
-    const hostPort = configured ?? EMULATOR_HOST
     console.log(`Firestore emulator: starting one on ${hostPort}`)
     const child = spawn('gcloud', ['emulators', 'firestore', 'start', `--host-port=${hostPort}`], {
         stdio: ['ignore', 'ignore', 'inherit'],
@@ -112,8 +129,54 @@ async function ensureEmulator(): Promise<{ child?: ChildProcess; hostPort: strin
         process.exit(1)
     })
 
-    await waitUntilListening(hostPort)
-    return { child, hostPort }
+    // Raced against the child, so that an emulator which dies on the way up is
+    // an error here rather than a mystery later.
+    const outcome = await Promise.race([
+        waitUntilListening(hostPort).then(() => 'listening' as const),
+        once(child, 'exit').then(() => 'exited' as const),
+    ])
+    if (outcome === 'exited') {
+        console.error(
+            `\nThe Firestore emulator stopped before it was listening on ${hostPort}.\n` +
+                'Its own output is above. "Address already in use" means something is already\n' +
+                `there — \`lsof -nP -iTCP:${hostPort.split(':')[1]} -sTCP:LISTEN\` will name it.\n`
+        )
+        process.exit(1)
+    }
+
+    return { hostPort, ours: true }
+}
+
+/**
+ * Stop the emulator, if it was ours to stop.
+ *
+ * Over HTTP rather than with a signal, which is not fastidiousness — it is the
+ * only thing that works. `gcloud emulators firestore start` puts the emulator in
+ * a **process group of its own**, so Ctrl-C never reaches it: the terminal sends
+ * SIGINT to the foreground group, and the emulator is not in it. Nor does killing
+ * the `gcloud` this process spawned, because the bash wrapper and the JVM below
+ * it outlive their parent and reparent to init.
+ *
+ * The result was an emulator surviving every Ctrl-C, still holding port 8432, so
+ * that the *next* `npm run dev:fake` met "Address already in use" — and, before
+ * the check above existed, silently attached to the survivor instead.
+ *
+ * `POST /shutdown` is the emulator's own door, it answers 200, and it works
+ * wherever this runs, which a process-group kill does not.
+ */
+async function stopEmulator(emulator: Emulator): Promise<void> {
+    if (!emulator.ours) return
+    try {
+        await fetch(`http://${emulator.hostPort}/shutdown`, {
+            method: 'POST',
+            // It is on its way down and will not answer at leisure; the exit
+            // must not wait on a reply that is not coming.
+            signal: AbortSignal.timeout(3_000),
+        })
+    } catch {
+        // Already gone, or never came up. Either way there is nothing left to do
+        // and nothing worth saying on the way out of a development tool.
+    }
 }
 
 async function main(): Promise<void> {
@@ -156,17 +219,33 @@ async function main(): Promise<void> {
     console.log('\nIf the admin looks empty, its database is: FIRESTORE_EMULATOR_HOST=' + emulator.hostPort)
     console.log('  npm run seed -- --bootstrap\n')
 
-    const stop = (): void => {
+    /**
+     * One way out, however it was reached.
+     *
+     * Guarded, because both routes into it can happen at once: Ctrl-C signals
+     * every process in the foreground group, so the admin exits of its own
+     * accord *and* this handler runs, and the previous version then closed the
+     * same server twice and waited for two `process.exit`es.
+     *
+     * `closeAllConnections` before `close`, because `close` alone waits for open
+     * sockets to end on their own — one idle keep-alive to the stand-in was
+     * enough for the callback never to fire, which read as a Ctrl-C that did
+     * nothing at all.
+     */
+    let stopping = false
+    const shutdown = (code: number): void => {
+        if (stopping) return
+        stopping = true
+
         admin.kill('SIGTERM')
-        emulator.child?.kill('SIGTERM')
-        fakeGitHub.close(() => process.exit(0))
+        fakeGitHub.closeAllConnections()
+        fakeGitHub.close()
+        void stopEmulator(emulator).finally(() => process.exit(code))
     }
-    process.on('SIGINT', stop)
-    process.on('SIGTERM', stop)
-    admin.on('exit', (code) => {
-        emulator.child?.kill('SIGTERM')
-        fakeGitHub.close(() => process.exit(code ?? 1))
-    })
+
+    process.on('SIGINT', () => shutdown(0))
+    process.on('SIGTERM', () => shutdown(0))
+    admin.on('exit', (code) => shutdown(code ?? 1))
 }
 
 await main()
