@@ -18,13 +18,15 @@ touches `astrosite/**`, and as a daily backstop from the Cloud Scheduler tick (s
 are needed).
 Everything a visitor sees was computed at build time.
 
-Three moving parts:
+Five moving parts:
 
 | Part | Location | Role |
 | --- | --- | --- |
 | Astro site | `astrosite/` | Static site generator, domain logic, committed JSON data, and the workflow scripts |
+| Admin service | `admin/` | Astro SSR on Cloud Run behind IAP: the `/operations` page, the dispatch endpoints Cloud Scheduler calls, and the jobs this service runs itself |
+| Shared packages | `packages/` | `@hector/schemas`, `@hector/ui`, `@hector/wisegolf` — the three things the site and the admin both use |
 | Cloud Functions | `backend/backend-functions/` | Four independent HTTP-triggered GCP functions: one public leaderboard proxy, one private biography writer, two dormant experiments |
-| CI/CD | `.github/workflows/` | Nine workflows: one deploy, one PR check, four scheduled data updates, two Terraform, one admin deploy |
+| CI/CD | `.github/workflows/` | Fifteen workflows: three deploys, four PR checks, four scheduled data updates, two Terraform, two admin data workflows |
 | Infrastructure | `terraform/` | The `hector-golf` GCP project: Firestore, Cloud Run, IAP, Artifact Registry, CI identities |
 
 ```mermaid
@@ -92,15 +94,29 @@ waiting for a deploy.
 │   ├── docs/mscorecard-api.md  # Reverse-engineered mScorecard protocol notes
 │   ├── scripts/commit-changes.sh
 │   └── test/{unit,astro}/
+├── admin/                      # Astro SSR on Cloud Run behind IAP (see §11 for running it locally)
+│   ├── src/pages/              # /operations, /events, and the api/ endpoints
+│   ├── src/lib/                # github.ts, jobs/, identity.ts, secrets.ts, run-now.ts
+│   └── scripts/                # seed, export, and the three local stand-ins — not copied into the image
+├── packages/                   # Shared by the site and the admin
+│   ├── schemas/                # Zod schemas; the source of truth for all types
+│   ├── ui/                     # .astro components shipped as source, compiled by each consumer
+│   └── wisegolf/               # The WiseGolf client, and the drifting stand-in beside it
 ├── backend/backend-functions/  # GCP Cloud Functions gen2 (leaderboard proxy, biography writer, 2 experiments)
 ├── terraform/                  # The hector-golf GCP project (see docs/current/gcp-setup.md)
-├── .github/workflows/          # Nine workflows
+├── .github/workflows/          # Fifteen workflows
 └── docs/                       # current/ describes, plans/ proposes, playbooks/ instructs, experiments/ records what was not adopted
 ```
 
-There is **no monorepo tooling**. `astrosite/` and `backend/backend-functions/` are two independent
-npm packages with no shared dependencies, no workspace root, and no cross-package imports. They
-communicate only over HTTPS at data-update time.
+There **is** a workspace root, and it exists for one reason: `packages/ui` is shared. The root
+`package.json` declares `packages/*`, `astrosite` and `admin` as npm workspaces, and its own
+description says as much — "the packages are independent; this exists so they can share
+`packages/ui`". `backend/backend-functions/` is outside it and remains a genuinely independent
+package, talking to the rest only over HTTPS at data-update time.
+
+The sharing is source, not build output. `@hector/ui` ships `.astro` files, which is why
+`admin/astro.config.mjs` lists it in `vite.ssr.noExternal` — Vite has to compile it rather than treat
+it as an external dependency.
 
 ## 3. The web application (`astrosite/`)
 
@@ -958,6 +974,11 @@ project, and their keys reached them by `--set-env-vars` from somebody's `.env`.
 
 ## 11. Local development and operations
 
+There are two applications to run, and they are run in quite different ways. The site is a build;
+the admin is a service with three dependencies it cannot reach from a laptop.
+
+### The site
+
 **Everything runs from `astrosite/`** — the data loader's globs are CWD-relative.
 
 ```bash
@@ -971,6 +992,57 @@ npm test               # unit + astro suites
 
 `.env` is mandatory even when it is empty: `env-cmd` wraps every test and workflow script, which is
 why `npm test` begins with `touch .env`.
+
+### Running the admin
+
+The admin talks to Firestore, to GitHub and to WiseGolf, and a laptop has credentials for none of
+them. Rather than a mode inside the application for each, there is a stand-in in front of each — the
+argument for which is written out at length at the top of
+[`admin/scripts/dev-iap.ts`](../../admin/scripts/dev-iap.ts): the cheap local switch is the one that
+ends up a build flag away from production.
+
+```bash
+cd admin
+npm run dev            # astro dev, and nothing else. You are "not signed in"
+npm run dev:iap        # behind a stand-in for IAP, so there is a viewer to be
+npm run dev:fake       # the above, plus Firestore, GitHub and WiseGolf stand-ins
+```
+
+`npm run dev:fake` is the one that makes `/operations` usable rather than merely visible. It brings
+up all three, and takes no setup: it starts a Firestore emulator, seeds it from the committed data,
+starts the GitHub stand-in and points the admin at both.
+
+| Stands in for | What it is | How the admin is pointed at it |
+| --- | --- | --- |
+| IAP | [`scripts/dev-iap.ts`](../../admin/scripts/dev-iap.ts) — a proxy that sets the identity headers IAP sets, and honours its sign-out URL | It is in front, so nothing in the application knows |
+| Firestore | The `gcloud` emulator, `gcloud components install cloud-firestore-emulator` | `FIRESTORE_EMULATOR_HOST`, which `@google-cloud/firestore` honours with no code of ours |
+| GitHub | [`scripts/fake-github.ts`](../../admin/scripts/fake-github.ts) — dispatches, run history, file contents and commits, plus a page behind each run's link | `GITHUB_API_BASE_URL`, **loopback addresses only** |
+| WiseGolf | [`packages/wisegolf/src/drifting-handicap-source.ts`](../../packages/wisegolf/src/drifting-handicap-source.ts) — handicaps that wander within ±2.0 of where they started | `WISEGOLF_STAND_IN_ROSTER`, a path to the players to pretend about |
+
+Two of those variables carry **data** rather than switching on a mode, and deliberately: an address
+and a file path. `GITHUB_API_BASE_URL` is restricted to loopback because every call to it carries
+the dispatch token, so a typo must not be able to post a credential that can push to this repository
+to somebody else's host; it throws rather than falling back to the real GitHub, because resolving a
+misconfiguration into "the real thing, then" is the one outcome nobody asked for.
+
+What the stand-ins are *for* is the states real services will not produce on request:
+
+```bash
+# Every failure the Operations page can render, on demand
+curl -XPOST 'http://127.0.0.1:8433/_fake/fail?reason=rate-limited'   # or unauthorized, not-found, unavailable
+curl -XPOST 'http://127.0.0.1:8433/_fake/fail?reason=none'           # stop failing
+
+# Handicaps that move while you watch, instead of every five minutes
+WISEGOLF_STAND_IN_TICK=10s npm run dev:fake
+```
+
+A dispatched run is queued for three seconds and running for twelve, so the "running" state on
+`/operations` — which a real dispatch takes minutes to reach — is visible, and each run's link opens
+a page that refreshes itself until it is done.
+
+Nothing in `admin/scripts/` reaches a deployment: the runtime stage of
+[`admin/Dockerfile`](../../admin/Dockerfile) copies `admin/dist` and nothing else. The one stand-in
+that does ship, in `packages/wisegolf`, refuses to run under `NODE_ENV=production`.
 
 ### Running a data workflow manually
 
@@ -1142,8 +1214,13 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
 
 **Documentation**
 
-- `astrosite/README.md` is still the unmodified Astro "Basics" starter template.
-- The root `README.md` reads `# TODO`.
+- `astrosite/README.md` now opens with the site's own description and the design-system note, and
+  then carries the unmodified Astro "Basics" starter template below it from `# Astro Starter Kit:
+  Basics` onwards. Deleting the boilerplate is the fix; it is also why `MD025` is switched off in
+  `.markdownlint-cli2.jsonc` rather than the heading being renumbered.
+- The root `README.md` is a backlog under a `# TODO` heading rather than a README. That is
+  deliberate — it says so — but it means the repository's front page does not introduce the
+  repository.
 
 **Noise**
 
