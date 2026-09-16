@@ -146,11 +146,19 @@ const now = new Date();
 				result is in the job log below.
 			</p>
 		) : (
-			(ran || ranAll) && (
+			ranAll ? (
 				<p class="notice good">
-					Asked GitHub to run <strong>{ran ? ran.label : "the scheduled updates"}</strong>. A run takes a
-					minute or two to appear in the log below, and the site rebuilds after it commits.
+					Ran a tick. Workflows that were due have been dispatched and take a minute or two to appear in the
+					log below; anything on an interval that was not yet stale was skipped, and this service's own jobs
+					have already finished — their results are in the job log.
 				</p>
+			) : (
+				ran && (
+					<p class="notice good">
+						Asked GitHub to run <strong>{ran.label}</strong>. A run takes a minute or two to appear in the
+						log below, and the site rebuilds after it commits.
+					</p>
+				)
 			)
 		)
 	}
@@ -175,11 +183,38 @@ const now = new Date();
 
 	<p class="lede-note">
 		Cloud Scheduler starts these <strong>every two hours from 03:00 to 07:00 UTC</strong><span>, and once at </span>
-		<strong>12:00 UTC</strong> — one call that runs both, which is why their start times in the log sit within a minute
-		or two of each other. The morning is a window rather than a moment because the association publishes handicaps at
-		no fixed time, and a handicap that lands after the first tee shot is too late to be the one anyone played off. Run
-		one by hand when the data is needed outside those hours.
+		<strong>12:00 UTC</strong> — one call that starts everything, which is why their start times in the log sit
+		within a minute or two of each other. Since the <code>schedule:</code> crons were deleted this is the only clock:
+		nothing here runs on GitHub's own schedule any more. The morning is a window rather than a moment because the
+		association publishes handicaps at no fixed time, and a handicap that lands after the first tee shot is too late
+		to be the one anyone played off.
 	</p>
+
+	<article class="card tick">
+		<div class="row-between">
+			<div>
+				<h2>Run a tick now</h2>
+				{/*
+				 * The same request Cloud Scheduler makes, rather than a shortcut
+				 * that presses every button in turn. If this did something the
+				 * schedule does not, it would be a second implementation of the
+				 * schedule and the first one to drift.
+				 */}
+				<p class="blurb">
+					Does exactly what a scheduled tick does: dispatches the workflows that are <strong>due</strong>,
+					and runs this service's own jobs. Not everything runs on every tick — a workflow on an interval is
+					skipped until it is stale enough, and the log below is where you see which.
+				</p>
+			</div>
+			<form method="POST" action="/api/workflows/dispatch">
+				<button type="submit">Tick</button>
+			</form>
+		</div>
+		<p class="last-run muted">
+			The page waits for it. The workflows are dispatched in a moment, but this service's own jobs run inside the
+			request — a handicap sweep is tens of seconds.
+		</p>
+	</article>
 
 	{tokenHelp && <GitHubTokenHelp mode={tokenHelp} />}
 
@@ -384,8 +419,34 @@ const now = new Date();
 		font-size: 1.05rem;
 	}
 
-	.workflow form {
+	.workflow form,
+	.tick form {
 		margin: 0;
+	}
+
+	/*
+	 * The tick card sits above the per-workflow cards and is the one action on
+	 * this page that stands for all of them, so it reads as a band rather than as
+	 * another item in the list. Same card, wider gap, and the heading matches the
+	 * section headings below rather than the per-workflow ones.
+	 */
+	.tick {
+		padding: 1.1rem 1.25rem;
+		margin-bottom: 1.25rem;
+	}
+
+	.tick h2 {
+		margin: 0 0 0.35rem;
+		font-size: 1.05rem;
+	}
+
+	.tick .row-between {
+		gap: 1.25rem;
+		align-items: flex-start;
+	}
+
+	.tick .last-run {
+		margin-top: 0.75rem;
 	}
 
 	.blurb,
