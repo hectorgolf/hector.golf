@@ -7,6 +7,11 @@ re-running `gcloud auth application-default login` with and without `--impersona
 — works, and means a browser round trip every time you change your mind. This is how to set each
 identity up once and pick between them per shell.
 
+**You do not need any of this to run the admin.** `npm run dev:fake` puts a stand-in in front of
+Firestore, GitHub and WiseGolf, so it needs no Google identity at all — see
+[`architecture.md` §11](../current/architecture.md#11-local-development-and-operations). What follows
+is for the things that talk to the real project: Terraform, the leaderboard scripts, and `gcloud`.
+
 ## Two credential stores, which is most of the confusion
 
 They are separate, they are configured by different commands, and a change to one does nothing to
