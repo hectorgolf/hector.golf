@@ -1,6 +1,6 @@
 import { readFileSync, statSync } from "node:fs";
 
-import { DriftingHandicapSource, type RosterEntry } from "./drifting-handicap-source.ts";
+import { DriftingHandicapSource, TICK_MS, type RosterEntry } from "./drifting-handicap-source.ts";
 import type { HandicapSource } from "./handicap-source-api.ts";
 
 /**
@@ -42,15 +42,30 @@ export async function standInFromRoster(path: string | undefined): Promise<Handi
     }
 
     const roster = rosterFrom(path);
-    console.warn(
-        `WiseGolf stand-in: drifting the handicaps of ${roster.length} players from ${path}. ` +
-            "Nothing here came from WiseGolf.",
-    );
-    return new DriftingHandicapSource({
+    const tickMs = tickFrom(process.env.WISEGOLF_STAND_IN_TICK);
+    const source = new DriftingHandicapSource({
         roster,
         seed: process.env.WISEGOLF_STAND_IN_SEED,
         startedAt: epochFrom(path),
+        tickMs,
     });
+
+    /*
+     * The waiting time is on the line, because its absence is what makes this
+     * look broken. A handicap moves every five minutes by default, so somebody
+     * who starts the stand-in and presses the button reads "drifting the
+     * handicaps of 24 players", sees no changes at all, and concludes the drift
+     * does not work — when what actually happened is that they arrived inside
+     * tick zero and nothing had moved yet.
+     */
+    // Only worth suggesting to somebody who has not already done it.
+    const hurry = tickMs === TICK_MS ? " Set WISEGOLF_STAND_IN_TICK=10s to hurry it along." : "";
+    console.warn(
+        `WiseGolf stand-in: drifting the handicaps of ${roster.length} players from ${path}. ` +
+            `Some of them move every ${inWords(tickMs)}, the next in ${inWords(source.msUntilNextTick())}.` +
+            `${hurry} Nothing here came from WiseGolf.`,
+    );
+    return source;
 }
 
 /**
@@ -73,6 +88,44 @@ export async function standInFromRoster(path: string | undefined): Promise<Handi
  */
 function epochFrom(path: string): number {
     return statSync(path).mtimeMs;
+}
+
+/** Durations as this repository writes them elsewhere: `30s`, `5m`, `2h`. */
+const UNITS: Record<string, number> = { s: 1000, m: 60_000, h: 3_600_000 };
+
+/**
+ * How long a tick lasts.
+ *
+ * Spelled the way `workflows.ts` spells a cadence — `'10s'`, `'5m'` — rather
+ * than as a bare number, because a bare number is the one that gets read as the
+ * wrong unit. Parsed here with eight lines instead of `parse-duration`, which is
+ * the admin's dependency and not this package's, and which would be a strange
+ * thing to add for a development knob.
+ *
+ * A value that cannot be read is refused rather than ignored: silently falling
+ * back to five minutes is indistinguishable from the drift being broken, which
+ * is the exact confusion this option exists to end.
+ */
+export function tickFrom(value: string | undefined): number {
+    if (!value) return TICK_MS;
+
+    const match = /^(\d+)\s*([smh])$/.exec(value.trim().toLowerCase());
+    if (!match) {
+        throw new Error(`WISEGOLF_STAND_IN_TICK is not a duration like "30s", "5m" or "2h": ${value}`);
+    }
+
+    const milliseconds = Number(match[1]) * UNITS[match[2]!]!;
+    if (milliseconds <= 0) {
+        throw new Error(`WISEGOLF_STAND_IN_TICK must be longer than nothing: ${value}`);
+    }
+    return milliseconds;
+}
+
+/** A duration as a person would say it, for one log line. */
+function inWords(milliseconds: number): string {
+    if (milliseconds < 60_000) return `${Math.max(1, Math.round(milliseconds / 1000))}s`;
+    const minutes = milliseconds / 60_000;
+    return minutes < 60 ? `${Math.round(minutes)}m` : `${Math.round(minutes / 6) / 10}h`;
 }
 
 /**

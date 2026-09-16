@@ -50,7 +50,18 @@ export type RosterEntry = {
     handicap: number;
 };
 
-/** Five minutes, the interval on which some handicaps move. */
+/**
+ * Five minutes, the interval on which some handicaps move — and the default
+ * rather than the rule, because five minutes is the wrong number for the two
+ * things this gets used for.
+ *
+ * It is right for leaving a dev server running and coming back to a roster that
+ * has moved the way a real one does. It is badly wrong for the first ten minutes
+ * of using the stand-in at all, where somebody presses the button, sees no
+ * changes, and reasonably concludes the thing is broken — the drift is invisible
+ * for the entire length of their patience. `WISEGOLF_STAND_IN_TICK` is for that
+ * case; see `stand-in.ts`.
+ */
 export const TICK_MS = 5 * 60 * 1000;
 
 /**
@@ -171,6 +182,8 @@ export type DriftingOptions = {
     now?: () => number;
     /** What tick zero is. Defaults to when the source was made. */
     startedAt?: number;
+    /** How long a tick lasts. Defaults to `TICK_MS`. */
+    tickMs?: number;
 };
 
 /**
@@ -188,17 +201,25 @@ export class DriftingHandicapSource implements HandicapSource {
     private readonly seed: string;
     private readonly now: () => number;
     private readonly startedAt: number;
+    private readonly tickMs: number;
 
     constructor(options: DriftingOptions) {
         this.roster = options.roster;
         this.seed = options.seed ?? "hector";
         this.now = options.now ?? (() => Date.now());
         this.startedAt = options.startedAt ?? this.now();
+        this.tickMs = options.tickMs ?? TICK_MS;
     }
 
-    /** How many five-minute ticks have gone by. Never negative. */
+    /** When the next handicaps move, as a count of milliseconds from now. */
+    msUntilNextTick(): number {
+        const elapsed = Math.max(0, this.now() - this.startedAt);
+        return this.tickMs - (elapsed % this.tickMs);
+    }
+
+    /** How many ticks have gone by. Never negative. */
     tick(): number {
-        return Math.max(0, Math.floor((this.now() - this.startedAt) / TICK_MS));
+        return Math.max(0, Math.floor((this.now() - this.startedAt) / this.tickMs));
     }
 
     /**
