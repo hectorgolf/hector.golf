@@ -42,13 +42,18 @@ not:
 - *Migrate `handicaps` and the player images into Firestore.* Named as the place to start because
   Git handles them worst and neither is edited by a human, so a mistake is cheap. Still 1397 entries
   in `handicaps.json` and 40 image files on disk.
-- *Split the data loader.* `astrosite/src/code/data.ts` is still filesystem-only — zero Firestore
-  references — so the Firestore implementation the playbook envisages, with `astro dev` and
-  `npm test` still running against files, has not been started.
+- ~~*Split the data loader.*~~ Done, and further than the playbook envisaged:
+  `astrosite/src/code/data.ts` reads a snapshot served by the admin service, and there are no data
+  files left to fall back to except one generated one. See
+  [`plans/everything-to-firestore.md`](docs/plans/everything-to-firestore.md).
 
 ## Documentation
 
-**The CI/CD table in `docs/current/architecture.md` §9 is missing rows.** `export-admin-data.yml`
-and `refresh-admin-mirror.yml` are not in it. Noticed while adding `deploy-functions.yml` to that
-table; left alone at the time to keep the diff narrow. The two check workflows were added to it when
-they were renamed to `check-*.yml`, since that change was about their triggers anyway.
+**`docs/current/architecture.md` describes the pre-Firestore data pipeline in several places.**
+Its §9 CI/CD table, its data-file inventory and its account of how the site is built all predate
+[`plans/everything-to-firestore.md`](docs/plans/everything-to-firestore.md), which deleted the 89
+committed data files and pointed the build at the admin service. `data-ownership.md` has been
+rewritten; this one has not, and it is the longer job.
+
+The two workflows that used to be missing from the §9 table — `export-admin-data.yml` and
+`refresh-admin-mirror.yml` — no longer exist, so that particular gap closed itself.

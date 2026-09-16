@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, appendFileSync, existsSync, rmSync } from "fs";
+import { writeFileSync, appendFileSync, existsSync, rmSync } from "fs";
 import { join, dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 
@@ -6,9 +6,9 @@ import type { HandicapSource } from "../code/handicaps/handicap-source-api.ts";
 import { createWisegolfSession } from "../code/handicaps/wisegolf-api.ts";
 
 import { formatEventDates, isoDateToday, isoInstantNow } from "@hector/schemas/src/dates.ts";
-import { writeJsonFile } from "../code/json.ts";
+import { appendHandicapCheck, appendObservations, readObservations, writeEvent } from "./store.ts";
 
-import { playersData, hectorEvents, hasParticipants, bucketsAreOpen, pathToEventJson } from "../code/data.ts";
+import { playersData, hectorEvents, hasParticipants, bucketsAreOpen } from "../code/data.ts";
 import { getPlayerName, updatePlayerData } from "../code/players.ts";
 import type { Player } from "@hector/schemas/src/players.ts";
 import { type HandicapHistoryEntry, latestPerDay } from "@hector/schemas/src/handicaps.ts";
@@ -51,22 +51,9 @@ const getPlayerById = (id: string, handicapHistory: Array<HandicapHistoryEntry>)
     return { ...record, handicap: handicap ?? record.handicap };
 };
 
-const readJsonFile = (pathToJsonFile: string, defaultValue: any = []): any => {
-    try {
-        const content = readFileSync(pathToJsonFile, "utf-8").toString();
-        return JSON.parse(content);
-    } catch (err) {
-        console.error(`Error reading JSON file ${pathToJsonFile} (${err}) - returning ${JSON.stringify(defaultValue)}`);
-        return defaultValue;
-    }
-};
-
 // Get the resolved path to this file and determine the directory from that
 // (__dirname is not available in ES6 modules)
 const __filename = fileURLToPath(import.meta.url);
-const pathToHandicapHistoryJson = join(dirname(__filename), "../data/handicaps.json");
-const pathToHandicapChecksJson = join(dirname(__filename), "../data/handicap-checks.json");
-
 const pathToHandicapUpdateCommitMessage = join(dirname(__filename), "../../.update-handicaps-commit");
 
 /**
@@ -129,7 +116,7 @@ export const sweepOf = (players: PlayerWithHandicapChanges[], at: string): Handi
  * `src/data/`, and a data commit deploys the site. That cost is the price of being
  * able to say when we last asked.
  */
-const persistHandicapCheckToDisk = (players: PlayerWithHandicapChanges[], at: string) => {
+const persistHandicapCheck = async (players: PlayerWithHandicapChanges[], at: string) => {
     const check = sweepOf(players, at);
     if (!check) {
         console.error(
@@ -139,10 +126,9 @@ const persistHandicapCheckToDisk = (players: PlayerWithHandicapChanges[], at: st
     }
     const skipped = check.skipped;
 
-    const existing: Array<HandicapCheck> = readJsonFile(pathToHandicapChecksJson, []);
     // Appended, never pruned. The buckets this dates are kept for good, so the
     // explanation has to be too.
-    writeJsonFile(pathToHandicapChecksJson, existing.concat(check));
+    await appendHandicapCheck(check);
     // Named individually up to a point and counted past it: a partial outage is worth
     // seeing in the commit message, a roster-sized list of ids is not.
     const named = skipped.slice(0, 5).join(", ");
@@ -159,7 +145,7 @@ const persistHandicapCheckToDisk = (players: PlayerWithHandicapChanges[], at: st
     return check;
 };
 
-const persistHandicapHistoryToDisk = async (
+const persistHandicapHistory = async (
     players: PlayerWithHandicapChanges[],
     handicapHistory: Array<HandicapHistoryEntry>,
     observed: string,
@@ -204,7 +190,7 @@ const persistHandicapHistoryToDisk = async (
     if (newHandicapChanges.length > 0) {
         console.log(`Updated ${newHandicapChanges.length} players' handicap:`);
         console.log(JSON.stringify(newHandicapChanges, null, 2));
-        writeJsonFile(pathToHandicapHistoryJson, handicapHistory.concat(newHandicapChanges));
+        await appendObservations(newHandicapChanges);
         writeFileSync(
             pathToHandicapUpdateCommitMessage,
             `Updated ${newHandicapChanges.length} players' handicap:\n${commitMessage.join("\n")}`,
@@ -305,14 +291,14 @@ const updateHandicapsForAllPlayers = async () => {
             `Failed to access all handicap sources. Only ${availableSources.length} out of ${sourcePromises.length} API connections were successfully established.`,
         );
     }
-    const handicapHistory: Array<HandicapHistoryEntry> = readJsonFile(pathToHandicapHistoryJson, []);
+    const handicapHistory: Array<HandicapHistoryEntry> = await readObservations();
     const updatedPlayers = await fetchUpdatedPlayerRecords(playersData, handicapHistory, availableSources);
     // One stamp for the whole run: these readings all came from the same sweep, and a
     // per-player clock would imply a precision that is not there. The sweep log and
     // the observation log carry the same instant for the same reason.
     const observed = isoInstantNow();
-    await persistHandicapHistoryToDisk(updatedPlayers, handicapHistory, observed);
-    persistHandicapCheckToDisk(updatedPlayers, observed);
+    await persistHandicapHistory(updatedPlayers, handicapHistory, observed);
+    await persistHandicapCheck(updatedPlayers, observed);
 };
 
 type HectorEvent = {
@@ -345,7 +331,7 @@ export function sortPlayersForBucketing(handicapHistory: Array<HandicapHistoryEn
 }
 
 const updateBucketsForUpcomingEvents = async () => {
-    const handicapHistory: Array<HandicapHistoryEntry> = readJsonFile(pathToHandicapHistoryJson, []);
+    const handicapHistory: Array<HandicapHistoryEntry> = await readObservations();
 
     console.log(`Updating buckets for events whose buckets are still open...`);
     // Not "upcoming": buckets freeze at 08:00 on the first morning, local to the
@@ -387,9 +373,8 @@ const updateBucketsForUpcomingEvents = async () => {
             const oldBuckets = eventObject.buckets;
             if (JSON.stringify(newBuckets) !== JSON.stringify(oldBuckets)) {
                 eventObject.buckets = newBuckets;
-                const filePath = pathToEventJson(eventObject);
-                writeJsonFile(filePath, eventObject);
-                console.log(`Updated buckets for ${eventObject.name} in ${filePath}`);
+                await writeEvent(eventObject);
+                console.log(`Updated buckets for ${eventObject.name}`);
             } else {
                 console.log(`No changes to buckets for event ${event.id} (${event.name} on ${formatEventDates(event)})`);
             }

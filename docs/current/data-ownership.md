@@ -115,89 +115,71 @@ copy in the player file. That is tidying, not a defect: both are written by the 
   biography away from you. Today it does exactly that, twice a month — see
   [`plans/biography-locking.md`](../plans/biography-locking.md).
 
-## Where the data lives, and which direction it flows
+## Where the data lives
 
-Firestore is where the admin's data is authored, and the matching files under
-`astrosite/src/data/` are **generated from it** by `admin/scripts/export.ts`. The public site builds
-from those generated files exactly as it always has.
+*Rewritten 2026-09-16, when the data moved. See
+[`plans/everything-to-firestore.md`](../plans/everything-to-firestore.md).*
 
-**The export writes only what the admin can author.** Today that is matchplay events and nothing
-else. Firestore holds players and the other event formats too, but as a mirror the admin reads —
-refreshed by `npm run seed` — rather than as their source:
+**Firestore is the system of record for everything.** There is one copy of the data and one place it
+is written. `astrosite/src/data/` held 89 JSON files until that change; it now holds one generated
+file, and nothing reads it unless the build has no credentials.
 
-| Data | Authored by | In Firestore | Exported |
-| --- | --- | --- | --- |
-| `events/matchplay/` | the admin UI | source of truth | yes |
-| `events/hector/` | `update-handicaps`, `update-leaderboards` | mirror, for reading | no |
-| `events/finnkampen/` | by hand | mirror, for reading | no |
-| `players/` | `update-handicaps`, `update-player-biographies`, `update-player-club-memberships` | mirror, for reading | no |
-| `handicaps.json`, `courses/` | the scrape / by hand | not in Firestore | no |
-
-Exporting a mirror would publish stale data over a fresh scrape and revert it silently — and because
-the scrape commits its own work, the loss would look like the losing side of a merge nobody
-performed. `update-handicaps` runs twice a day, so that window is hours, not months.
-
-A collection moves into the exported column on the day the admin can author it **and** its scheduled
-writer has been moved to Firestore. Those two things have to happen together: either one alone
-recreates the conflict in the other direction.
-
-The files therefore changed role rather than changing content. They used to be the input; they are
-now the output. Three things follow:
-
-- **Do not hand-edit anything under `astrosite/src/data/events/matchplay/`.** The next export
-  overwrites it without warning. Edit it in the admin UI instead. The other directories are still
-  hand- and scrape-owned, and the export leaves them alone.
-- Deleting an event or a player in the admin deletes its file on the next export. That is deliberate
-  — without it, a deletion would be impossible to express and the site would show the thing forever.
-- The site build stays hermetic: no credentials, no network, and a fork can still build it. Git also
-  keeps a reviewable history of every change the admin made, so the fix for a bad edit is a revert.
-
-`astrosite/src/data/courses/` and `handicaps.json` are further out still: hand-maintained and
-scrape-written respectively, not in Firestore at all, and not seeded.
-
-### The two scripts are complements
-
-They move data in opposite directions and must never cover the same thing, or they form a loop that
-destroys whichever edit is younger — silently, in whichever direction was run last.
-
-| | Direction | Covers |
+| Data | Collection | Written by |
 | --- | --- | --- |
-| `npm run export` | Firestore → committed files | matchplay |
-| `npm run seed` | committed files → Firestore | everything *except* matchplay |
+| Players | `players` | the three player scrapes, and the admin UI |
+| Events | `events` | `update-handicaps` (buckets), `update-leaderboards` (teams), the admin UI |
+| Courses | `courses` | by hand |
+| Leaderboards | `leaderboards` | `update-leaderboards` |
+| Clubs | `clubs` | `update-player-biographies` |
+| Handicap observations | `handicap-observations` | `update-handicaps` |
+| Handicap sweeps | `handicap-checks` | `update-handicaps` |
 
-The seed reads each document before writing it and leaves the unchanged ones alone, so a quiet run
-costs no writes and `updatedAt` keeps meaning "when this last changed" rather than "when the seed
-last ran".
+### How the site gets it
 
-`admin/src/lib/ownership.ts` holds the one list both read, with the mirrored set derived from the
-owned set rather than restated, so a format cannot be added to one and forgotten in the other.
+The admin serves the lot at `GET /api/data/snapshot`, and `astrosite/src/code/data-source.ts` asks
+for it once per build. One request rather than seven, so the payload cannot straddle a write and
+leave a site that disagrees with itself.
 
-The mirror refreshes itself. **Refresh the admin's mirror** runs `npm run seed` whenever one of the
-four scrapes finishes, on `workflow_run` rather than a clock — a cron would be a guess at how long a
-scrape takes, and it would be wrong on the day the scrape is slow, which is the day the data moved
-most. So the roster shows the handicaps WiseGolf last reported, not the ones current when somebody
-last ran the seed by hand.
+The fallback rule matters more than the mechanism, and it is deliberately *not* "fall back if the
+fetch fails":
 
-That is also why the seed must not touch matchplay. It now runs unattended, twice a day: if it wrote
-the owned formats it would revert an unexported tournament without anybody having typed a command.
+> **Credentials present and the fetch fails → fail the build.**
+> **No credentials at all → read `astrosite/src/data/snapshot.json`, and say so loudly.**
 
-For a new project where Firestore holds nothing, `npm run seed -- --bootstrap` imports the owned
-formats as well. It refuses if any event it would overwrite was last written by someone other than
-the seed, because Firestore is the only copy of those.
+Having no credentials is a pull request from a fork, `check-site.yml`, or a laptop — none of which
+publish anything. A deploy always has credentials, and `deploy-site.yml` refuses to start without
+them, so a deploy either uses live data or fails. The version that falls back on error is the one
+that serves month-old handicaps for a fortnight because nobody read a log.
+
+### The committed snapshot
+
+`astrosite/src/data/snapshot.json` is generated, never hand-edited. Every scrape refreshes it from
+Firestore after writing, via `.github/actions/publish-snapshot`, and commits it if it changed.
+
+It has two jobs. It is the credential-less fallback above, and it is the **only copy of the data
+outside Firestore** — which is to say it is the undo. A system of record with one copy has none.
+
+### What used to be here
+
+Two scripts moved data in opposite directions: `npm run seed` pushed committed files into Firestore,
+`npm run export` pulled matchplay back out, and a section of this document existed to explain the
+rule stopping them forming a loop that destroyed whichever edit was younger. Both are gone, with
+`src/lib/ownership.ts`, `export-admin-data.yml` and `refresh-admin-mirror.yml`. With one system of
+record there is no loop to prevent, no mirror to refresh, and no pairing rule about moving a
+collection only when its writer moves too — that rule was about this transition, and the transition
+is over.
 
 ### Publishing an edit
 
-An edit made in the admin UI lives in Firestore and nowhere else until it is exported. To publish it,
-run the **Export admin data** workflow from the Actions tab. It exports, commits what changed, and
-pushes; the push lands under `astrosite/`, which is what `deploy-site.yml` watches, so the public site
-rebuilds without a second button.
+Nothing to publish: an edit in the admin UI is live in Firestore the moment it is saved. The public
+site shows it at the next deploy, which a scrape requests whenever it writes, and which the
+**Deploy hector.golf** button starts on demand.
 
-From a laptop the same thing is `cd admin && npm run export`, then commit the result yourself.
-
-It is manual on purpose. An export publishes whatever is in the store at that moment, so a schedule
-would eventually publish a bracket drawn but not yet corrected, or a result typed into the wrong
-match. Pressing a button when you mean it is the right amount of ceremony for a tournament that runs
-a few times a month.
+The ceremony the export used to provide — "press a button when you mean it", so a half-drawn bracket
+was not published by a schedule — is gone with it, and that is a real loss rather than a tidy-up. A
+tournament edited mid-round is now visible to everybody at the next deploy. If that turns out to
+matter, the thing to add is a per-event `published` flag the site filters on, not a second copy of
+the data.
 
 ### Nothing enforces the rule
 

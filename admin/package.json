@@ -10,8 +10,8 @@
     "preview": "astro preview",
     "start": "node ./dist/server/entry.mjs",
     "test": "vitest run",
-    "seed": "tsx scripts/seed.ts",
-    "export": "tsx scripts/export.ts"
+    "migrate": "tsx scripts/migrate.ts",
+    "snapshot": "tsx scripts/snapshot.ts"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",
