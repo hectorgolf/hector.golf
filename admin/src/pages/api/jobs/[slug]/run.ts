@@ -37,6 +37,14 @@ import { jobBySlug } from '../../../../lib/jobs/registry.ts'
  * a deadline shorter than the job does not cancel the run — it just starts
  * another one on top of it, which is what the lease below is for.
  *
+ * ## Why the redirect uses `ranJob` rather than `ran`
+ *
+ * Because a slug is only unique within its own list, and `handicaps` is in both:
+ * `update-handicaps.yml` is the workflow and the in-process scrape is the job,
+ * deliberately, since they are the same dataset during the migration. With one
+ * parameter the Operations page cannot tell which of the two just ran, and
+ * whichever it checked first would claim every press.
+ *
  * ## CSRF
  *
  * The same trap as the dispatch endpoint, and worth repeating because it has
@@ -55,7 +63,7 @@ export const POST: APIRoute = async ({ params, request, redirect }) => {
     const job = jobBySlug(params.slug)
     if (!job) {
         return wantsHtml(request)
-            ? redirect(`/operations?failed=unknown&reason=not-found`, 303)
+            ? redirect(`/operations?failedJob=unknown&reason=not-found`, 303)
             : json({ error: `No job named ${params.slug}` }, 404)
     }
 
@@ -67,15 +75,15 @@ export const POST: APIRoute = async ({ params, request, redirect }) => {
         // is going should be dropped rather than queued: the next tick is an
         // hour away at most and will read the same sources.
         return wantsHtml(request)
-            ? redirect(`/operations?failed=${job.slug}&reason=already-running`, 303)
+            ? redirect(`/operations?failedJob=${job.slug}&reason=already-running`, 303)
             : json({ skipped: job.slug, heldBy: result.heldBy, detail: result.detail }, 409)
     }
 
     if (wantsHtml(request)) {
         // 303 so a reload of the page it lands on does not start a second run.
         return result.outcome === 'ok'
-            ? redirect(`/operations?ran=${job.slug}`, 303)
-            : redirect(`/operations?failed=${job.slug}&reason=job-failed`, 303)
+            ? redirect(`/operations?ranJob=${job.slug}`, 303)
+            : redirect(`/operations?failedJob=${job.slug}&reason=job-failed`, 303)
     }
 
     // 200 rather than 202: unlike a dispatch, the work is done by the time this
