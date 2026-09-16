@@ -184,9 +184,7 @@ export function render(entries: readonly HandicapHistoryEntry[]): string {
     const ordered = [...entries].sort(compareForRendering)
     const lines = ordered.map((entry) =>
         JSON.stringify(
-            entry.observed === undefined
-                ? { date: entry.date, player: entry.player, handicap: entry.handicap }
-                : { date: entry.date, player: entry.player, handicap: entry.handicap, observed: entry.observed }
+            { date: entry.date, player: entry.player, handicap: entry.handicap, observed: entry.observed }
         )
     )
     return lines.length === 0 ? '' : `${lines.join('\n')}\n`
