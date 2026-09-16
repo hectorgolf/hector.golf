@@ -50,11 +50,56 @@ export type Job = {
 }
 
 export type JobOutcome = {
-    outcome: 'ok' | 'failed'
+    /**
+     * `skipped` is a run that did not happen, as distinct from one that happened
+     * and went wrong. `execute.ts` already used it for a run dropped because
+     * another holds the lease; a job may now also report it for itself, which is
+     * what a missing credential is — nothing was attempted, so there is nothing
+     * to have failed.
+     */
+    outcome: 'ok' | 'failed' | 'skipped'
     detail?: string
     changes: Change[]
     commit?: string
 }
+
+/**
+ * Thrown when a job cannot start because something it needs was never set up.
+ *
+ * Deliberately not a failure. `GitHubFailure`'s own documentation calls
+ * `not-configured` "expected before the setup step that creates one", and a
+ * fresh project meets it on every tick until somebody puts a token in — so
+ * treating it as a crash means a stack trace at error level, twice a day, for a
+ * state the deployment is documented to pass through. The reliable effect of
+ * that is not urgency; it is people learning that this service's error logs are
+ * noise.
+ *
+ * It is distinct from an outage on purpose, and the distinction is load-bearing
+ * rather than cosmetic: `readFile` below throws on *every* failed read because
+ * the reconcile reads `undefined` as "the old pipeline has written nothing", and
+ * an unreachable GitHub reported that way would let a run conclude the legacy
+ * file was empty and commit over it. `not-configured` is the one reason that
+ * cannot be an outage — it is decided before a request is made — so it is the
+ * one reason that can safely mean something other than "stop, loudly".
+ */
+export class NotConfigured extends Error {
+    /**
+     * Duck-typed rather than left to `instanceof`, which compares constructors:
+     * this module is loaded by Vite in development and from a bundle in
+     * production, and a second copy of it would make the check quietly false —
+     * turning every missing credential back into the stack trace this exists to
+     * stop, in the one environment that cannot be watched.
+     */
+    readonly notConfigured = true
+
+    constructor(what: string) {
+        super(`${what} needs a GitHub token, and this service has none configured`)
+        this.name = 'NotConfigured'
+    }
+}
+
+export const isNotConfigured = (error: unknown): error is NotConfigured =>
+    error instanceof Error && (error as { notConfigured?: unknown }).notConfigured === true
 
 /**
  * Who the commits are attributed to.
@@ -89,7 +134,13 @@ const COMMIT_ATTEMPTS = 3
  */
 async function readFile(path: string): Promise<string | undefined> {
     const result = await github().readFile(path)
-    if (!result.ok) throw new Error(`Could not read ${path} from GitHub: ${result.reason}`)
+    if (!result.ok) {
+        // The one reason that is a missing setup step rather than a fault. See
+        // `NotConfigured` for why it is worth telling apart, and why every other
+        // reason still has to be fatal to the run.
+        if (result.reason === 'not-configured') throw new NotConfigured(`reading ${path}`)
+        throw new Error(`Could not read ${path} from GitHub: ${result.reason}`)
+    }
     return result.file.present ? result.file.text : undefined
 }
 

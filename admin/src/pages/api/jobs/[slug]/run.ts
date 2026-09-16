@@ -71,12 +71,27 @@ export const POST: APIRoute = async ({ params, request, redirect }) => {
     const result = await execute(job, viewer.email ?? 'unidentified caller admitted by IAP')
 
     if (result.outcome === 'skipped') {
-        // 409, and not a retry-worthy status. A run that arrives while another
-        // is going should be dropped rather than queued: the next tick is an
-        // hour away at most and will read the same sources.
+        // Two ways a run can not happen, and they want opposite things said
+        // about them. A lease collision is transient — 409, not retry-worthy,
+        // because the run that arrived while another was going should be dropped
+        // rather than queued: the next tick is an hour away at most and will
+        // read the same sources. A missing credential is permanent until
+        // somebody sets one, so it is 503: the service cannot do this yet, and
+        // the answer is a setup step rather than a wait.
+        //
+        // Told apart by `skipped` rather than by whether `heldBy` happens to be
+        // set. That guess is what put "another run of it was already going" in
+        // front of an admin whose only problem was an unconfigured token.
+        const notConfigured = result.skipped === 'not-configured'
         return wantsHtml(request)
-            ? redirect(`/operations?failedJob=${job.slug}&reason=already-running`, 303)
-            : json({ skipped: job.slug, heldBy: result.heldBy, detail: result.detail }, 409)
+            ? redirect(
+                  `/operations?failedJob=${job.slug}&reason=${notConfigured ? 'not-configured' : 'already-running'}`,
+                  303
+              )
+            : json(
+                  { skipped: job.slug, because: result.skipped, heldBy: result.heldBy, detail: result.detail },
+                  notConfigured ? 503 : 409
+              )
     }
 
     if (wantsHtml(request)) {
