@@ -147,11 +147,10 @@ resource "google_secret_manager_secret_iam_member" "functions_runtime_reads" {
 #
 # The rule from the top of this file holds here too: **Terraform creates the
 # container and never the value.** There is no google_secret_manager_secret_version
-# below, so neither credential ever enters Terraform state. Put the values in by
-# hand, once:
-#
-#     printf '%s' 'the-username' | gcloud secrets versions add wisegolf-username --data-file=- --project=hector-golf
-#     printf '%s' 'the-password' | gcloud secrets versions add wisegolf-password --data-file=- --project=hector-golf
+# below, so neither credential ever enters Terraform state. The two commands that
+# put the values in are the WiseGolf step in docs/playbooks/gcp-bootstrapping.md,
+# written against `terraform output` so they cannot drift from the secret ids
+# here.
 #
 # An apply that runs before that produces two empty secrets, which is a supported
 # state and not a broken one: `wisegolfCredentials()` returns undefined, the job
