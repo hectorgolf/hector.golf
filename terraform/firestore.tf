@@ -68,25 +68,31 @@ resource "google_firestore_backup_schedule" "weekly" {
   # is where the number and its ceiling are argued.
   retention = "${var.firestore_backup_retention_weeks * 7 * 24 * 60 * 60}s"
 
-  # Tuesday, and not Monday, which is the obvious choice and the wrong one.
+  # Wednesday. The backup worth having is the one holding a *settled* weekend,
+  # and the weekend does not settle at the weekend.
   #
-  # The weekend is when rounds get played, so the backup worth having is the one
-  # holding the weekend's handicap changes. Those do not land at the weekend:
-  # WiseGolf's own nightly batch runs at about 03:00 Finnish time, and the sweeps
-  # in scheduler.tf collect the results at 03:00, 05:00, 07:00 and 12:00 UTC.
-  # Sunday's rounds therefore become rows in this database during *Monday*.
+  # Monday is the obvious choice and the wrong one. Sunday's rounds only become
+  # rows here once the Golf Union has computed them and a sweep has read them:
+  # the batch runs overnight at about 03:00 Finnish, and the ticks in
+  # scheduler.tf collect at 03:00, 05:00, 07:00 and 12:00 UTC. Worse, Firestore
+  # picks the hour of a backup itself and documents that it varies, and the API
+  # defines this day in UTC — so "MONDAY" includes the three hours before
+  # Monday's first tick has run. That backup would be a whole weekend behind,
+  # and only in some weeks, which is the worst way for it to be wrong.
   #
-  # The day is the only control there is — Firestore picks the hour itself and
-  # documents that it varies — and the API defines the day in UTC. So "MONDAY"
-  # means any moment between Monday 00:00 and 23:59 UTC, which includes the three
-  # hours before Monday's first sweep has run. Land there and the backup is a
-  # whole weekend behind, on the day that looked safest.
+  # Tuesday closes that gap but not the real one. A weekend of tournaments is
+  # exactly when the Golf Union has larger corrections to make by hand, and
+  # nothing guarantees they land on Monday — scheduler.tf's note on the morning
+  # window is about the same unpredictability, one day earlier in the chain. A
+  # failed batch is re-run during office hours; a correction that needs a person
+  # can slip a day past that.
   #
-  # Tuesday cannot land in that gap. Its worst case is 00:00 UTC, twelve hours
-  # after Monday's last tick at 12:00; its best is thirty-six. The margin is
-  # never negative, whichever hour Firestore picks.
+  # Wednesday buys that second working day. The price is that each backup is up
+  # to two days staler than it could be, which matters not at all: PITR covers
+  # the preceding seven days underneath this, so the recent past is not what
+  # these copies are for.
   weekly_recurrence {
-    day = "TUESDAY"
+    day = "WEDNESDAY"
   }
 
   # Matches the database above, and for the same reason rather than out of

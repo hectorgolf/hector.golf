@@ -58,19 +58,21 @@ mistake somebody noticed — a bad admin write on Tuesday, read back on Friday. 
 an export from a chosen timestamp; nothing has to be scheduled in advance beyond having PITR on,
 which it is.
 
-**Weekly backups**, taken on Tuesdays and kept four weeks, are for the mistake nobody noticed. A
+**Weekly backups**, taken on Wednesdays and kept four weeks, are for the mistake nobody noticed. A
 tournament quietly mangled in March and spotted in April is outside PITR's window and inside this
 one. There is deliberately no *daily* schedule beside it — a database may have one of each, but
 daily backups would cover days 1-7, which PITR already covers and covers better. Retention is
 [`var.firestore_backup_retention_weeks`](../../terraform/variables.tf), capped by the API at 14
 weeks; it is the one property of the schedule that can be changed without recreating it.
 
-Tuesday is deliberate. Firestore picks the hour itself and documents that it varies, and the API
-defines the day in UTC — so the only way to be sure a backup contains the weekend is to leave a
-margin. The weekend's rounds do not reach this database until Monday, when the sweeps in
-[`scheduler.tf`](../../terraform/scheduler.tf) run at 03:00, 05:00, 07:00 and 12:00 UTC. A Monday
-backup could be taken before any of them; a Tuesday one is between twelve and thirty-six hours after
-the last.
+Wednesday is deliberate, and it is about a settled weekend rather than a recent one. Sunday's rounds
+do not reach this database until Monday, when the Golf Union's overnight batch has run and the sweeps
+in [`scheduler.tf`](../../terraform/scheduler.tf) have collected it. Firestore picks the hour of a
+backup itself and defines the day in UTC, so a Monday backup could be taken before any of that
+happened. Tuesday would fix the timing but not the substance: a weekend of tournaments is when the
+Golf Union has larger corrections to make by hand, and those are not guaranteed to land on Monday.
+Wednesday allows a second working day for them. Each backup is at most two days staler for it, which
+costs nothing — PITR covers the preceding seven days underneath.
 
 Three things about restoring are worth knowing before the day you need them:
 
