@@ -202,3 +202,97 @@ describe('the stand-in, as the client sees it', () => {
         expect(await client.dispatch(handicaps)).toEqual({ ok: true })
     })
 })
+
+/**
+ * The link out of the run log.
+ *
+ * GitHub's run page is what an admin clicks through to from the Operations
+ * table, so a stand-in that answers the API but not the link leaves a dead end
+ * in the middle of the flow it exists to support. It used to be worse than a
+ * dead end: `http://localhost/...` with the port missing, which resolves to
+ * somebody else's server or to nothing at all.
+ */
+describe('the page behind a run', () => {
+    const repository = 'hectorgolf/hector.golf'
+    const handicaps = workflowBySlug('handicaps')!
+
+    let server: Server
+    let client: GitHubClient
+    let origin: string
+
+    beforeAll(async () => {
+        const state = emptyState()
+        seedHistory(state, [handicaps.file])
+        server = createServer(state, repository)
+        await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
+        origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
+        client = createGitHubClient({ repository, token: async () => 'fake-token', baseUrl: origin })
+    })
+
+    afterAll(async () => {
+        await new Promise<void>((resolve) => server.close(() => resolve()))
+    })
+
+    it('is linked from the run the API reports, at an address that resolves', async () => {
+        const outcome = await client.recentRuns(handicaps, 1)
+        expect(outcome.ok).toBe(true)
+        if (!outcome.ok) return
+
+        // The host the caller used, so the browser on the same machine can
+        // follow it. Not `localhost` with no port, which is a link to nothing.
+        expect(outcome.runs[0]!.url.startsWith(origin)).toBe(true)
+        expect(new URL(outcome.runs[0]!.url).port).not.toBe('')
+    })
+
+    it('answers that link with a page, without a bearer token', async () => {
+        const outcome = await client.recentRuns(handicaps, 1)
+        if (!outcome.ok) return expect.fail('expected a run')
+
+        // No Authorization header: a browser following a link sends none, and
+        // the page has to be reachable anyway.
+        const response = await fetch(outcome.runs[0]!.url)
+        expect(response.status).toBe(200)
+        expect(response.headers.get('content-type')).toContain('text/html')
+
+        const html = await response.text()
+        expect(html).toContain(`#${outcome.runs[0]!.runNumber}`)
+        expect(html).toContain(handicaps.file)
+        // The one thing the page must never let anybody forget.
+        expect(html).toContain('This is not GitHub')
+    })
+
+    it('shows a dispatched run progressing, and says it is still going', async () => {
+        expect(await client.dispatch(handicaps)).toEqual({ ok: true })
+        const outcome = await client.recentRuns(handicaps, 1)
+        if (!outcome.ok) return expect.fail('expected a run')
+
+        const html = await fetch(outcome.runs[0]!.url).then((response) => response.text())
+        expect(html).toContain('queued')
+        expect(html).toContain('workflow_dispatch')
+        // Refreshes itself while unfinished: watching a run progress is the one
+        // thing a real dispatch is too slow to let you do.
+        expect(html).toContain('http-equiv="refresh"')
+    })
+
+    it('says so for a run it has never heard of, rather than inventing one', async () => {
+        const response = await fetch(`${origin}/${repository}/actions/runs/99999`)
+        expect(response.status).toBe(404)
+        expect(await response.text()).toContain('no run #99999')
+    })
+
+    it('does not answer the run page for another repository, and says which it is', async () => {
+        const response = await fetch(`${origin}/someone/else/actions/runs/1`)
+        expect(response.status).toBe(404)
+
+        const html = await response.text()
+        expect(html).toContain('someone/else')
+        expect(html).toContain(repository)
+    })
+
+    it('blames the number, not the repository, when only the number is wrong', async () => {
+        const html = await fetch(`${origin}/${repository}/actions/runs/99998`).then((r) => r.text())
+        // Naming the same repository twice answers nobody's question.
+        expect(html).not.toContain('It answers for')
+        expect(html).toContain('remembers only the runs dispatched since it started')
+    })
+})

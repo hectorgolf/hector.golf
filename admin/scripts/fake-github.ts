@@ -147,15 +147,94 @@ export function runStatus(run: Run, now = Date.now()): { status: string; conclus
     return { status: 'completed', conclusion: 'success' }
 }
 
-/** GitHub's JSON for one run, in the shape `recentRuns` reads. */
-const runBody = (run: Run, repository: string, now = Date.now()) => ({
+/**
+ * GitHub's JSON for one run, in the shape `recentRuns` reads.
+ *
+ * `html_url` is built from the `Host` the caller used rather than from a
+ * configured address, which is what makes the link in the run log work: the
+ * admin asks this on `127.0.0.1:8433`, so that is what it is told to link to,
+ * and the browser on the same machine can follow it. The previous value —
+ * `http://localhost/...`, port and all missing — was a link to nothing twice
+ * over, and `serveRunPage` below is the other half of making it lead somewhere.
+ */
+const runBody = (run: Run, repository: string, host: string, now = Date.now()) => ({
     ...runStatus(run, now),
     run_started_at: run.startedAt,
     created_at: run.startedAt,
     event: run.event,
     run_number: run.runNumber,
-    html_url: `http://localhost/${repository}/actions/runs/${run.runNumber}`,
+    html_url: `http://${host}/${repository}/actions/runs/${run.runNumber}`,
 })
+
+/** Nothing here is trusted enough to interpolate raw, and escaping is four lines. */
+const escapeHtml = (value: string): string =>
+    value.replace(/[&<>"']/g, (character) => `&#${character.charCodeAt(0)};`)
+
+/**
+ * The page behind a run's link.
+ *
+ * GitHub's own run page is the thing an admin clicks through to from the
+ * Operations log, so a stand-in that answers the API but not the link leaves a
+ * dead end in the middle of the one flow it exists to support. This is not a
+ * reproduction of that page and does not try to be — it says which run, which
+ * workflow, what state and when, which is everything this stand-in actually
+ * knows, and it says plainly that none of it came from GitHub.
+ *
+ * It refreshes itself while the run is unfinished, because the run *does*
+ * progress — queued, then running, then done, on `QUEUED_MS` and `RUNNING_MS` —
+ * and watching that happen is the one thing a real dispatch is too slow to let
+ * you see.
+ */
+function runPage(run: Run, repository: string, now = Date.now()): string {
+    const { status, conclusion } = runStatus(run, now)
+    const finished = status === 'completed'
+    const age = Math.round((now - new Date(run.startedAt).getTime()) / 1000)
+
+    const rows: Array<[string, string]> = [
+        ['Workflow', run.workflowFile],
+        ['Run', `#${run.runNumber}`],
+        ['Status', conclusion ? `${status} (${conclusion})` : status],
+        ['Started', `${run.startedAt} — ${age}s ago`],
+        ['Triggered by', run.event],
+        ['Repository', repository],
+    ]
+
+    return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Run #${run.runNumber} · ${escapeHtml(run.workflowFile)}</title>
+<meta name="robots" content="noindex, nofollow">
+${finished ? '' : '<meta http-equiv="refresh" content="5">'}
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; margin: 3rem auto; max-width: 42rem; padding: 0 1rem; }
+  .banner { border: 1px solid #b45309; border-left-width: 4px; background: #fffbeb; padding: .8rem 1rem; }
+  table { border-collapse: collapse; margin-top: 1.5rem; width: 100%; }
+  th, td { text-align: left; padding: .5rem .75rem; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+  th { width: 11rem; color: #4b5563; font-weight: 500; }
+  code { background: #f3f4f6; padding: .1rem .3rem; }
+  .note { color: #6b7280; font-size: .9rem; margin-top: 1.5rem; }
+</style>
+</head>
+<body>
+<p class="banner"><strong>This is not GitHub.</strong> It is
+<code>admin/scripts/fake-github.ts</code>, the local stand-in. No workflow ran, nothing was built and
+nothing was committed — this run exists only in the memory of a process on this machine.</p>
+
+<h1>Run #${run.runNumber}</h1>
+<table>
+${rows.map(([name, value]) => `  <tr><th>${escapeHtml(name)}</th><td>${escapeHtml(value)}</td></tr>`).join('\n')}
+</table>
+
+<p class="note">${
+        finished
+            ? 'Finished. A stand-in run always succeeds; there is nothing here that could fail.'
+            : 'Still going — this page refreshes itself every five seconds until it is done.'
+    }</p>
+</body>
+</html>
+`
+}
 
 /**
  * The status and headers each failure is produced by.
@@ -209,6 +288,52 @@ export function handle(state: FakeState, repository: string, req: IncomingMessag
         })
     }
 
+    /*
+     * The run page, before the token check, because the thing that opens it is a
+     * browser following a link out of the Operations log and a browser sends no
+     * bearer token. It is also not under `/repos/`, since this is GitHub's web
+     * path rather than its API one.
+     *
+     * Matched for any repository rather than only ours, so that a link left over
+     * from a session pointed somewhere else gets a sentence explaining itself
+     * instead of a 401 telling a browser to go and find a token.
+     */
+    const wantsRunPage = /^\/([^/]+\/[^/]+)\/actions\/runs\/(\d+)$/.exec(path)
+    if (wantsRunPage && req.method === 'GET') {
+        const [, askedFor, number] = wantsRunPage
+        const run =
+            askedFor === repository
+                ? state.runs.find((candidate) => candidate.runNumber === Number(number))
+                : undefined
+
+        if (!run) {
+            // 404 rather than the 401 the API path would give: this is a URL a
+            // browser followed, and "authenticate yourself" is no kind of answer
+            // to a link that has gone stale.
+            res.writeHead(404, { 'content-type': 'text/html; charset=utf-8' })
+            // Two different misses, and saying the right one matters: a stale
+            // number wants "it forgets on restart", a stale repository wants
+            // "you are pointed at the wrong one". Naming the same repository
+            // twice, as this first did, answers neither.
+            const wrongRepository =
+                askedFor === repository
+                    ? ''
+                    : ` It answers for <code>${escapeHtml(repository)}</code>, not ` +
+                      `<code>${escapeHtml(askedFor!)}</code>.`
+            res.end(
+                `<!doctype html><meta charset="utf-8"><title>No such run</title>` +
+                    `<p>fake-github has no run #${escapeHtml(number!)}.${wrongRepository}` +
+                    ` It remembers only the runs dispatched since it started — which was when ` +
+                    `<code>dev:fake</code> did.`
+            )
+            return
+        }
+
+        res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' })
+        res.end(runPage(run, repository))
+        return
+    }
+
     // Not the absence of an authorisation model so much as the presence of the
     // one assertion worth making: the real client must always send a token.
     if (!(req.headers.authorization ?? '').startsWith('Bearer ')) {
@@ -248,7 +373,8 @@ export function handle(state: FakeState, repository: string, req: IncomingMessag
             .filter((run) => run.workflowFile === runs[1])
             .sort((a, b) => b.startedAt.localeCompare(a.startedAt))
             .slice(0, limit)
-        return json(res, 200, { workflow_runs: matching.map((run) => runBody(run, repository)) })
+        const host = req.headers.host ?? `127.0.0.1:${DEFAULT_PORT}`
+        return json(res, 200, { workflow_runs: matching.map((run) => runBody(run, repository, host)) })
     }
 
     const contents = rest.match(/^\/contents\/(.+)$/)
