@@ -72,6 +72,7 @@ export const schema = z.object({
     description_long: MultimediaDescriptionSchema,
     images: z.object({
         hero: AbsoluteOrRelativeImageURL.optional(),
+        aerial: AbsoluteOrRelativeImageURL.optional(),
         course_layout: AbsoluteOrRelativeImageURL.optional(),
     }),
     course: z
