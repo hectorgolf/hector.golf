@@ -100,7 +100,7 @@ export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
         // was actually wanted. It is also the one entry where running too often
         // costs real money and real edits: every run is 45 Gemini calls and
         // overwrites every biography.
-        cadence: { everyDays: 15 },
+        cadence: { every: '15d' },
     },
     {
         slug: 'club-memberships',
@@ -109,7 +109,7 @@ export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
         blurb: "Fills in a player's home club from WiseGolf, for players who do not have one yet. Never overwrites a club somebody set.",
         // Was `15 22 15 * *`. Its last scheduled run started at 00:19 on the
         // *16th*, which is the lateness problem arriving as a wrong calendar day.
-        cadence: { everyDays: 30 },
+        cadence: { every: '30d' },
     },
     {
         slug: 'deploy',
@@ -132,7 +132,7 @@ export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
          * deploy has happened in 24 hours, which is to say only when the normal
          * path is already broken.
          */
-        cadence: { everyDays: 1 },
+        cadence: { every: '1d' },
     },
 ]
 

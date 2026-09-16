@@ -22,6 +22,7 @@
     "@hector/ui": "*",
     "@hector/wisegolf": "*",
     "astro": "^7.2.9",
+    "parse-duration": "^2.1.8",
     "typescript": "^6.0.3"
   },
   "devDependencies": {
