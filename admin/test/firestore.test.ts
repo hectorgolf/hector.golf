@@ -60,7 +60,7 @@ describe('checkFirestore', () => {
  * The service and the scripts have to agree on which database they mean.
  *
  * They did not: the library defaulted to `(default)` and the scripts to
- * `hector`, so on a laptop `npm run seed` filled one database and `npm run dev`
+ * `hector`, so on a laptop the import script filled one database and `npm run dev`
  * read the other — and the symptom was the admin cheerfully reporting "No
  * tournaments yet" rather than an error, because a read against a database that
  * is not there comes back empty.

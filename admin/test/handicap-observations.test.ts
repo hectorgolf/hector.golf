@@ -18,9 +18,17 @@ import { documentId, parse, render } from '../src/lib/handicaps/observations.ts'
  * during a week of dual-running that ends when the golf does.
  */
 
+/**
+ * The committed observations, read out of the data snapshot.
+ *
+ * `handicaps.json` is gone on this branch — every collection moved into
+ * Firestore and `astrosite/src/data/snapshot.json` is the generated fallback
+ * that replaced the 89 files. The replay is unchanged in substance: the same
+ * 1,407 entries, through the same storage, back out again.
+ */
 const committed: HandicapHistoryEntry[] = JSON.parse(
-    readFileSync(join(import.meta.dirname, '../../astrosite/src/data/handicaps.json'), 'utf-8')
-)
+    readFileSync(join(import.meta.dirname, '../../astrosite/src/data/snapshot.json'), 'utf-8')
+).handicapObservations
 
 describe('the document id', () => {
     it('is unique across every entry ever committed', () => {

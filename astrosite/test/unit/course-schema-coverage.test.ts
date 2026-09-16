@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
+import { join } from "path";
 
-import { glob } from "glob";
 import { describe, expect, it } from "vitest";
 
 import { schema as CourseSchema } from "@hector/schemas/src/courses.ts";
@@ -29,11 +29,25 @@ import { schema as CourseSchema } from "@hector/schemas/src/courses.ts";
  * schema**, optional if only one course has it. Adding a field to a course file
  * without adding it here fails the test rather than quietly doing nothing.
  *
- * There are no exceptions. There was one — `konopiste-radecky.json` carried a
- * `description_deste` paragraph describing the *d'Este* course, which that
- * course's own file does not contain and no page renders — and it has been
- * deleted from the data rather than described in the schema, which is what a
- * copy-paste leftover deserves.
+ * ## Read from the snapshot, not from files
+ *
+ * There are no course files any more —
+ * [`docs/plans/everything-to-firestore.md`](../../../docs/plans/everything-to-firestore.md) moved
+ * them into Firestore — so this reads the committed snapshot instead. The
+ * property is unchanged and the reason for it is stronger: on `main` a lagging
+ * schema wasted hand-written text, and here it would delete it, because the
+ * snapshot is written *through* the schema-validating migration and the files it
+ * came from are gone.
+ *
+ * `data-snapshot.test.ts` is the neighbouring check and a weaker one: it asserts
+ * every course record *parses*. This asserts that parsing keeps everything.
+ *
+ * ## No exceptions
+ *
+ * There was one — `konopiste-radecky` carried a `description_deste` paragraph
+ * describing the *d'Este* course, which that course's own record does not
+ * contain and no page renders. It has been deleted from the data rather than
+ * described in the schema, which is what a copy-paste leftover deserves.
  */
 
 /** Every leaf path in an object, as dotted/indexed strings. */
@@ -54,15 +68,17 @@ function leafPaths(value: unknown): Set<string> {
     return found;
 }
 
-const files = (await glob("src/data/courses/**/*.json")).sort();
+const snapshot = JSON.parse(readFileSync(join(process.cwd(), "src/data/snapshot.json"), "utf-8"));
+const courses = (snapshot.courses as Array<Record<string, unknown>>)
+    .map((course) => [String(course.id), course] as const)
+    .sort(([a], [b]) => a.localeCompare(b));
 
 describe("the course schema", () => {
-    it("has course files to check, so a glob mistake cannot make this vacuous", () => {
-        expect(files.length).toBeGreaterThanOrEqual(17);
+    it("has courses to check, so an empty snapshot cannot make this vacuous", () => {
+        expect(courses.length).toBeGreaterThanOrEqual(17);
     });
 
-    it.each(files)("reads every field in %s", (file) => {
-        const raw = JSON.parse(readFileSync(file, "utf-8"));
+    it.each(courses)("reads every field in %s", (id, raw) => {
         const parsed = CourseSchema.safeParse(raw);
         expect(parsed.success).toBe(true);
 

@@ -19,6 +19,7 @@
   "dependencies": {
     "@astrojs/check": "^0.9.10",
     "@astrojs/react": "^6.0.4",
+    "@google-cloud/firestore": "^9.0.1",
     "@hector/schemas": "*",
     "@hector/ui": "*",
     "@hector/wisegolf": "*",

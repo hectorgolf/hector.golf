@@ -74,32 +74,30 @@ jobs:
       # install happens there rather than inside astrosite/.
       - name: Install dependencies
         run: npm ci
+      # Firestore is the system of record now, so the scrape writes documents
+      # rather than files — see docs/plans/everything-to-firestore.md. It needs an
+      # identity with `roles/datastore.user`, which is what GH_DEPLOYER_SA already
+      # holds for the seed.
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GH_WIF_PROVIDER }}
+          service_account: ${{ vars.GH_DEPLOYER_SA }}
       - name: Run script
         run: |
           npx tsx src/workflows/update-handicaps.ts
         working-directory: ${{ env.BUILD_PATH }}
         env:
+          # The Firestore client in src/workflows/store.ts reads this.
+          GOOGLE_CLOUD_PROJECT: ${{ vars.GCP_PROJECT_ID }}
           WISEGOLF_USERNAME: ${{ secrets.WISEGOLF_USERNAME }}
           WISEGOLF_PASSWORD: ${{ secrets.WISEGOLF_PASSWORD }}
-      - name: Commit changes
-        id: commit
-        run: |
-          scripts/commit-changes.sh
-        working-directory: ${{ env.BUILD_PATH }}
-        env:
-          GIT_AUTHOR_NAME: update-handicaps.yml
-          GIT_AUTHOR_EMAIL: ${{ secrets.GIT_COMMITTER_EMAIL }}
-          GIT_COMMITTER_NAME: update-handicaps.yml
-          GIT_COMMITTER_EMAIL: ${{ secrets.GIT_COMMITTER_EMAIL }}
-
-      # A push made with GITHUB_TOKEN does not trigger workflows, so deploy-site.yml's
-      # `on: push` has never fired for these commits and the site waited for that
-      # workflow's own cron. This asks the admin service — which holds a token
-      # that is not GITHUB_TOKEN — to dispatch it now instead.
-      - name: Request a deploy
-        uses: ./.github/actions/request-deploy
+      - name: Publish the data snapshot
+        uses: ./.github/actions/publish-snapshot
         with:
-          committed: ${{ steps.commit.outputs.committed }}
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          committer_email: ${{ secrets.GIT_COMMITTER_EMAIL }}
+          committer_name: update-handicaps.yml
           wif_provider: ${{ vars.GH_WIF_PROVIDER }}
           service_account: hector-scheduler@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com
           admin_domain: ${{ vars.TF_ADMIN_DOMAIN }}

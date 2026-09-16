@@ -7,7 +7,9 @@ import {
 } from "@hector/schemas/src/handicaps.ts";
 import { createWisegolfSession } from "@hector/wisegolf/src/wisegolf-api.ts";
 
-import handicapData from "../data/handicaps.json";
+import { snapshot } from "./data-source.ts";
+
+const handicapData = (await snapshot()).handicapObservations;
 
 function createSources(): Promise<HandicapSource[]> {
     return Promise.all([createWisegolfSession()]);

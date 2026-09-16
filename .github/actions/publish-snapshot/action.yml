@@ -1,0 +1,88 @@
+name: Publish the data snapshot
+description: >
+  Regenerate astrosite/src/data/snapshot.json from Firestore after a scrape has written
+  to it, commit it if it changed, and ask the admin service to deploy.
+
+# Why a scrape still commits anything at all.
+#
+# Firestore is the system of record — see docs/plans/everything-to-firestore.md — and
+# the site builds from the admin's /api/data/snapshot, not from the repository. So the
+# committed snapshot is not the build's input. It is the fallback for builds that have
+# no credentials: a pull request from a fork, check-site.yml, a laptop.
+#
+# That fallback still has to keep up with the database. A snapshot frozen on cutover
+# day means the first fork to build the site publishes handicaps from months ago, and
+# nothing would say so. Hence: every scrape that wrote something refreshes it.
+#
+# It is also the only copy of the data outside Firestore, which is the other half of
+# why this exists. A system of record with no second copy has no undo.
+
+inputs:
+  project_id:
+    description: 'GCP project holding the Firestore database, from vars.GCP_PROJECT_ID.'
+    required: true
+  committer_email:
+    description: 'Email to commit as, from secrets.GIT_COMMITTER_EMAIL.'
+    required: true
+  committer_name:
+    description: 'Name to commit as. Conventionally the calling workflow file.'
+    required: true
+  wif_provider:
+    description: 'Workload Identity provider, from vars.GH_WIF_PROVIDER.'
+    required: true
+  service_account:
+    description: 'The identity to impersonate when asking the admin to deploy.'
+    required: true
+  admin_domain:
+    description: 'Host of the admin service, from vars.TF_ADMIN_DOMAIN.'
+    required: true
+  iap_client_id:
+    description: 'IAP OAuth client id — the audience the ID token has to carry.'
+    required: true
+
+outputs:
+  committed:
+    description: 'Whether the snapshot changed and was committed.'
+    value: ${{ steps.commit.outputs.committed }}
+
+runs:
+  using: composite
+  steps:
+    # Reads Firestore with the credentials the calling workflow already established
+    # for the scrape itself. Refuses to write an empty collection over a good one —
+    # see scripts/snapshot.ts, where that check lives rather than here, so that a
+    # laptop run is protected by it too.
+    - name: Regenerate the snapshot from Firestore
+      shell: bash
+      run: npm run snapshot
+      working-directory: admin
+      env:
+        GOOGLE_CLOUD_PROJECT: ${{ inputs.project_id }}
+
+    - name: Commit it, if it changed
+      id: commit
+      shell: bash
+      run: scripts/commit-changes.sh
+      working-directory: astrosite
+      env:
+        GIT_AUTHOR_NAME: ${{ inputs.committer_name }}
+        GIT_AUTHOR_EMAIL: ${{ inputs.committer_email }}
+        GIT_COMMITTER_NAME: ${{ inputs.committer_name }}
+        GIT_COMMITTER_EMAIL: ${{ inputs.committer_email }}
+
+    # Unconditional on the commit, unlike before, and that is the change worth
+    # noticing. The scrape has already written to Firestore, so there is something
+    # new to publish whether or not the snapshot's bytes moved — and the snapshot
+    # can fail to move for an uninteresting reason while the data very much has.
+    #
+    # `committed: true` is passed literally for that reason. The guard inside
+    # request-deploy is about "did a scrape find anything", which the caller now
+    # decides for itself.
+    - name: Request a deploy
+      uses: ./.github/actions/request-deploy
+      with:
+        committed: 'true'
+        wif_provider: ${{ inputs.wif_provider }}
+        service_account: ${{ inputs.service_account }}
+        admin_domain: ${{ inputs.admin_domain }}
+        iap_client_id: ${{ inputs.iap_client_id }}

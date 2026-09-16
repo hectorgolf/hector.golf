@@ -13,7 +13,7 @@ import { Firestore } from '@google-cloud/firestore'
  * safe fallback here, it is a guaranteed miss, and it misses quietly: reads come
  * back empty rather than failing, so the admin renders "No tournaments yet"
  * about a database that does not exist. `scripts/store.ts` imports this rather
- * than repeating it, because when the two disagreed `npm run seed` filled one
+ * than repeating it, because when the two disagreed the import script filled one
  * database while `npm run dev` read the other.
  */
 export const databaseId = process.env.FIRESTORE_DATABASE_ID ?? 'hector'

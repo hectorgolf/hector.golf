@@ -711,8 +711,6 @@ and assigns a club **only when exactly one** club matches.
 | `update-leaderboards.yml` | Dispatched by the admin service at 03:00/12:00 UTC; cron `15 3,12 * * *` as a backstop; manual | Script + `commit-changes.sh` | `contents: write` |
 | `update-player-biographies.yml` | Cron `30 2 10,25 * *`; manual | Script + `commit-changes.sh` | `contents: write` |
 | `update-player-club-memberships.yml` | Cron `15 22 15 * *`; manual | Script + `commit-changes.sh` | `contents: write` |
-| `export-admin-data.yml` | Manual only — an export publishes an edit, so there is no cron | Guard on `GH_WIF_PROVIDER`/`GH_DEPLOYER_SA` → `npm ci` → WIF auth → `npm run export` in `admin/` → `git add -A astrosite/src/data/events/matchplay` and push | `contents: write`, `id-token: write` |
-| `refresh-admin-mirror.yml` | `workflow_run` completion of the four update workflows, successful runs only; manual | Same guard → `npm ci` → WIF auth → `npm run seed` in `admin/` | `contents: read`, `id-token: write` |
 
 **Deployment target is GitHub Pages**, with the custom domain supplied by
 [`public/CNAME`](../../astrosite/public/CNAME) (`hector.golf`; `www` 301s to it). The build step passes
@@ -749,10 +747,10 @@ their absence degrades; this is what reads them.
 
 | Name | Kind | Used by |
 | --- | --- | --- |
-| `GH_WIF_PROVIDER` | Variable | every job that touches GCP — both Terraform workflows, `deploy-admin`, `deploy-functions`, the four update workflows, `export-admin-data`, `refresh-admin-mirror` |
+| `GH_WIF_PROVIDER` | Variable | every job that touches GCP — both Terraform workflows, `deploy-admin`, `deploy-functions`, `deploy-site`, the four update workflows |
 | `GCP_PROJECT_ID` | Variable | the same set minus the two Terraform workflows, which get the project from their backend config |
 | `GCP_REGION` | Variable | `deploy-admin`, `deploy-functions` |
-| `GH_DEPLOYER_SA` | Variable | `deploy-admin`, `export-admin-data`, `refresh-admin-mirror` — the identity they federate to |
+| `GH_DEPLOYER_SA` | Variable | `deploy-admin` and the three player/handicap update workflows — the identity they federate to, and the one holding `roles/datastore.user` |
 | `GH_TERRAFORM_SA` | Variable | `terraform-plan`, `terraform-apply` — the identity they federate to |
 | `GH_LEADERBOARD_SA` | Variable | `update-leaderboards` — the identity it federates to |
 | `GH_FUNCTIONS_DEPLOYER_SA` | Variable | `deploy-functions` — the identity it federates to |
@@ -769,7 +767,7 @@ their absence degrades; this is what reads them.
 | `WISEGOLF_PASSWORD` | Secret | deploy, PR checks, three update workflows |
 | `HECTOR_APP_API_KEY` | Secret | `update-leaderboards`, `check-site` |
 | `ASTROSITE_API_KEY` | Secret | `update-player-biographies` |
-| `GIT_COMMITTER_EMAIL` | Secret | the four update workflows and `export-admin-data` — the address they commit as |
+| `GIT_COMMITTER_EMAIL` | Secret | the four update workflows — the address they commit the regenerated data snapshot as |
 | `GITHUB_TOKEN` | Built-in → `GITHUB_ACCESS_TOKEN` | `update-leaderboards` |
 
 The four update workflows reach beyond their own scrape because each ends in the `request-deploy`
