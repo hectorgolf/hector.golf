@@ -24,9 +24,14 @@ import { changesInWords, labelOfJob, requesterInWords, toneOfJob } from "../../l
 const ranParam = Astro.url.searchParams.get("ran");
 const ranAll = ranParam === "scheduled";
 const ran = workflowBySlug(ranParam ?? undefined);
-const failedSlug = Astro.url.searchParams.get("failed") ?? undefined;
-const failed = workflowBySlug(failedSlug);
-const failedJob = jobBySlug(failedSlug);
+const failed = workflowBySlug(Astro.url.searchParams.get("failed") ?? undefined);
+/*
+ * Jobs report through their own parameters, because a slug is only unique within
+ * its own list: `handicaps` names both `update-handicaps.yml` and the in-process
+ * job that shadows it. Sharing `ran`/`failed` would mean whichever list the page
+ * checked first claimed every press.
+ */
+const failedJob = jobBySlug(Astro.url.searchParams.get("failedJob") ?? undefined);
 /*
  * Read twice, deliberately. The GitHub endpoints redirect with a `GitHubFailure`
  * and the job endpoint with reasons of its own, so the cast below is only valid
@@ -117,12 +122,7 @@ const jobLog: JobRun[] = JOBS.flatMap((job) => jobHistories.get(job.slug) ?? [])
 	b.startedAt.localeCompare(a.startedAt),
 );
 
-/*
- * `ran` and `failed` are looked up against both lists, because both endpoints
- * redirect here with a slug and the page cannot tell from the URL which kind it
- * was. Anything that resolves to neither falls back to wording of our own.
- */
-const ranJob = jobBySlug(ranParam ?? undefined);
+const ranJob = jobBySlug(Astro.url.searchParams.get("ranJob") ?? undefined);
 
 const JOB_TONE_PILL = {
 	good: "pill-victor",

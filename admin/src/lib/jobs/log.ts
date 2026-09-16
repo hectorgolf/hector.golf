@@ -79,7 +79,7 @@ export async function record(run: JobRun, options: RecordOptions = {}): Promise<
         // `${slug}_${startedAt}` rather than an auto id, so a retried tick that
         // somehow records twice overwrites rather than accumulating, and so the
         // document id sorts usefully in the console.
-        await db.collection(RUNS).doc(`${run.slug}_${run.startedAt}`).set(run)
+        await db.collection(RUNS).doc(`${run.slug}_${run.startedAt}`).set(defined(run))
         await trim(db, run.slug)
     } catch (error) {
         console.error('Could not record a job run', { slug: run.slug, outcome: run.outcome }, error)
@@ -94,6 +94,26 @@ export async function record(run: JobRun, options: RecordOptions = {}): Promise<
  * of fifty thousand. Worth knowing rather than worth optimising: the alternative
  * is tracking a cursor in another document, which is a read too.
  */
+/**
+ * The run without its absent optional fields.
+ *
+ * Firestore rejects `undefined` outright — `Cannot use "undefined" as a
+ * Firestore value` — rather than storing a null or skipping the field, and
+ * `detail` and `commit` are undefined on exactly the commonest run there is: one
+ * that succeeded and has nothing to explain. So the first real shadow run threw
+ * here, was swallowed by the `catch` below, and left the Operations page saying
+ * "No runs recorded yet" while the job itself had worked perfectly.
+ *
+ * Stripping the keys rather than turning the whole client's
+ * `ignoreUndefinedProperties` on, which would apply to every write this service
+ * makes and quietly drop a field somebody meant to set. Absent is also the
+ * honest encoding: the schema has these optional, and a run with no detail has
+ * no detail rather than a null one.
+ */
+function defined(run: JobRun): Record<string, unknown> {
+    return Object.fromEntries(Object.entries(run).filter(([, value]) => value !== undefined))
+}
+
 async function trim(db: Firestore, slug: string): Promise<void> {
     const snapshot = await db
         .collection(RUNS)
