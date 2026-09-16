@@ -100,7 +100,83 @@ export type GitHubClient = {
     commitFile(request: CommitRequest): Promise<CommitOutcome>
 }
 
-const API = 'https://api.github.com'
+/** GitHub, in production and by default everywhere else. */
+export const GITHUB_API = 'https://api.github.com'
+
+/**
+ * Where the stand-in may live, and nowhere else.
+ *
+ * This is the whole of the security argument for the override below, so it is
+ * worth stating rather than implying: `headers()` puts the dispatch token in an
+ * `Authorization` header on **every** call, so whatever host this resolves to is
+ * handed a credential that can push to the repository. A base URL is therefore
+ * not the harmless piece of configuration it looks like — it is a "send my token
+ * here" instruction — and the one property that makes it safe to have at all is
+ * that the answer can never be a machine other than this one.
+ *
+ * Loopback only, then. A typo, a stale `.env`, a variable inherited from
+ * somewhere unexpected: the worst any of them can do is break a developer's
+ * admin, which is recoverable, rather than post the token to a host somebody
+ * else controls, which is not.
+ */
+const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]'])
+
+/**
+ * Where GitHub is.
+ *
+ * Unset in every deployment — `terraform/cloud_run.tf` does not set it and must
+ * not — so production reads exactly one line of this and it is the constant
+ * above. What the variable is for is `scripts/fake-github.ts`, which speaks the
+ * four calls this client makes so that the Operations page can be exercised on a
+ * laptop: a dispatched run that actually appears and progresses, a rate limit
+ * that can be summoned on demand, a commit conflict that can be reproduced.
+ *
+ * ## Why this throws rather than falling back
+ *
+ * Falling back to real GitHub is the tempting behaviour and the dangerous one.
+ * The person who set this variable did so to *stop* talking to GitHub; quietly
+ * doing it anyway means their next button press dispatches a real workflow
+ * against the real repository with a real token, believing it went to a stub.
+ * A configuration error should not be resolvable into the one outcome nobody
+ * asked for, so there are two answers here and they are "the stand-in" and "a
+ * loud stop" — never "actually, GitHub".
+ *
+ * The throw is safe to have because it cannot reach a deployment: the variable
+ * is unset there, and `github()` is lazy, so an unset variable never runs this
+ * past its first line. This is the reverse of the rule in `secrets.ts` about
+ * dependencies that can stop the service from starting, and deliberately so —
+ * that rule is about somebody else's outage, and this is about a value only a
+ * developer on a laptop can have typed.
+ */
+export function apiBaseUrl(environment: NodeJS.ProcessEnv = process.env): string {
+    const override = environment.GITHUB_API_BASE_URL?.trim()
+    if (!override) return GITHUB_API
+
+    let parsed: URL
+    try {
+        parsed = new URL(override)
+    } catch {
+        throw new Error(`GITHUB_API_BASE_URL is not a URL: ${override}`)
+    }
+
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        throw new Error(`GITHUB_API_BASE_URL must be http or https, not ${parsed.protocol}`)
+    }
+    // Credentials in the URL would be sent on every call and logged with it.
+    if (parsed.username || parsed.password) {
+        throw new Error('GITHUB_API_BASE_URL must not carry a username or password')
+    }
+    if (!LOOPBACK_HOSTS.has(parsed.hostname)) {
+        throw new Error(
+            `GITHUB_API_BASE_URL may only point at this machine, not ${parsed.hostname}. ` +
+                'Every call carries the dispatch token, so the override is restricted to loopback ' +
+                'addresses — see scripts/fake-github.ts.'
+        )
+    }
+
+    // Trailing slashes would double up against the paths built below.
+    return parsed.origin + parsed.pathname.replace(/\/+$/, '')
+}
 
 /**
  * Headers GitHub asks every caller for. The API version is pinned rather than
@@ -138,12 +214,18 @@ export type GitHubClientOptions = {
     token: () => Promise<string | undefined>
     /** Injectable so the tests do not have to stub a global. */
     fetch?: typeof globalThis.fetch
+    /**
+     * Where GitHub is, for the local stand-in. Defaults to `apiBaseUrl()`, which
+     * is `GITHUB_API` unless a loopback override is configured.
+     */
+    baseUrl?: string
 }
 
 export function createGitHubClient(options: GitHubClientOptions): GitHubClient {
     const doFetch = options.fetch ?? globalThis.fetch
-    const base = `${API}/repos/${options.repository}/actions/workflows`
-    const contents = `${API}/repos/${options.repository}/contents`
+    const api = options.baseUrl ?? apiBaseUrl()
+    const base = `${api}/repos/${options.repository}/actions/workflows`
+    const contents = `${api}/repos/${options.repository}/contents`
 
     /**
      * Everything every call does the same way: get a token, call, classify.

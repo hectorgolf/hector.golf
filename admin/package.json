@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "dev:iap": "tsx scripts/dev-iap.ts",
+    "dev:fake": "tsx scripts/dev-fake.ts",
     "build": "astro check && astro build",
     "preview": "astro preview",
     "start": "node ./dist/server/entry.mjs",
