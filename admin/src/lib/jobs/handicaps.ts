@@ -211,6 +211,30 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
 
     // 2. Read the handicaps.
     const players = await listPlayers()
+
+    if (players.length === 0) {
+        /*
+         * An empty roster and a silent source are different problems with
+         * different fixes, and the check below cannot tell them apart: with
+         * nobody to ask about, `readings` is empty by arithmetic rather than
+         * because anything went wrong, and the run reported "no handicap source
+         * answered for any of 0 players". That sentence sends a reader to look
+         * at WiseGolf, which is the one place the answer is not.
+         *
+         * Deployed, this means the players collection is missing or unreadable,
+         * which is a real failure. On a laptop it means the emulator has not
+         * been seeded, so the message says so — the same message serves both,
+         * because the question "where did the players go" is the same question.
+         */
+        return {
+            outcome: 'failed',
+            detail:
+                'there are no players in Firestore, so there were no handicaps to read. ' +
+                'Locally: npm run seed -- --bootstrap',
+            changes: [],
+        }
+    }
+
     const credentials = await wisegolfCredentials()
     const session = await createWisegolfSession(credentials)
     const { readings, skipped } = await scrape(players, [session])
