@@ -56,7 +56,7 @@
         "tees": [
             {
                 "name": "white",
-                "name_cz": "bílá",
+                "name_local": "bílá",
                 "color": "#ffffff",
                 "stroke": "#000000",
                 "length": 6086,
@@ -72,7 +72,7 @@
             },
             {
                 "name": "yellow",
-                "name_cz": "žlutá",
+                "name_local": "žlutá",
                 "color": "#dddd00",
                 "stroke": "#000000",
                 "length": 5730,
@@ -88,7 +88,7 @@
             },
             {
                 "name": "blue",
-                "name_cz": "modrá",
+                "name_local": "modrá",
                 "color": "#0000dd",
                 "stroke": "#000000",
                 "length": 5372,
@@ -104,7 +104,7 @@
             },
             {
                 "name": "red",
-                "name_cz": "červená",
+                "name_local": "červená",
                 "color": "#dd0000",
                 "stroke": "#000000",
                 "length": 5011,
