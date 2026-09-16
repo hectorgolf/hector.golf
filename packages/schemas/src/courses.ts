@@ -26,6 +26,7 @@ export const schema = z.object({
         ]),
     ),
     images: z.object({
+        hero: AbsoluteOrRelativeImageURL.optional(),
         course_layout: AbsoluteOrRelativeImageURL.optional(),
     }),
     course: z
