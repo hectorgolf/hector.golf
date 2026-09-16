@@ -1,7 +1,7 @@
 import { expect, describe, it } from 'vitest'
 
-import { type HandicapSource } from '../../../src/code/handicaps/handicap-source-api.ts'
-import { createWisegolfSession } from '../../../src/code/handicaps/wisegolf-api.ts'
+import { type HandicapSource } from '@hector/wisegolf/src/handicap-source-api.ts'
+import { createWisegolfSession } from '@hector/wisegolf/src/wisegolf-api.ts'
 
 
 describe('Integration to WiseGolf', () => {

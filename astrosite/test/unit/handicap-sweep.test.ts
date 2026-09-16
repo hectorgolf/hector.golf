@@ -1,6 +1,6 @@
 import { expect, describe, it } from 'vitest'
 import { fetchUpdatedPlayerRecords, sweepOf } from '../../src/workflows/update-handicaps'
-import type { HandicapSource, GolfClub } from '../../src/code/handicaps/handicap-source-api'
+import type { HandicapSource, GolfClub } from '@hector/wisegolf/src/handicap-source-api.ts'
 import type { HandicapHistoryEntry } from '@hector/schemas/src/handicaps.ts'
 import type { Player } from '@hector/schemas/src/players.ts'
 import { playersData } from '../../src/code/data'

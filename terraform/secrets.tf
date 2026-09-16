@@ -1,5 +1,6 @@
-# The one secret this project holds: a GitHub token the admin service dispatches
-# workflows with.
+# The secrets this project holds: a GitHub token the admin service dispatches
+# workflows and commits with, and the WiseGolf login its handicaps job scrapes
+# with.
 #
 # ## Terraform creates the container and never the value
 #
@@ -129,4 +130,76 @@ resource "google_secret_manager_secret_iam_member" "functions_runtime_reads" {
   secret_id = each.value.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = google_service_account.functions_runtime.member
+}
+
+# ---------------------------------------------------------------------------
+# The WiseGolf login, for the handicaps job running inside the admin service.
+#
+# These credentials already exist — as GitHub Actions secrets, which is where
+# `update-handicaps.yml` reads them from. This is the same login in the place the
+# service can reach, not a second one: the scrape moves from a runner to Cloud
+# Run in docs/plans/handicaps-to-firestore.md, and a Cloud Run container cannot
+# read a GitHub secret.
+#
+# Two secrets rather than one payload holding both, because Secret Manager
+# versions the whole payload and rotating the password should not mean rewriting
+# the username beside it.
+#
+# The rule from the top of this file holds here too: **Terraform creates the
+# container and never the value.** There is no google_secret_manager_secret_version
+# below, so neither credential ever enters Terraform state. Put the values in by
+# hand, once:
+#
+#     printf '%s' 'the-username' | gcloud secrets versions add wisegolf-username --data-file=- --project=hector-golf
+#     printf '%s' 'the-password' | gcloud secrets versions add wisegolf-password --data-file=- --project=hector-golf
+#
+# An apply that runs before that produces two empty secrets, which is a supported
+# state and not a broken one: `wisegolfCredentials()` returns undefined, the job
+# runs against a NullHandicapSource, and it reports a sweep that reached nobody
+# rather than failing to start.
+# ---------------------------------------------------------------------------
+
+locals {
+  # The two halves of the WiseGolf login. A map rather than two resources so that
+  # the accessor binding below is one resource too, and so adding a third
+  # credential later is one line.
+  wisegolf_secrets = toset(["wisegolf-username", "wisegolf-password"])
+}
+
+resource "google_secret_manager_secret" "wisegolf" {
+  for_each = local.wisegolf_secrets
+
+  project   = var.project_id
+  secret_id = each.value
+
+  # Pinned to var.region, as with the GitHub token above and for the same reason.
+  replication {
+    user_managed {
+      replicas {
+        location = var.region
+      }
+    }
+  }
+
+  labels = {
+    component = "admin"
+  }
+
+  depends_on = [
+    google_project_service.enabled["secretmanager.googleapis.com"],
+    # See the note on the same edge above: without it, the first apply after
+    # secretmanager.admin was granted races the grant and loses.
+    google_project_iam_member.terraform_ci,
+  ]
+}
+
+# secretAccessor reads versions and cannot list, create, disable or destroy them.
+# Granted to the admin's runtime identity, which is the only thing that scrapes.
+resource "google_secret_manager_secret_iam_member" "admin_runtime_reads_wisegolf" {
+  for_each = google_secret_manager_secret.wisegolf
+
+  project   = var.project_id
+  secret_id = each.value.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = google_service_account.admin_runtime.member
 }

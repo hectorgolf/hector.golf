@@ -2,8 +2,8 @@ import { readFileSync, writeFileSync, appendFileSync, existsSync, rmSync } from 
 import { join, dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 
-import type { HandicapSource } from "../code/handicaps/handicap-source-api.ts";
-import { createWisegolfSession } from "../code/handicaps/wisegolf-api.ts";
+import type { HandicapSource } from "@hector/wisegolf/src/handicap-source-api.ts";
+import { createWisegolfSession } from "@hector/wisegolf/src/wisegolf-api.ts";
 
 import { formatEventDates, isoDateToday, isoInstantNow } from "@hector/schemas/src/dates.ts";
 import { writeJsonFile } from "../code/json.ts";

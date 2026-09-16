@@ -268,3 +268,118 @@ describe('what the twice-daily tick starts', () => {
         expect(SCHEDULED_WORKFLOWS.length).toBeGreaterThan(0)
     })
 })
+
+/**
+ * Reading and writing the one file this service commits.
+ *
+ * The backup is rendered from Firestore and committed through the contents API,
+ * which means two statuses matter that a dispatch never sees: a 404, which is
+ * the first run rather than a problem, and a 409, which is having lost a race
+ * with one of the four workflows that also push to `main`.
+ */
+
+const fileResponse = (text: string, sha = 'blob-sha') =>
+    new Response(
+        JSON.stringify({ content: Buffer.from(text, 'utf-8').toString('base64'), encoding: 'base64', sha }),
+        { status: 200, headers: { 'content-type': 'application/json' } }
+    )
+
+describe('reading a file', () => {
+    it('asks for the path on main and decodes what comes back', async () => {
+        const { client, fetch } = clientAnswering(fileResponse('one\ntwo\n'))
+
+        const result = await client.readFile('astrosite/src/data/handicaps.ndjson')
+
+        expect(result).toEqual({ ok: true, file: { present: true, text: 'one\ntwo\n', sha: 'blob-sha' } })
+        const [url] = fetch.mock.calls[0]!
+        expect(url).toBe(
+            'https://api.github.com/repos/hectorgolf/hector.golf/contents/astrosite/src/data/handicaps.ndjson?ref=main'
+        )
+    })
+
+    it('reports a missing file as absent rather than as a failure', async () => {
+        // The first run, before the backup exists. The caller creates it by
+        // committing with no sha.
+        const { client } = clientAnswering(new Response('{"message":"Not Found"}', { status: 404 }))
+        expect(await client.readFile('nope.ndjson')).toEqual({ ok: true, file: { present: false } })
+    })
+
+    it('refuses to treat a file too large for this API as an empty one', async () => {
+        // GitHub answers a file over 1MB with `encoding: "none"` and no content.
+        // Reporting that as empty text would hand the append-only guard exactly
+        // the input it exists to refuse, and it would refuse it — but the honest
+        // answer is that the read failed.
+        const { client } = clientAnswering(
+            new Response(JSON.stringify({ content: '', encoding: 'none', sha: 'x' }), { status: 200 })
+        )
+        expect(await client.readFile('huge.ndjson')).toEqual({ ok: false, reason: 'unknown' })
+    })
+
+    it('refuses a directory, which GitHub answers as an array', async () => {
+        const { client } = clientAnswering(new Response(JSON.stringify([{ name: 'a.json' }]), { status: 200 }))
+        expect(await client.readFile('astrosite/src/data')).toEqual({ ok: false, reason: 'unknown' })
+    })
+
+    it('still classifies a refused read', async () => {
+        const { client } = clientAnswering(refused(401))
+        expect(await client.readFile('anything')).toEqual({ ok: false, reason: 'unauthorized' })
+    })
+})
+
+describe('committing a file', () => {
+    const request = {
+        path: 'astrosite/src/data/handicaps.ndjson',
+        text: 'one\ntwo\n',
+        message: "Update 1 player's handicap",
+        sha: 'blob-sha',
+        committer: { name: 'hector-admin', email: 'bot@hector.golf' },
+    }
+
+    const committed = (sha = 'commit-sha') =>
+        new Response(JSON.stringify({ commit: { sha } }), { status: 200 })
+
+    it('PUTs base64 content to the branch, quoting the sha it is replacing', async () => {
+        const { client, fetch } = clientAnswering(committed())
+
+        expect(await client.commitFile(request)).toEqual({ ok: true, commit: 'commit-sha' })
+
+        const [, init] = fetch.mock.calls[0]!
+        const body = JSON.parse(String(init?.body))
+        expect(init?.method).toBe('PUT')
+        expect(body.branch).toBe('main')
+        expect(body.sha).toBe('blob-sha')
+        expect(Buffer.from(body.content, 'base64').toString('utf-8')).toBe('one\ntwo\n')
+    })
+
+    it('omits the sha entirely when creating a file, because GitHub rejects a null', async () => {
+        const { client, fetch } = clientAnswering(committed())
+        await client.commitFile({ ...request, sha: undefined })
+        expect(Object.keys(JSON.parse(String(fetch.mock.calls[0]![1]?.body)))).not.toContain('sha')
+    })
+
+    it('attributes the commit to the service rather than to whoever owns the token', async () => {
+        const { client, fetch } = clientAnswering(committed())
+        await client.commitFile(request)
+        const body = JSON.parse(String(fetch.mock.calls[0]![1]?.body))
+        expect(body.author).toEqual(request.committer)
+        expect(body.committer).toEqual(request.committer)
+    })
+
+    it('reports a lost race as a conflict, which the caller retries', async () => {
+        const { client } = clientAnswering(new Response('{"message":"is at ..."}', { status: 409 }))
+        expect(await client.commitFile(request)).toEqual({ ok: false, reason: 'conflict' })
+    })
+
+    it('reports a commit that landed but answered unreadably as success', async () => {
+        // The commit is made. Saying otherwise would send the caller into a
+        // retry that re-reads, finds its own work committed, and does nothing —
+        // which is harmless but reports a failure that did not happen.
+        const { client } = clientAnswering(new Response('not json', { status: 201 }))
+        expect(await client.commitFile(request)).toEqual({ ok: true, commit: 'unknown' })
+    })
+
+    it('classifies a refused commit like any other call', async () => {
+        const { client } = clientAnswering(refused(403))
+        expect(await client.commitFile(request)).toEqual({ ok: false, reason: 'unauthorized' })
+    })
+})
