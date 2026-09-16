@@ -1,7 +1,7 @@
 # The GCP project
 
-*Describes `hector-golf` as it stands. Last reviewed: 2026-09-14, after the Cloud Functions moved
-in.*
+*Describes `hector-golf` as it stands. Last reviewed: 2026-09-16, when weekly Firestore backups were
+added.*
 
 What is running in Google Cloud, and which of it cannot be changed. For the procedure that builds
 this from an empty project — whether for a second environment or to recover from losing this one —
@@ -17,7 +17,7 @@ Everything in [`terraform/`](../../terraform/) describes it, and CI applies it:
 
 | Resource | What it is for |
 | --- | --- |
-| Firestore database, Enterprise edition | The data store. `europe-north1`, native mode, PITR on, delete-protected |
+| Firestore database, Enterprise edition | The data store. `europe-north1`, native mode, PITR on, delete-protected, weekly backups kept four weeks |
 | Artifact Registry repository | Admin service container images, with cleanup policies |
 | Cloud Run service `hector-admin` | The admin UI and API, scaled to zero, IAP in front of it |
 | Eight service accounts | Two runtime identities (the admin service, and the functions), one for Terraform in CI, two for app deploys (the admin, and the functions), one the function builds run as, one for the scheduled data updates, and one that reads the leaderboard spreadsheets. The last holds no project roles at all; the functions' runtime holds none either, only read on three secrets |
@@ -47,6 +47,41 @@ one Workload Identity pool, as separate identities.
   they are deleted on 2026-09-21. Nothing points at them.
 - **The Terraform state bucket**, which cannot describe itself. Step 2 creates it by hand; it is the
   one piece of infrastructure not in `terraform/`.
+
+## What happens when the data is wrong
+
+Two mechanisms, covering two different failures, both configured in
+[`firestore.tf`](../../terraform/firestore.tf).
+
+**Point-in-time recovery** holds seven days of history at one-minute granularity. It is for the
+mistake somebody noticed — a bad admin write on Tuesday, read back on Friday. Recovery is a clone or
+an export from a chosen timestamp; nothing has to be scheduled in advance beyond having PITR on,
+which it is.
+
+**Weekly backups**, taken on Mondays and kept four weeks, are for the mistake nobody noticed. A
+tournament quietly mangled in March and spotted in April is outside PITR's window and inside this
+one. There is deliberately no *daily* schedule beside it — a database may have one of each, but
+daily backups would cover days 1-7, which PITR already covers and covers better. Retention is
+[`var.firestore_backup_retention_weeks`](../../terraform/variables.tf), capped by the API at 14
+weeks; it is the one property of the schedule that can be changed without recreating it.
+
+Three things about restoring are worth knowing before the day you need them:
+
+- **A restore writes to a new database.** There is no restore-in-place. You get
+  `hector-restore-<date>` alongside the live one, and the cutover is changing `FIRESTORE_DATABASE_ID`
+  once you have looked at what came back.
+- **That second database does not get the free-tier quota** — the first database in the project
+  keeps it, permanently, as the table below says. A restore is billed on usage from the moment it
+  exists, so delete it once the cutover is done or abandoned.
+- **Backups do not contain TTL policies or Firebase Security Rules.** Neither exists here — every
+  caller is the server SDK under `admin/`, which IAM authorises and rules never see — so there is
+  nothing to reapply. This is checked rather than assumed, because it is the standard post-restore
+  gap.
+
+Deleting the schedule does not delete the backups it has already taken; they expire on their own
+retention. That is why `deletion_policy = "ABANDON"` is set on it, matching the database: a
+`terraform destroy` is meant to leave both alone, and a destroy that removed only the schedule would
+leave a live database silently unbacked-up.
 
 ## The decisions you cannot take back
 

@@ -53,6 +53,49 @@ variable "firestore_database_id" {
   default     = "hector"
 }
 
+variable "firestore_backup_retention_weeks" {
+  description = <<-EOT
+    How long a weekly Firestore backup is kept, in weeks. Four means four
+    backups exist at any time, the oldest about a month old.
+
+    That is the number chosen against what backups are *for* here. PITR already
+    holds seven days, so the first week is covered twice over and the only thing
+    this window buys is the damage nobody noticed at the time. A month is about
+    as long as a wrong scorecard can survive without somebody looking at the
+    tournament page and saying so; beyond that, the git history of the JSON
+    files is the older record.
+
+    The ceiling is the API's: 14 weeks. The validation below is there because
+    over-running it fails at apply, in CI, with an INVALID_ARGUMENT naming a
+    duration in seconds rather than the line you edited.
+
+    Cost is not really the constraint, but it is the reason the number could
+    have been larger. Backup data is one of the features explicitly outside the
+    free tier, at $0.033 per GiB-month for Enterprise edition in europe-north1 —
+    an eighth of the $0.264 the live data costs and a fifth of PITR's $0.165 —
+    and billed pro rata for the part of the month each backup is retained. Note
+    that those are the *Enterprise* rates: the Standard edition sheet is the one
+    search engines return, and it prices stored data at $0.165 rather than
+    $0.264. Backup data happens to cost the same on both.
+
+    What the number actually controls is how many backups exist at once, which
+    is retention divided by the interval: four weeks weekly is four copies. So
+    the monthly bill is 4 x database size x $0.033, and at the ~0.5 MB this
+    dataset is, that is hundredths of a cent. It stays a rounding error until
+    the database approaches a gibibyte, which is also where the free tier's 1
+    GiB of stored data runs out. Retention is the one field that can be changed
+    without recreating the schedule, so raising it later is a one-line edit with
+    no replacement.
+  EOT
+  type        = number
+  default     = 4
+
+  validation {
+    condition     = var.firestore_backup_retention_weeks >= 1 && var.firestore_backup_retention_weeks <= 14 && floor(var.firestore_backup_retention_weeks) == var.firestore_backup_retention_weeks
+    error_message = "firestore_backup_retention_weeks must be a whole number of weeks between 1 and 14: 14 weeks is the maximum retention the Firestore backup API accepts."
+  }
+}
+
 variable "admin_principals" {
   description = <<-EOT
     Who may open the admin UI, as IAM principal strings, e.g.

@@ -41,3 +41,48 @@ resource "google_firestore_database" "hector" {
 
   depends_on = [google_project_service.enabled["firestore.googleapis.com"]]
 }
+
+# Weekly backups, kept for four weeks.
+#
+# This is the second half of the undo button, and it covers a different failure
+# than PITR above. PITR is for the mistake you notice: seven days of history at
+# one-minute granularity, so a bad write on Tuesday is recoverable on Friday.
+# Backups are for the mistake nobody noticed — a tournament quietly mangled in
+# March and spotted in April — which is the failure this data actually has,
+# because almost nothing reads the old rows until someone goes looking.
+#
+# Weekly only, and no daily schedule beside it. A database may have one of each,
+# but a daily schedule would cover days 1-7, which is exactly the window PITR
+# already covers and covers better. Weekly picks up where PITR stops.
+resource "google_firestore_backup_schedule" "weekly" {
+  project  = var.project_id
+  database = google_firestore_database.hector.name
+
+  # Seconds, because the API takes a duration. var.firestore_backup_retention_weeks
+  # is where the number and its ceiling are argued.
+  retention = "${var.firestore_backup_retention_weeks * 7 * 24 * 60 * 60}s"
+
+  # Monday, so the backup that exists for most of the week is the one taken
+  # after the weekend — which is when rounds get played and when the data
+  # actually moves. The day is the only timing control there is: Firestore picks
+  # the hour itself and documents that it varies, so there is no point trying to
+  # place this relative to the scheduler jobs in scheduler.tf.
+  weekly_recurrence {
+    day = "MONDAY"
+  }
+
+  # Matches the database above, and for the same reason rather than out of
+  # symmetry. `terraform destroy` leaves the database alive by design; if it
+  # deleted this, it would leave a live database with nothing backing it up and
+  # no error anywhere to say so. The two have to be abandoned together.
+  #
+  # The cost is the same as the database's: after an abandon, a fresh apply
+  # fails with ALREADY_EXISTS rather than adopting what is there. Recover it
+  # with an `import` block — the id format is
+  # projects/{project}/databases/{database}/backupSchedules/{name}, and the name
+  # is a server-assigned uuid you read from
+  # `gcloud firestore backups schedules list --database=hector`. The import
+  # section near the end of docs/playbooks/gcp-bootstrapping.md has the
+  # procedure.
+  deletion_policy = "ABANDON"
+}
