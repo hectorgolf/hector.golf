@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { RUN_REQUEST } from '../src/lib/run-now.ts'
+import { addressToKeep, RUN_REQUEST } from '../src/lib/run-now.ts'
 
 /**
  * The Operations page's buttons go through `fetch` now, and the endpoints behind
@@ -48,5 +48,34 @@ describe('how the Operations page asks', () => {
 
     it('posts', () => {
         expect(RUN_REQUEST.method).toBe('POST')
+    })
+})
+
+/**
+ * What the address bar is left holding.
+ *
+ * The endpoints answer with a redirect to `/operations?ran=biographies`, and
+ * that parameter is how the server says what just happened. It has done its job
+ * once the answer is rendered. Left in the address bar it stops being a message
+ * and becomes a claim about the page: reload an hour later and the admin still
+ * announces that you have asked GitHub to run the biographies, which you have
+ * not. A notification describes an event, and an event does not survive being
+ * looked at again.
+ */
+describe('the address left behind after a run', () => {
+    it('keeps the path and drops what the server used to report the outcome', () => {
+        expect(addressToKeep('http://localhost:4321/operations?ran=biographies')).toBe('/operations')
+        expect(addressToKeep('http://localhost:4321/operations?ranJob=handicaps')).toBe('/operations')
+        expect(addressToKeep('http://localhost:4321/operations?failedJob=handicaps&reason=not-configured')).toBe(
+            '/operations'
+        )
+    })
+
+    it('drops a fragment too, which would scroll a reload somewhere nobody asked for', () => {
+        expect(addressToKeep('http://localhost:4321/operations?ran=scheduled#log')).toBe('/operations')
+    })
+
+    it('leaves an address that had nothing to drop alone', () => {
+        expect(addressToKeep('http://localhost:4321/operations')).toBe('/operations')
     })
 })

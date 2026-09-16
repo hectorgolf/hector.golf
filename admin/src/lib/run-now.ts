@@ -108,11 +108,66 @@ const swapMain = (doc: Document, html: string, url: string) => {
     if (!next || !current) return false
 
     current.replaceWith(doc.importNode(next, true))
-    // Not pushState: what it replaces is this same page with staler contents, so
-    // there is nothing behind it worth a Back button. The URL still carries the
-    // `?ranJob=` the server chose, so a reload shows the same notice.
-    history.replaceState(null, '', url)
+    /*
+     * The path, without the `?ran=` that produced the notice now on screen.
+     *
+     * The query parameter is how the server tells this page what just happened,
+     * and it has done its job by the time the answer is rendered. Left in the
+     * address bar it stops being a message and becomes a claim about the page:
+     * reload an hour later and /operations?ran=biographies still announces that
+     * you have asked GitHub to run the biographies, which you have not. A
+     * notification describes an event, and an event does not survive being
+     * looked at again.
+     *
+     * Not pushState, for the same reason as before: what it replaces is this
+     * page with staler contents, so there is nothing behind it worth a Back
+     * button.
+     */
+    history.replaceState(null, '', addressToKeep(url))
     return true
+}
+
+/**
+ * The address to leave in the bar: the path, and nothing after it.
+ *
+ * Its own function so that the rule is one line somebody can read and a test can
+ * hold on to, rather than a `new URL(...)` in the middle of a DOM swap that
+ * looks like tidiness and is the whole fix.
+ */
+export const addressToKeep = (url: string): string => new URL(url).pathname
+
+/** How long a notice that reports success stays on screen. */
+const NOTICE_LINGERS_MS = 10_000
+
+/**
+ * Clear the notices that have been read by being seen.
+ *
+ * `data-transient` marks them in the template rather than being guessed at from
+ * a class here, and the guess is why: "every notice that is not `.bad`" also
+ * catches the run log's empty state — *"GitHub is rate-limiting this token"*
+ * where the table would be — which is not an event at all but the reason a
+ * section is blank. Fading that away leaves a heading with nothing under it and
+ * no explanation, which is worse than the problem being solved.
+ *
+ * What is marked is the outcome of a press: the three that say something ran,
+ * and the two that say it was skipped. A *failure* is deliberately not marked.
+ * Good news is confirmation you do not need twice; bad news is a sentence
+ * somebody may want to read twice, or copy, and taking it away on a timer is
+ * how a notice becomes something you have to catch.
+ *
+ * Nothing is lost either way. Every outcome is in the run log below, which is
+ * the durable record; these are only the part that says *that one was yours*.
+ */
+const clearNoticesLater = (doc: Document) => {
+    const transient = doc.querySelectorAll('main .notice[data-transient]')
+    for (const notice of transient) {
+        setTimeout(() => {
+            // Via a class rather than by removing it outright, so the page does
+            // not jump: the style fades it and the node goes when it is gone.
+            notice.classList.add('dismissing')
+            setTimeout(() => notice.remove(), 500)
+        }, NOTICE_LINGERS_MS)
+    }
 }
 
 /**
@@ -136,6 +191,7 @@ const run = async (doc: Document, form: HTMLFormElement, pressed: HTMLButtonElem
         const response = await fetch(form.action, RUN_REQUEST)
         if (!response.ok) throw new Error(`the service answered ${response.status}`)
         if (!swapMain(doc, await response.text(), response.url)) throw new Error('the reply was not the page')
+        clearNoticesLater(doc)
     } catch {
         restore()
         doc.getElementById(LOST_CONTACT)?.removeAttribute('hidden')
