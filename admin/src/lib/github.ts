@@ -2,12 +2,16 @@ import { githubToken } from './secrets.ts'
 import { DISPATCH_REF, type DispatchableWorkflow } from './workflows.ts'
 
 /**
- * The slice of GitHub's REST API this service uses: start a workflow, and say
- * when it last ran.
+ * The slice of GitHub's REST API this service uses: start a workflow, say when
+ * it last ran, and read and write one file.
  *
- * Written against `fetch` rather than Octokit. Two calls do not justify a
+ * Written against `fetch` rather than Octokit. Four calls still do not justify a
  * dependency whose job is the other two hundred, and this way the container has
- * one fewer thing to install and audit.
+ * one fewer thing to install and audit. The precedent for the other choice
+ * exists — `astrosite/src/code/leaderboards/github.ts` writes its files with
+ * Octokit — so this is a preference rather than a rule, and the count is the
+ * thing to watch: the day a job needs the trees API to commit several files
+ * atomically is the day this stops being the cheaper side.
  */
 
 /**
@@ -58,9 +62,42 @@ export type WorkflowRun = {
 
 export type RunsOutcome = { ok: true; runs: WorkflowRun[] } | { ok: false; reason: GitHubFailure }
 
+/**
+ * A file as GitHub holds it: its text, and the blob sha that has to be quoted
+ * back when replacing it.
+ *
+ * `absent` rather than a `not-found` failure, because a backup file that does
+ * not exist yet is the normal state on the first run rather than something to
+ * report. The caller creates it by writing with no `sha`.
+ */
+export type FileContent = { present: true; text: string; sha: string } | { present: false }
+
+export type ReadFileOutcome = { ok: true; file: FileContent } | { ok: false; reason: GitHubFailure }
+
+/**
+ * `conflict` is separated out from the other failures because it is the only one
+ * with a sensible automatic response: somebody else wrote the file between the
+ * read and the write, so re-read and try again. The four data-update workflows
+ * all end in `git pull -r && git push` and share a concurrency group for exactly
+ * this reason; a commit made from here is outside that group and has to handle
+ * the race itself.
+ */
+export type CommitOutcome = { ok: true; commit: string } | { ok: false; reason: GitHubFailure | 'conflict' }
+
+export type CommitRequest = {
+    path: string
+    text: string
+    message: string
+    /** The blob sha being replaced, or undefined to create the file. */
+    sha: string | undefined
+    committer: { name: string; email: string }
+}
+
 export type GitHubClient = {
     dispatch(workflow: DispatchableWorkflow): Promise<DispatchOutcome>
     recentRuns(workflow: DispatchableWorkflow, limit?: number): Promise<RunsOutcome>
+    readFile(path: string, ref?: string): Promise<ReadFileOutcome>
+    commitFile(request: CommitRequest): Promise<CommitOutcome>
 }
 
 const API = 'https://api.github.com'
@@ -106,15 +143,24 @@ export type GitHubClientOptions = {
 export function createGitHubClient(options: GitHubClientOptions): GitHubClient {
     const doFetch = options.fetch ?? globalThis.fetch
     const base = `${API}/repos/${options.repository}/actions/workflows`
+    const contents = `${API}/repos/${options.repository}/contents`
 
-    /** Everything both calls do the same way: get a token, call, classify. */
-    async function call(url: string, init: RequestInit): Promise<Response | GitHubFailure> {
+    /**
+     * Everything every call does the same way: get a token, call, classify.
+     *
+     * `expected` names statuses the caller wants to interpret itself rather than
+     * have turned into a failure — a 404 from the contents API means "no file
+     * yet", which is the first run rather than a problem, and a 409 means
+     * somebody committed between our read and our write, which is a retry rather
+     * than an error. Anything not named here is still classified and logged.
+     */
+    async function call(url: string, init: RequestInit, expected: number[] = []): Promise<Response | GitHubFailure> {
         const token = await options.token()
         if (!token) return 'not-configured'
 
         try {
             const response = await doFetch(url, { ...init, headers: headers(token) })
-            if (response.ok) return response
+            if (response.ok || expected.includes(response.status)) return response
 
             // Logged here rather than at each call site so that both of them are
             // covered: a page that says only "could not read the run history"
@@ -169,6 +215,92 @@ export function createGitHubClient(options: GitHubClientOptions): GitHubClient {
                 }
             })
             return { ok: true, runs }
+        },
+
+        async readFile(path, ref = DISPATCH_REF) {
+            // `ref` defaults to the same branch dispatches run on, and for the
+            // same reason: this service reads and writes the branch the site is
+            // built from, and nothing else.
+            const url = `${contents}/${encodeURI(path)}?ref=${encodeURIComponent(ref)}`
+            const result = await call(url, { method: 'GET' }, [404])
+            if (typeof result === 'string') return { ok: false, reason: result }
+            if (result.status === 404) return { ok: true, file: { present: false } }
+
+            let body: { content?: unknown; encoding?: unknown; sha?: unknown }
+            try {
+                body = (await result.json()) as typeof body
+            } catch (error) {
+                console.error('GitHub returned file contents that could not be parsed', { path }, error)
+                return { ok: false, reason: 'unknown' }
+            }
+
+            // GitHub answers a directory with an array, and a file over 1MB with
+            // `encoding: "none"` and an empty `content`, expecting the blob API
+            // instead. Neither is something this can quietly treat as a file: the
+            // caller would see empty text and conclude the backup is gone, which
+            // is precisely the input the append-only guard exists to refuse.
+            if (typeof body.content !== 'string' || typeof body.sha !== 'string' || body.encoding !== 'base64') {
+                console.error('GitHub returned something other than a base64 file', {
+                    path,
+                    encoding: String(body.encoding),
+                })
+                return { ok: false, reason: 'unknown' }
+            }
+
+            return {
+                ok: true,
+                file: {
+                    present: true,
+                    text: Buffer.from(body.content, 'base64').toString('utf-8'),
+                    sha: body.sha,
+                },
+            }
+        },
+
+        async commitFile(request) {
+            const url = `${contents}/${encodeURI(request.path)}`
+            const result = await call(
+                url,
+                {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        branch: DISPATCH_REF,
+                        message: request.message,
+                        content: Buffer.from(request.text, 'utf-8').toString('base64'),
+                        // Omitted entirely rather than sent as null when creating
+                        // a file: GitHub rejects an explicit null.
+                        ...(request.sha ? { sha: request.sha } : {}),
+                        committer: request.committer,
+                        // The author is the committer too. A commit written by a
+                        // service has no separate author, and leaving it out
+                        // makes GitHub attribute it to whoever owns the token —
+                        // which is a person, and misleading.
+                        author: request.committer,
+                    }),
+                },
+                [409]
+            )
+            if (typeof result === 'string') return { ok: false, reason: result }
+            if (result.status === 409) {
+                // Not logged as an error: losing this race is expected and the
+                // caller retries. It is logged at all because a *persistent*
+                // conflict means something is committing in a loop.
+                console.warn('GitHub rejected a commit as conflicting; the file moved under us', {
+                    path: request.path,
+                })
+                return { ok: false, reason: 'conflict' }
+            }
+
+            let body: { commit?: { sha?: unknown } }
+            try {
+                body = (await result.json()) as typeof body
+            } catch (error) {
+                // The commit landed — this is a 2xx — so reporting failure would
+                // be worse than reporting it without a sha to point at.
+                console.error('GitHub accepted a commit but returned an unreadable body', { path: request.path }, error)
+                return { ok: true, commit: 'unknown' }
+            }
+            return { ok: true, commit: String(body.commit?.sha ?? 'unknown') }
         },
     }
 }

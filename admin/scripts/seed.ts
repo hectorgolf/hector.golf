@@ -65,7 +65,7 @@ async function seed(
 
         // Read before writing, so a document that has not changed is left alone.
         // This runs after every scheduled data update, which is a dozen times a
-        // day now that the morning is an hourly window: writing all sixty
+        // day now that the morning is a window of ticks: writing all sixty
         // every time would
         // burn the free tier's write quota on nothing, and — worse — make
         // `updatedAt` mean "when the seed last ran" rather than "when this last

@@ -27,6 +27,25 @@ resource "google_cloud_run_v2_service" "admin" {
   template {
     service_account = google_service_account.admin_runtime.email
 
+    # Explicit, because a job now runs *inside* a request rather than being
+    # handed to GitHub.
+    #
+    # Everything this service did before answered in milliseconds, so the 300s
+    # default was never load-bearing and nobody had to know it was there. The
+    # handicaps job sweeps 45 players against WiseGolf and then makes two GitHub
+    # round trips, which is tens of seconds on a good day and more on a bad one.
+    #
+    # It cannot be worked around by answering early and finishing in the
+    # background: `cpu_idle = true` below throttles the CPU once the response is
+    # sent, so the background half would crawl or stall. The request is the job.
+    #
+    # 600s rather than 300s buys headroom for a slow WiseGolf without being so
+    # long that a wedged run holds an instance for the rest of the morning. The
+    # lease in `admin/src/lib/jobs/lock.ts` is deliberately longer still, so a run
+    # killed by this timeout does not leave a lease that outlives the next tick by
+    # much.
+    timeout = "600s"
+
     # Scale to zero. The admin UI is used a handful of times a month, and an
     # idle instance is the one thing here that would cost real money.
     scaling {
@@ -67,6 +86,20 @@ resource "google_cloud_run_v2_service" "admin" {
       env {
         name  = "GITHUB_DISPATCH_TOKEN_SECRET"
         value = "${google_secret_manager_secret.github_dispatch_token.name}/versions/latest"
+      }
+
+      # Where the WiseGolf login is, by the same rule and for the same reason: a
+      # container spec that names a secret version cannot start when the version
+      # is missing, and a project whose credentials have not been put in yet must
+      # still have a working admin.
+      env {
+        name  = "WISEGOLF_USERNAME_SECRET"
+        value = "${google_secret_manager_secret.wisegolf["wisegolf-username"].name}/versions/latest"
+      }
+
+      env {
+        name  = "WISEGOLF_PASSWORD_SECRET"
+        value = "${google_secret_manager_secret.wisegolf["wisegolf-password"].name}/versions/latest"
       }
 
       resources {

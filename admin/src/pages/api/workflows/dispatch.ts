@@ -2,11 +2,14 @@ import type { APIRoute } from 'astro'
 
 import { github } from '../../../lib/github.ts'
 import { viewerFromHeaders } from '../../../lib/identity.ts'
+import { execute } from '../../../lib/jobs/execute.ts'
+import { SCHEDULED_JOBS } from '../../../lib/jobs/registry.ts'
 import { SCHEDULED_WORKFLOWS } from '../../../lib/workflows.ts'
 
 /**
  * Start everything the schedule is responsible for: the endpoint the two Cloud
- * Scheduler jobs call: hourly from 03:00 to 07:00 UTC, and once at 12:00 UTC.
+ * Scheduler jobs call: every two hours from 03:00 to 07:00 UTC, and once at
+ * 12:00 UTC.
  *
  * ## Why one endpoint rather than a job per workflow
  *
@@ -35,6 +38,42 @@ import { SCHEDULED_WORKFLOWS } from '../../../lib/workflows.ts'
  * was built to stop. The body names each workflow and its outcome, so the logs
  * say which half actually failed.
  *
+ * ## It also runs this service's own jobs
+ *
+ * Two lists, one tick: the GitHub workflows in `workflows.ts` and the in-process
+ * jobs in `jobs/registry.ts`. A dataset moves from the first list to the second
+ * as it migrates — `docs/plans/handicaps-to-firestore.md` — and during the
+ * migration it is briefly in both, which is the point rather than a mistake.
+ *
+ * **Workflows are dispatched first, jobs second, and the order is load-bearing
+ * in two directions.**
+ *
+ * A dispatch is two API calls that return in milliseconds; a job is a 45-player
+ * scrape. Dispatching first keeps the promptness this whole mechanism exists to
+ * buy — GitHub's own schedule delivery runs hours late, which is the problem
+ * being solved — and means a job that hangs cannot stop the workflows starting.
+ *
+ * It also makes the shadow comparison mean something. The handicaps job reads
+ * `handicaps.json` at the start of its run, seconds after the dispatch and
+ * minutes before `update-handicaps.yml` commits anything. So both pipelines
+ * decide against the *same* base state, and their answers are directly
+ * comparable. Running the job first, or on a schedule of its own an hour later,
+ * would have the job read a file the workflow had already updated — and it would
+ * agree with the workflow by construction, having been told the answer.
+ *
+ * ## A failing job does not fail the tick
+ *
+ * Deliberately, and it is the one place this endpoint treats its two lists
+ * differently. A failed *dispatch* returns 502 so Cloud Scheduler retries, which
+ * is cheap and idempotent enough. A failed *job* is reported in the body and in
+ * the run log, and the tick still returns success.
+ *
+ * Otherwise a job that is broken for a boring reason — no WiseGolf credentials
+ * on a fresh project, say — would fail every tick, and every retry would
+ * re-dispatch the workflows that had already succeeded and re-run the scrape.
+ * Four sweeps of somebody else's API per tick, to retry something a retry cannot
+ * fix. The next tick is the retry, and there are four a day.
+ *
  * See `[slug]/dispatch.ts` for the single-workflow endpoint behind the buttons,
  * and for the note on who is allowed to call either of these.
  */
@@ -60,6 +99,14 @@ export const POST: APIRoute = async ({ request, redirect }) => {
 
     const failures = results.filter((result) => !result.ok)
 
+    // Then this service's own jobs, sequentially: they share a Cloud Run
+    // instance with one CPU, and two scrapes in parallel would contend for it
+    // while making the logs of both harder to read.
+    const jobs = []
+    for (const job of SCHEDULED_JOBS) {
+        jobs.push(await execute(job, viewer.email ?? 'the schedule'))
+    }
+
     if (wantsHtml(request)) {
         // Reported as one workflow when one failed, so the Operations page can
         // say something specific; "some of them" is not a useful notice.
@@ -68,7 +115,9 @@ export const POST: APIRoute = async ({ request, redirect }) => {
             : redirect(`/operations?failed=${failures[0]!.slug}&reason=${failures[0]!.reason}`, 303)
     }
 
-    return new Response(JSON.stringify({ dispatched: results }), {
+    return new Response(JSON.stringify({ dispatched: results, jobs }), {
+        // The status reports the dispatches only. A failed job is in the body —
+        // see the note above on why it must not make the scheduler retry.
         status: failures.length === 0 ? 202 : 502,
         headers: { 'content-type': 'application/json' },
     })

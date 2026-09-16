@@ -556,6 +556,67 @@ that `iap_oauth_client_id` is set, since the jobs are left out of the plan entir
 `403` means the `hector-scheduler` service account is not in IAP's access list, which
 `terraform/scheduler.tf` grants and an apply would restore.
 
+## Step 12 — The WiseGolf credentials for the handicaps job
+
+The handicaps scrape runs inside the admin service rather than on a GitHub runner — see
+[`plans/handicaps-to-firestore.md`](../plans/handicaps-to-firestore.md) — so it needs the WiseGolf
+login in a place a Cloud Run container can reach. These are the same credentials the four workflows
+already use as GitHub Actions secrets, not a second account.
+
+Until they are here, the job runs against a disabled source: every tick reports
+`no handicap source answered for any of 45 players`, the `/operations` page shows a failed run, and
+nothing else breaks. That is a supported state, not an outage, but it is a daily red mark — so do
+this in the same sitting as the deploy.
+
+### 1. Put both halves in Secret Manager
+
+Terraform created the two containers and deliberately never their values, for the same reason as the
+GitHub token: a version managed from `terraform/` is a credential written into state in plain text.
+
+Two secrets rather than one payload holding both, because Secret Manager versions the whole payload
+and rotating the password should not mean rewriting the username beside it.
+
+From `terraform/`, with `$PROJECT_ID` already exported:
+
+```bash
+printf %s 'the-wisegolf-username' | gcloud secrets versions add "$(terraform output -raw wisegolf_username_secret)" --project="$PROJECT_ID" --data-file=-
+```
+
+```bash
+printf %s 'the-wisegolf-password' | gcloud secrets versions add "$(terraform output -raw wisegolf_password_secret)" --project="$PROJECT_ID" --data-file=-
+```
+
+`printf %s` rather than `echo`, so no trailing newline ends up in the secret — `secrets.ts` trims
+what it reads, but a credential that depends on trimming is one to fix at the source.
+
+Both commands put the value on the command line and therefore in your shell history. If that matters,
+drop the `printf` and let `--data-file=-` read from the terminal instead, ending with Ctrl-D:
+
+```bash
+gcloud secrets versions add "$(terraform output -raw wisegolf_username_secret)" --project="$PROJECT_ID" --data-file=-
+```
+
+Nothing needs redeploying. `secrets.ts` resolves `versions/latest` per use, which is also all a
+rotation is.
+
+### 2. Verify
+
+```bash
+gcloud secrets versions list "$(terraform output -raw wisegolf_username_secret)" --project="$PROJECT_ID" --format="value(name,state)"
+```
+
+`1  ENABLED` is what you want, for each of the two.
+
+Then press **Shadow run** on the admin's `/operations` page. A run that finds the credentials
+reports a change list or `nothing changed`; one that does not still says
+`no handicap source answered for any of 45 players`. The sweep takes tens of seconds — the page waits
+for it, because the work happens in the request.
+
+### 3. Rotating them later
+
+The same two commands. `versions/latest` is resolved per use, so a new version takes effect on the
+next run with no redeploy and no Terraform.
+
 ## Optional — a custom domain for the admin service
 
 `admin.hector.golf` instead of the `run.app` URL. Four steps, and the DNS record is the last of

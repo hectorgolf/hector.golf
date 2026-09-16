@@ -1,0 +1,16 @@
+{
+  "name": "@hector/wisegolf",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The WiseGolf client. Handicaps, clubs and memberships, for whoever is doing the scraping this month.",
+  "type": "module",
+  "exports": {
+    "./*": "./*"
+  },
+  "dependencies": {
+    "fetch-h2": "^3.0.2",
+    "itty-time": "^2.0.2",
+    "micro-memoize": "^5.1.2",
+    "p-ratelimit": "^1.0.1"
+  }
+}

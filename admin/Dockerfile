@@ -11,6 +11,7 @@ WORKDIR /repo
 COPY package.json package-lock.json ./
 COPY packages/ui/package.json ./packages/ui/
 COPY packages/schemas/package.json ./packages/schemas/
+COPY packages/wisegolf/package.json ./packages/wisegolf/
 COPY admin/package.json ./admin/
 # The site is a workspace member the lockfile knows about; its manifest has to be
 # present for `npm ci` to reconcile, but none of its sources are copied.
@@ -19,6 +20,12 @@ RUN npm ci --workspace=hector-admin --include-workspace-root
 
 COPY packages/ui ./packages/ui
 COPY packages/schemas ./packages/schemas
+# The WiseGolf client, which the handicaps job imports. Every workspace package
+# the admin depends on has to be listed here twice — once as a manifest above so
+# `npm ci` can resolve the workspace, and once as sources — and forgetting the
+# second copy fails at `astro check` rather than at install, which is a
+# confusing place to find out.
+COPY packages/wisegolf ./packages/wisegolf
 COPY admin ./admin
 RUN npm run build --workspace=hector-admin
 
@@ -30,6 +37,7 @@ WORKDIR /repo
 COPY package.json package-lock.json ./
 COPY packages/ui/package.json ./packages/ui/
 COPY packages/schemas/package.json ./packages/schemas/
+COPY packages/wisegolf/package.json ./packages/wisegolf/
 COPY admin/package.json ./admin/
 COPY astrosite/package.json ./astrosite/
 RUN npm ci --omit=dev --workspace=hector-admin --include-workspace-root \
