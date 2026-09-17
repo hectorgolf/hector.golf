@@ -8,9 +8,10 @@
  * the sign-out link goes nowhere. That is correct, and it means the one flow the
  * admin cannot exercise locally is the one about who you are.
  *
- * This runs `astro dev` behind a small proxy that plays IAP's part: it asks who
- * you want to be, remembers it in a cookie, sets the header on every request it
- * forwards, and honours `gcp-iap-mode=CLEAR_LOGIN_COOKIE` by forgetting again.
+ * This runs Astro's dev server behind a small proxy that plays IAP's part: it
+ * asks who you want to be, remembers it in a cookie, sets the header on every
+ * request it forwards, and honours `gcp-iap-mode=CLEAR_LOGIN_COOKIE` by
+ * forgetting again.
  *
  *   npm run dev:iap                                        # two accounts, the defaults
  *   IAP_DEV_ACCOUNTS=solo@example.com npm run dev:iap      # just one
@@ -55,6 +56,35 @@
  * would teach the verifier to accept fakes; the day a real assertion is needed
  * locally, this needs a keypair and a JWKS endpoint, and that is the honest cost.
  *
+ * ## Why the dev server runs in this process
+ *
+ * `dev()` — Astro's programmatic API — starts the same server the CLI does, in
+ * the caller's process, and hands back an object with `stop()` on it. This calls
+ * that instead of spawning `astro dev`, and the reason is what happened when it
+ * did spawn it.
+ *
+ * Astro 7.3 daemonises the dev server *on its own*, with no `--background`, when
+ * `am-i-vibing` recognises an AI coding agent around the CLI. A stand-in can
+ * only proxy to a server it supervises, so the spawned process exited at once,
+ * this one followed it down, and `npm run dev:iap` was over a second after it
+ * started — for exactly the people who run this repository from an agent, and
+ * for nobody else. Two undocumented levers fixed it: `ASTRO_DEV_BACKGROUND`,
+ * whose name means the opposite of the use it was put to, and `--ignore-lock`.
+ *
+ * The class of problem is the point. Spawning a CLI means inheriting every
+ * decision that CLI makes about process lifetime, and those decisions are not
+ * part of any API — backgrounding, lock files and agent detection all live in
+ * `astro/dist/cli/dev/index.js` and none of them are reachable from `dev()`,
+ * which is a function that returns a server and makes no decisions about
+ * processes at all. It is marked experimental, and that is a real cost; weigh it
+ * against the fact that it was the stable, documented CLI that changed its
+ * process model under this script without notice.
+ *
+ * It also removes the orphan case. There is no child to outlive a hard kill of
+ * this process holding the port, because the dev server *is* this process. The
+ * other side of that trade is that a crash here takes the dev server with it,
+ * which was already true in the direction that mattered.
+ *
  * ## Where it may run
  *
  * Development only, and it enforces that rather than trusting it: it refuses to
@@ -63,14 +93,13 @@
  * `scripts/` beside the seed and the export, none of which the container image
  * copies — the runtime stage takes `admin/dist` and nothing else.
  */
-import { spawn, type ChildProcess } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { existsSync } from 'node:fs'
 import http, { type IncomingHttpHeaders, type IncomingMessage, type ServerResponse } from 'node:http'
-import net from 'node:net'
 import { dirname, join } from 'node:path'
 import type { Duplex } from 'node:stream'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+
+import { dev } from 'astro'
 
 /** IAP prefixes both identity headers with the provider that authenticated you. */
 const PROVIDER = 'accounts.google.com'
@@ -312,141 +341,47 @@ export function joinUpgradedSockets(
     client.pipe(upstream)
 }
 
-/** Waits for `astro dev` to start listening, so the first request does not race it. */
-async function waitForPort(port: number, timeoutMs = 30_000): Promise<void> {
-    const deadline = Date.now() + timeoutMs
-    for (;;) {
-        const open = await new Promise<boolean>((resolve) => {
-            const socket = net.connect({ port, host: '127.0.0.1' })
-            socket.once('connect', () => { socket.destroy(); resolve(true) })
-            socket.once('error', () => { socket.destroy(); resolve(false) })
-        })
-        if (open) return
-        if (Date.now() > deadline) throw new Error(`astro dev did not start on port ${port} within ${timeoutMs}ms`)
-        await new Promise((resolve) => setTimeout(resolve, 150))
-    }
-}
-
 /**
- * The flags and environment that keep `astro dev` in the foreground.
+ * Everything in front of the dev server, and nothing about starting one.
  *
- * This stand-in proxies to a server it supervises: it waits for the port, it
- * dies when the server dies, and the server dies when it is stopped. A dev
- * server that daemonises is no longer that server — the spawned process exits
- * immediately, the `exit` handler below fires, and the stand-in shuts itself
- * down about a second after starting, having printed `astro dev exited (0)`.
- * Which is exactly what it did, and says nothing about why.
- *
- * Astro 7.3 daemonises **on its own**, without `--background`, when
- * `am-i-vibing` recognises the surrounding process as an AI coding agent. That
- * is a sensible default for a tool being driven by an agent and the wrong one
- * here, and it means this script broke only for the people running it from an
- * agent — Claude Code, Cursor and the like — which is how this repository is
- * mostly worked on.
- *
- * `astro/dist/cli/dev/index.js` decides it like this:
- *
- *     const agentDetected = !process.env.ASTRO_DEV_BACKGROUND && isRunByAgent()
- *     const wantsBackground = !!flags.background || agentDetected
- *
- * So a set `ASTRO_DEV_BACKGROUND` turns the detection off. The name reads
- * backwards for this purpose: it is Astro's internal marker for "you *are* the
- * backgrounded child, do not background yourself again", and setting it from
- * outside borrows that meaning. `test/dev-iap.test.ts` pins the mechanism
- * against Astro's own source, so an upgrade that changes it fails there rather
- * than by quietly bringing the breakage back.
- *
- * `--ignore-lock` is the other half. Without it Astro writes a lock file that
- * `astro dev stop` and `astro dev status` act on, and this server is not theirs
- * to find: it lives on a private port, it is an implementation detail of the
- * stand-in, and `waitForPort` below is how its readiness is established rather
- * than the lock file. It also fails *loudly* if Astro ever backgrounds despite
- * the variable — the two are refused in combination — which is a better way to
- * meet this bug again than the silent exit it caused the first time.
+ * A function rather than four dozen lines inside `main` so that the tests can
+ * put a stub upstream behind it and drive the whole path over a real socket —
+ * the chooser, the cookie, the forwarded headers, the upgrade. Which port it
+ * forwards to is a parameter for the same reason `main` passes
+ * `astro.address.port` rather than `APP_PORT`: where the dev server ended up
+ * listening is the dev server's answer to give, not this file's to assume.
  */
-export const FOREGROUND_FLAGS = ['--ignore-lock'] as const
-
-export const foregroundEnvironment = (environment: NodeJS.ProcessEnv): NodeJS.ProcessEnv => ({
-    ...environment,
-    // Any non-empty value does it; Astro only tests truthiness. This one says
-    // what it is for, since it shows up in `ps` beside a variable whose name
-    // suggests the opposite of what it is doing.
-    ASTRO_DEV_BACKGROUND: environment.ASTRO_DEV_BACKGROUND ?? 'dev-iap-supervises-this-server',
-})
-
-/**
- * What to say when the dev server exits.
- *
- * A prompt, clean exit is the signature of the daemonising above rather than of
- * a server that ran and stopped: nothing else finishes successfully in under a
- * second. Worth telling apart, because the two want completely different things
- * from the reader, and the unhelpful version of this message is what made the
- * bug take a while to place the first time.
- */
-export const QUICK_EXIT_MS = 2_000
-
-export function exitMessage(code: number | null, elapsedMs: number): string {
-    if (code === 0 && elapsedMs < QUICK_EXIT_MS) {
-        return (
-            'astro dev exited immediately and successfully, which means it daemonised instead of running here.\n' +
-            'The stand-in can only proxy to a server it supervises, so it is stopping too.\n' +
-            'See FOREGROUND_FLAGS in scripts/dev-iap.ts: something is starting the dev server in the background.'
-        )
-    }
-    return `astro dev exited (${code ?? 'signal'}); stopping the stand-in too.`
-}
-
-/**
- * Astro's own binary, run directly rather than through `npm run dev`.
- *
- * An npm in between is a second process to kill, and the one that gets missed:
- * Ctrl-C would leave a dev server holding the port with nothing left to stop it.
- */
-function astroBinary(adminDir: string): string {
-    const candidates = [
-        join(adminDir, 'node_modules/.bin/astro'),
-        join(adminDir, '../node_modules/.bin/astro'),
-    ]
-    return candidates.find((candidate) => existsSync(candidate)) ?? 'astro'
-}
-
-async function main(): Promise<void> {
-    if (process.env.NODE_ENV === 'production') {
-        console.error('dev-iap is a development tool and refuses to run with NODE_ENV=production.')
-        process.exit(1)
-    }
-
-    const port = Number(process.env.PORT ?? 4321)
-    const appPort = Number(process.env.APP_PORT ?? 4322)
-    const accounts = accountsFrom(process.env.IAP_DEV_ACCOUNTS)
-    const adminDir = join(dirname(fileURLToPath(import.meta.url)), '..')
-
-    const startedAt = Date.now()
-    const astro: ChildProcess = spawn(
-        astroBinary(adminDir),
-        ['dev', '--port', String(appPort), '--host', '127.0.0.1', ...FOREGROUND_FLAGS],
-        { cwd: adminDir, stdio: ['ignore', 'inherit', 'inherit'], env: foregroundEnvironment(process.env) }
-    )
-    astro.on('exit', (code) => {
-        console.error(exitMessage(code, Date.now() - startedAt))
-        process.exit(code ?? 1)
-    })
-
+export function createStandIn({
+    accounts,
+    upstreamPort,
+}: {
+    accounts: string[]
+    upstreamPort: number
+}): http.Server {
     const proxy = (req: IncomingMessage, res: ServerResponse, email: string): void => {
         const upstream = http.request(
             {
                 host: '127.0.0.1',
-                port: appPort,
+                port: upstreamPort,
                 path: req.url,
                 method: req.method,
                 headers: forwardedHeaders(req.headers, email),
             },
             (response) => {
                 res.writeHead(response.statusCode ?? 502, response.headers)
+                // A dev server that goes away *mid*-response reports it here,
+                // on the response, and not on the request — and `pipe` does not
+                // carry an error across. Without this the browser sits out a
+                // content-length that is never going to arrive, which is what a
+                // config file saved under an open request used to look like.
+                response.on('error', () => res.destroy())
                 response.pipe(res)
             }
         )
         upstream.on('error', (error) => {
+            // There is no status line left to replace once one has been sent,
+            // and `writeHead` throws rather than saying so.
+            if (res.headersSent) return void res.destroy()
             res.writeHead(502, { 'content-type': 'text/plain' })
             res.end(`The dev server did not answer: ${error.message}`)
         })
@@ -454,7 +389,10 @@ async function main(): Promise<void> {
     }
 
     const server = http.createServer((req, res) => {
-        const url = new URL(req.url ?? '/', `http://127.0.0.1:${port}`)
+        // A base only because `new URL` will not parse a path without one. None
+        // of it is forwarded: the proxy sends `req.url` as it arrived and leaves
+        // the browser's own `host` header alone.
+        const url = new URL(req.url ?? '/', 'http://127.0.0.1')
 
         // IAP reads this parameter and the app never sees it; so does this.
         if (url.searchParams.get('gcp-iap-mode') === 'CLEAR_LOGIN_COOKIE') {
@@ -480,19 +418,31 @@ async function main(): Promise<void> {
     })
 
     // Astro's hot reload is a websocket, and a proxy that only forwards requests
-    // leaves the browser reconnecting forever while edits never arrive.
+    // leaves the browser reconnecting forever while edits never arrive. The
+    // socket belongs to the dev server's own HTTP listener and `DevServer`
+    // exposes nothing for `upgrade`, which is why the second port stays even
+    // though the server is now in this process.
     server.on('upgrade', (req, socket, head) => {
+        // Node removes its own `error` listener from a socket when it emits
+        // `upgrade`, so from here on an ECONNRESET — a tab closed during the
+        // handshake, a dev server restarted under an open hot-reload socket —
+        // is an unhandled `error` event, which is to say an uncaught exception.
+        socket.on('error', () => socket.destroy())
+
         const email = readCookie(req.headers.cookie, COOKIE)
         if (!email || !accounts.includes(email)) return socket.destroy()
 
         const upstream = http.request({
             host: '127.0.0.1',
-            port: appPort,
+            port: upstreamPort,
             path: req.url,
             method: req.method,
             headers: forwardedHeaders(req.headers, email),
         })
         upstream.on('upgrade', (response, upstreamSocket, upstreamHead) => {
+            // The same again for the other end: `upstream`'s own `error`
+            // handler below stops covering this socket once it is upgraded.
+            upstreamSocket.on('error', () => upstreamSocket.destroy())
             socket.write(handshakeResponse(response.rawHeaders))
             joinUpgradedSockets(socket, upstreamSocket, head, upstreamHead)
         })
@@ -504,16 +454,88 @@ async function main(): Promise<void> {
         upstream.end()
     })
 
-    const stop = (): void => {
-        astro.kill('SIGTERM')
-        server.close(() => process.exit(0))
-    }
-    process.on('SIGINT', stop)
-    process.on('SIGTERM', stop)
+    return server
+}
 
-    await waitForPort(appPort)
+async function main(): Promise<void> {
+    if (process.env.NODE_ENV === 'production') {
+        console.error('dev-iap is a development tool and refuses to run with NODE_ENV=production.')
+        process.exit(1)
+    }
+
+    const port = Number(process.env.PORT ?? 4321)
+    const appPort = Number(process.env.APP_PORT ?? 4322)
+    const accounts = accountsFrom(process.env.IAP_DEV_ACCOUNTS)
+    const adminDir = join(dirname(fileURLToPath(import.meta.url)), '..')
+
+    // Resolves once the server is listening, so there is nothing to race and no
+    // port to poll; a server that fails to start rejects here instead of exiting
+    // somewhere else and leaving this to interpret a status code. Ctrl-C before
+    // this returns takes the default handler, which is the right one — there is
+    // no child left behind to hold the port.
+    const astro = await dev({ root: adminDir, server: { port: appPort, host: '127.0.0.1' } })
+
+    // Not `appPort`: with `strictPort` off, Vite moves to the next free port
+    // when that one is taken, and the proxy has to follow it.
+    const server = createStandIn({ accounts, upstreamPort: astro.address.port })
+
+    /**
+     * One way out, however it was reached.
+     *
+     * Guarded, because both routes into it can happen at once: under
+     * `npm run dev:fake` Ctrl-C signals this process directly *and* the parent
+     * sends SIGTERM, and stopping twice means two `process.exit`es racing a
+     * half-closed dev server.
+     *
+     * Nothing waits for `server.close()`, and that is deliberate. It waits for
+     * open sockets to end on their own; `closeAllConnections()` deals with the
+     * ordinary keep-alives, but Node stops counting a socket as one of the
+     * server's the moment it is upgraded, so the hot-reload websocket is beyond
+     * even its reach and the callback would never fire. Ctrl-C would then read
+     * as having done nothing at all. Shutdown hangs off the dev server's own
+     * `stop()` instead, which is the half with cleanup worth waiting for, and
+     * the exit is explicit rather than left to an emptied event loop — Vite
+     * keeps a readline interface on stdin for its keyboard shortcuts.
+     *
+     * And on a deadline, because the exit is now the only thing the person
+     * pressing Ctrl-C is waiting for and `stop()` is somebody else's code. It
+     * takes a few tens of milliseconds in practice; if it ever does not, an
+     * unresponsive Ctrl-C is the worse of the two outcomes.
+     */
+    const SHUTDOWN_DEADLINE_MS = 3_000
+    let stopping = false
+    const stop = (code: number): void => {
+        if (stopping) return
+        stopping = true
+
+        server.closeAllConnections()
+        server.close()
+        setTimeout(() => {
+            console.error(`the dev server did not stop within ${SHUTDOWN_DEADLINE_MS}ms; exiting anyway.`)
+            process.exit(code)
+        }, SHUTDOWN_DEADLINE_MS)
+        void astro
+            .stop()
+            .catch((error: unknown) => console.error(`the dev server did not stop cleanly: ${String(error)}`))
+            .finally(() => process.exit(code))
+    }
+    process.on('SIGINT', () => stop(0))
+    process.on('SIGTERM', () => stop(0))
+
+    // The dev server is in this process now, so it goes down with the stand-in
+    // either way. Saying so, and going through `stop`, is the difference between
+    // one sentence and a stack trace under twenty lines of Astro's startup — and
+    // it gives `astro.stop()` the chance to run, which an uncaught exception does
+    // not.
+    server.on('error', (error) => {
+        console.error(`the IAP stand-in on port ${port} failed: ${error.message}`)
+        stop(1)
+    })
+
     server.listen(port, '127.0.0.1', () => {
-        console.log(`\nIAP stand-in on http://localhost:${port} — astro dev behind it on ${appPort}`)
+        console.log(
+            `\nIAP stand-in on http://localhost:${port} — the dev server, in this process, on ${astro.address.port}`
+        )
         console.log(`Accounts configured: ${accounts.length}`)
         console.log('Sign out from the admin itself; it clears the cookie and asks again.\n')
     })
