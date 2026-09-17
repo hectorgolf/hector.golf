@@ -458,7 +458,12 @@ Leave both sets running. Nothing is saved by hurrying the next phase.
 
 ## Phase 7 — Decommission
 
-After a week with no traffic to the old functions — check
+**The four functions are gone.** Deleted 2026-09-17 at 06:51 UTC with the loop below — four days
+before the 21st this phase was waiting for, on three days of silence rather than seven. The old
+alias answers 404 where it answered 400 that same morning, and `gcloud functions list
+--project=gen-lang-client-0537211409` returns nothing.
+
+The gate was a week with no traffic to the old functions — check
 `gcloud functions describe … --format="value(serviceConfig.uri)"` against Cloud Run request metrics
 in the old project, since gen2 functions report as Cloud Run services:
 
@@ -468,7 +473,39 @@ for fn in ExtractScorecardInformation GeneratePlayerBiography GeneratePlayerAvat
 done
 ```
 
-Delete the old Gemini API key.
+### The old Gemini key is still there
+
+**The one thing this plan is still waiting on.** `Generative Language API Key`, created 2024-08-28,
+key id `7e0ddaae-d620-43a7-ba5b-a834e1d0819b`, in `gen-lang-client-0537211409`. Nothing should be
+using it: its only consumers were the four functions, and the replacement — `Gemini (Cloud
+Functions)`, minted in `hector-golf` on 2026-09-14 by phase 2 — is what the three Gemini functions
+read from Secret Manager now.
+
+```bash
+# Confirm which key is which before deleting anything. Two are listed; only the
+# Generative Language one is in scope.
+gcloud services api-keys list --project=gen-lang-client-0537211409 \
+  --format="table(displayName,name.basename(),createTime)"
+
+gcloud services api-keys delete 7e0ddaae-d620-43a7-ba5b-a834e1d0819b \
+  --project=gen-lang-client-0537211409
+```
+
+Two things about that second command are better known than discovered.
+
+**It refuses if the key has been used.** `--check-existing-usage` defaults to *true*, so a key with
+traffic in the last seven days fails the delete with an error instead of going quietly. That is this
+phase's soak period enforced by the API rather than by a calendar, and it is the reason not to reach
+for `--no-check-existing-usage` when the command complains: the check failing is the only warning
+you get that something nobody remembered is still authenticating with this key.
+
+**It is reversible for 30 days.** Deleted keys are retained that long and
+`gcloud services api-keys undelete` takes one back, by key id or `--key-string`. Keep the id above
+until 30 days after the delete, the same way `sheets-credential-wif.md` kept a service account's
+`uniqueId`.
+
+`Browser key (auto created by Firebase)` in the same project is **not** in scope. It belongs to the
+Firestore database that is staying, per the section below.
 
 ### The old project is not deleted
 
@@ -544,7 +581,8 @@ Cheap everywhere, which is the point of the ordering.
 | 1–5 | Nothing is pointed at the new functions. Revert the Terraform PR; delete the new functions if you want them gone. |
 | 6, step 2 | Put `PUBLIC_LEADERBOARD_PROXY_URL` back and rebuild. The old function is still up. |
 | 6, step 3 | Revert the commit. The next scheduled run uses the old URL. |
-| 7 | This is the irreversible one. Redeploying into the old project restores the same URLs, but only while that project exists. |
+| 7, the functions | This is the irreversible one. Redeploying into the old project restores the same URLs, but only while that project exists. |
+| 7, the key | Not irreversible for 30 days: `gcloud services api-keys undelete`, given the key id above. |
 
 ## Cost
 
