@@ -508,12 +508,19 @@ one:
 | --- | --- |
 | Resource owner | `hectorgolf` |
 | Repository access | Only select repositories → `hectorgolf/hector.golf` |
-| Repository permissions | **Actions: Read and write**, and nothing else |
-| Expiration | Your call. It cannot be "never" for a fine-grained token, so put the date in a calendar |
+| Repository permissions | **Actions: Read and write** and **Contents: Read and write**, and nothing else |
+| Expiration | Your call. It cannot be "never" for a fine-grained token. `/operations` warns for the last 60 days of it |
 
-Read and write on Actions is the whole grant: enough to dispatch a workflow and to list recent runs
-for the `/operations` page, and not enough to read the repository's contents or push to it. The
-workflows it starts do the committing, with their own `GITHUB_TOKEN`.
+Actions is enough to dispatch a workflow and to list recent runs for the `/operations` page. Contents
+is what the jobs the admin service runs *itself* commit their backups with; the workflows it starts
+still do their own committing, with their own `GITHUB_TOKEN`, but a job running inside the service
+has no such thing.
+
+Contents was added on 2026-09-16, for step 2 of
+[`handicaps-to-firestore.md`](../plans/handicaps-to-firestore.md). Grant it deliberately: this
+repository is public, so a token without it still *reads* everything, and a job missing it scrapes,
+reconciles, reports "no changes" and looks healthy right up to the commit that silently never
+happens.
 
 ### 2. Put it in Secret Manager
 
