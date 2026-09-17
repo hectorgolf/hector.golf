@@ -232,7 +232,7 @@ already holds, per decade.
 Three consequences worth knowing:
 
 - A quiet sweep now produces a commit and a deploy where it previously produced neither, because
-  `commit-changes.sh` commits on any change under `src/data/`. Twice a day, by design.
+  `commit-changes.sh` commits on any change under `src/data/`. Four times a day, by design.
 - A sweep that reached *nobody* is not recorded at all. Its entry would be the whole roster under
   `skipped`, and committing it would deploy the site over a run that learned nothing; an outage
   belongs in the workflow log. `sweepOf()` is that decision, separated from the writing so it can be
@@ -250,7 +250,7 @@ is published as `null` rather than filled in from a later reading, which for eve
 means the whole field. Every field is nullable and none is ever omitted, so a consumer reads the same
 shape for a Hector played next month and one played in 2014.
 
-Freshness is deploy cadence, not live: handicaps reach the repository twice a day (§8), and the file
+Freshness is deploy cadence, not live: handicaps reach the repository four times a day (§8), and the
 is rebuilt when that commit deploys. A consumer needing the value at the moment a round starts is
 asking the wrong system.
 
@@ -620,7 +620,7 @@ Secret Manager.
 
 The split is deliberate: **when** lives in Terraform, where `gcloud scheduler jobs list` answers it
 without anyone reading TypeScript, and **what** lives in the application, so adding a workflow to the
-twice-daily run needs no infrastructure change at all. Two jobs rather than one per workflow also
+scheduled run needs no infrastructure change at all. Two jobs rather than one per workflow also
 keeps the project inside Cloud Scheduler's three-job free tier.
 
 `POST /api/workflows/<slug>/dispatch` starts a single workflow, and is what the **Run now** buttons

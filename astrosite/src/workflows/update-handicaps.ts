@@ -123,7 +123,7 @@ export const sweepOf = (players: PlayerWithHandicapChanges[], at: string): Handi
  * Record that the sweep happened, whatever it found.
  *
  * Unconditional, and that is the whole point: a quiet sweep writes nothing else, so
- * without this the twice-daily evidence that we looked at all exists only in a
+ * without this the evidence that we looked at all, on every tick, exists only in a
  * workflow log that expires. It also means a quiet day now produces a commit where
  * it previously produced none — `commit-changes.sh` commits on any change under
  * `src/data/`, and a data commit deploys the site. That cost is the price of being

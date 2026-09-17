@@ -493,7 +493,8 @@ gcloud run services describe hector-admin --region="$REGION" \
 
 The admin service starts the data-update workflows rather than running them: the repository is the
 database, so a scrape is a workflow that commits JSON to `main`. It needs a GitHub token to do that,
-and until it has one the `/operations` page says so and the Cloud Scheduler jobs get a 502 twice a day.
+and until it has one the `/operations` page says so and the Cloud Scheduler jobs get a 502 on every
+tick.
 
 Why this exists at all is worth one line: GitHub queues `schedule` events and delivers them when it
 has capacity, which for this repository has meant a median of **four and a half hours late** in

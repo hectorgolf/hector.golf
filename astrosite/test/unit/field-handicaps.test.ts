@@ -299,7 +299,7 @@ describe('when the handicaps were last checked', () => {
     })
 
     it('does not claim a sweep that postdates a finished event', () => {
-        // Sweeps carry on twice a day for years after an event is over. The one that
+        // Sweeps carry on four times a day for years after an event is over. The one that
         // stood while it was played is the last one before its final day.
         const event = eventById('HECTOR2024')
         const payload = fieldHandicaps(event)

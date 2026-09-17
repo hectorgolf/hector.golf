@@ -49,7 +49,7 @@ const reason = rawReason as GitHubFailure | null;
 const failureMessage = reason && reason in FAILURE_MESSAGES ? FAILURE_MESSAGES[reason] : undefined;
 
 /*
- * Ten runs each, which is about five days of a twice-daily schedule — enough
+ * Ten runs each, which is about two and a half days of a four-tick schedule — enough
  * rows for the pattern to be visible rather than inferred from two points.
  *
  * In parallel because the calls are independent and this is the page's only

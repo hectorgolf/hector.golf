@@ -243,7 +243,7 @@ describe('the list of workflows this service may start', () => {
     })
 })
 
-describe('what the twice-daily tick starts', () => {
+describe('what the scheduled tick starts', () => {
     /*
      * The two Cloud Scheduler jobs call one endpoint that starts this list, so
      * this list *is* the schedule's payload — the infrastructure names no

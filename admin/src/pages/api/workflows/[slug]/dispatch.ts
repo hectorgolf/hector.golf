@@ -8,7 +8,7 @@ import { workflowBySlug } from '../../../../lib/workflows.ts'
  * Start one of the data-update workflows now.
  *
  * This is the **one workflow** endpoint, behind the "Run now" buttons on
- * `/operations`: for when the data is needed between the twice-daily runs, or
+ * `/operations`: for when the data is needed between the scheduled runs, or
  * when the association published handicaps later than usual and the midday run
  * was too early to see them. The schedule calls `../dispatch` instead, which
  * starts everything at once.

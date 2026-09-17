@@ -43,7 +43,7 @@
  * An entry here is all it takes. The API routes and the Operations page read
  * this list rather than naming workflows themselves, and so does the schedule:
  * `terraform/scheduler.tf` has two jobs that call one endpoint, which starts
- * everything marked `scheduled` — so adding a workflow to the twice-daily run is
+ * everything marked `scheduled` — so adding a workflow to the scheduled run is
  * an entry here and no infrastructure change at all.
  *
  * `deploy-site.yml` is here now, though not on the tick: it is dispatched by a scrape

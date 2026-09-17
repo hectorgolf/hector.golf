@@ -43,7 +43,7 @@ export const schema = z.object({
      *
      * A list rather than a count because `lastCheckedFor` has to answer per player,
      * and a list of the exceptions stays small — usually empty — where a list of the
-     * checked would repeat the whole roster twice a day.
+     * checked would repeat the whole roster on every tick.
      */
     skipped: z.array(z.string()),
 
