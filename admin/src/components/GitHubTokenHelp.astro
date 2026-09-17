@@ -1,5 +1,5 @@
 ---
-import { repository } from '../lib/github.ts'
+import { EXPIRY_URGENT_DAYS, EXPIRY_WARN_DAYS, repository } from '../lib/github.ts'
 import { githubTokenSecretLocation } from '../lib/secrets.ts'
 
 /*
@@ -17,12 +17,41 @@ import { githubTokenSecretLocation } from '../lib/secrets.ts'
  */
 
 interface Props {
-	/** `missing`: no token at all. `rejected`: there is one and GitHub refused it. */
-	mode: 'missing' | 'rejected'
+	/**
+	 * `missing`: no token at all. `rejected`: there is one and GitHub refused it.
+	 * `expiring`: it still works, and GitHub has said for how long.
+	 *
+	 * The three share this component rather than having one each because the
+	 * remedy is identical in all three — create a token, store it, reload — and
+	 * the only thing that differs is the sentence explaining why you are reading
+	 * it. Splitting them would mean three copies of the steps, which is three
+	 * places to update the day the permissions change again.
+	 */
+	mode: 'missing' | 'rejected' | 'expiring'
+	/** Whole days until expiry, for `expiring`. Negative once it has lapsed. */
+	daysLeft?: number
 }
 
-const { mode } = Astro.props
+const { mode, daysLeft } = Astro.props
 const location = githubTokenSecretLocation()
+
+/*
+ * Whether this is news or a problem.
+ *
+ * A month's warning is information — the token still works and everything still
+ * runs — so it gets the neutral treatment and sits below the things that are
+ * actually broken. Inside the last week it joins them.
+ */
+const urgent = mode !== 'expiring' || (daysLeft ?? 0) <= EXPIRY_URGENT_DAYS
+
+/** "expires in 12 days", "expires tomorrow", "expired 3 days ago" — as a heading has to read. */
+const when = (days: number): string => {
+	if (days < -1) return `expired ${Math.abs(days)} days ago`
+	if (days < 0) return 'expired yesterday'
+	if (days === 0) return 'expires today'
+	if (days === 1) return 'expires tomorrow'
+	return `expires in ${days} days`
+}
 
 // The URL that opens GitHub's fine-grained token form directly. Not the generic
 // settings page: the form is four clicks deep and easy to land on the wrong one
@@ -34,9 +63,15 @@ const command = location
 	: 'gcloud secrets versions add github-dispatch-token --project=<project> --data-file=-'
 ---
 
-<section class="notice bad token-help">
+<section class:list={['notice', urgent && 'bad', 'token-help']}>
 	<h2>
-		{mode === 'missing' ? 'No GitHub token is configured' : 'GitHub refused the token'}
+		{
+			mode === 'missing'
+				? 'No GitHub token is configured'
+				: mode === 'rejected'
+					? 'GitHub refused the token'
+					: `The GitHub token ${when(daysLeft ?? 0)}`
+		}
 	</h2>
 
 	<p>
@@ -47,11 +82,18 @@ const command = location
 					token to ask with. Until it has one, the buttons below do nothing and the twice-daily
 					Cloud Scheduler runs fail.
 				</>
-			) : (
+			) : mode === 'rejected' ? (
 				<>
 					There is a token, and GitHub would not accept it. Fine-grained tokens expire, and the
 					one here is <strong>not</strong> revoked or renewed automatically. Replacing it is the
 					same three steps as creating the first one.
+				</>
+			) : (
+				<>
+					Everything below still works, and on this date it stops: the scheduled updates fail, the
+					run history on this page goes blank, and the handicaps job can no longer commit its
+					backup. Nothing renews the token automatically — it is replaced by hand, and the three
+					steps are the same ones that created it.
 				</>
 			)
 		}
@@ -89,19 +131,30 @@ const command = location
 					<tr>
 						<td>Repository permissions</td>
 						<td>
-							<strong>Actions: Read and write</strong>, and nothing else
+							<strong>Actions: Read and write</strong> and{' '}
+							<strong>Contents: Read and write</strong>, and nothing else
 						</td>
 					</tr>
 					<tr>
 						<td>Expiration</td>
-						<td>Your call — it cannot be "never", so put the date in a calendar</td>
+						<td>
+							Your call — it cannot be "never". This page warns for the last {EXPIRY_WARN_DAYS} days.
+						</td>
 					</tr>
 				</tbody>
 			</table>
 			<p class="why">
-				Read and write on Actions is the whole grant: enough to start a workflow and to list recent
-				runs for this page, and not enough to read the repository's code or push to it. The
-				workflows do their own committing, with their own <code>GITHUB_TOKEN</code>.
+				Actions is what starts a workflow and lists the recent runs this page shows. Contents is
+				what the jobs this service runs <em>itself</em> commit their backups with — the workflows
+				still do their own committing, with their own <code>GITHUB_TOKEN</code>, but a job in this
+				process has no such thing and uses this token.
+			</p>
+			<p class="why">
+				Contents is worth granting deliberately rather than by habit: it is the permission that
+				lets this service write to the repository, and a token without it fails in the least
+				visible way available. The repository is public, so reads keep working whatever the grant
+				says — a job will scrape, reconcile, report "no changes" and look entirely healthy, right
+				up to the commit nobody is watching.
 			</p>
 		</li>
 

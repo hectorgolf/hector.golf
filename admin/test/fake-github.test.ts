@@ -201,6 +201,69 @@ describe('the stand-in, as the client sees it', () => {
     it('is answering normally again once the knob is cleared', async () => {
         expect(await client.dispatch(handicaps)).toEqual({ ok: true })
     })
+
+    /**
+     * The other thing real GitHub will not produce to order.
+     *
+     * The expiry warning on `/operations` is driven by a header whose value is a
+     * date eleven months away, so without this the notice ships having never been
+     * looked at — and the first person to see it would be somebody discovering
+     * that the token lapsed.
+     *
+     * A client of its own rather than the shared one above, because the real
+     * client remembers the last expiry it saw and never unlearns it. Reusing the
+     * shared client would leave a date behind for whatever runs next.
+     */
+    describe('a token with a date on it', () => {
+        const freshClient = (port: number) =>
+            createGitHubClient({ repository, token: async () => 'fake-token', baseUrl: `http://127.0.0.1:${port}` })
+
+        const setExpiry = async (port: number, asked: string) =>
+            fetch(`http://127.0.0.1:${port}/_fake/expiry?in=${encodeURIComponent(asked)}`, { method: 'POST' })
+
+        it('says nothing about an expiry until it is asked to, the way a classic token never does', async () => {
+            const { port } = server.address() as AddressInfo
+            const mine = freshClient(port)
+
+            expect(await mine.dispatch(handicaps)).toEqual({ ok: true })
+            expect(mine.tokenExpiry()).toBeUndefined()
+        })
+
+        it('carries a date the real client reads, in the format real GitHub writes', async () => {
+            const { port } = server.address() as AddressInfo
+            await setExpiry(port, '5d')
+            const mine = freshClient(port)
+
+            expect(await mine.dispatch(handicaps)).toEqual({ ok: true })
+            // 5d out and read immediately, so the floor lands on 4 rather than 5.
+            expect(mine.tokenExpiry()?.daysLeft).toBe(4)
+
+            await setExpiry(port, 'none')
+        })
+
+        /*
+         * The state the warning is ultimately about. A duration in the past is
+         * allowed by the knob on purpose: a token that lapsed while nobody was
+         * looking is the failure this whole path exists to make visible, and it
+         * has to be renderable.
+         */
+        it('can be given a date that has already gone', async () => {
+            const { port } = server.address() as AddressInfo
+            await setExpiry(port, '-2d')
+            const mine = freshClient(port)
+
+            expect(await mine.dispatch(handicaps)).toEqual({ ok: true })
+            expect(mine.tokenExpiry()?.daysLeft).toBeLessThan(0)
+
+            await setExpiry(port, 'none')
+        })
+
+        it('refuses a duration it cannot read, rather than silently forgetting the date', async () => {
+            const { port } = server.address() as AddressInfo
+            const response = await setExpiry(port, 'whenever')
+            expect(response.status).toBe(400)
+        })
+    })
 })
 
 /**

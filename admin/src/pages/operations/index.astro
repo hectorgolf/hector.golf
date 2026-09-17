@@ -3,7 +3,14 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 import PageHeader from "@hector/ui/components/PageHeader.astro";
 import GitHubTokenHelp from "../../components/GitHubTokenHelp.astro";
 
-import { FAILURE_MESSAGES, github, type GitHubFailure, type RunsOutcome, type WorkflowRun } from "../../lib/github.ts";
+import {
+	EXPIRY_WARN_DAYS,
+	FAILURE_MESSAGES,
+	github,
+	type GitHubFailure,
+	type RunsOutcome,
+	type WorkflowRun,
+} from "../../lib/github.ts";
 import { ageInWords, formatUtc, labelOf, toneOf, triggerInWords } from "../../lib/runs.ts";
 import { DISPATCHABLE_WORKFLOWS, workflowBySlug } from "../../lib/workflows.ts";
 import { JOBS, jobBySlug } from "../../lib/jobs/registry.ts";
@@ -92,11 +99,37 @@ const tokenTrouble = [
 	...(failureMessage && reason ? [reason] : []),
 ];
 
+/*
+ * How long the token has left, if GitHub has said.
+ *
+ * Read *after* the histories above have been awaited, and that ordering is the
+ * whole of the mechanism: the value is a header picked off those very calls
+ * rather than something asked for separately, so it is empty until one of them
+ * has come back. Nothing else on this page needs to know that, but moving this
+ * line above the `await` would silently turn the warning off.
+ *
+ * Absent is normal and means "no idea": a classic token carries no expiry, and
+ * neither does the local stand-in unless it has been asked to. Silence is the
+ * right rendering of that — a token nobody can date is not a token about to
+ * expire.
+ */
+const expiry = github().tokenExpiry();
+
+/*
+ * Which of the three gets the walkthrough, at most one.
+ *
+ * Ranked rather than combined, because a token that is both expiring and
+ * refused is a token that has expired, and being told twice is worse than being
+ * told once. The hard failures win: they are why the page is empty, and the
+ * expiry warning would be describing something that has already happened.
+ */
 const tokenHelp = tokenTrouble.includes("not-configured")
 	? "missing"
 	: tokenTrouble.includes("unauthorized")
 		? "rejected"
-		: undefined;
+		: expiry && expiry.daysLeft <= EXPIRY_WARN_DAYS
+			? "expiring"
+			: undefined;
 
 const historyFailure = [...histories.values()].find((outcome) => !outcome.ok);
 
@@ -255,7 +288,7 @@ const now = new Date();
 		</p>
 	</article>
 
-	{tokenHelp && <GitHubTokenHelp mode={tokenHelp} />}
+	{tokenHelp && <GitHubTokenHelp mode={tokenHelp} daysLeft={expiry?.daysLeft} />}
 
 	<div class="workflows">
 		{

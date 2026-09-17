@@ -1,6 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { createGitHubClient, FAILURE_MESSAGES, type GitHubFailure } from '../src/lib/github.ts'
+import {
+    createGitHubClient,
+    EXPIRY_URGENT_DAYS,
+    EXPIRY_WARN_DAYS,
+    FAILURE_MESSAGES,
+    parseTokenExpiry,
+    type GitHubFailure,
+} from '../src/lib/github.ts'
 import { DISPATCHABLE_WORKFLOWS, SCHEDULED_WORKFLOWS, workflowBySlug } from '../src/lib/workflows.ts'
 
 const handicaps = workflowBySlug('handicaps')!
@@ -402,5 +409,160 @@ describe('committing a file', () => {
     it('classifies a refused commit like any other call', async () => {
         const { client } = clientAnswering(refused(403))
         expect(await client.commitFile(request)).toEqual({ ok: false, reason: 'unauthorized' })
+    })
+})
+
+
+/**
+ * The expiry is read off responses this service was making anyway, which is the
+ * whole appeal — and also the thing to pin down, because a side channel is easy
+ * to break without anything failing. Every way it can go wrong is silent: the
+ * page simply stops warning, and looks exactly like a healthy token.
+ */
+describe("reading the token's expiry", () => {
+    /** GitHub's own format, as observed on a real call: a space, and a zone name. */
+    const header = (value: string) =>
+        new Response('{}', { status: 200, headers: { 'github-authentication-token-expiration': value } })
+
+    describe('parsing the header', () => {
+        it("understands GitHub's format, which is not ISO 8601", () => {
+            expect(parseTokenExpiry('2027-09-14 20:32:16 UTC')?.toISOString()).toBe('2027-09-14T20:32:16.000Z')
+        })
+
+        it('understands the shapes it might be written in instead', () => {
+            for (const written of [
+                '2027-09-14 20:32:16 +0000',
+                '2027-09-14 20:32:16 +00:00',
+                '2027-09-14T20:32:16Z',
+                '  2027-09-14 20:32:16 utc  ',
+            ]) {
+                expect(parseTokenExpiry(written)?.toISOString(), written).toBe('2027-09-14T20:32:16.000Z')
+            }
+        })
+
+        it('keeps an offset that is not UTC rather than assuming one', () => {
+            expect(parseTokenExpiry('2027-09-14 20:32:16 +0300')?.toISOString()).toBe('2027-09-14T17:32:16.000Z')
+        })
+
+        /*
+         * Silence, not a guess. Every one of these would otherwise become an
+         * `Invalid Date` and a warning computed against `NaN` days — which is
+         * worse than no warning, because it is a wrong one nobody can act on.
+         */
+        it('answers nothing for anything it does not recognise', () => {
+            const unreadable = [undefined, null, '', '   ', 'never', 'tomorrow', '2027-09-14', 'not a date']
+            for (const written of unreadable) {
+                expect(parseTokenExpiry(written), String(written)).toBeUndefined()
+            }
+        })
+    })
+
+    describe('what the client remembers', () => {
+        it('knows nothing until something has actually called GitHub', () => {
+            const { client } = clientAnswering(accepted())
+            expect(client.tokenExpiry()).toBeUndefined()
+        })
+
+        it('picks the date up from a call made for another reason entirely', async () => {
+            const { client } = clientAnswering(header('2027-09-14 20:32:16 UTC'))
+            await client.dispatch(handicaps)
+
+            const expiry = client.tokenExpiry(new Date('2027-08-15T20:32:16Z'))
+            expect(expiry?.at.toISOString()).toBe('2027-09-14T20:32:16.000Z')
+            expect(expiry?.daysLeft).toBe(30)
+        })
+
+        it('counts whole days, never reporting more time left than there is', async () => {
+            const { client } = clientAnswering(header('2027-09-14 20:32:16 UTC'))
+            await client.dispatch(handicaps)
+
+            // 6 days and 23 hours out. Reporting 7 would put this on the wrong
+            // side of EXPIRY_URGENT_DAYS for an hour.
+            expect(client.tokenExpiry(new Date('2027-09-07T21:32:16Z'))?.daysLeft).toBe(6)
+        })
+
+        it('goes negative once the date has passed rather than clamping at zero', async () => {
+            const { client } = clientAnswering(header('2027-09-14 20:32:16 UTC'))
+            await client.dispatch(handicaps)
+
+            expect(client.tokenExpiry(new Date('2027-09-17T20:32:16Z'))?.daysLeft).toBe(-3)
+        })
+
+        /*
+         * The reason this truncates towards zero instead of rounding down.
+         * Flooring a negative rounds *away* from zero, so a token one minute past
+         * three days lapsed would be reported on the page as four days gone —
+         * a heading inventing a day that has not happened.
+         */
+        it('does not age a lapse faster than the clock does', async () => {
+            const { client } = clientAnswering(header('2027-09-14 20:32:16 UTC'))
+            await client.dispatch(handicaps)
+
+            expect(client.tokenExpiry(new Date('2027-09-17T20:33:16Z'))?.daysLeft).toBe(-3)
+        })
+
+        /*
+         * A refusal carries the header too, and a token close enough to expiry to
+         * be worth warning about is a token whose calls may already be failing for
+         * other reasons. Only reading it from successes would lose it exactly when
+         * it is most worth having.
+         */
+        it('reads it from a refusal as readily as from a success', async () => {
+            vi.spyOn(console, 'error').mockImplementation(() => {})
+            const response = new Response('{"message":"..."}', {
+                status: 503,
+                headers: { 'github-authentication-token-expiration': '2027-09-14 20:32:16 UTC' },
+            })
+            const { client } = clientAnswering(response)
+
+            expect(await client.dispatch(handicaps)).toEqual({ ok: false, reason: 'unavailable' })
+            expect(client.tokenExpiry(new Date('2027-09-14T20:32:16Z'))?.daysLeft).toBe(0)
+        })
+
+        /*
+         * Not every answer repeats it — a classic token never sends it at all —
+         * so an absent header has to mean "nothing new" rather than "no expiry".
+         * Forgetting here would make the warning flicker off on the next call.
+         */
+        it('keeps what it knows when a later answer says nothing about it', async () => {
+            const fetch = vi
+                .fn<typeof globalThis.fetch>()
+                .mockResolvedValueOnce(header('2027-09-14 20:32:16 UTC'))
+                .mockResolvedValueOnce(accepted())
+            const client = createGitHubClient({
+                repository: 'hectorgolf/hector.golf',
+                token: async () => 'ghp_test',
+                fetch,
+            })
+
+            await client.dispatch(handicaps)
+            await client.dispatch(handicaps)
+
+            expect(client.tokenExpiry(new Date('2027-08-15T20:32:16Z'))?.daysLeft).toBe(30)
+        })
+    })
+
+    it('warns well before it insists, and both before the token lapses', () => {
+        expect(EXPIRY_WARN_DAYS).toBeGreaterThan(EXPIRY_URGENT_DAYS)
+        expect(EXPIRY_URGENT_DAYS).toBeGreaterThan(0)
+    })
+
+    /*
+     * The playbook tells somebody creating a token how long they will be warned
+     * for, and prose cannot import a constant. `GitHubTokenHelp` interpolates
+     * this one so the page cannot drift; the Markdown restates it by hand, which
+     * is precisely the arrangement that made the permissions table in that same
+     * file wrong for two days. Cheaper to pin it than to notice it again.
+     */
+    it('is the number the bootstrapping playbook promises, which cannot import it', async () => {
+        const { readFileSync } = await import('node:fs')
+        const { fileURLToPath } = await import('node:url')
+
+        const playbook = fileURLToPath(new URL('../../docs/playbooks/gcp-bootstrapping.md', import.meta.url))
+        const text = readFileSync(playbook, 'utf-8')
+
+        expect(text, 'the playbook should say how long /operations warns for').toContain(
+            `warns for the last ${EXPIRY_WARN_DAYS} days`
+        )
     })
 })

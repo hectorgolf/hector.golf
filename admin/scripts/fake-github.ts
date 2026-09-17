@@ -27,6 +27,10 @@
  *   two modes, and a rate limit or an expired token is not something real GitHub
  *   will produce because you would like to see the message. `POST /_fake/fail`
  *   produces any of them on demand.
+ * - **A token about to expire.** The warning on the Operations page is driven by
+ *   a header real GitHub only sends with the truth, and the truth is a date
+ *   eleven months out. `POST /_fake/expiry` moves it, which is the only way to
+ *   look at the notice without waiting until next September.
  * - **The commit conflict.** `commitFile` retries a 409 three times and the
  *   append-only guard in `lib/jobs/backup.ts` sits behind it. Losing that race
  *   against real GitHub means arranging for somebody else to commit at the right
@@ -59,6 +63,8 @@
  * carries the dispatch token. It lives in `scripts/`, which the container image
  * does not copy.
  */
+import parseDuration from 'parse-duration'
+
 import { readFileSync, existsSync } from 'node:fs'
 import http, { type IncomingMessage, type ServerResponse } from 'node:http'
 import { createHash } from 'node:crypto'
@@ -102,6 +108,16 @@ export type FakeState = {
     written: Map<string, { text: string; sha: string }>
     /** What every call should fail with, until told otherwise. */
     failing?: GitHubFailure
+    /**
+     * What to claim the token expires at, or nothing to send no header at all.
+     *
+     * Nothing by default, and that default is the honest one rather than a
+     * convenience: a classic PAT sends no expiry either, so "absent" is a real
+     * state the client has to read as "no idea" — and a stand-in that always
+     * volunteered a comfortable date would be the one arrangement under which
+     * that branch is never exercised.
+     */
+    expiresAt?: Date
     nextRunNumber: number
 }
 
@@ -252,6 +268,9 @@ export const FAILURE_RESPONSES: Record<Exclude<GitHubFailure, 'not-configured'>,
     unknown: [418, {}],
 }
 
+/** A date the way GitHub writes this one: `2027-09-14 20:32:16 UTC`. */
+export const asGitHubTimestamp = (at: Date): string => `${at.toISOString().slice(0, 19).replace('T', ' ')} UTC`
+
 const json = (res: ServerResponse, status: number, body: unknown, headers: Record<string, string> = {}): void => {
     res.writeHead(status, { 'content-type': 'application/json', ...headers })
     res.end(JSON.stringify(body))
@@ -280,9 +299,35 @@ export function handle(state: FakeState, repository: string, req: IncomingMessag
         state.failing = reason && reason !== 'none' ? (reason as GitHubFailure) : undefined
         return json(res, 200, { failing: state.failing ?? null })
     }
+    /*
+     * Note that `in=none` stops *this* from volunteering a date; it does not make
+     * the admin forget the last one it was told. The real client only ever learns
+     * an expiry and never unlearns it — see `tokenExpiry` in `lib/github.ts` for
+     * why that is right against real GitHub, which repeats the header on every
+     * authenticated answer — so clearing it here and reloading leaves the notice
+     * up until the dev server is restarted. Moving the date works fine; removing
+     * it needs a restart.
+     */
+    if (path === '/_fake/expiry' && req.method === 'POST') {
+        const asked = url.searchParams.get('in')
+        if (!asked || asked === 'none') {
+            state.expiresAt = undefined
+            return json(res, 200, { expiresAt: null })
+        }
+        // The same duration syntax as `cadence.ts`, so there is one of these to
+        // remember rather than two. A negative one is allowed on purpose: an
+        // already-expired token is a state the page can be in.
+        const ms = parseDuration(asked)
+        if (ms === null || ms === undefined || Number.isNaN(ms)) {
+            return json(res, 400, { message: `not a duration: ${asked}` })
+        }
+        state.expiresAt = new Date(Date.now() + ms)
+        return json(res, 200, { expiresAt: state.expiresAt.toISOString() })
+    }
     if (path === '/_fake/state') {
         return json(res, 200, {
             failing: state.failing ?? null,
+            expiresAt: state.expiresAt?.toISOString() ?? null,
             runs: state.runs.length,
             written: [...state.written.keys()],
         })
@@ -338,6 +383,20 @@ export function handle(state: FakeState, repository: string, req: IncomingMessag
     // one assertion worth making: the real client must always send a token.
     if (!(req.headers.authorization ?? '').startsWith('Bearer ')) {
         return json(res, 401, { message: 'no bearer token; the real client always sends one' })
+    }
+
+    /*
+     * Set here rather than at each answer below, which is both less to forget
+     * and closer to what real GitHub does: the header rides on every
+     * authenticated response, refusals included, and never on the unauthenticated
+     * ones above. `writeHead` merges what `json` passes it over the top of this.
+     *
+     * The format is GitHub's, not ISO 8601 — a space and a zone name — because
+     * `parseTokenExpiry` exists precisely to cope with that, and a stand-in that
+     * sent something tidier would test the parser against input it never gets.
+     */
+    if (state.expiresAt) {
+        res.setHeader('github-authentication-token-expiration', asGitHubTimestamp(state.expiresAt))
     }
 
     if (state.failing && state.failing !== 'not-configured') {
@@ -466,6 +525,8 @@ async function main(): Promise<void> {
         console.log(`  Point the admin at it:  GITHUB_API_BASE_URL=http://127.0.0.1:${port}`)
         console.log(`  Make everything fail:   curl -XPOST 'http://127.0.0.1:${port}/_fake/fail?reason=rate-limited'`)
         console.log(`  Stop failing:           curl -XPOST 'http://127.0.0.1:${port}/_fake/fail?reason=none'`)
+        console.log(`  Expire the token soon:  curl -XPOST 'http://127.0.0.1:${port}/_fake/expiry?in=5d'`)
+        console.log(`  Move it further out:    curl -XPOST 'http://127.0.0.1:${port}/_fake/expiry?in=200d'`)
         console.log(`  What it is holding:     curl http://127.0.0.1:${port}/_fake/state\n`)
     })
 }

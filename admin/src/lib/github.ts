@@ -93,11 +93,94 @@ export type CommitRequest = {
     committer: { name: string; email: string }
 }
 
+/**
+ * When the token stops working, and how long that leaves.
+ *
+ * `daysLeft` is whole days, truncated *towards zero* rather than rounded down,
+ * which is the one arithmetic choice here worth stating. Towards zero is the
+ * conservative direction on both sides of the date at once: with six days and
+ * twenty-three hours left it says six, so a threshold is crossed early rather
+ * than late; three days and a minute after the date it says three days ago
+ * rather than four, so a heading does not age the lapse faster than the clock.
+ * Rounding down does the first and gets the second wrong.
+ *
+ * Negative once the date has passed, which is reachable rather than
+ * theoretical — an expired token is answered with a 401 that carries no expiry
+ * header at all, so the last value seen stays behind and ages into the past. It
+ * is also the state that matters least: `unauthorized` arrives alongside it, and
+ * a page has something stronger to say than "expiring soon" by then.
+ */
+export type TokenExpiry = {
+    at: Date
+    daysLeft: number
+}
+
+/**
+ * When to start saying something, and when to start insisting.
+ *
+ * Both are generous, and the reason is that nobody watches this page. It is
+ * opened when something is already wrong, so a window has to be wide enough to
+ * contain a visit that happens for an unrelated reason — a week's warning on a
+ * page read once a month is a warning nobody sees. Sixty days spans a holiday
+ * and a quiet spell; thirty is still a month of the notice being red before
+ * anything breaks.
+ *
+ * The cost of being early is a line on a page nobody has to act on yet. The
+ * cost of being late is the scheduled updates stopping, so the asymmetry is the
+ * whole argument. Neither number is tuned — there is nothing to tune against
+ * until a token has actually lapsed.
+ */
+export const EXPIRY_WARN_DAYS = 60
+export const EXPIRY_URGENT_DAYS = 30
+
+/** The header GitHub answers a fine-grained token's every call with. */
+const EXPIRY_HEADER = 'github-authentication-token-expiration'
+
+/**
+ * That header as a date, or nothing when it is absent or unreadable.
+ *
+ * The format is `2027-09-14 20:32:16 UTC`: a space where ISO 8601 wants a `T`,
+ * and a zone name where it wants a `Z`. Node happens to parse it as it stands,
+ * but `Date.parse` on anything outside ISO 8601 is explicitly
+ * implementation-defined, so it is taken apart here rather than trusted. The
+ * failure being avoided is a quiet one — an `Invalid Date` under a future
+ * runtime would leave the page looking exactly like a healthy token.
+ *
+ * Nothing is the normal answer for two callers that are not broken: a classic
+ * PAT, which has no expiry to report, and `scripts/fake-github.ts` unless it has
+ * been asked for one. Both have to read as "no idea" rather than as "fine",
+ * which is why this returns `undefined` and not a far-future date.
+ */
+export function parseTokenExpiry(header: string | null | undefined): Date | undefined {
+    if (!header) return undefined
+
+    const match = header.trim().match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\d{2})(?:\s*(UTC|Z|[+-]\d{2}:?\d{2}))?$/i)
+    // An unrecognised shape is silence rather than a guess: GitHub changing this
+    // format should cost the warning, never invent one against a wrong date.
+    if (!match) return undefined
+
+    const [, date, time, zone] = match
+    const offset = !zone || /^(?:UTC|Z)$/i.test(zone) ? 'Z' : zone.replace(/^([+-]\d{2}):?(\d{2})$/, '$1:$2')
+    const parsed = new Date(`${date}T${time}${offset}`)
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed
+}
+
 export type GitHubClient = {
     dispatch(workflow: DispatchableWorkflow): Promise<DispatchOutcome>
     recentRuns(workflow: DispatchableWorkflow, limit?: number): Promise<RunsOutcome>
     readFile(path: string, ref?: string): Promise<ReadFileOutcome>
     commitFile(request: CommitRequest): Promise<CommitOutcome>
+    /**
+     * What the last answered call said about the token's expiry, or nothing if
+     * none has carried one yet.
+     *
+     * A side channel rather than a probe, and deliberately: the header rides on
+     * requests this service was making anyway, so knowing costs no call, no rate
+     * limit and no extra failure mode. The price is that it is empty until
+     * something has talked to GitHub — a caller that has not awaited one of the
+     * calls above will be told "no idea" and should render nothing.
+     */
+    tokenExpiry(now?: Date): TokenExpiry | undefined
 }
 
 /** GitHub, in production and by default everywhere else. */
@@ -227,6 +310,9 @@ export function createGitHubClient(options: GitHubClientOptions): GitHubClient {
     const base = `${api}/repos/${options.repository}/actions/workflows`
     const contents = `${api}/repos/${options.repository}/contents`
 
+    /** The last expiry GitHub mentioned. See `tokenExpiry` on the client type. */
+    let expiresAt: Date | undefined
+
     /**
      * Everything every call does the same way: get a token, call, classify.
      *
@@ -242,6 +328,16 @@ export function createGitHubClient(options: GitHubClientOptions): GitHubClient {
 
         try {
             const response = await doFetch(url, { ...init, headers: headers(token) })
+
+            // Taken from every answer, refusals included, since this is the one
+            // moment the information is free. Only ever set and never cleared: a
+            // rotation onto a token carrying no expiry would leave a stale date
+            // behind, which is the lesser of the two mistakes available — the
+            // alternative forgets the real date every time GitHub answers with
+            // something that does not repeat it.
+            const expiry = parseTokenExpiry(response.headers.get(EXPIRY_HEADER))
+            if (expiry) expiresAt = expiry
+
             if (response.ok || expected.includes(response.status)) return response
 
             // Logged here rather than at each call site so that both of them are
@@ -384,6 +480,11 @@ export function createGitHubClient(options: GitHubClientOptions): GitHubClient {
             }
             return { ok: true, commit: String(body.commit?.sha ?? 'unknown') }
         },
+
+        tokenExpiry(now = new Date()) {
+            if (!expiresAt) return undefined
+            return { at: expiresAt, daysLeft: Math.trunc((expiresAt.getTime() - now.getTime()) / 86_400_000) }
+        },
     }
 }
 
@@ -402,7 +503,7 @@ export function github(): GitHubClient {
 /** What to put in front of a person when a call did not work. */
 export const FAILURE_MESSAGES: Record<GitHubFailure, string> = {
     'not-configured': 'No GitHub token is configured for this service, so it cannot start workflows.',
-    unauthorized: 'GitHub refused the token. It may have expired or lost its Actions permission.',
+    unauthorized: 'GitHub refused the token. It may have expired, or lost a permission it needs.',
     'not-found': 'GitHub does not recognise that workflow, or the token cannot see this repository.',
     'rate-limited': 'GitHub is rate-limiting this token. Try again shortly.',
     unavailable: 'GitHub could not be reached.',
