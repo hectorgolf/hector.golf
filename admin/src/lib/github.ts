@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto'
+
 import { githubToken } from './secrets.ts'
 import { DISPATCH_REF, type DispatchableWorkflow } from './workflows.ts'
 
@@ -165,20 +167,36 @@ export function parseTokenExpiry(header: string | null | undefined): Date | unde
     return Number.isNaN(parsed.getTime()) ? undefined : parsed
 }
 
+/**
+ * Which token a remembered expiry belongs to.
+ *
+ * Hashed rather than kept, so that nothing here holds a second long-lived
+ * reference to the credential and an accidental log line is harmless. The
+ * comparison only ever needs to answer "is this the same token as last time",
+ * which a digest does as well as the string.
+ */
+const fingerprint = (token: string): string => createHash('sha256').update(token).digest('hex')
+
 export type GitHubClient = {
     dispatch(workflow: DispatchableWorkflow): Promise<DispatchOutcome>
     recentRuns(workflow: DispatchableWorkflow, limit?: number): Promise<RunsOutcome>
     readFile(path: string, ref?: string): Promise<ReadFileOutcome>
     commitFile(request: CommitRequest): Promise<CommitOutcome>
     /**
-     * What the last answered call said about the token's expiry, or nothing if
-     * none has carried one yet.
+     * What the token currently in use last said about its own expiry, or nothing
+     * if it has not said — either because no call has been made yet, or because
+     * it is a classic token with no expiry to report.
      *
      * A side channel rather than a probe, and deliberately: the header rides on
      * requests this service was making anyway, so knowing costs no call, no rate
      * limit and no extra failure mode. The price is that it is empty until
      * something has talked to GitHub — a caller that has not awaited one of the
      * calls above will be told "no idea" and should render nothing.
+     *
+     * "Currently in use" is load-bearing. The answer is tied to the token it came
+     * from, so rotating replaces it — including replacing it with nothing, which
+     * is how a move onto a token without an expiry clears a warning the previous
+     * one raised. See the two branches in `call()`.
      */
     tokenExpiry(now?: Date): TokenExpiry | undefined
 }
@@ -310,8 +328,20 @@ export function createGitHubClient(options: GitHubClientOptions): GitHubClient {
     const base = `${api}/repos/${options.repository}/actions/workflows`
     const contents = `${api}/repos/${options.repository}/contents`
 
-    /** The last expiry GitHub mentioned. See `tokenExpiry` on the client type. */
-    let expiresAt: Date | undefined
+    /**
+     * The last expiry GitHub mentioned, and which token it was talking about.
+     *
+     * Kept together because an expiry belongs to a token value rather than to
+     * this service: a date learned from one token says nothing about the next.
+     * One slot rather than a map keyed by token, because only one token is ever
+     * current — a map would accumulate an entry per rotation and never be asked
+     * about any of them again.
+     *
+     * `at` is allowed to be undefined against a known fingerprint. That is the
+     * meaningful state for a classic token, which carries no expiry at all: we
+     * have heard from it, and the answer was nothing.
+     */
+    let known: { fingerprint: string; at: Date | undefined } | undefined
 
     /**
      * Everything every call does the same way: get a token, call, classify.
@@ -329,14 +359,24 @@ export function createGitHubClient(options: GitHubClientOptions): GitHubClient {
         try {
             const response = await doFetch(url, { ...init, headers: headers(token) })
 
-            // Taken from every answer, refusals included, since this is the one
-            // moment the information is free. Only ever set and never cleared: a
-            // rotation onto a token carrying no expiry would leave a stale date
-            // behind, which is the lesser of the two mistakes available — the
-            // alternative forgets the real date every time GitHub answers with
-            // something that does not repeat it.
-            const expiry = parseTokenExpiry(response.headers.get(EXPIRY_HEADER))
-            if (expiry) expiresAt = expiry
+            /*
+             * Taken from every answer, refusals included, since this is the one
+             * moment the information is free.
+             *
+             * The two branches are the whole of the caching rule, and they differ
+             * because an absent header means two different things depending on
+             * which token was asked. For a token we have not seen before it is an
+             * answer — a classic token has no expiry, and adopting "nothing" is
+             * how a rotation onto one clears the warning the old token raised.
+             * For the token we already know it is silence rather than an answer:
+             * real GitHub repeats the header on every authenticated response, so
+             * a reply that omits it is an edge, a proxy or an expired-token 401,
+             * and forgetting there would blank the notice on a blip.
+             */
+            const seen = parseTokenExpiry(response.headers.get(EXPIRY_HEADER))
+            const current = fingerprint(token)
+            if (known?.fingerprint !== current) known = { fingerprint: current, at: seen }
+            else if (seen) known = { fingerprint: current, at: seen }
 
             if (response.ok || expected.includes(response.status)) return response
 
@@ -482,8 +522,9 @@ export function createGitHubClient(options: GitHubClientOptions): GitHubClient {
         },
 
         tokenExpiry(now = new Date()) {
-            if (!expiresAt) return undefined
-            return { at: expiresAt, daysLeft: Math.trunc((expiresAt.getTime() - now.getTime()) / 86_400_000) }
+            const at = known?.at
+            if (!at) return undefined
+            return { at, daysLeft: Math.trunc((at.getTime() - now.getTime()) / 86_400_000) }
         },
     }
 }

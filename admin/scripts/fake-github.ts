@@ -301,12 +301,18 @@ export function handle(state: FakeState, repository: string, req: IncomingMessag
     }
     /*
      * Note that `in=none` stops *this* from volunteering a date; it does not make
-     * the admin forget the last one it was told. The real client only ever learns
-     * an expiry and never unlearns it — see `tokenExpiry` in `lib/github.ts` for
-     * why that is right against real GitHub, which repeats the header on every
-     * authenticated answer — so clearing it here and reloading leaves the notice
-     * up until the dev server is restarted. Moving the date works fine; removing
-     * it needs a restart.
+     * the admin forget the last one it was told. The client drops a remembered
+     * expiry when the *token* changes and not otherwise — see `tokenExpiry` in
+     * `lib/github.ts` — and the bearer here stays the same string throughout, so
+     * clearing the date and reloading leaves the notice up until the dev server
+     * is restarted. Moving the date works fine; removing it needs a restart.
+     *
+     * That is faithful rather than a shortcoming: against real GitHub a working
+     * fine-grained token repeats the header on every authenticated answer, so
+     * "same token, header stops arriving" is not a state it can produce. The
+     * transition that does happen in production is a rotation, and this stand-in
+     * holds no opinion about the bearer, so that one is out of its reach either
+     * way.
      */
     if (path === '/_fake/expiry' && req.method === 'POST') {
         const asked = url.searchParams.get('in')
