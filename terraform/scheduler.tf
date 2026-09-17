@@ -27,7 +27,7 @@
 # `gcloud scheduler jobs list` can answer it without reading TypeScript — which
 # matters more than usual, given this mechanism exists because nobody could tell
 # when a job really ran. *What* lives in DISPATCHABLE_WORKFLOWS, so adding a
-# workflow to the twice-daily run needs no infrastructure change at all.
+# workflow to the scheduled run needs no infrastructure change at all.
 
 # The identity the schedule calls as. Distinct from the admin's runtime identity:
 # this one needs to get *in* to the service and nothing else, while that one
@@ -171,7 +171,7 @@ locals {
 resource "google_cloud_scheduler_job" "data_update" {
   # IAP's OAuth client id is the audience these tokens have to carry, so without
   # it there is nothing to authenticate to and the jobs would fire into a 401
-  # twice a day. Left out of the plan entirely until step 5 of the playbook has
+  # four times a day. Left out of the plan entirely until step 5 of the playbook has
   # been done, the same way google_iap_settings is.
   for_each = local.iap_configured ? local.data_update_schedules : {}
 

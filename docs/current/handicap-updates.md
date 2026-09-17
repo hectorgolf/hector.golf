@@ -81,7 +81,7 @@ being right rather than about anyone playing off it. **A retry completing after 
 is still missed until the next morning.**
 
 None of this costs anything. Cloud Scheduler's free tier is three *jobs* per billing account, billed
-per job per month rather than per execution, so ten firings cost what one does — and this is still
+per job per month rather than per execution, so four firings cost what one does — and this is still
 two jobs, as it was when it was two ticks.
 
 ### It keeps every reading, including two in one day

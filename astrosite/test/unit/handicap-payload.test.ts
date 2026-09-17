@@ -89,7 +89,7 @@ describe('the payload handed to persistHandicapHistoryToDisk', () => {
     })
 
     it('leaves a player whose handicap is the same unmarked, so nothing is written', async () => {
-        // The reason handicaps.json does not gain 41 entries twice a day.
+        // The reason handicaps.json does not gain 41 entries on every tick.
         const [simo] = await run(
             ['simo-l'],
             [sourceReturning('Test', { 'simo-l': 6.1 })],

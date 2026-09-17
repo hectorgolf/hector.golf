@@ -27,23 +27,28 @@
  *
  * `workflow_dispatch` is delivered immediately, so a Cloud Scheduler job that
  * calls this service at 03:00 produces a run that starts at 03:00. That is the
- * whole idea. The `schedule:` blocks stay in the workflow files deliberately —
- * late is better than never on the day this service is the broken one, and the
- * scripts are built for running twice in a day: every handicap reading is kept,
- * and `latestPerDay` in @hector/schemas is what decides which of a day's
- * readings the site shows. A redundant run costs a row, not correctness.
+ * whole idea. The `schedule:` blocks are gone from the workflow files entirely:
+ * a cron kept "as a backstop" is a second clock that is always wrong, and its
+ * late runs are duplicates somebody has to explain every time they read the
+ * Actions tab. Cloud Scheduler is the only clock now — see the trigger comment
+ * in `.github/workflows/deploy-site.yml` for the cost that buys.
+ *
+ * Repeat runs were never the hazard, which is part of why the crons were easy
+ * to drop: every handicap reading is kept, and `latestPerDay` in @hector/schemas
+ * is what decides which of a day's readings the site shows. A redundant run
+ * costs a row, not correctness.
  *
  * ## Adding one
  *
  * An entry here is all it takes. The API routes and the Operations page read
  * this list rather than naming workflows themselves, and so does the schedule:
  * `terraform/scheduler.tf` has two jobs that call one endpoint, which starts
- * everything marked `scheduled` — so adding a workflow to the twice-daily run is
+ * everything marked `scheduled` — so adding a workflow to the scheduled run is
  * an entry here and no infrastructure change at all.
  *
  * `deploy-site.yml` is here now, though not on the tick: it is dispatched by a scrape
  * that has just committed, which is the only moment there is something new to
- * publish. Its own `0 8,13` cron stays as the backstop.
+ * publish. Its backstop is the `cadence` on its entry below, not a cron.
  */
 
 import type { Cadence } from './cadence.ts'

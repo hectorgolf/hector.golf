@@ -4,7 +4,7 @@
 # own them: the scheduled scrapes write those files, and Firestore holds a mirror
 # for the UI to read. Nothing refreshed that mirror, so the admin's roster showed
 # whatever handicaps were current the last time somebody ran the seed by hand —
-# frozen, while the real ones moved twice a day.
+# frozen, while the real ones moved four times a day.
 #
 # It runs when a scrape finishes rather than on a clock of its own. A cron would
 # be a guess about how long the scrape takes, and the guess would be wrong on the

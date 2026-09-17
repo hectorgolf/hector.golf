@@ -11,7 +11,7 @@ import { isNotConfigured, NotConfigured } from '../src/lib/jobs/registry.ts'
  * day somebody needs the logs. A deployment with no GitHub token meets
  * `not-configured` on every tick — `GitHubFailure` calls it "expected before the
  * setup step that creates one" — and reporting that as a crash means a stack
- * trace at error level twice a day for a documented, temporary state. The
+ * trace at error level four times a day for a documented, temporary state. The
  * reliable effect is people learning that this service's errors are noise.
  */
 describe('what a thrown job means', () => {

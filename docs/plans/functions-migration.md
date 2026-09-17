@@ -428,10 +428,18 @@ that must survive untouched.
 2. Trigger [`deploy-site.yml`](../../.github/workflows/deploy-site.yml) and wait for Pages to serve
    the rebuilt site. Load a leaderboard page and watch the network tab hit `hector-golf`.
 
-   **Step 1 already commits you to this, whether or not you run it.** `deploy-site.yml` fires on a
-   schedule as well as on a push — `cron: "0 8,13 * * *"` — so the next scheduled build picks up
-   the new variable and cuts the site over unattended, within twelve hours of the variable changing.
-   Pushing or dispatching only decides *when*.
+   **Step 1 already commits you to this, whether or not you run it.** Nothing about
+   `deploy-site.yml` waits for a human: a data update that commits asks the admin service to
+   dispatch it, so the site republishes within a minute of the next scrape that finds something,
+   and a `DISPATCHABLE_WORKFLOWS` entry with a one-day interval is the backstop for when no
+   scrape commits anything. Either path rebuilds with the new variable and cuts the site over
+   unattended. Pushing or dispatching only decides *when*.
+
+   That was a `cron: "0 8,13 * * *"` on the workflow when this phase ran, and this paragraph used
+   to say so. The crons are gone — Cloud Scheduler is the only clock now, per the comment at the
+   top of [`deploy-site.yml`](../../.github/workflows/deploy-site.yml) — and the conclusion
+   survived the change unaltered, which is the part worth keeping: what cuts the site over is the
+   variable, not the trigger you pick.
 
    Two consequences. Setting the variable is the irreversible-ish moment of this phase rather than a
    preparatory step, so do not set it until phase 5 has actually passed against the new function.

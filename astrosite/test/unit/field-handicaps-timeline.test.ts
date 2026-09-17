@@ -18,7 +18,12 @@ import type { HandicapCheck } from '@hector/schemas/src/handicap-checks.ts'
  * asked about is the real one.
  */
 
-/** Sweeps at 03:02 and 12:01 daily, as Cloud Scheduler runs them. */
+/**
+ * A dawn sweep and a midday one, at 03:02 and 12:01. Cloud Scheduler actually
+ * fires four times a day — see `data_update_schedules` in terraform/scheduler.tf —
+ * but the extra morning ticks would add rows to this log without adding a case to
+ * any assertion below, all of which turn on first-morning versus later-day.
+ */
 const sweeps = (skippedAtDawn: string[] = []): HandicapCheck[] =>
     ['20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30'].flatMap((day) => [
         { at: `2025-09-${day}T03:02:41Z`, checked: 24 - skippedAtDawn.length, skipped: skippedAtDawn },

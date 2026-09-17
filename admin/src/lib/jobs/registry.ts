@@ -37,7 +37,7 @@ export type Job = {
      */
     dryRun: boolean
     /**
-     * Whether the twice-daily Cloud Scheduler tick runs this one.
+     * Whether the Cloud Scheduler tick runs this one.
      *
      * The same flag `workflows.ts` carries, and deliberately the same word: the
      * schedule's two jobs call one endpoint, which starts everything marked
@@ -69,7 +69,8 @@ export type JobOutcome = {
  * Deliberately not a failure. `GitHubFailure`'s own documentation calls
  * `not-configured` "expected before the setup step that creates one", and a
  * fresh project meets it on every tick until somebody puts a token in — so
- * treating it as a crash means a stack trace at error level, twice a day, for a
+ * treating it as a crash means a stack trace at error level, four times a day,
+ * for a
  * state the deployment is documented to pass through. The reliable effect of
  * that is not urgency; it is people learning that this service's error logs are
  * noise.
