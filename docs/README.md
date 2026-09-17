@@ -25,7 +25,7 @@ will mislead you.
 | [`bucket-locking.md`](plans/bucket-locking.md) | `event.bucketsLocked`, so an announced split can be settled before the first morning | **No,** and it argues with itself about whether it should be. Read its last section first |
 | [`dev-server-in-process.md`](plans/dev-server-in-process.md) | Running `astro dev` inside `dev-iap.ts` through Astro's programmatic API, instead of spawning its CLI | **No.** The script still spawns the CLI; the daemonising bug it came from is fixed another way |
 | [`functions-migration.md`](plans/functions-migration.md) | Moving the four Cloud Functions out of `gen-lang-client-0537211409` into `hector-golf` | **All but one step.** Phases 1–6 and 8 done 2026-09-14, the old functions deleted 2026-09-17. Only the old Gemini API key is left |
-| [`sheets-credential-wif.md`](plans/sheets-credential-wif.md) | Retiring the last downloadable service account key, in favour of Workload Identity | **Yes.** All six phases on 2026-09-14 — phase 6 was brought forward once phase 5 verified green. Kept as a record |
+| [`sheets-credential-wif.md`](plans/sheets-credential-wif.md) | Retiring the last downloadable service account key, in favour of Workload Identity | **Yes,** all six phases on 2026-09-14. Kept only for two items that expire 2026-10-14 — a deleted account's undelete window and an orphaned key — and deletable after that |
 
 The two locking plans came out of `current/data-ownership.md`, which specified both fields as part
 of a decision that was otherwise a description of how things already are. A proposal in a
