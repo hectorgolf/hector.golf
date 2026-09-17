@@ -43,8 +43,11 @@ one Workload Identity pool, as separate identities.
   `terraform apply`. Terraform owns everything around them — the APIs, the three identities, the
   secret containers, and the `allUsers` binding in
   [`cloud_run.tf`](../../terraform/cloud_run.tf) — which is the same division as the admin service.
-- **The four *old* copies** of those functions, still running in `gen-lang-client-0537211409` until
-  they are deleted on 2026-09-21. Nothing points at them.
+- **Nothing in `gen-lang-client-0537211409` any more**, apart from a Firestore database and one API
+  key. The four old copies of those functions were deleted on 2026-09-17; the project itself stays,
+  because its free-tier database is only usable inside it. The leftover `Generative Language API
+  Key` is the last thing to go — see phase 7 of
+  [`functions-migration.md`](../plans/functions-migration.md).
 - **The Terraform state bucket**, which cannot describe itself. Step 2 creates it by hand; it is the
   one piece of infrastructure not in `terraform/`.
 
