@@ -59,7 +59,7 @@ runs:
           # cron still publishes it; this path is an improvement on that, not a
           # replacement for it. A project that has not been wired up yet should
           # not have red data updates.
-          echo "::notice::Not asking for a deploy — unconfigured:$missing. deploy-site.yml's cron will publish this."
+          echo "::notice::Not asking for a deploy — unconfigured:$missing."
           echo "ask=false" >> "$GITHUB_OUTPUT"
           exit 0
         fi
@@ -122,4 +122,4 @@ runs:
         # pushed; deploy-site.yml's cron will publish it within hours. Failing here
         # would turn "the site is a bit stale" into "the scrape is broken", and
         # the scrape was not.
-        echo "::warning::The admin service did not accept the deploy request (HTTP $status). deploy-site.yml's cron will publish this instead."
+        echo "::warning::The admin service did not accept the deploy request (HTTP $status)."
