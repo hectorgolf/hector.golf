@@ -520,11 +520,65 @@ describe("reading the token's expiry", () => {
         })
 
         /*
-         * Not every answer repeats it — a classic token never sends it at all —
-         * so an absent header has to mean "nothing new" rather than "no expiry".
-         * Forgetting here would make the warning flicker off on the next call.
+         * An expiry belongs to a token value, not to this service, so rotating
+         * has to be able to clear one. These two are the whole reason the
+         * remembered date is keyed by the token at all.
+         *
+         * The case that matters is rotation onto a token with *no* expiry — a
+         * classic PAT — because that is the one where nothing later arrives to
+         * correct the record. `githubToken()` deliberately does not cache, so a
+         * new secret version takes effect on the next call and this is reached
+         * without a redeploy.
          */
-        it('keeps what it knows when a later answer says nothing about it', async () => {
+        it('drops a date learned from a token that is no longer the one in use', async () => {
+            let token = 'ghp_first'
+            const fetch = vi
+                .fn<typeof globalThis.fetch>()
+                .mockResolvedValueOnce(header('2027-09-14 20:32:16 UTC'))
+                // The rotation: a classic token, which reports no expiry at all.
+                .mockResolvedValueOnce(accepted())
+            const client = createGitHubClient({
+                repository: 'hectorgolf/hector.golf',
+                token: async () => token,
+                fetch,
+            })
+
+            await client.dispatch(handicaps)
+            expect(client.tokenExpiry(new Date('2027-08-15T20:32:16Z'))?.daysLeft).toBe(30)
+
+            token = 'ghp_second'
+            await client.dispatch(handicaps)
+            expect(client.tokenExpiry(new Date('2027-08-15T20:32:16Z'))).toBeUndefined()
+        })
+
+        it('takes the new token at its word when it reports an expiry of its own', async () => {
+            let token = 'ghp_first'
+            const fetch = vi
+                .fn<typeof globalThis.fetch>()
+                .mockResolvedValueOnce(header('2027-09-14 20:32:16 UTC'))
+                .mockResolvedValueOnce(header('2028-03-01 09:00:00 UTC'))
+            const client = createGitHubClient({
+                repository: 'hectorgolf/hector.golf',
+                token: async () => token,
+                fetch,
+            })
+
+            await client.dispatch(handicaps)
+            token = 'ghp_second'
+            await client.dispatch(handicaps)
+
+            expect(client.tokenExpiry()?.at.toISOString()).toBe('2028-03-01T09:00:00.000Z')
+        })
+
+        /*
+         * Not every answer repeats it, so for the token we already know an absent
+         * header has to mean "nothing new" rather than "no expiry" — an edge, a
+         * proxy, or the 401 from a token that has just lapsed. Forgetting there
+         * would blank the notice on a blip. This is the other side of the two
+         * tests above: silence from a *known* token is not an answer, silence
+         * from a new one is.
+         */
+        it('keeps what it knows when a later answer from the same token says nothing about it', async () => {
             const fetch = vi
                 .fn<typeof globalThis.fetch>()
                 .mockResolvedValueOnce(header('2027-09-14 20:32:16 UTC'))
