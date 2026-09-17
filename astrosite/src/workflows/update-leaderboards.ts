@@ -1,5 +1,5 @@
 import { type HectorEvent } from "@hector/schemas/src/events.ts";
-import { isoDateToday } from "@hector/schemas/src/dates.ts";
+import { addDays, isoDateToday } from "@hector/schemas/src/dates.ts";
 import { playersData, eventsData, pathToEventJson, isHectorEvent } from "../code/data.ts";
 import { redact } from "../code/strings.ts";
 import { fetchHectorLeaderboardData, fetchVictorLeaderboardData } from "../code/leaderboards/google-sheets.ts";
@@ -44,16 +44,19 @@ function getOngoingHectorEvents(): Array<HectorEvent> {
         .filter((e) => !!e.leaderboardSheet)
         .filter((e) => {
             if (!updateFutureEvents && e.timing.start > isoDateToday()) {
-                console.log(
-                    `Not updating leaderboards for ${e.name} because it's in the future: the tournament starts on ${e.timing.start} while today is ${isoDateToday()}`,
-                );
+                const title = `Not updating leaderboards for ${e.name} because it's in the future`;
+                const subtitle = `the tournament starts on ${e.timing.start} while today is ${isoDateToday()}`;
+                console.log(`${title}: ${subtitle}`);
                 return false; // event hasn't even started yet
             }
 
-            // if (e.timing.end < addDays(isoDateToday(), -1)) {
-            //     console.log(`Not updating leaderboards for ${e.name} because it's in the past: the tournament ended on ${e.timing.end} while today is ${isoDateToday()}`)
-            //     return false // event finished yesterday or earlier
-            // }
+            if (e.timing.end < addDays(isoDateToday(), -1)) {
+                const title = `Not updating leaderboards for ${e.name} because it's in the past`;
+                const subtitle = `the tournament ended on ${e.timing.end} while today is ${isoDateToday()}`;
+                console.log(`${title}: ${subtitle}`);
+                return false; // event finished yesterday or earlier
+            }
+
             return true;
         });
 }
