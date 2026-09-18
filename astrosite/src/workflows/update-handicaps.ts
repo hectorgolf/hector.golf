@@ -9,7 +9,7 @@ import { formatEventDates, isoDateToday, isoInstantNow } from "@hector/schemas/s
 import { writeJsonFile } from "../code/json.ts";
 
 import { playersData, hectorEvents, hasParticipants, bucketsAreOpen, pathToEventJson } from "../code/data.ts";
-import { getPlayerName, updatePlayerData } from "../code/players.ts";
+import { getPlayerName } from "../code/players.ts";
 import type { Player } from "@hector/schemas/src/players.ts";
 import { type HandicapHistoryEntry, latestPerDay } from "@hector/schemas/src/handicaps.ts";
 import { type HectorEvent } from "@hector/schemas/src/events.ts";
@@ -200,8 +200,12 @@ const persistHandicapHistoryToDisk = async (
             `- ${getPlayerName(player)}: ${JSON.stringify(player.handicapChangedFrom)} -> ${JSON.stringify(player.handicap)}`,
         );
 
-        const { handicapChanged, handicapChangedFrom, handicapChecked, ...playerWithoutChangeFields } = player;
-        await updatePlayerData(playerWithoutChangeFields);
+        // No `updatePlayerData` here any more, and no destructuring to strip the
+        // change fields before writing, because nothing is written. What that
+        // call persisted was a cache of this scrape's reading, and the site has
+        // read the history directly since step 3 — see the note on the writer in
+        // `code/players.ts`, which drops a derived handicap wherever it is
+        // called from, because this was not the only place putting one back.
     }
 
     if (newHandicapChanges.length > 0) {
