@@ -1018,7 +1018,8 @@ together: there is no child left to outlive a hard kill and go on holding a port
 is the proxy hop, on a second port, because production is IAP talking to Cloud Run over HTTP and a
 stand-in that serialises headers the same way is faithful in a way an in-process call would not be.
 `npm run dev:fake` runs the GitHub stand-in inside itself and adds two children to that: the
-emulator, and `dev:iap`. This allows _Ctrl-C_ to wait for all components to exit before giving the prompt back.
+emulator, and `dev:iap`. This allows *Ctrl-C* to wait for all components to exit before giving the
+prompt back.
 
 | Stands in for | What it is | How the admin is pointed at it |
 | --- | --- | --- |
