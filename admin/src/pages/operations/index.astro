@@ -301,7 +301,15 @@ const now = new Date();
 
 	{tokenHelp && <GitHubTokenHelp mode={tokenHelp} daysLeft={expiry?.daysLeft} />}
 
-	<div class="workflows">
+	<section class="delegated">
+		<h2>Jobs this service delegates to GitHub</h2>
+		<p class="lede-note">
+			Pressing one of these asks GitHub to run the workflow; the work happens on a runner and the
+			commits come back from there. The section below is the other half of the migration — the same
+			kind of work, done in this process.
+		</p>
+
+		<div class="workflows">
 		{
 			DISPATCHABLE_WORKFLOWS.map((workflow) => {
 				const history = histories.get(workflow.slug);
@@ -310,7 +318,7 @@ const now = new Date();
 				return (
 					<article class="card workflow">
 						<div class="row-between">
-							<h2>{workflow.label}</h2>
+							<h3>{workflow.label}</h3>
 							{/*
 							 * A form rather than a link, because this changes
 							 * something: the button is the submit and the endpoint
@@ -363,7 +371,8 @@ const now = new Date();
 				);
 			})
 		}
-	</div>
+		</div>
+	</section>
 
 	<section class="jobs">
 		<h2>Jobs this service runs itself</h2>
@@ -542,9 +551,30 @@ const now = new Date();
 		gap: 0.5rem;
 	}
 
-	.workflow h2 {
+	.workflow h3 {
 		margin: 0;
 		font-size: 1.05rem;
+	}
+
+	/*
+	 * Both lists get a heading naming who does the work, and they have to match
+	 * each other: the whole point of naming them is that a reader compares the
+	 * two, and a size difference would read as a hierarchy that is not there.
+	 * Same treatment as `.log h2`, which is the third section on the page.
+	 */
+	.delegated h2,
+	.jobs h2 {
+		font-size: 1.05rem;
+		margin: 0 0 0.3rem;
+	}
+
+	.delegated .lede-note,
+	.jobs .lede-note {
+		margin: 0 0 0.9rem;
+	}
+
+	.delegated {
+		margin-bottom: 2rem;
 	}
 
 	.workflow form,
