@@ -301,7 +301,15 @@ const now = new Date();
 
 	{tokenHelp && <GitHubTokenHelp mode={tokenHelp} daysLeft={expiry?.daysLeft} />}
 
-	<div class="workflows">
+	<section class="delegated">
+		<h2>Jobs this service delegates to GitHub</h2>
+		<p class="lede-note">
+			Pressing one of these asks GitHub to run the workflow; the work happens on a runner and the
+			commits come back from there. The section below is the other half of the migration — the same
+			kind of work, done in this process.
+		</p>
+
+		<div class="workflows">
 		{
 			DISPATCHABLE_WORKFLOWS.map((workflow) => {
 				const history = histories.get(workflow.slug);
@@ -310,7 +318,7 @@ const now = new Date();
 				return (
 					<article class="card workflow">
 						<div class="row-between">
-							<h2>{workflow.label}</h2>
+							<h3>{workflow.label}</h3>
 							{/*
 							 * A form rather than a link, because this changes
 							 * something: the button is the submit and the endpoint
@@ -320,8 +328,27 @@ const now = new Date();
 							 * marks a button as one of the ones it drives, and
 							 * carries the label it wears meanwhile.
 							 */}
+							{/*
+							 * "Run on GitHub" rather than "Run now", and the job's
+							 * button below says where it runs too. Not a flourish:
+							 * during the migration a dataset appears in both lists
+							 * under the *same label* — `registry.ts` explains why
+							 * that duplication is deliberate — so for handicaps
+							 * there are two cards on this page both titled
+							 * "Players' official handicaps".
+							 *
+							 * While the job was in shadow mode its button read
+							 * "Shadow run" and the pair could be told apart. Going
+							 * live made both read "Run now", and the first person
+							 * to use the page afterwards pressed the wrong one
+							 * within the hour. Where the work happens is the
+							 * distinction that matters at the moment of pressing —
+							 * one dispatches a workflow, the other writes to
+							 * Firestore and pushes a commit from this process — so
+							 * that is what the buttons say.
+							 */}
 							<form method="POST" action={`/api/workflows/${workflow.slug}/dispatch`}>
-								<button type="submit" data-busy="Running…">Run now</button>
+								<button type="submit" data-busy="Running…">Run on GitHub</button>
 							</form>
 						</div>
 
@@ -344,7 +371,8 @@ const now = new Date();
 				);
 			})
 		}
-	</div>
+		</div>
+	</section>
 
 	<section class="jobs">
 		<h2>Jobs this service runs itself</h2>
@@ -379,9 +407,10 @@ const now = new Date();
 								 * a button that sits there unmoved for that long is
 								 * a button an admin presses twice.
 								 */}
+								{/* "Run here" against the workflow's "Run on GitHub" — see the note there. */}
 								<form method="POST" action={`/api/jobs/${job.slug}/run`}>
 									<button type="submit" data-busy="Running…">
-										{job.dryRun ? "Shadow run" : "Run now"}
+										{job.dryRun ? "Shadow run" : "Run here"}
 									</button>
 								</form>
 							</div>
@@ -522,9 +551,45 @@ const now = new Date();
 		gap: 0.5rem;
 	}
 
-	.workflow h2 {
+	.workflow h3 {
 		margin: 0;
 		font-size: 1.05rem;
+	}
+
+	/*
+	 * Every section heading on this page, sized once.
+	 *
+	 * 1.35rem is what `packages/ui/styles/hector.css` gives `.section-head h2` —
+	 * the bottom of its h2 clamp, which is the size a heading *inside* a page
+	 * gets as opposed to the page's own title. Pinned rather than left to the
+	 * clamp so that four headings on one page do not resize against each other
+	 * as the viewport changes.
+	 *
+	 * They have to match each other because a reader is meant to compare them:
+	 * the two lists are the same kind of thing done in two places, and the
+	 * headings are what say so. They have to sit above the cards' `h3` for the
+	 * same reason — a section heading rendering at card size is a hierarchy the
+	 * markup claims and the page does not show.
+	 */
+	.delegated h2,
+	.jobs h2,
+	.log h2,
+	.tick h2 {
+		font-size: 1.35rem;
+	}
+
+	.delegated h2,
+	.jobs h2 {
+		margin: 0 0 0.3rem;
+	}
+
+	.delegated .lede-note,
+	.jobs .lede-note {
+		margin: 0 0 0.9rem;
+	}
+
+	.delegated {
+		margin-bottom: 2rem;
 	}
 
 	.workflow form,
@@ -565,7 +630,6 @@ const now = new Date();
 
 	.tick h2 {
 		margin: 0 0 0.35rem;
-		font-size: 1.05rem;
 	}
 
 	.tick .row-between {
@@ -596,7 +660,6 @@ const now = new Date();
 	}
 
 	.log h2 {
-		font-size: 1.05rem;
 		margin: 0 0 0.3rem;
 	}
 

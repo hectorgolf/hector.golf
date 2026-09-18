@@ -2,8 +2,8 @@ import type { WorkflowRun } from './github.ts'
 
 /**
  * Turning a workflow run into the two things a person standing in front of the
- * "Run now" button actually wants to know: did the last one work, and was it
- * recent enough that pressing this would be pointless.
+ * "Run on GitHub" button actually wants to know: did the last one work, and was
+ * it recent enough that pressing this would be pointless.
  *
  * Separate from `github.ts` so it can be tested without a fetch, and separate
  * from the page so the wording is not buried in markup.
