@@ -5,7 +5,7 @@ import { createWisegolfSession } from "@hector/wisegolf/src/wisegolf-api.ts";
 
 import { type HandicapHistoryEntry as Entry, schema as EntrySchema } from "@hector/schemas/src/handicaps.ts";
 
-import { loadFromAdmin, readBackup } from "./admin-api";
+import { ROUTES, loadFromAdmin, readBackup } from "./admin-api";
 
 
 
@@ -31,7 +31,7 @@ import { loadFromAdmin, readBackup } from "./admin-api";
  * 4, for what has to happen before it can stop being written at all.
  */
 const handicapData = await loadFromAdmin<Entry>({
-    path: "/api/handicaps/history",
+    path: ROUTES.history,
     backup: readBackup("data/handicaps/observations.ndjson"),
     backupPath: "data/handicaps/observations.ndjson",
     what: "handicap history",
