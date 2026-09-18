@@ -179,7 +179,15 @@ const fingerprint = (token: string): string => createHash('sha256').update(token
 
 export type GitHubClient = {
     dispatch(workflow: DispatchableWorkflow): Promise<DispatchOutcome>
-    recentRuns(workflow: DispatchableWorkflow, limit?: number): Promise<RunsOutcome>
+    /**
+     * One page of a workflow's run history, newest first.
+     *
+     * `page` is GitHub's own paging, and it is here for `lib/workflow-runs.ts`:
+     * the mirror pages back through the history the first time it meets a
+     * workflow, and after that stops on the first page every time. Everything
+     * else asks for page 1 by asking for nothing.
+     */
+    recentRuns(workflow: DispatchableWorkflow, limit?: number, page?: number): Promise<RunsOutcome>
     readFile(path: string, ref?: string): Promise<ReadFileOutcome>
     commitFile(request: CommitRequest): Promise<CommitOutcome>
     /**
@@ -406,8 +414,10 @@ export function createGitHubClient(options: GitHubClientOptions): GitHubClient {
             return { ok: true }
         },
 
-        async recentRuns(workflow, limit = 5) {
-            const result = await call(`${base}/${workflow.file}/runs?per_page=${limit}`, { method: 'GET' })
+        async recentRuns(workflow, limit = 5, page = 1) {
+            const result = await call(`${base}/${workflow.file}/runs?per_page=${limit}&page=${page}`, {
+                method: 'GET',
+            })
             if (typeof result === 'string') return { ok: false, reason: result }
 
             // A 200 whose body is not the JSON it claims to be should degrade to

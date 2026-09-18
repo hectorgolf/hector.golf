@@ -110,3 +110,63 @@ resource "google_firestore_backup_schedule" "weekly" {
   # procedure.
   deletion_policy = "ABANDON"
 }
+
+# Two indexes for the run log's hottest query.
+#
+# These are a performance choice rather than a requirement, and on this database
+# that distinction is the whole comment. `database_edition = "ENTERPRISE"` above
+# changes how indexing works in both directions: Enterprise runs every query
+# whether an index exists or not — there is no FAILED_PRECONDITION to hit, which
+# is what Standard edition answers a missing composite index with — and it
+# creates *no* indexes by default, where Standard would have built a single-field
+# index for every field on its own.
+#
+# So nothing here is load-bearing for correctness, and it was verified rather
+# than assumed: on 2026-09-18 this database held no composite indexes at all and
+# `job-runs where slug == ... order by startedAt desc` answered normally.
+#
+# What they buy is the query the mirror makes most often. Every page load and
+# every tick asks "the newest run of this workflow" once per workflow, which is
+# five of these against a collection that grows to a few thousand documents over
+# a retention window. An index makes that a seek instead of a scan; the same one
+# serves the log narrowed to a single workflow or job.
+#
+# The price is what every index costs: storage, and work on each write to an
+# indexed field. Two indexes over two small collections is a cheap trade, and a
+# reversible one — deleting them slows these queries down and breaks nothing.
+#
+# Field order matters and is not alphabetical: the equality field first, then the
+# one being ordered on, in the direction it is ordered. Firestore serves the
+# reverse direction from the same index, so DESCENDING here also answers an
+# ascending scan.
+resource "google_firestore_index" "job_runs_by_slug" {
+  project    = var.project_id
+  database   = google_firestore_database.hector.name
+  collection = "job-runs"
+
+  fields {
+    field_path = "slug"
+    order      = "ASCENDING"
+  }
+
+  fields {
+    field_path = "startedAt"
+    order      = "DESCENDING"
+  }
+}
+
+resource "google_firestore_index" "workflow_runs_by_slug" {
+  project    = var.project_id
+  database   = google_firestore_database.hector.name
+  collection = "workflow-runs"
+
+  fields {
+    field_path = "slug"
+    order      = "ASCENDING"
+  }
+
+  fields {
+    field_path = "startedAt"
+    order      = "DESCENDING"
+  }
+}

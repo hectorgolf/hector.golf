@@ -146,7 +146,18 @@ describe('reading recent runs', () => {
         await client.recentRuns(handicaps, 3)
 
         expect(String(fetch.mock.calls[0]![0])).toBe(
-            'https://api.github.com/repos/hectorgolf/hector.golf/actions/workflows/update-handicaps.yml/runs?per_page=3'
+            'https://api.github.com/repos/hectorgolf/hector.golf/actions/workflows/update-handicaps.yml/runs?per_page=3&page=1'
+        )
+    })
+
+    it('asks for the page it was given, which is how the mirror walks back through a history', async () => {
+        // `lib/workflow-runs.ts` pages back the first time it meets a workflow.
+        // Everything else takes the default and gets the newest page.
+        const { client, fetch } = clientAnswering(runsResponse([]))
+        await client.recentRuns(handicaps, 100, 4)
+
+        expect(String(fetch.mock.calls[0]![0])).toBe(
+            'https://api.github.com/repos/hectorgolf/hector.golf/actions/workflows/update-handicaps.yml/runs?per_page=100&page=4'
         )
     })
 

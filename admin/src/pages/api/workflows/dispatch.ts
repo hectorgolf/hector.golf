@@ -5,7 +5,8 @@ import { github } from '../../../lib/github.ts'
 import { viewerFromHeaders } from '../../../lib/identity.ts'
 import { execute } from '../../../lib/jobs/execute.ts'
 import { SCHEDULED_JOBS } from '../../../lib/jobs/registry.ts'
-import { SCHEDULED_WORKFLOWS } from '../../../lib/workflows.ts'
+import { DISPATCHABLE_WORKFLOWS, SCHEDULED_WORKFLOWS } from '../../../lib/workflows.ts'
+import { SEED_PAGES, sync } from '../../../lib/workflow-runs.ts'
 
 /**
  * Start everything the schedule is responsible for: the endpoint the two Cloud
@@ -89,6 +90,19 @@ import { SCHEDULED_WORKFLOWS } from '../../../lib/workflows.ts'
  * Four sweeps of somebody else's API per tick, to retry something a retry cannot
  * fix. The next tick is the retry, and there are four a day.
  *
+ * ## It is also what keeps the run archive complete
+ *
+ * The tick mirrors GitHub's run history into Firestore afterwards — see
+ * `lib/workflow-runs.ts`. The Operations page does the same on every visit, so
+ * most of the time this finds nothing new, and that is the point of doing it
+ * here too: GitHub deletes runs after 90 days, and an archive that is only
+ * topped up when somebody happens to open a page is an archive with holes in it
+ * for exactly the weeks nobody was watching.
+ *
+ * It is also the only caller with the budget to *seed* a workflow it has never
+ * seen, which is a walk back through everything GitHub still holds. A page
+ * render is somebody waiting; a tick is not.
+ *
  * See `[slug]/dispatch.ts` for the single-workflow endpoint behind the buttons,
  * and for the note on who is allowed to call either of these.
  */
@@ -148,6 +162,23 @@ export const POST: APIRoute = async ({ request, redirect }) => {
         jobs.push(await execute(job, viewer.email ?? 'the schedule'))
     }
 
+    /*
+     * Last, and over every workflow rather than only the scheduled ones: a run
+     * started by a button or by a scrape asking for a deploy belongs in the
+     * archive as much as a scheduled one does.
+     *
+     * After the jobs rather than straight after the dispatches, because by then a
+     * minute or so has passed and the runs this tick started are visible to
+     * GitHub's list — so they are mirrored on this tick rather than on the next
+     * one. It never throws and its failures do not fail the tick: the dispatches
+     * are what Cloud Scheduler retries for, and re-dispatching four workflows
+     * because a mirror could not be written would be a poor trade.
+     */
+    const mirrored = await sync(DISPATCHABLE_WORKFLOWS, { maxPages: SEED_PAGES })
+    if (mirrored.failures.length > 0) {
+        console.warn('Could not fully mirror the workflow run history', { failures: mirrored.failures })
+    }
+
     if (wantsHtml(request)) {
         // Reported as one workflow when one failed, so the Operations page can
         // say something specific; "some of them" is not a useful notice.
@@ -156,7 +187,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
             : redirect(`/operations?failed=${failures[0]!.slug}&reason=${failures[0]!.reason}`, 303)
     }
 
-    return new Response(JSON.stringify({ dispatched: results, jobs }), {
+    return new Response(JSON.stringify({ dispatched: results, jobs, mirrored }), {
         // The status reports the dispatches only. A failed job is in the body —
         // see the note above on why it must not make the scheduler retry.
         status: failures.length === 0 ? 202 : 502,

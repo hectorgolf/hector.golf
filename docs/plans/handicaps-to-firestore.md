@@ -156,7 +156,9 @@ None of these needed the season, a deploy, or a decision.
 - `secrets.ts` generalised past its single hardcoded GitHub token.
 - The GitHub token gains `Contents: read and write` — done 2026-09-16, see below. Note the
   consequence in *Decisions* below.
-- Firestore: `handicap-observations`, `job-runs`, `job-locks`.
+- Firestore: `handicap-observations`, `job-runs`, `job-locks`. (`workflow-runs`, the mirror of
+  GitHub's own run history, arrived later and is not part of this plan — see §5 of
+  [`docs/current/architecture.md`](../current/architecture.md).)
 - The offline replay test: 1,406 committed entries → Firestore documents → rendered NDJSON, asserted
   equal to today's `handicaps.json` under `latestPerDay`.
 
@@ -228,9 +230,11 @@ failed *job* is recorded and the tick still succeeds, because otherwise a job br
 reason — no WiseGolf credentials yet — would have every retry re-dispatch the workflows and re-run
 the scrape. The next tick is the retry, and there are four a day.
 
-Watch the run log until the diffs are boring. The run log is on `/operations`, under **Jobs this
-service runs itself** — a card per job with a **Shadow run** button, and the last five runs with what
-each one found. It reads `job-runs` rather than GitHub, because there is no GitHub run to read.
+Watch the run log until the diffs are boring. A card per job with a **Shadow run** button is on
+`/operations` under **Jobs this service runs itself**, and what each run found is in the run log
+below it — one list with the workflow runs, newest first, so a shadow run sits beside the workflow it
+is shadowing. The job half of that list reads `job-runs` rather than GitHub, because there is no
+GitHub run to read. `/operations/runs` is the same list, filterable to this job alone and paged.
 
 **What step 1 turned up once it was live.**
 

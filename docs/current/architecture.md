@@ -651,6 +651,50 @@ of recent runs with start times to the second: a repeating `03:00:xx` down the c
 knows when the next scheduled run is due, without this code keeping its own copy of the schedule to
 disagree with Terraform's.
 
+**The log is one list, and it is longer than the page.** The workflows GitHub ran and the jobs this
+service ran itself are interleaved by start time rather than tabled separately — they run on the same
+tick, so seeing a job's row seconds from its workflow's is the point. `/operations` shows the 50
+newest and links to `/operations/runs`, which is the same table narrowable by what ran and by how it
+went, a hundred rows at a time.
+
+Both halves come out of Firestore, which for the workflows means a **mirror of GitHub's run
+history** — [`admin/src/lib/workflow-runs.ts`](../../admin/src/lib/workflow-runs.ts). The page read
+GitHub live on every load until then, which answers "what happened last night" and not "what happened
+in July": the run list is paged at 100, so anything deeper cost a loop of requests, and GitHub deletes
+runs after 90 days regardless. Mirroring makes both halves the same kind of thing — one database, one
+query, paging as deep as the retention goes, and runs that outlive GitHub's own copy.
+
+The sync is cheap because run numbers only ever go up. It asks for the newest page, writes the runs
+above the highest one it already holds, and stops as soon as that page contains a run it has seen
+before — which, at six runs a day against a page of a hundred, is the first page every time. A
+workflow it has never seen has no such run to stop at, so the same loop walks back through everything
+GitHub still has and seeds the archive. The only runs that need rewriting rather than adding are the
+ones that were still going when last seen, and `pending` marks exactly those: one small query finds
+every run whose conclusion is still unknown.
+
+It runs on every page load *and* on every tick. The page load is what keeps the log current; the tick
+is what keeps it complete, because an archive topped up only when somebody opens a page has holes for
+exactly the weeks nobody was watching. A sync that fails no longer empties the log — what is already
+mirrored still renders, with a notice saying the newest runs may be missing.
+
+Retention is one horizon for both halves, `KEEP_FOR_DAYS` in
+[`admin/src/lib/retention.ts`](../../admin/src/lib/retention.ts): 180 days, twice GitHub's own, after
+which the next write drops what has aged out.
+
+**Indexes here are a performance choice, not a requirement, and that is a property of the edition.**
+The database is `ENTERPRISE` (§4), which runs every query whether an index exists or not — there is
+no `FAILED_PRECONDITION` for a missing composite index, which is what Standard edition answers one
+with — and which creates *no* indexes by default, where Standard builds a single-field index for
+every field on its own. Checked rather than assumed on 2026-09-18: the database held no composite
+indexes at all, and `job-runs where slug == … order by startedAt desc` — the query behind the job
+cards, live since step 1 — answered normally.
+
+So the two indexes in [`terraform/firestore.tf`](../../terraform/firestore.tf) exist for one query:
+"the newest run of this workflow", which the mirror asks once per workflow on every page load and
+every tick. They make it a seek rather than a scan of a collection that grows to a few thousand
+documents, and the same index serves the log narrowed to one workflow or job. Deleting them would
+slow those queries down and break nothing.
+
 **There are no `schedule:` blocks left.** They were deleted on 2026-09-16 and the tick is now the
 only clock. They had been kept as a backstop, and the backstop cost more than it bought: every
 workflow had two clocks, one of them hours late — measured that day, the last scheduled delivery of

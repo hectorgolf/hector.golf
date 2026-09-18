@@ -434,10 +434,16 @@ export function handle(state: FakeState, repository: string, req: IncomingMessag
     const runs = rest.match(/^\/actions\/workflows\/([^/]+)\/runs$/)
     if (runs && req.method === 'GET') {
         const limit = Number(url.searchParams.get('per_page') ?? 30)
+        // Paged like the real thing, because `lib/workflow-runs.ts` walks back
+        // through the history the first time it mirrors a workflow — and a
+        // stand-in that answered every page with the newest runs would let that
+        // walk loop happily against a hundred duplicates.
+        const page = Math.max(1, Number(url.searchParams.get('page') ?? 1))
+        const from = (page - 1) * limit
         const matching = state.runs
             .filter((run) => run.workflowFile === runs[1])
             .sort((a, b) => b.startedAt.localeCompare(a.startedAt))
-            .slice(0, limit)
+            .slice(from, from + limit)
         const host = req.headers.host ?? `127.0.0.1:${DEFAULT_PORT}`
         return json(res, 200, { workflow_runs: matching.map((run) => runBody(run, repository, host)) })
     }

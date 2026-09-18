@@ -1,0 +1,340 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import PageHeader from "@hector/ui/components/PageHeader.astro";
+import RunLog from "../../components/RunLog.astro";
+
+import { FAILURE_MESSAGES } from "../../lib/github.ts";
+import { DISPATCHABLE_WORKFLOWS } from "../../lib/workflows.ts";
+import { JOBS } from "../../lib/jobs/registry.ts";
+import { recent as recentJobRuns, recentAll as recentAllJobRuns } from "../../lib/jobs/log.ts";
+import {
+	FORWARD_PAGES,
+	recent as recentWorkflowRuns,
+	recentAll as recentAllWorkflowRuns,
+	sync,
+} from "../../lib/workflow-runs.ts";
+import { KEEP_FOR_DAYS } from "../../lib/retention.ts";
+import { collect, isStatus, matching, pageOf, STATUSES, typeOf, windowFor } from "../../lib/runlog.ts";
+
+/*
+ * The whole run log, narrowable and paged.
+ *
+ * The Operations page shows the top of this list and links here when there is
+ * more; everything a reader recognises there — the columns, the pills, the UTC
+ * start times — is the same component, deliberately. What this page adds is the
+ * two questions that only become worth asking once the list is long: *which*
+ * thing ran, and *how did it go*.
+ *
+ * It ships no client-side JavaScript, like every page here but one: the filters
+ * are a GET form and the paging is links, so the address bar is the whole of the
+ * state and a filtered page is something you can send to somebody.
+ */
+
+/*
+ * The filter's options, built from the two registries rather than written out,
+ * so a workflow or job added to either list is filterable without anyone
+ * remembering this page exists.
+ *
+ * Grouped, and that is not decoration: during a migration a dataset appears in
+ * both lists under the *same label* — `lib/jobs/registry.ts` explains why the
+ * duplication is deliberate — so "Players' official handicaps" appears twice in
+ * this select, and the group heading is the only thing that says which is which.
+ */
+const jobTypes = JOBS.map((job) => ({ value: typeOf("job", job.slug), label: job.label }));
+const workflowTypes = DISPATCHABLE_WORKFLOWS.map((workflow) => ({
+	value: typeOf("workflow", workflow.slug),
+	label: workflow.label,
+}));
+
+/*
+ * Both filters and the page number come out of the URL, so all three are
+ * whatever was in the address bar. None of them is rendered and none reaches a
+ * query unchecked: `type` has to equal one of the keys built above, `status` one
+ * of the four tones, and `page` is clamped to the range that exists. The worst a
+ * stranger's link can do is show an empty table.
+ */
+const rawType = Astro.url.searchParams.get("type");
+const type = [...jobTypes, ...workflowTypes].find((option) => option.value === rawType)?.value;
+
+const rawStatus = Astro.url.searchParams.get("status");
+const status = isStatus(rawStatus) ? rawStatus : undefined;
+
+const page = Number(Astro.url.searchParams.get("page") ?? 1);
+
+/*
+ * A filtered-to-one-thing page asks only the source that can answer it. That is
+ * the main reason the type filter is applied here rather than only to the merged
+ * list: it spends the whole of the read on the thing being looked at, so "every
+ * failed handicap sweep" reaches back as far as the log goes rather than as far
+ * as the busiest source does.
+ */
+const jobSlug = type?.startsWith("job:") ? type.slice("job:".length) : undefined;
+const workflowSlug = type?.startsWith("workflow:") ? type.slice("workflow:".length) : undefined;
+
+/*
+ * The sync GitHub's half of the log is kept current by — the same one the
+ * Operations page runs, and for the same reason: this page is somewhere a reader
+ * arrives to see what happened, and a mirror nobody refreshes is a mirror that
+ * is always one visit behind.
+ *
+ * Still run when the filter has excluded the workflows. It costs five requests
+ * and it is what keeps the archive complete for the *next* reader, who may not
+ * have filtered.
+ */
+const { failures } = await sync(DISPATCHABLE_WORKFLOWS, { maxPages: FORWARD_PAGES });
+
+/*
+ * Exactly as many rows as this page could possibly need, from each half: every
+ * row down to the bottom of the requested page, plus the one that says whether
+ * there is another page after it. A merged list cannot be read any more
+ * narrowly — a row on page three could have come entirely from either half.
+ */
+const window = windowFor(page);
+
+const entries = await collect({
+	workflows: DISPATCHABLE_WORKFLOWS,
+	jobs: JOBS,
+	workflowRuns: () =>
+		jobSlug !== undefined
+			? Promise.resolve([])
+			: workflowSlug !== undefined
+				? recentWorkflowRuns(workflowSlug, window)
+				: recentAllWorkflowRuns(window),
+	jobRuns: () =>
+		workflowSlug !== undefined
+			? Promise.resolve([])
+			: jobSlug !== undefined
+				? recentJobRuns(jobSlug, window)
+				: recentAllJobRuns(window),
+});
+
+/*
+ * `type` has already been honoured by the reads above; passing it again costs
+ * nothing and means the two cannot drift into disagreeing about what the URL
+ * asked for. The outcome filter is applied only here, because it is derived from
+ * a run's status and conclusion rather than stored, so Firestore cannot answer
+ * it.
+ */
+const paged = pageOf(matching(entries, { type, status }), page);
+
+/*
+ * Every link on this page carries the filters, because the alternative is a
+ * "next page" that quietly shows a different list than the one being read.
+ * `page` is left out when it is 1 so the first page of an unfiltered log is the
+ * bare address.
+ */
+const linkTo = (target: number): string => {
+	const query = new URLSearchParams();
+	if (type) query.set("type", type);
+	if (status) query.set("status", status);
+	if (target > 1) query.set("page", String(target));
+	const rendered = query.toString();
+	return rendered ? `/operations/runs?${rendered}` : "/operations/runs";
+};
+
+const filtered = type !== undefined || status !== undefined;
+const historyFailure = failures[0];
+
+const now = new Date();
+---
+
+<AdminLayout title="Run log">
+	<PageHeader
+		title="Run log"
+		lede="Everything this service has started or run, newest first: the workflows dispatched to GitHub and the jobs run here."
+	>
+		<p class="back"><a href="/operations">← Operations</a></p>
+	</PageHeader>
+
+	{/*
+	 * A GET form, so submitting it produces an address rather than a state
+	 * nobody else can reach. It has no `page` field on purpose: changing a
+	 * filter drops you back to the first page, which is where the answer to a
+	 * newly asked question is.
+	 */}
+	<form class="filters" method="GET" action="/operations/runs">
+		<div class="field">
+			<label for="type">What ran</label>
+			<select id="type" name="type">
+				<option value="" selected={type === undefined}>Everything</option>
+				<optgroup label="Jobs this service runs itself">
+					{
+						jobTypes.map((option) => (
+							<option value={option.value} selected={option.value === type}>
+								{option.label}
+							</option>
+						))
+					}
+				</optgroup>
+				<optgroup label="Jobs delegated to GitHub">
+					{
+						workflowTypes.map((option) => (
+							<option value={option.value} selected={option.value === type}>
+								{option.label}
+							</option>
+						))
+					}
+				</optgroup>
+			</select>
+		</div>
+
+		<div class="field">
+			<label for="status">Outcome</label>
+			<select id="status" name="status">
+				<option value="" selected={status === undefined}>Any</option>
+				{
+					STATUSES.map((option) => (
+						<option value={option.value} selected={option.value === status}>
+							{option.label}
+						</option>
+					))
+				}
+			</select>
+		</div>
+
+		<div class="actions">
+			<button type="submit">Show</button>
+			{filtered && <a class="clear" href="/operations/runs">Clear</a>}
+		</div>
+	</form>
+
+	<p class="lede-note">
+		Both halves are read from Firestore and kept for <strong>{KEEP_FOR_DAYS} days</strong>. The jobs record
+		themselves as they run; the workflows are mirrored from GitHub on every visit and on every tick, which is what
+		lets this go back further than GitHub's own 90 days — past that date this is the only copy, and the run links
+		below stop resolving.
+	</p>
+
+	{
+		/*
+		 * A failed sync is not a failed page any more: what is already mirrored
+		 * still renders, and only the runs since the last successful sync are
+		 * missing. The notice says that rather than "the log is empty", which is
+		 * what the live read could only ever say.
+		 */
+		historyFailure && (
+			<p class="notice bad">
+				The workflow runs below may be out of date — GitHub could not be asked for the newest ones.{" "}
+				{FAILURE_MESSAGES[historyFailure.reason]}
+			</p>
+		)
+	}
+
+	{
+		paged.entries.length > 0 ? (
+			<>
+				<RunLog entries={paged.entries} now={now} />
+
+				<nav class="paging" aria-label="Run log pages">
+					{/*
+					 * "Newer" and "Older" rather than "Previous" and "Next": the
+					 * list is a chronology, and previous/next only says which way
+					 * a reader last went. The ends are rendered as dead text
+					 * rather than left out, so the controls do not move around
+					 * under the cursor between pages.
+					 */}
+					{paged.page > 1 ? (
+						<a rel="prev" href={linkTo(paged.page - 1)}>
+							← Newer
+						</a>
+					) : (
+						<span class="edge">← Newer</span>
+					)}
+
+					{/*
+					 * A total only once it is actually known — that is, once the
+					 * end of the log is inside what was read, which is the last
+					 * page. Counting on every other page would mean reading every
+					 * row to count it, since the outcome filter is not one
+					 * Firestore can answer, and a page of a hundred that costs a
+					 * read of everything is the thing paging exists to avoid.
+					 */}
+					<span class="count">
+						{paged.first}–{paged.last}
+						{paged.total !== undefined ? ` of ${paged.total}` : ""}
+						{paged.page > 1 && <span class="muted"> · page {paged.page}</span>}
+					</span>
+
+					{paged.older ? (
+						<a rel="next" href={linkTo(paged.page + 1)}>
+							Older →
+						</a>
+					) : (
+						<span class="edge">Older →</span>
+					)}
+				</nav>
+			</>
+		) : (
+			<p class="notice">
+				{filtered
+					? "Nothing matches that. A run that is not in the window above will not be here however the list is narrowed."
+					: "No runs recorded yet."}
+			</p>
+		)
+	}
+</AdminLayout>
+
+<style>
+	.back {
+		margin: 0.6rem 0 0;
+		font-size: 0.9rem;
+	}
+
+	.lede-note {
+		color: var(--text-muted);
+		font-size: 0.9rem;
+		max-width: 46rem;
+		margin: 0 0 1rem;
+	}
+
+	/*
+	 * The controls sit on one row and wrap onto their own lines on a phone. Each
+	 * field is given a width because the global `select` rule is `width: 100%`,
+	 * which in a flex row means "as narrow as the longest option lets me" — and
+	 * the options here are workflow labels.
+	 */
+	.filters {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		gap: 0.75rem 1rem;
+		margin-bottom: 1rem;
+	}
+
+	.filters .field {
+		min-width: 16rem;
+		flex: 1 1 16rem;
+	}
+
+	.filters .actions {
+		/* Level with the selects rather than with their labels. */
+		padding-bottom: 0.05rem;
+	}
+
+	.clear {
+		font-size: 0.9rem;
+	}
+
+	.paging {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-top: 0.9rem;
+		font-size: 0.9rem;
+	}
+
+	.count {
+		font-family: var(--font-num);
+		color: var(--text-muted);
+	}
+
+	/* The end of the list, shown rather than hidden so the row keeps its shape. */
+	.edge {
+		color: var(--text-faint);
+	}
+
+	.muted {
+		color: var(--text-dim);
+	}
+</style>
