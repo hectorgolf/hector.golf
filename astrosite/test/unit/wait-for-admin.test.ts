@@ -55,6 +55,39 @@ describe('asking', () => {
         expect((init?.headers as Record<string, string>).authorization).toBe('Bearer id-token')
     })
 
+    /*
+     * The first production run finished its work in seven seconds and then held
+     * the step for 240 more — Google Front End's idle keep-alive, with nothing
+     * left to do but wait to be hung up on. An unread body is why the connection
+     * was worth holding.
+     */
+    it('lets go of the response body, which is all that holds the connection open', async () => {
+        // Asserted on the call rather than on the Response afterwards: `cancel()`
+        // releases the lock it takes, so a cancelled body and an untouched one
+        // look identical from the outside. The contract is that `ask` calls it.
+        const cancel = vi.fn().mockResolvedValue(undefined)
+        const response = { status: 200, body: { cancel } } as unknown as Response
+        const doFetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(response)
+
+        await ask('https://admin.example/api/handicaps/history', 'id-token', doFetch)
+
+        expect(cancel).toHaveBeenCalledOnce()
+    })
+
+    it('survives a response with no body to cancel', async () => {
+        // A 204, or anything else the far end answers without one. `?.` covers it,
+        // and this is here so that removing the `?.` fails rather than only
+        // failing in production against a server nobody predicted.
+        const doFetch = vi
+            .fn<typeof globalThis.fetch>()
+            .mockResolvedValue({ status: 200, body: null } as unknown as Response)
+
+        await expect(ask('https://admin.example/x', 'id-token', doFetch)).resolves.toEqual({
+            ready: true,
+            saw: '200',
+        })
+    })
+
     it('treats no answer at all as worth waiting through', async () => {
         // DNS, TLS, a cold start. Not a reason to give up, and not something
         // `verdictOf` can see because there is no status to judge.

@@ -82,6 +82,14 @@ export async function ask(url: string, token: string, doFetch = globalThis.fetch
         const response = await doFetch(url, {
             headers: { authorization: `Bearer ${token}`, accept: "application/x-ndjson" },
         });
+
+        // Only the status matters here, and a body nobody reads is a body the
+        // connection stays open for. The history endpoint answers about 80KB;
+        // leaving it unread holds the socket, and a held socket holds Node's
+        // event loop. Cancelling says "I am done with this" at the one moment
+        // that is true.
+        await response.body?.cancel();
+
         return verdictOf(response.status);
     } catch (error) {
         // No answer at all: DNS, TLS, a cold start. Worth waiting through.
@@ -132,4 +140,21 @@ export async function main(): Promise<void> {
 // Only when run directly, so importing this for a test starts no waiting.
 if (process.argv[1] && import.meta.url === `file://${process.argv[1]}`) {
     await main();
+
+    /*
+     * Exit rather than return, and this line is worth four minutes of every
+     * deploy.
+     *
+     * The first production run did its work in seven seconds and then sat there
+     * until 19:02:11 — exactly 240 seconds after its last request. That is Google
+     * Front End's idle keep-alive: the connection to `admin.hector.golf` stayed
+     * open, a live socket keeps Node's event loop alive, and the process had
+     * nothing left to do but wait to be hung up on. A readiness check that costs
+     * four minutes is worse than the race it absorbs.
+     *
+     * Cancelling the response bodies above removes the reason the socket is held,
+     * but that depends on how the far end behaves and this does not. The failure
+     * paths already exit explicitly; this is the success path doing the same.
+     */
+    process.exit(0);
 }
