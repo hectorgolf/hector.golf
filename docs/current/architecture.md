@@ -406,7 +406,8 @@ All content lives as JSON committed under [`astrosite/src/data/`](../../astrosit
 | `events/finnkampen/*.json` | 2 | Human | `FINNKAMPEN2021`–`2022` |
 | `courses/*.json` | 17 | Human | Tees, ratings, slope, scorecard, per-hole descriptions |
 | `leaderboards/*.json` | 6 | CI only | Per-event Hector and Victor standings |
-| `handicaps.json` | ~1,400 entries | CI only | Append-only `{player, date, handicap, observed?}` log of observations. A day can hold more than one entry when the Golf Union re-runs a failed batch; `latestPerDay()` is the daily view every reader goes through — see [handicap-updates.md](./handicap-updates.md) |
+| `handicaps.json` | ~1,400 entries | CI only | Still written and committed by `update-handicaps.yml`, and **no longer what the site reads** — see the row below. It stays because three other things that workflow writes have nowhere else to go yet |
+| `data/handicaps/observations.ndjson` | ~1,400 lines | the admin service | Append-only `{player, date, handicap, observed?}` log, one JSON object per line, outside `astrosite/` on purpose. A *backup* of Firestore's `handicap-observations`, which is the source since 2026-09-18; the build reads `/api/handicaps/history` and falls back to this file without credentials. A day can hold more than one entry — when the Golf Union re-runs a failed batch, and now also because both pipelines stamp their own reading during the transition; `latestPerDay()` is the daily view every reader goes through — see [handicap-updates.md](./handicap-updates.md) |
 | `clubs.json` | 140 clubs | CI only | Finnish golf clubs `{name, abbreviation, sources[]}` |
 
 ### Events are a discriminated union
@@ -497,12 +498,14 @@ from the site.
 A significant amount of logic runs during `astro build` rather than being precomputed into the data
 files:
 
-- **Current handicap** — `getPlayerHandicapById()` sorts `handicaps.json` by date and takes the last
-  entry. `getPlayerById()` then applies `player.handicap || handicapFromHistory`, so the JSON field
-  acts as a manual override of the scraped history — except that `update-handicaps.ts` also *writes*
-  that field, so the override is overwritten by what it overrides. See
-  [data-ownership.md](./data-ownership.md), which settles who owns which field and why the fix waits
-  for the Firestore migration.
+- **Current handicap** — `getPlayerHandicapById()` takes the last entry of the history, which
+  `handicaps.ts` resolves once in a top-level await: from `/api/handicaps/history` when the build
+  has credentials, and from the committed backup when it does not. The accessors stayed synchronous
+  so that moving the source did not become a rewrite of every caller. `getPlayerById()` then applies
+  `player.handicap || handicapFromHistory`, so the JSON field acts as a manual override of the
+  scraped history — except that `update-handicaps.ts` also *writes* that field, so the override is
+  overwritten by what it overrides. See [data-ownership.md](./data-ownership.md), which settles who
+  owns which field and why the fix waits for the Firestore migration.
 - **Projected buckets** — `populateUpdatedHandicaps()` refreshes the stored bucket handicaps in
   `event.buckets` from the live history, so "Projected Buckets" stay current between scheduled data
   runs. It is gated on `isPastEvent` — any event whose last day has not passed — and **not** on
@@ -761,7 +764,7 @@ and assigns a club **only when exactly one** club matches.
 
 | Workflow | Trigger | Runs | Permissions |
 | --- | --- | --- | --- |
-| `deploy-site.yml` | Push to `main` touching `astrosite/**`, `packages/**`, the root manifest/lockfile, `.node-version`, or any workflow; dispatched by the admin service after a data update, and by the tick when no deploy has happened in a day; manual | `npm ci` → `astro build` → `actions/deploy-pages@v5` | `contents: read`, `pages: write`, `id-token: write` |
+| `deploy-site.yml` | Push to `main` touching `astrosite/**`, `packages/**`, the root manifest/lockfile, `.node-version`, or any workflow; dispatched by the admin service after a data update or a job that changed something, and by the tick when no deploy has happened in a day; manual | `npm ci` → mint an IAP ID token through WIF → `astro build`, which fetches the handicap history → `actions/deploy-pages@v5`. Without the four variables it builds from the committed backup and says so | `contents: read`, `pages: write`, `id-token: write` |
 | `check-site.yml` | PRs targeting `main` touching `astrosite/**`, `packages/**`, the root manifest/lockfile, `.node-version`, or this file | `npm ci` → `npm test` → `npm run build` | `contents: read` |
 | `check-admin.yml` | PRs targeting `main` touching `admin/**`, `packages/**`, the root manifest/lockfile, `.node-version`, `.dockerignore`, or this file | `npm ci` → test → build → `docker build` of `admin/Dockerfile` | `contents: read` |
 | `check-backend.yml` | PRs targeting `main` touching `backend/**` or this file | `npm ci` → `npm test` → `npm run typecheck` in `backend/backend-functions` | `contents: read` |
