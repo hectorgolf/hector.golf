@@ -320,8 +320,27 @@ const now = new Date();
 							 * marks a button as one of the ones it drives, and
 							 * carries the label it wears meanwhile.
 							 */}
+							{/*
+							 * "Run on GitHub" rather than "Run now", and the job's
+							 * button below says where it runs too. Not a flourish:
+							 * during the migration a dataset appears in both lists
+							 * under the *same label* — `registry.ts` explains why
+							 * that duplication is deliberate — so for handicaps
+							 * there are two cards on this page both titled
+							 * "Players' official handicaps".
+							 *
+							 * While the job was in shadow mode its button read
+							 * "Shadow run" and the pair could be told apart. Going
+							 * live made both read "Run now", and the first person
+							 * to use the page afterwards pressed the wrong one
+							 * within the hour. Where the work happens is the
+							 * distinction that matters at the moment of pressing —
+							 * one dispatches a workflow, the other writes to
+							 * Firestore and pushes a commit from this process — so
+							 * that is what the buttons say.
+							 */}
 							<form method="POST" action={`/api/workflows/${workflow.slug}/dispatch`}>
-								<button type="submit" data-busy="Running…">Run now</button>
+								<button type="submit" data-busy="Running…">Run on GitHub</button>
 							</form>
 						</div>
 
@@ -379,9 +398,10 @@ const now = new Date();
 								 * a button that sits there unmoved for that long is
 								 * a button an admin presses twice.
 								 */}
+								{/* "Run here" against the workflow's "Run on GitHub" — see the note there. */}
 								<form method="POST" action={`/api/jobs/${job.slug}/run`}>
 									<button type="submit" data-busy="Running…">
-										{job.dryRun ? "Shadow run" : "Run now"}
+										{job.dryRun ? "Shadow run" : "Run here"}
 									</button>
 								</form>
 							</div>
