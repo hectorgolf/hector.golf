@@ -557,14 +557,29 @@ const now = new Date();
 	}
 
 	/*
-	 * Both lists get a heading naming who does the work, and they have to match
-	 * each other: the whole point of naming them is that a reader compares the
-	 * two, and a size difference would read as a hierarchy that is not there.
-	 * Same treatment as `.log h2`, which is the third section on the page.
+	 * Every section heading on this page, sized once.
+	 *
+	 * 1.35rem is what `packages/ui/styles/hector.css` gives `.section-head h2` —
+	 * the bottom of its h2 clamp, which is the size a heading *inside* a page
+	 * gets as opposed to the page's own title. Pinned rather than left to the
+	 * clamp so that four headings on one page do not resize against each other
+	 * as the viewport changes.
+	 *
+	 * They have to match each other because a reader is meant to compare them:
+	 * the two lists are the same kind of thing done in two places, and the
+	 * headings are what say so. They have to sit above the cards' `h3` for the
+	 * same reason — a section heading rendering at card size is a hierarchy the
+	 * markup claims and the page does not show.
 	 */
 	.delegated h2,
+	.jobs h2,
+	.log h2,
+	.tick h2 {
+		font-size: 1.35rem;
+	}
+
+	.delegated h2,
 	.jobs h2 {
-		font-size: 1.05rem;
 		margin: 0 0 0.3rem;
 	}
 
@@ -615,7 +630,6 @@ const now = new Date();
 
 	.tick h2 {
 		margin: 0 0 0.35rem;
-		font-size: 1.05rem;
 	}
 
 	.tick .row-between {
@@ -646,7 +660,6 @@ const now = new Date();
 	}
 
 	.log h2 {
-		font-size: 1.05rem;
 		margin: 0 0 0.3rem;
 	}
 
