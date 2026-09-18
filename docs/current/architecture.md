@@ -1012,6 +1012,21 @@ npm run dev:fake       # the above, plus Firestore, GitHub and WiseGolf stand-in
 up all three, and takes no setup: it starts a Firestore emulator, seeds it from the committed data,
 starts the GitHub stand-in and points the admin at both.
 
+`npm run dev:iap` is **one process**. It starts Astro's dev server through the programmatic `dev()`
+rather than spawning its CLI, so the stand-in and the server it stands in front of live and die
+together: there is no child left to outlive a hard kill and go on holding a port. What it does keep
+is the proxy hop, on a second port, because production is IAP talking to Cloud Run over HTTP and a
+stand-in that serialises headers the same way is faithful in a way an in-process call would not be.
+`npm run dev:fake` runs the GitHub stand-in inside itself and adds two children to that: the
+emulator, and `dev:iap`.
+
+Ctrl-C takes about a second, and the second is deliberate. The emulator is stopped over HTTP,
+because killing the `gcloud` that started it does not stop it — the JVM below reparents and goes on
+holding the port — and its `POST /shutdown` is answered long before the JVM has finished. So
+`dev-fake.ts` waits for the emulator's process to exit rather than for its 200. Returning on the 200
+gave the prompt back and left the emulator printing its shutdown underneath it, which reads like a
+failure and is not one.
+
 | Stands in for | What it is | How the admin is pointed at it |
 | --- | --- | --- |
 | IAP | [`scripts/dev-iap.ts`](../../admin/scripts/dev-iap.ts) — a proxy that sets the identity headers IAP sets, and honours its sign-out URL | It is in front, so nothing in the application knows |
