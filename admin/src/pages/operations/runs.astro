@@ -77,8 +77,8 @@ const workflowSlug = type?.startsWith("workflow:") ? type.slice("workflow:".leng
  * arrives to see what happened, and a mirror nobody refreshes is a mirror that
  * is always one visit behind.
  *
- * Still run when the filter has excluded the workflows. It costs five requests
- * and it is what keeps the archive complete for the *next* reader, who may not
+ * Still run when the filter has excluded the workflows: five small requests made
+ * at once, and what keeps the archive complete for the *next* reader, who may not
  * have filtered.
  */
 const { failures } = await sync(DISPATCHABLE_WORKFLOWS, { maxPages: FORWARD_PAGES });

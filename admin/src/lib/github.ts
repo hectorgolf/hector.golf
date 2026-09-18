@@ -184,10 +184,30 @@ export type GitHubClient = {
      *
      * `page` is GitHub's own paging, and it is here for `lib/workflow-runs.ts`:
      * the mirror pages back through the history the first time it meets a
-     * workflow, and after that stops on the first page every time. Everything
-     * else asks for page 1 by asking for nothing.
+     * workflow. Everything else asks for page 1 by asking for nothing.
+     *
+     * `createdSince` narrows the answer to runs created at or after a moment,
+     * which is the difference between a 36-byte reply and a 1.5 MB one on the
+     * question the mirror asks most — "has anything run since I last looked".
+     *
+     * Inclusive, `created:>=`, and the boundary is not academic: a window set to
+     * a run's own timestamp is exactly how the mirror asks after a run whose
+     * outcome it does not know yet, and `>` answers that with the one run it was
+     * asking about missing. Checked against the API — `>2026-09-18T17:52:52Z`
+     * returns nothing where `>=` returns run #1542.
+     *
+     * It must be an instant the caller built from a `Date`, never a string from
+     * storage: GitHub answers an unparseable filter with *zero runs and a 200*,
+     * so a malformed one reads exactly like a quiet repository.
+     * `lib/workflow-runs.ts` normalises through `toISOString()` for that reason,
+     * and falls back to an unfiltered walk when it cannot.
      */
-    recentRuns(workflow: DispatchableWorkflow, limit?: number, page?: number): Promise<RunsOutcome>
+    recentRuns(
+        workflow: DispatchableWorkflow,
+        limit?: number,
+        page?: number,
+        createdSince?: Date
+    ): Promise<RunsOutcome>
     readFile(path: string, ref?: string): Promise<ReadFileOutcome>
     commitFile(request: CommitRequest): Promise<CommitOutcome>
     /**
@@ -414,8 +434,15 @@ export function createGitHubClient(options: GitHubClientOptions): GitHubClient {
             return { ok: true }
         },
 
-        async recentRuns(workflow, limit = 5, page = 1) {
-            const result = await call(`${base}/${workflow.file}/runs?per_page=${limit}&page=${page}`, {
+        async recentRuns(workflow, limit = 5, page = 1, createdSince) {
+            // `>`, `=` and the `+` in an offset are all meaningful in a query
+            // string, so the whole value is encoded rather than pasted in. The
+            // instant is rendered from a Date, so it cannot be the malformed
+            // filter that GitHub answers with a cheerful empty list.
+            const created = createdSince
+                ? `&created=${encodeURIComponent(`>=${createdSince.toISOString()}`)}`
+                : ''
+            const result = await call(`${base}/${workflow.file}/runs?per_page=${limit}&page=${page}${created}`, {
                 method: 'GET',
             })
             if (typeof result === 'string') return { ok: false, reason: result }

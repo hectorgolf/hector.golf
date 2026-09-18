@@ -57,6 +57,36 @@ export const PER_PAGE = 100
 export const FORWARD_PAGES = 3
 export const SEED_PAGES = 10
 
+/** Where the "when did we last ask" marks live: one document, all workflows. */
+export const SYNC_STATE = 'workflow-sync'
+export const SYNC_STATE_DOC = 'state'
+
+/**
+ * How recently a workflow must have been asked about for a sync to skip it.
+ *
+ * The Operations page syncs on every load, which is what keeps it current and
+ * also what makes a reload, a back button and a double-click three requests to
+ * GitHub for an answer that cannot have changed. Ten seconds is shorter than any
+ * run takes to appear in GitHub's list — the page already says a dispatched run
+ * takes a minute or two to show up — so nothing becomes less true, and a burst of
+ * page loads costs one call instead of one each.
+ */
+export const MIN_SYNC_INTERVAL_MS = 10_000
+
+/**
+ * How far before the last sync the next one starts looking.
+ *
+ * The window is built from our clock and applied against GitHub's, and a run
+ * created in the seconds either side of a request must not fall between the two.
+ * Overlap is the cheap direction: a run we already hold costs one idempotent
+ * write, while a run nobody asks for again is a hole in the archive that nothing
+ * will ever repair.
+ *
+ * Five minutes is far more skew than two machines on NTP will ever show, and at
+ * six runs a day it widens the usual answer from nothing to nothing.
+ */
+export const SKEW_MARGIN_MS = 5 * 60_000
+
 /**
  * A run as we keep it: GitHub's own fields, plus which workflow it belongs to.
  *
@@ -84,9 +114,12 @@ export type SyncOptions = {
     /** How many pages of one workflow's list this sync may fetch. */
     maxPages?: number
     /** Injectable so the sync can be tested without a fetch. */
-    runs?: (workflow: DispatchableWorkflow, page: number) => Promise<
-        { ok: true; runs: WorkflowRun[] } | { ok: false; reason: GitHubFailure }
-    >
+    runs?: (
+        workflow: DispatchableWorkflow,
+        page: number,
+        perPage: number,
+        createdSince?: Date
+    ) => Promise<{ ok: true; runs: WorkflowRun[] } | { ok: false; reason: GitHubFailure }>
 }
 
 export type SyncResult = {
@@ -96,6 +129,17 @@ export type SyncResult = {
     stored: number
     /** How many pages were fetched, across all workflows. Seeding is the only time this is large. */
     fetched: number
+    /** How many workflows were skipped because they had just been asked about. */
+    throttled: number
+    /**
+     * When the token expires, as the sync state last recorded it.
+     *
+     * Carried here so the Operations page can warn about an expiring token on a
+     * load that did not talk to GitHub. The live answer comes off a response
+     * header, so a throttled sync has none — and a warning that comes and goes
+     * with whether the last visit was ten seconds ago is a warning nobody trusts.
+     */
+    tokenExpiresAt?: string
 }
 
 /** The document id. Run numbers are unique within a workflow and never reused. */
@@ -116,6 +160,45 @@ const asStored = (run: WorkflowRun, slug: string): StoredWorkflowRun => ({
     ...(run.status === 'completed' ? {} : { pending: true as const }),
 })
 
+/** What the sync remembers between runs: when each workflow was last asked about. */
+type SyncState = {
+    syncedAt: Record<string, string>
+    tokenExpiresAt?: string
+}
+
+/**
+ * An instant we are willing to send to GitHub, or nothing.
+ *
+ * Every value from storage goes through this, and it is not defensive
+ * programming for its own sake. GitHub answers an unparseable `created` filter
+ * with **zero runs and a 200** — verified against the API — so a bad timestamp
+ * does not fail, it quietly reports that nothing has ever run again. The most
+ * likely source of one is this project's own stack: `@google-cloud/firestore`
+ * turns a `Date` into a `Timestamp`, and a `Timestamp` interpolated into a URL
+ * is garbage that reads exactly like a repository where nothing happens.
+ *
+ * So the value is parsed and re-rendered rather than trusted, and anything that
+ * does not survive the round trip becomes `undefined` — which sends the caller
+ * down the unfiltered walk instead. Slow and correct beats fast and silent.
+ */
+export function instantFrom(value: unknown): Date | undefined {
+    if (typeof value !== 'string' || value.length === 0) return undefined
+    const parsed = new Date(value)
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed
+}
+
+async function readState(db: Firestore): Promise<SyncState> {
+    try {
+        const document = await db.collection(SYNC_STATE).doc(SYNC_STATE_DOC).get()
+        const data = (document.data() ?? {}) as Partial<SyncState>
+        return { syncedAt: data.syncedAt ?? {}, tokenExpiresAt: data.tokenExpiresAt }
+    } catch (error) {
+        // Without it every workflow takes the unfiltered path: slower, and right.
+        console.error('Could not read the workflow sync state', error)
+        return { syncedAt: {} }
+    }
+}
+
 /**
  * Bring the mirror up to date with GitHub, and report what could not be read.
  *
@@ -132,36 +215,85 @@ export async function sync(
     const now = options.now ?? new Date()
     const maxPages = options.maxPages ?? FORWARD_PAGES
     const read =
-        options.runs ?? ((workflow: DispatchableWorkflow, page: number) => github().recentRuns(workflow, PER_PAGE, page))
+        options.runs ??
+        ((workflow: DispatchableWorkflow, page: number, perPage: number, createdSince?: Date) =>
+            github().recentRuns(workflow, perPage, page, createdSince))
 
-    const failures: SyncResult['failures'] = []
-    let stored = 0
-    let fetched = 0
+    /*
+     * Two reads, both small, both needed before any workflow can be asked
+     * anything: when each was last asked, and which runs are still in flight.
+     */
+    const [state, unfinished] = await Promise.all([
+        readState(db),
+        pending(db).catch((error) => {
+            // Not fatal: without it a run that was in flight when last seen keeps
+            // its old status until something else rewrites it, which is a stale
+            // pill rather than a broken page.
+            console.error('Could not read the in-flight workflow runs', error)
+            return new Map<string, StoredWorkflowRun[]>()
+        }),
+    ])
 
-    let unfinished: Map<string, Set<number>>
-    try {
-        unfinished = await pending(db)
-    } catch (error) {
-        // Not fatal: without it a run that was in flight when last seen keeps its
-        // old status until something else rewrites it, which is a stale pill
-        // rather than a broken page.
-        console.error('Could not read the in-flight workflow runs', error)
-        unfinished = new Map()
-    }
+    /*
+     * In parallel, because the workflows are independent and this runs while
+     * somebody waits for a page.
+     *
+     * It was a `for ... await` loop to begin with, which is the same five round
+     * trips one after another rather than at once — and the comment on the call
+     * site claimed parallelism the code did not have. Five serial requests is the
+     * other half of why the Operations page went from one second to ten.
+     */
+    const outcomes = await Promise.all(
+        workflows.map(async (workflow) => {
+            try {
+                return await one(db, workflow, {
+                    maxPages,
+                    read,
+                    now,
+                    inFlight: unfinished.get(workflow.slug) ?? [],
+                    syncedAt: instantFrom(state.syncedAt[workflow.slug]),
+                })
+            } catch (error) {
+                console.error('Could not mirror a workflow history', { workflow: workflow.slug }, error)
+                return { stored: 0, fetched: 0, failure: 'unknown' as const }
+            }
+        })
+    )
 
-    for (const workflow of workflows) {
+    const failures = outcomes.flatMap((outcome, index) =>
+        outcome.failure ? [{ slug: workflows[index]!.slug, reason: outcome.failure }] : []
+    )
+    const stored = outcomes.reduce((total, outcome) => total + outcome.stored, 0)
+    const fetched = outcomes.reduce((total, outcome) => total + outcome.fetched, 0)
+    const throttled = outcomes.filter((outcome) => outcome.throttled).length
+
+    /*
+     * Remember the moment for the workflows that actually got an answer, and
+     * only those. A workflow whose sync failed keeps its old mark, so the next
+     * attempt asks from where the last *successful* one stopped rather than
+     * skipping the window it never managed to read.
+     *
+     * `asked` is stamped before the request rather than after, for the same
+     * reason `SKEW_MARGIN_MS` exists: a run created while the request was in
+     * flight belongs to the next window, not to neither.
+     */
+    const marks = Object.fromEntries(
+        outcomes.flatMap((outcome, index) =>
+            outcome.asked ? [[workflows[index]!.slug, outcome.asked.toISOString()]] : []
+        )
+    )
+    const expiry = github().tokenExpiry(now)?.at.toISOString() ?? state.tokenExpiresAt
+
+    if (Object.keys(marks).length > 0 || expiry !== state.tokenExpiresAt) {
         try {
-            const outcome = await one(db, workflow, {
-                maxPages,
-                read,
-                pending: unfinished.get(workflow.slug) ?? new Set(),
-            })
-            stored += outcome.stored
-            fetched += outcome.fetched
-            if (outcome.failure) failures.push({ slug: workflow.slug, reason: outcome.failure })
+            await db
+                .collection(SYNC_STATE)
+                .doc(SYNC_STATE_DOC)
+                .set({ syncedAt: marks, ...(expiry ? { tokenExpiresAt: expiry } : {}) }, { merge: true })
         } catch (error) {
-            console.error('Could not mirror a workflow history', { workflow: workflow.slug }, error)
-            failures.push({ slug: workflow.slug, reason: 'unknown' })
+            // A mark that did not get written costs the next sync a wider window,
+            // which is slower and still correct.
+            console.error('Could not record the workflow sync state', error)
         }
     }
 
@@ -173,7 +305,7 @@ export async function sync(
         console.error('Could not trim the workflow run mirror', error)
     }
 
-    return { failures, stored, fetched }
+    return { failures, stored, fetched, throttled, tokenExpiresAt: expiry }
 }
 
 async function one(
@@ -182,43 +314,113 @@ async function one(
     options: {
         maxPages: number
         read: NonNullable<SyncOptions['runs']>
-        pending: Set<number>
+        now: Date
+        /** The runs of this workflow whose outcome we do not yet know. */
+        inFlight: StoredWorkflowRun[]
+        /** When this workflow was last successfully asked about. */
+        syncedAt: Date | undefined
     }
-): Promise<{ stored: number; fetched: number; failure?: GitHubFailure }> {
+): Promise<{ stored: number; fetched: number; failure?: GitHubFailure; throttled?: true; asked?: Date }> {
     /*
-     * The high-water mark: everything above it is new, everything at or below it
-     * is something we have already written.
-     *
-     * Read from the archive rather than from a cursor document kept beside it. A
-     * cursor is one read either way, and this one cannot drift — a cursor that
-     * was written when the run beneath it was not would make the sync skip a run
-     * for good, silently, which is the one failure mode an archive must not have.
-     *
-     * Zero when there is nothing stored, which is what makes the loop below seed:
-     * no run can be at or below it, so it keeps paging until GitHub runs out.
+     * Just asked. The Operations page syncs on every load, so a reload, a back
+     * button and an impatient double-click are three requests for an answer that
+     * cannot have changed — see `MIN_SYNC_INTERVAL_MS`.
      */
-    const newest = await newestRunNumber(db, workflow.slug)
+    if (options.syncedAt && options.now.getTime() - options.syncedAt.getTime() < MIN_SYNC_INTERVAL_MS) {
+        return { stored: 0, fetched: 0, throttled: true }
+    }
+
+    const asked = options.now
+
+    /*
+     * The window: everything since the last time we asked, widened to reach any
+     * run whose outcome is still unknown.
+     *
+     * Those two are one question rather than two. `created` filters on when a run
+     * *started existing*, so a run that was queued an hour ago and has finished
+     * since is older than the last sync and would be left out — and being left
+     * out permanently is how a row stays at `queued` for good. Reaching back to
+     * the oldest one in flight covers it, and covers anything created after it,
+     * for the same single request.
+     */
+    const inFlightSince = options.inFlight
+        .map((run) => instantFrom(run.startedAt))
+        .filter((at): at is Date => at !== undefined)
+        .sort((a, b) => a.getTime() - b.getTime())[0]
+
+    /*
+     * The margin goes on our own clock and not on GitHub's.
+     *
+     * `syncedAt` is a moment this service wrote down, compared against times
+     * GitHub assigned, so it gets the skew margin. The in-flight run's timestamp
+     * *is* GitHub's own value handed back to it, and there is no skew between a
+     * clock and itself — so it is used exactly, which the inclusive `created:>=`
+     * makes safe. `>` would answer a window set to a run's own timestamp with
+     * that very run missing.
+     *
+     * Checked before relying on it: across 259 runs of three workflows, every
+     * one had `run_started_at` equal to `created_at`, so the `startedAt` stored
+     * here is the value the filter compares against rather than an approximation
+     * of it.
+     */
+    const since =
+        options.syncedAt &&
+        new Date(
+            Math.min(options.syncedAt.getTime() - SKEW_MARGIN_MS, inFlightSince?.getTime() ?? Number.POSITIVE_INFINITY)
+        )
 
     const writes: StoredWorkflowRun[] = []
+
+    if (since) {
+        /*
+         * The cheap path, and the one nearly every sync takes: GitHub does the
+         * filtering, and the usual answer is an empty list in 36 bytes. Compare
+         * 1.5 MB for a page of a hundred runs we mostly already hold.
+         *
+         * Everything that comes back is written, without consulting the archive
+         * first. Inside a window this narrow there is nothing to save by asking —
+         * the runs are new, or they are the handful in flight we came for, and a
+         * rewrite of either is one idempotent `set`.
+         */
+        for (let page = 1; page <= options.maxPages; page += 1) {
+            const outcome = await options.read(workflow, page, PER_PAGE, since)
+            if (!outcome.ok) return { stored: await store(db, writes), fetched: page, failure: outcome.reason }
+
+            writes.push(...outcome.runs.map((run) => asStored(run, workflow.slug)))
+            if (outcome.runs.length < PER_PAGE) {
+                return { stored: await store(db, writes), fetched: page, asked }
+            }
+        }
+        return { stored: await store(db, writes), fetched: options.maxPages, asked }
+    }
+
+    /*
+     * No usable mark, so no window: a workflow being met for the first time, a
+     * sync state that was lost, or a stored timestamp that did not survive
+     * `instantFrom`. Walk the history instead, stopping at the first run we
+     * already hold — which on a seeded archive is the first page, and on an empty
+     * one is the whole of what GitHub still has.
+     */
+    const newest = await newestRunNumber(db, workflow.slug)
+    const stillPending = new Set(options.inFlight.map((run) => run.runNumber))
     let fetched = 0
 
     for (let page = 1; page <= options.maxPages; page += 1) {
-        const outcome = await options.read(workflow, page)
+        const outcome = await options.read(workflow, page, PER_PAGE)
         fetched += 1
         if (!outcome.ok) {
             // What has already been collected is still written: a rate limit on
             // page three should not throw away pages one and two.
-            const stored = await store(db, writes)
-            return { stored, fetched, failure: outcome.reason }
+            return { stored: await store(db, writes), fetched, failure: outcome.reason }
         }
 
-        for (const run of outcome.runs) {
-            if (run.runNumber > newest || options.pending.has(run.runNumber)) {
-                writes.push(asStored(run, workflow.slug))
-            }
-        }
+        writes.push(
+            ...outcome.runs
+                .filter((run) => run.runNumber > newest || stillPending.has(run.runNumber))
+                .map((run) => asStored(run, workflow.slug))
+        )
 
-        // The stop the whole design is for: the page reached back into what we
+        // The stop the walk exists for: the page reached back into what we
         // already hold, so everything below it is held too.
         if (outcome.runs.some((run) => run.runNumber <= newest)) break
         // GitHub had nothing more to give. Only reachable while seeding, and it
@@ -227,7 +429,7 @@ async function one(
         if (outcome.runs.length < PER_PAGE) break
     }
 
-    return { stored: await store(db, writes), fetched }
+    return { stored: await store(db, writes), fetched, asked }
 }
 
 /**
@@ -254,15 +456,19 @@ async function newestRunNumber(db: Firestore, slug: string): Promise<number> {
     return newest?.runNumber ?? 0
 }
 
-/** Which runs were still going when they were last seen, by workflow. */
-async function pending(db: Firestore): Promise<Map<string, Set<number>>> {
+/**
+ * The runs that were still going when they were last seen, by workflow.
+ *
+ * The runs themselves rather than their numbers, because the window needs their
+ * start times: how far back a sync has to reach is decided by the oldest one
+ * still in flight.
+ */
+async function pending(db: Firestore): Promise<Map<string, StoredWorkflowRun[]>> {
     const snapshot = await db.collection(RUNS).where('pending', '==', true).get()
-    const byWorkflow = new Map<string, Set<number>>()
+    const byWorkflow = new Map<string, StoredWorkflowRun[]>()
     for (const document of snapshot.docs) {
         const run = document.data() as StoredWorkflowRun
-        const numbers = byWorkflow.get(run.slug) ?? new Set<number>()
-        numbers.add(run.runNumber)
-        byWorkflow.set(run.slug, numbers)
+        byWorkflow.set(run.slug, [...(byWorkflow.get(run.slug) ?? []), run])
     }
     return byWorkflow
 }

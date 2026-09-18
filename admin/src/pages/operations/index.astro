@@ -51,20 +51,30 @@ const reason = rawReason as GitHubFailure | null;
 const failureMessage = reason && reason in FAILURE_MESSAGES ? FAILURE_MESSAGES[reason] : undefined;
 
 /*
+ * One clock for the whole render: the ages in the log, the token's remaining
+ * days and the sync's own window are all measured against it, and three
+ * `new Date()`s milliseconds apart would be three answers to one question.
+ */
+const now = new Date();
+
+/*
  * Bring the mirror of GitHub's runs up to date, then read the log out of
  * Firestore.
  *
- * The sync is what this page spends its latency on, and it is the same five
- * requests the page used to spend reading GitHub live — one page of each
- * workflow's history. The difference is what happens to them: they are written
- * down, so the log below can reach further back than a page, and so an
- * unreachable GitHub costs this page the *newest* runs rather than all of them.
- * `lib/workflow-runs.ts` has the argument in full.
+ * The sync is what this page spends its latency on: five requests, made at once,
+ * each asking only whether anything has run since the last visit. What makes
+ * them cheap is the mirror itself — everything below the high-water mark is
+ * already held, so the question fits in a page of ten runs rather than a hundred.
+ * `lib/workflow-runs.ts` has the argument, and the measurement, in full.
+ *
+ * It is also why the log below can reach further back than a page, and why an
+ * unreachable GitHub now costs this page the *newest* runs rather than all of
+ * them.
  *
  * Awaited before anything reads the token's expiry, which is the one ordering
  * constraint on this page — see the note further down.
  */
-const { failures } = await sync(DISPATCHABLE_WORKFLOWS, { maxPages: FORWARD_PAGES });
+const { failures, tokenExpiresAt } = await sync(DISPATCHABLE_WORKFLOWS, { maxPages: FORWARD_PAGES, now });
 
 /*
  * One more row than the page shows, from each half, because the merge is what
@@ -116,8 +126,20 @@ const tokenTrouble: GitHubFailure[] = [
  * neither does the local stand-in unless it has been asked to. Silence is the
  * right rendering of that — a token nobody can date is not a token about to
  * expire.
+ *
+ * The fallback is what the sync last wrote down, and it exists because the sync
+ * can now decline to call GitHub at all — a reload within ten seconds of the
+ * last one is answered from Firestore. Without it, an expiry warning would come
+ * and go depending on how recently the page had been opened, which is the least
+ * trustworthy way for a warning about a credential to behave.
  */
-const expiry = github().tokenExpiry();
+const live = github().tokenExpiry(now);
+const remembered = tokenExpiresAt ? new Date(tokenExpiresAt) : undefined;
+const expiry =
+	live ??
+	(remembered && !Number.isNaN(remembered.getTime())
+		? { at: remembered, daysLeft: Math.trunc((remembered.getTime() - now.getTime()) / 86_400_000) }
+		: undefined);
 
 /*
  * Which of the three gets the walkthrough, at most one.
@@ -149,8 +171,6 @@ const ranJob = jobBySlug(Astro.url.searchParams.get("ranJob") ?? undefined);
  * rather than deleted, so it comes and goes on its own.
  */
 const anyShadowed = JOBS.some((job) => job.dryRun);
-
-const now = new Date();
 ---
 
 <AdminLayout title="Operations">

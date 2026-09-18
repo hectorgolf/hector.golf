@@ -664,13 +664,43 @@ in July": the run list is paged at 100, so anything deeper cost a loop of reques
 runs after 90 days regardless. Mirroring makes both halves the same kind of thing — one database, one
 query, paging as deep as the retention goes, and runs that outlive GitHub's own copy.
 
-The sync is cheap because run numbers only ever go up. It asks for the newest page, writes the runs
-above the highest one it already holds, and stops as soon as that page contains a run it has seen
-before — which, at six runs a day against a page of a hundred, is the first page every time. A
-workflow it has never seen has no such run to stop at, so the same loop walks back through everything
-GitHub still has and seeds the archive. The only runs that need rewriting rather than adding are the
-ones that were still going when last seen, and `pending` marks exactly those: one small query finds
-every run whose conclusion is still unknown.
+The sync is cheap because run numbers only ever go up. It asks for the newest runs, writes the ones
+above the highest it already holds, and stops as soon as it sees a run it has seen before. A workflow
+it has never met has no such run to stop at, so the same loop walks back through everything GitHub
+still has and seeds the archive. The only runs that need rewriting rather than adding are the ones
+that were still going when last seen, and `pending` marks exactly those.
+
+**What it asks for is the number that decides what the page costs**, and getting it wrong is what
+made `/operations` take ten seconds instead of one. A GitHub run object carries its repository, head
+repository and head commit, so it is about 15 kB on its own and a page of a hundred is **1.5 MB** —
+seven megabytes across five workflows, downloaded and parsed on a one-CPU instance to discover,
+almost always, that nothing has run since the last visit.
+
+So the sync does not ask for a page of history at all. It asks
+[`created:>={last sync}`](https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-workflow)
+and lets GitHub do the filtering, which answers the usual question — "anything new?" — in **36
+bytes**. The five requests go out at once, and a workflow asked about in the last ten seconds is not
+asked again at all: a reload, a back button and a double-click are one sync between them.
+
+The window reaches back further when a run's outcome is not yet known, because `created` filters on
+when a run *started existing* — a run queued an hour ago and finished since is older than the last
+sync and would otherwise be left out permanently, leaving a row reading `queued` for good. **The
+operator is `>=` and that is load-bearing**: the window is then set to that run's own timestamp, and
+`>` answers it with the one run it was asking about missing. Verified against the API —
+`>2026-09-18T17:52:52Z` returns nothing where `>=` returns run #1542.
+
+The skew margin goes on our own clock and not on GitHub's. `syncedAt` is a moment this service wrote
+down and compares against times GitHub assigned, so it gets one; a run's timestamp is GitHub's own
+value handed back, and there is no skew between a clock and itself. That the stored `startedAt` is
+the value the filter compares against was checked rather than assumed: across 259 runs of three
+workflows, every `run_started_at` equalled its `created_at`.
+
+**One property of that filter is worth knowing before relying on it: GitHub answers an unparseable
+`created` with zero runs and a 200.** A bad timestamp does not fail, it silently reports that nothing
+has ever run again — and the likeliest source of one is this project's own stack, since
+`@google-cloud/firestore` stores a `Date` as a `Timestamp` and a `Timestamp` in a URL is garbage. So
+the mark is parsed and re-rendered before it is sent, and anything that does not survive that falls
+back to the unfiltered walk. Slow and correct beats fast and silent.
 
 It runs on every page load *and* on every tick. The page load is what keeps the log current; the tick
 is what keeps it complete, because an archive topped up only when somebody opens a page has holes for
