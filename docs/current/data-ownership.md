@@ -84,9 +84,20 @@ below.
 
 ## How the handicap stopgap works, now that it is only a stopgap
 
-[`players.ts`](../../astrosite/src/code/players.ts) resolves a handicap as `handicapOverride ??
-handicapFromAPI`, where `handicapOverride` holds `player.handicap`. That is unchanged. What
-changed on 2026-09-18 is the other half: **nothing automated writes the field any more.**
+[`players.ts`](../../astrosite/src/code/players.ts) resolves a handicap official-first —
+`resolveHandicap(fromTheHistory, player.handicap)` — so a hand-set value shows only where the
+history is silent. Two things changed on 2026-09-18: **nothing automated writes the field any
+more**, and the precedence was reversed to match.
+
+The reversal is the less obvious half and it was not optional. The old order had the stored value
+winning, which was safe only because `update-handicaps.ts` overwrote the file: CI retired a
+stopgap within hours by replacing it, so "stored wins" and "official wins" were the same thing a
+tick apart. Take the write away and they stop being the same thing — a stopgap would shadow an
+official handicap until some unrelated workflow next rewrote that player, which for the
+biographies run is a fortnight. The precedence now says what the field means rather than relying
+on a scheduled job to make it true, and it agrees with
+[`events.ts`](../../astrosite/src/code/events.ts), which has always resolved the same pair
+official-first.
 
 This section used to explain why CI overwriting a hand-set value was the design rather than a bug —
 the hand-set value being a placeholder for a player WiseGolf has never heard of, and the placeholder

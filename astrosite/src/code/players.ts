@@ -55,24 +55,43 @@ export function getAllPlayers(): Array<Player> {
         .filter(record => !!record) as Array<Player>;
 }
 
+/**
+ * Which handicap a player has, given both kinds.
+ *
+ * The official reading wins, and the hand-set one is what is left when there is
+ * no official reading — which is the whole meaning of a stopgap. See
+ * `docs/current/data-ownership.md`.
+ *
+ * It used to be the other way round, and the reason that worked was that
+ * `update-handicaps.ts` overwrote the player file: the stored value won, and CI
+ * retired it within hours by replacing it, so "stored wins" and "official wins"
+ * were the same thing a tick apart. That write went away on 2026-09-18 and they
+ * stopped being the same thing — a stopgap would have shadowed an official
+ * handicap until some unrelated workflow next rewrote the player, which for the
+ * biographies run is a fortnight. A stopgap that outlives the official figure by
+ * a fortnight is not a stopgap.
+ *
+ * Reversing it puts the precedence where the meaning already was, and makes this
+ * agree with `events.ts`, which has always resolved the same pair official-first.
+ *
+ * `??` and not `||`: a scratch player's handicap is 0, and 0 is falsy, so `||`
+ * would discard a real 0 from the history and fall through to the stopgap.
+ *
+ * A named function rather than an expression inline because the *order* is the
+ * decision, and an order is worth being able to test without standing in for a
+ * module graph.
+ */
+export function resolveHandicap(official: number | undefined, stopgap: number | undefined): number | undefined {
+    return official ?? stopgap;
+}
+
 export function getPlayerById(id: string): Player|undefined {
     let _record = playersData.find((event) => event.id === id)
     if (!_record) {
         return undefined
     }
     const player = PlayerSchema.parse(_record);
-    // A hand-set handicap is a stopgap for a player WiseGolf has no figure for,
-    // and `update-handicaps.ts` replaces it as soon as there is a real one — see
-    // docs/current/data-ownership.md. So the stored value wins here only because CI has
-    // not overwritten it yet, which is the intended precedence.
-    //
-    // `??` and not `||`: a scratch player's handicap is 0, and 0 is falsy, so
-    // `||` discarded it and fell through to the history — leaving `undefined`
-    // when the history was empty, which is precisely the case a stopgap exists
-    // to cover. `events.ts` already resolves the same pair with `??`.
-    const handicapFromAPI = getPlayerHandicapById(player.id)
-    const handicapOverride = player.handicap
-    player.handicap = handicapOverride ?? handicapFromAPI
+    player.handicap = resolveHandicap(getPlayerHandicapById(player.id), player.handicap)
     return player
 }
 
