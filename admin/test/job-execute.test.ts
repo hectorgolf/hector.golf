@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
-import { reportOfThrow } from '../src/lib/jobs/execute.ts'
+import { publish, reportOfThrow } from '../src/lib/jobs/execute.ts'
 import { isNotConfigured, NotConfigured } from '../src/lib/jobs/registry.ts'
 
 /**
@@ -84,5 +84,93 @@ describe('recognising a NotConfigured that came from somewhere else', () => {
         expect(isNotConfigured('not configured')).toBe(false)
         expect(isNotConfigured(undefined)).toBe(false)
         expect(isNotConfigured(new Error('not configured'))).toBe(false)
+    })
+})
+
+/**
+ * Who asks for a deploy after a job has changed something.
+ *
+ * This exists because of a gap step 2 opened deliberately and step 3 had to
+ * close: the backup lives outside `astrosite/`, so committing it does not trip
+ * `deploy-site.yml`'s path filter, and once the site builds from the API there
+ * is nothing else to publish a change. Every rule below is about *not* asking,
+ * because a spurious deploy is the failure this arrangement was built to avoid
+ * and a missing one is a page that is quietly a day out of date.
+ */
+describe('asking for a deploy after a job run', () => {
+    const job = {
+        slug: 'handicaps',
+        label: "Players' official handicaps",
+        blurb: '',
+        dryRun: false,
+        scheduled: true,
+        publishes: true,
+        run: async () => ({ outcome: 'ok' as const, changes: [] }),
+    }
+
+    const dispatcher = () => {
+        const asked: string[] = []
+        return {
+            asked,
+            dispatch: async (workflow: { file: string }) => {
+                asked.push(workflow.file)
+                return { ok: true as const }
+            },
+        }
+    }
+
+    it('asks, when a job that publishes found something', async () => {
+        const { asked, dispatch } = dispatcher()
+        await publish(job, 'ok', 1, dispatch)
+        expect(asked).toEqual(['deploy-site.yml'])
+    })
+
+    /*
+     * The reconcile tick. A run commits whenever the render differs from git,
+     * which includes bringing in the old workflow's row for a handicap already
+     * known about — same values, same daily view, nothing on any page to
+     * redraw. Deploying for those would put the count back to the three per
+     * change that moving the backup removed.
+     */
+    it('does not ask when the run changed nothing, even though it may have committed', async () => {
+        const { asked, dispatch } = dispatcher()
+        await publish(job, 'ok', 0, dispatch)
+        expect(asked).toEqual([])
+    })
+
+    it('does not ask for a shadow run, which wrote nothing to publish', async () => {
+        const { asked, dispatch } = dispatcher()
+        await publish({ ...job, dryRun: true }, 'ok', 3, dispatch)
+        expect(asked).toEqual([])
+    })
+
+    it('does not ask when the run failed or was skipped', async () => {
+        const { asked, dispatch } = dispatcher()
+        await publish(job, 'failed', 3, dispatch)
+        await publish(job, 'skipped', 3, dispatch)
+        expect(asked).toEqual([])
+    })
+
+    it('does not ask for a job whose output the site does not build from', async () => {
+        // The reason this is a flag rather than a rule about all jobs: the next
+        // ones are not all like handicaps, and a job maintaining internal state
+        // should not be spending a build on it.
+        const { asked, dispatch } = dispatcher()
+        await publish({ ...job, publishes: false }, 'ok', 3, dispatch)
+        expect(asked).toEqual([])
+    })
+
+    /*
+     * A deploy that did not start is a page that is late, and the deploy entry's
+     * own `cadence: { every: '1d' }` eventually publishes it anyway. Reporting
+     * the *run* failed would be worse than the problem: it sends somebody to
+     * look at a scrape that worked perfectly.
+     */
+    it('does not throw when GitHub refuses, because the data is already committed', async () => {
+        vi.spyOn(console, 'error').mockImplementation(() => {})
+        const refuse = async () => ({ ok: false as const, reason: 'unauthorized' as const })
+
+        await expect(publish(job, 'ok', 1, refuse)).resolves.toBeUndefined()
+        expect(console.error).toHaveBeenCalled()
     })
 })

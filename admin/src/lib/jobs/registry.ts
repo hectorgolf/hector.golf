@@ -46,6 +46,23 @@ export type Job = {
      * change, which is what keeps `terraform/scheduler.tf` down to two jobs.
      */
     scheduled: boolean
+    /**
+     * Whether the site builds from what this job writes.
+     *
+     * A job that says yes asks for a deploy when it changes something, because
+     * nothing else will: the backup it commits lives outside `astrosite/`, which
+     * is deliberate — see `BACKUP_PATH` — and so it is outside
+     * `deploy-site.yml`'s path filter too. Before step 3 that cost nothing,
+     * since the site still built from `handicaps.json` and the old workflow
+     * dispatched its own deploy. Once the build reads the API, a change sitting
+     * in Firestore with nothing rebuilding the site is a published page that is
+     * quietly a day out of date.
+     *
+     * A flag rather than a rule about all jobs, because the next ones are not
+     * all like this: a job that only maintains internal state has nothing to
+     * publish and should not be spending a deploy on it.
+     */
+    publishes: boolean
     run(dryRun: boolean): Promise<JobOutcome>
 }
 
@@ -215,6 +232,9 @@ export const JOBS: readonly Job[] = [
         // `api/workflows/dispatch.ts` on why that ordering is what makes the
         // comparison meaningful.
         scheduled: true,
+        // The site reads `/api/handicaps/history` as of step 3, so a handicap
+        // this job finds has to reach a rebuilt page somehow.
+        publishes: true,
         run: (dryRun) => handicaps.run({ readFile, commit, now: () => new Date() }, dryRun),
     },
 ]

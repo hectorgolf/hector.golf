@@ -18,6 +18,18 @@ import { all, render } from '../../../lib/handicaps/observations.ts'
  * by hand. It also makes the fallback comparable to the live answer with `diff`
  * when somebody is trying to work out which one a build used.
  *
+ * ## Why the media type depends on who is asking
+ *
+ * `application/x-ndjson` is the registered type and the honest one, and it is
+ * also a type no browser has a viewer for — so opening this URL downloads a file
+ * instead of showing it. That is a poor answer to the question people actually
+ * bring here, which is "what did the build get?", and the file is plain text.
+ *
+ * So a caller that says it wants HTML gets `text/plain` and can read it in the
+ * tab it is already in. The bytes are identical either way; only the label
+ * changes. `wantsHtml` is the same predicate the dispatch endpoints use to tell
+ * a browser from a script, and this is the same distinction.
+ *
  * ## Who may call it
  *
  * Nothing here, which is the same answer as every other route in this service
@@ -35,18 +47,27 @@ import { all, render } from '../../../lib/handicaps/observations.ts'
  * mechanism worth building for one endpoint.
  */
 
+/**
+ * The `Accept` a browser sends and a build does not.
+ *
+ * `handicap-history-source.ts` asks for `application/x-ndjson` explicitly, so
+ * the build is never the caller this is true for.
+ */
+const wantsHtml = (request: Request) => (request.headers.get('accept') ?? '').includes('text/html')
+
 /** A full scan of the collection, which is what rendering the log requires. */
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ request }) => {
     try {
         const entries = await all()
         return new Response(render(entries), {
             status: 200,
             headers: {
-                // `application/x-ndjson` is the registered type. The charset is
-                // not part of it, so it is stated: `render` writes UTF-8 and a
-                // reader that guesses Latin-1 would mangle nothing today and a
-                // player's name tomorrow.
-                'content-type': 'application/x-ndjson; charset=utf-8',
+                // The charset is stated in both cases: `render` writes UTF-8, and
+                // a reader that guessed Latin-1 would mangle nothing today and a
+                // player's name later.
+                'content-type': wantsHtml(request)
+                    ? 'text/plain; charset=utf-8'
+                    : 'application/x-ndjson; charset=utf-8',
                 // Never a cached answer. A build asking for this wants what
                 // Firestore holds now, and the one failure this route can cause
                 // — publishing yesterday's handicaps as though they were

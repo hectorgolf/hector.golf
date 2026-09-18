@@ -1,3 +1,5 @@
+import { github, type DispatchOutcome } from "../github.ts";
+import { workflowBySlug, type DispatchableWorkflow } from "../workflows.ts";
 import { acquire } from "./lock.ts";
 import { record, type JobRun } from "./log.ts";
 import { isNotConfigured, type Job } from "./registry.ts";
@@ -136,6 +138,8 @@ export async function execute(job: Job, by: string): Promise<Execution> {
     await record(jobRun);
     console.log(`Recorded job run`, jobRun);
 
+    await publish(job, result.outcome, result.changes.length);
+
     return {
         slug: job.slug,
         outcome: result.outcome,
@@ -144,4 +148,65 @@ export async function execute(job: Job, by: string): Promise<Execution> {
         commit: result.commit,
         skipped,
     };
+}
+
+/**
+ * Ask GitHub to rebuild the site, when a job has given it something new to show.
+ *
+ * ## Why a job has to ask at all
+ *
+ * The backup this job commits lives at `data/handicaps/observations.ndjson`,
+ * outside `astrosite/` and therefore outside `deploy-site.yml`'s path filter.
+ * That is deliberate and step 2 moved it there on purpose — a file nothing
+ * builds from should not publish the site every time it is written. The cost is
+ * that nothing publishes it when it *should*, so this does.
+ *
+ * ## Why `changes` rather than "it committed something"
+ *
+ * A run commits whenever the rendered backup differs from what is in git, and
+ * that includes the tick *after* a change, when it reconciles the old workflow's
+ * row for a handicap it already knew about. Those rows carry the same values the
+ * site is already showing — `latestPerDay` returns the same answer either way —
+ * so deploying for them would spend a build to publish nothing, and would put
+ * the count back to the three per change that moving the file removed.
+ *
+ * A run that found changes is the one where a page will actually look different.
+ *
+ * ## What a failure here is, and is not
+ *
+ * Not a failed run. The data is written and committed by the time this is
+ * called; a deploy that did not start is a page that is late, and the
+ * `cadence: { every: '1d' }` on the deploy entry is the backstop that eventually
+ * publishes it anyway. Reporting the run failed would be worse than the problem:
+ * it would send somebody to look at a scrape that worked perfectly.
+ */
+export async function publish(
+    job: Job,
+    outcome: JobRun["outcome"],
+    changes: number,
+    /** Injectable so the rules above can be tested without a GitHub. */
+    dispatch: (workflow: DispatchableWorkflow) => Promise<DispatchOutcome> = (workflow) =>
+        github().dispatch(workflow),
+): Promise<void> {
+    if (!job.publishes || job.dryRun || outcome !== "ok" || changes === 0) return;
+
+    const deploy = workflowBySlug("deploy");
+    if (!deploy) {
+        // The list is a constant in this repository, so this cannot happen
+        // without somebody renaming the entry — which is exactly when a silent
+        // skip would be worst, since the symptom is a site that stops updating.
+        console.error("No deploy workflow to ask for a publish", { job: job.slug });
+        return;
+    }
+
+    const asked = await dispatch(deploy);
+    if (asked.ok) {
+        console.log("Asked GitHub to publish what a job changed", { job: job.slug, changes });
+    } else {
+        console.error("Could not ask for a deploy after a job changed something", {
+            job: job.slug,
+            changes,
+            reason: asked.reason,
+        });
+    }
 }

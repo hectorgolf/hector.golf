@@ -33,8 +33,13 @@ const entries: HandicapHistoryEntry[] = [
     { player: 'lauri-p', date: '2026-09-16', handicap: 12 },
 ]
 
-/** The route takes no arguments it uses; Astro's context is not consulted. */
-const call = () => GET({} as Parameters<typeof GET>[0]) as Promise<Response>
+/** Astro's context, as far as this route looks at it: the request's `Accept`. */
+const call = (accept?: string) =>
+    GET({
+        request: new Request('https://admin.example/api/handicaps/history', {
+            headers: accept ? { accept } : {},
+        }),
+    } as Parameters<typeof GET>[0]) as Promise<Response>
 
 describe('GET /api/handicaps/history', () => {
     beforeEach(() => {
@@ -55,12 +60,39 @@ describe('GET /api/handicaps/history', () => {
 
     it('declares the NDJSON media type and a charset', async () => {
         all.mockResolvedValue(entries)
-        const response = await call()
+        const response = await call('application/x-ndjson')
 
         // `application/x-ndjson` is the registered type. The charset is stated
         // rather than left out because a reader that guessed Latin-1 would mangle
         // nothing today and a player's name later.
         expect(response.headers.get('content-type')).toBe('application/x-ndjson; charset=utf-8')
+    })
+
+    it('answers NDJSON to a caller that sends no Accept at all', async () => {
+        // curl with no flags, and anything else that does not say. The registered
+        // type is the right default; the text/plain branch is the exception.
+        all.mockResolvedValue(entries)
+        expect((await call()).headers.get('content-type')).toBe('application/x-ndjson; charset=utf-8')
+    })
+
+    /*
+     * A browser has no viewer for `application/x-ndjson`, so opening this URL
+     * downloads a file rather than showing one — a poor answer to the question
+     * people actually bring here, which is "what did the build get?". The file is
+     * plain text, so a caller that says it wants HTML is told so and can read it
+     * in the tab it is already in.
+     */
+    it('labels the same bytes as text for a browser, so the tab can show them', async () => {
+        all.mockResolvedValue(entries)
+
+        const browser = await call('text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+        expect(browser.headers.get('content-type')).toBe('text/plain; charset=utf-8')
+
+        // Only the label changes. A build and a browser must not be able to
+        // disagree about what the history is.
+        all.mockResolvedValue(entries)
+        const build = await call('application/x-ndjson')
+        expect(await browser.text()).toBe(await build.text())
     })
 
     it('refuses to be cached, since a stale answer is a silently wrong deploy', async () => {
