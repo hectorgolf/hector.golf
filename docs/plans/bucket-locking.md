@@ -74,7 +74,8 @@ Worth settling, because the word promises more than the field delivers.
 | | Affected by the lock? |
 | --- | --- |
 | Which players are in which bucket | Yes — this is the whole of the feature |
-| The handicaps shown beside their names | **No.** `populateUpdatedHandicaps()` in `events.ts` refreshes those from the live history at build time, for any event that is not past |
+| The handicaps shown beside their names | **No.** The event page reads that column straight from the live history (`getPlayerHandicapById`), so it is today's number for every event, locked or not — see `architecture.md` §13 |
+| The handicaps in the published payload | **Yes, as a side effect.** `bucketing.hcp` comes from the committed event file, which CI stops writing once the lock is set, so it holds the figures of the last recompute before it |
 
 That asymmetry is right rather than an oversight. The split is the thing that was announced; the
 numbers beside it are information about the players, and a locked split showing yesterday's handicaps

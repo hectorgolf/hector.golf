@@ -503,14 +503,14 @@ files:
   that field, so the override is overwritten by what it overrides. See
   [data-ownership.md](./data-ownership.md), which settles who owns which field and why the fix waits
   for the Firestore migration.
-- **Projected buckets** — for *future* Hector events only, `populateUpdatedHandicaps()` refreshes the
-  stored bucket handicaps from the live history, so "Projected Buckets" stay current between
-  scheduled data runs. "Future" here means before 08:00 on the first morning in the event's own time
-  zone (`bucketsAreOpen` in `data.ts`), not before the first date: the Draft after round one reads
-  these, so they must not move once play has begun. The refresh is deliberately *not* stopped by
-  `event.bucketsLocked`, which freezes which players are in which bucket and not the numbers shown
-  beside their names. The event page does drop the word "Projected" from its heading for a locked
-  split, because that word is a promise the lock has withdrawn.
+- **Projected buckets** — `populateUpdatedHandicaps()` refreshes the stored bucket handicaps in
+  `event.buckets` from the live history, so "Projected Buckets" stay current between scheduled data
+  runs. It is gated on `isPastEvent` — any event whose last day has not passed — and **not** on
+  `bucketsAreOpen`, so the refresh outlives the split's own freeze by the length of the tournament.
+  It is deliberately not stopped by `event.bucketsLocked` either: a lock freezes which players are in
+  which bucket, not the numbers shown beside their names. The event page does drop the word
+  "Projected" from its heading for a locked split, because that word is a promise the lock has
+  withdrawn. What that page actually *prints* in the handicap column is looser still — see §13.
 - **Participant back-fill** — if `participants` is empty, `populateMissingParticipants()`
   reconstructs it from `results.teams[].players` or from the matchplay bracket's `left`/`right`.
 - **Winner inference** — `events/hector/[slug].astro` promotes the top leaderboard row to
@@ -1220,6 +1220,15 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
   system is restated by hand, so it will not follow a token change in `hector.css`.
 - `astrosite/.env.sample` is missing the `MSCORECARD_EMAIL` / `MSCORECARD_PASSWORD` pair the
   mScorecard CLI needs. `HECTOR_APP_API_KEY` used to be missing too and is now there.
+- **A finished Hector's bucket table shows today's handicaps, not the ones its split was drawn on.**
+  `events/hector/[slug].astro` renders that column as `getPlayerHandicapById(player.id)`, which is
+  the last entry in the history with no date bound at all — so it neither reads the handicaps stored
+  in `event.buckets` nor stops at the event. HECTOR2025's rendered table differs from its own
+  committed bucket handicaps in 21 of its 24 rows. It is the intended behaviour before an event and
+  wrong after one, and no freeze or lock affects it, because none of them are consulted.
+  `/events/hector/:id/handicaps.json` does not share the problem: `bucketing.hcp` there comes from
+  the committed event file via `placements()`, which is why that payload can still say what the 2025
+  split was computed from.
 
 **Dead or unreachable code**
 
