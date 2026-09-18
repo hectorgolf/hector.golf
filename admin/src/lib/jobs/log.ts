@@ -106,12 +106,10 @@ function defined(run: JobRun): Record<string, unknown> {
 /**
  * The most recent runs of *every* job, newest first, for the run log.
  *
- * Separate from `recent` rather than a parameter of it, because the queries are
- * different in the way that matters to Firestore: `recent` filters by slug and
- * orders by time, which needs a composite index, while this only orders. It is
- * also the one the log wants — a merged chronology does not care which job a row
- * came from, and asking per job would mean N queries and then throwing most of
- * the answers away.
+ * Separate from `recent` rather than a parameter of it, because it is what the
+ * log actually wants: a merged chronology does not care which job a row came
+ * from, and asking per job would mean N queries and then throwing most of the
+ * answers away.
  *
  * `limit` is what bounds the cost, and it is the caller's business how deep the
  * page goes: at the default this is a hundred document reads against a free tier

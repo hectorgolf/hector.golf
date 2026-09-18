@@ -58,16 +58,13 @@ export const cutoff = (now: Date): string =>
 /**
  * Drop the runs that have aged out of one collection.
  *
- * Across the whole collection rather than per job or per workflow, and that is
- * the cheaper shape as well as the truer one: retention is a property of the log
- * rather than of each thing that writes to it, so one query answers it however
- * many of them there are — and a single inequality on one field is served by the
- * automatic index rather than by a composite one somebody has to remember to
- * create.
+ * Across the whole collection rather than per job or per workflow, because
+ * retention is a property of the log rather than of each thing that writes to
+ * it: one query answers it however many of them there are.
  *
  * It also costs almost nothing on the runs where there is nothing to do, which
- * is nearly all of them: the query reads only the documents it is about to
- * delete.
+ * is nearly all of them: the query returns only the documents it is about to
+ * delete, and on the usual write that is none.
  *
  * Best-effort by contract. Both callers do their real work first and tidy up
  * afterwards, so a throw here would report a run that happened as a run that

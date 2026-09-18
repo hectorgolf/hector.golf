@@ -111,26 +111,34 @@ resource "google_firestore_backup_schedule" "weekly" {
   deletion_policy = "ABANDON"
 }
 
-# The two composite indexes the run log needs.
+# Two indexes for the run log's hottest query.
 #
-# Firestore indexes every field on its own automatically, which covers most of
-# what this project asks of it — but not a query that filters on one field and
-# orders by another, and both halves of the run log do exactly that: "this
-# workflow's runs, newest first", "this job's runs, newest first". Without these
-# the query fails with FAILED_PRECONDITION and a link to a console page that
-# creates the index by hand.
+# These are a performance choice rather than a requirement, and on this database
+# that distinction is the whole comment. `database_edition = "ENTERPRISE"` above
+# changes how indexing works in both directions: Enterprise runs every query
+# whether an index exists or not — there is no FAILED_PRECONDITION to hit, which
+# is what Standard edition answers a missing composite index with — and it
+# creates *no* indexes by default, where Standard would have built a single-field
+# index for every field on its own.
 #
-# Declared here rather than created from that link because of how the failure
-# reads from the outside. Both call sites catch and degrade to an empty list, so
-# a missing index does not raise an error anywhere a person looks: the Operations
-# page simply says "No runs recorded yet" about a service that has been running
-# happily for weeks. That is a bad enough failure mode to be worth the terraform,
-# and a one-line reason to never let one of these queries exist undeclared.
+# So nothing here is load-bearing for correctness, and it was verified rather
+# than assumed: on 2026-09-18 this database held no composite indexes at all and
+# `job-runs where slug == ... order by startedAt desc` answered normally.
 #
-# The order of the fields matters and is not alphabetical: the equality field
-# comes first, then the one being ordered on, in the direction it is ordered.
-# Firestore serves the reverse direction from the same index, so DESCENDING here
-# also answers an ascending scan.
+# What they buy is the query the mirror makes most often. Every page load and
+# every tick asks "the newest run of this workflow" once per workflow, which is
+# five of these against a collection that grows to a few thousand documents over
+# a retention window. An index makes that a seek instead of a scan; the same one
+# serves the log narrowed to a single workflow or job.
+#
+# The price is what every index costs: storage, and work on each write to an
+# indexed field. Two indexes over two small collections is a cheap trade, and a
+# reversible one — deleting them slows these queries down and breaks nothing.
+#
+# Field order matters and is not alphabetical: the equality field first, then the
+# one being ordered on, in the direction it is ordered. Firestore serves the
+# reverse direction from the same index, so DESCENDING here also answers an
+# ascending scan.
 resource "google_firestore_index" "job_runs_by_slug" {
   project    = var.project_id
   database   = google_firestore_database.hector.name

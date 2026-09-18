@@ -679,11 +679,21 @@ mirrored still renders, with a notice saying the newest runs may be missing.
 
 Retention is one horizon for both halves, `KEEP_FOR_DAYS` in
 [`admin/src/lib/retention.ts`](../../admin/src/lib/retention.ts): 180 days, twice GitHub's own, after
-which the next write drops what has aged out. Both collections are read with "this slug, newest
-first", which Firestore needs a composite index for — declared in
-[`terraform/firestore.tf`](../../terraform/firestore.tf) rather than created from the link in the
-error, because both call sites degrade to an empty list and a missing index would show up as
-"No runs recorded yet" rather than as a failure.
+which the next write drops what has aged out.
+
+**Indexes here are a performance choice, not a requirement, and that is a property of the edition.**
+The database is `ENTERPRISE` (§4), which runs every query whether an index exists or not — there is
+no `FAILED_PRECONDITION` for a missing composite index, which is what Standard edition answers one
+with — and which creates *no* indexes by default, where Standard builds a single-field index for
+every field on its own. Checked rather than assumed on 2026-09-18: the database held no composite
+indexes at all, and `job-runs where slug == … order by startedAt desc` — the query behind the job
+cards, live since step 1 — answered normally.
+
+So the two indexes in [`terraform/firestore.tf`](../../terraform/firestore.tf) exist for one query:
+"the newest run of this workflow", which the mirror asks once per workflow on every page load and
+every tick. They make it a seek rather than a scan of a collection that grows to a few thousand
+documents, and the same index serves the log narrowed to one workflow or job. Deleting them would
+slow those queries down and break nothing.
 
 **There are no `schedule:` blocks left.** They were deleted on 2026-09-16 and the tick is now the
 only clock. They had been kept as a backstop, and the backstop cost more than it bought: every

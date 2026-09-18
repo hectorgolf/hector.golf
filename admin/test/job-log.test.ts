@@ -163,9 +163,8 @@ describe('keeping the log to its retention', () => {
         await record(run(), { db, now })
 
         // One inequality on one field, and no slug: retention is a property of
-        // the log rather than of each job, and this shape is served by the
-        // automatic index rather than by a composite one somebody has to
-        // remember to create.
+        // the log rather than of each job, so one query enforces it however many
+        // jobs are writing to it.
         expect([trim.field, trim.op]).toEqual(['startedAt', '<'])
         expect(trim.cutoff).toBe('2026-03-22T09:00:00.000Z')
         expect(new Date(trim.cutoff).getTime()).toBe(now.getTime() - KEEP_FOR_DAYS * 24 * 60 * 60 * 1000)

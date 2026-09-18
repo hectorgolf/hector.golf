@@ -234,10 +234,14 @@ async function one(
  * The highest run number held for one workflow.
  *
  * Found through the newest *start time* rather than by ordering on the run
- * number, so this uses the same (slug, startedAt) index the log's own reads
- * need — see `terraform/firestore.tf` — rather than asking for a second index
- * for one query. The two orders agree: GitHub numbers runs in the order it
- * creates them.
+ * number, so it reads the same way the log's own queries do and is served by the
+ * one index `terraform/firestore.tf` declares, rather than wanting a second one
+ * of its own. The two orders agree: GitHub numbers runs in the order it creates
+ * them.
+ *
+ * This is the query the mirror makes most often — once per workflow, on every
+ * page load and every tick — which is what makes that index worth declaring at
+ * all on a database whose edition needs none of them.
  */
 async function newestRunNumber(db: Firestore, slug: string): Promise<number> {
     const snapshot = await db
