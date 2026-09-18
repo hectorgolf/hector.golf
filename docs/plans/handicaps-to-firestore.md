@@ -396,6 +396,35 @@ by design.
 Only after `player.handicap`, `handicap-checks.json` and `event.buckets` have a new home. See the
 table above.
 
+**`handicap-checks.json` has one, as of 2026-09-18.** It went through steps 1 to 3 in a single move,
+because by then the harness existed and the pattern had been run twice: `handicap-checks` in
+Firestore, `data/handicaps/checks.ndjson` as the backup, `/api/handicaps/checks` for the build. Two
+differences from the observation log are worth knowing. It is NDJSON where the old file was a JSON
+array, and not for tidiness — the append-only guard is line-oriented, so a JSON array cannot be
+guarded at all. And it is written by the *handicaps* job rather than one of its own, because a check
+records that scrape; a separate job would have to sweep WiseGolf again to have anything to say.
+
+**The remaining two are not the same kind of problem**, and it is worth saying so here rather than
+discovering it halfway:
+
+`player.handicap` may not need moving at all. Since step 3 the site resolves a handicap as
+`player.handicap ?? latest-from-the-history`, and the history is now a fetch away — so the stored
+field is load-bearing only when the history has nothing, which is exactly the stopgap case it was
+invented for. The move is therefore to **stop CI writing it**, not to relocate the writer, which
+resolves the ownership conflict in [`data-ownership.md`](../current/data-ownership.md) instead of
+carrying it somewhere else. The admin's roster was the one reader that would lose by that, and as of
+2026-09-18 it reads `handicap-snapshots/latest` — one document holding every player's latest
+handicap, rebuilt from the whole history on every run, so a page load costs one read rather than a
+scan of fourteen hundred.
+
+`event.buckets` is genuinely blocked, and not on this plan. Buckets are written into event documents,
+and Firestore holds hector events as a *mirror the admin reads* rather than as their source — so a
+job writing buckets there puts a scheduled writer and an unsynchronised export on the same documents,
+which is the conflict the rule quoted under *Why* exists to prevent. Handicaps escaped that rule
+because nobody authors a handicap; events do not escape it, because people author them. It needs the
+editor half of the pair, which is a different plan. Splitting it out would leave step 4 waiting on one
+thing instead of three.
+
 Two things break quietly in this step if they are not done with it:
 
 - [`refresh-admin-mirror.yml`](../../.github/workflows/refresh-admin-mirror.yml) triggers on

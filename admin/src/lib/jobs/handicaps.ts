@@ -14,6 +14,7 @@ import {
     render as renderChecks,
 } from '../handicaps/checks.ts'
 import { all, insert, missingFrom, parse, render } from '../handicaps/observations.ts'
+import { write as writeSnapshot } from '../handicaps/snapshot.ts'
 import { listPlayers } from '../repository/events.ts'
 import { wisegolfCredentials } from '../secrets.ts'
 import type { Change } from './log.ts'
@@ -332,6 +333,28 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
     // 4. Write them.
     if (entries.length > 0) await insert(entries)
     await insertChecks([sweep])
+
+    /*
+     * The snapshot: every player's latest handicap, in one document.
+     *
+     * Rebuilt from the whole history rather than patched with what changed, which
+     * is the same rule the render below follows and for the same reason — a run
+     * that dies halfway is repaired by the next one, where a patch would drift
+     * silently and forever.
+     *
+     * Written unconditionally, even on a run that found nothing. That costs one
+     * write and buys the property that a snapshot is never older than the last
+     * successful run, so "is this current?" is answered by the run log rather
+     * than by reasoning about which runs happened to change something.
+     *
+     * `history` and `entries` are already in memory, so this adds no reads. The
+     * admin's roster reads this document instead of scanning 1,400 observations
+     * on every page load.
+     */
+    // The run's own instant, not `new Date()`: the snapshot, the observations'
+    // `observed` and the sweep's `at` all describe the same moment, and three
+    // timestamps seconds apart would make a run look like three.
+    await writeSnapshot([...history, ...entries], { now })
 
     // 5. Render everything and commit if the result differs from what is there.
     //
