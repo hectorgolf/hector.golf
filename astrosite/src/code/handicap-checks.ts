@@ -1,6 +1,6 @@
 import { type HandicapCheck, schema as HandicapCheckSchema } from "@hector/schemas/src/handicap-checks.ts";
 
-import { loadFromAdmin, readBackup } from "./admin-api";
+import { ROUTES, loadFromAdmin, readBackup } from "./admin-api";
 
 /**
  * Every recorded sweep of the handicap sources, oldest first.
@@ -19,7 +19,7 @@ import { loadFromAdmin, readBackup } from "./admin-api";
  * what the site reads. See `docs/plans/handicaps-to-firestore.md`.
  */
 const checkData = await loadFromAdmin<HandicapCheck>({
-    path: "/api/handicaps/checks",
+    path: ROUTES.checks,
     backup: readBackup("data/handicaps/checks.ndjson"),
     backupPath: "data/handicaps/checks.ndjson",
     what: "handicap sweep log",

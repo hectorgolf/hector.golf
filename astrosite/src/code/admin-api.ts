@@ -64,6 +64,20 @@ export function readBackup(pathFromRepoRoot: string): string {
     return readFileSync(join("..", pathFromRepoRoot), "utf-8");
 }
 
+/**
+ * Every route the site build reads, named once.
+ *
+ * The readers below use these and `scripts/wait-for-admin.ts` waits for these, so
+ * the two cannot drift: adding a dataset adds one entry and both sides follow. A
+ * list repeated in a workflow file would be a list that is right until somebody
+ * adds the third scrape and forgets the second copy — which is the shape of most
+ * of the bugs this migration has produced.
+ */
+export const ROUTES = {
+    history: "/api/handicaps/history",
+    checks: "/api/handicaps/checks",
+} as const;
+
 /** The admin service's base URL and the ID token that gets past IAP. Both, or neither. */
 export type Credentials = {
     baseUrl: string;

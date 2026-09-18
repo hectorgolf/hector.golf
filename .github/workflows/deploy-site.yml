@@ -143,6 +143,30 @@ jobs:
           id_token_audience: ${{ secrets.TF_IAP_OAUTH_CLIENT_ID }}
           id_token_include_email: true
 
+      # Absorb the race between this workflow and `deploy-admin`.
+      #
+      # A merge that adds an endpoint *and* the reader for it starts both deploys
+      # at once, and neither waits for the other — so this build can reach an
+      # admin still serving the previous image. That is a 404, and the build then
+      # fails rather than publishing the backup as current, which is right and
+      # also seven hours of a stale site. `deploy-admin` takes about a minute, so
+      # waiting turns the failure into a delay.
+      #
+      # It does not replace shipping the endpoint and the reader in separate
+      # merges, which is free and still the right way round. See *Decisions* in
+      # `docs/plans/handicaps-to-firestore.md`.
+      #
+      # The routes come from `ROUTES` in `astrosite/src/code/admin-api.ts`, the
+      # same constant the readers use, so adding a dataset does not mean
+      # remembering to edit this file too.
+      - name: Wait for the admin to serve what this build reads
+        if: steps.admin_api.outputs.live == 'true'
+        working-directory: astrosite
+        run: npx --no-install tsx scripts/wait-for-admin.ts
+        env:
+          ADMIN_API_URL: ${{ format('https://{0}', vars.TF_ADMIN_DOMAIN) }}
+          ADMIN_API_TOKEN: ${{ steps.auth.outputs.id_token }}
+
       - name: Build the site
         working-directory: astrosite
         run: |
