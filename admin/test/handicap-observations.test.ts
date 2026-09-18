@@ -80,6 +80,79 @@ describe('rendering the backup', () => {
         expect(daily(parse(render(committed)))).toEqual(daily(committed))
     })
 
+    /**
+     * The one clause of the plan's acceptance criterion that the data in git
+     * cannot demonstrate, because the shape only exists once both pipelines are
+     * writing.
+     *
+     * Step 2 made a handicap change produce *two* observations rather than one:
+     * the job stamps `observed` when it scrapes, and the workflow stamps a later
+     * one when it commits, so the reconcile brings both in. Same player, same
+     * day, same value, seconds apart. That is the "second reading" the criterion
+     * says every extra row has to be explainable as — just not the explanation
+     * the plan first had in mind, which was the Union publishing twice.
+     *
+     * Asserted here rather than watched for, because waiting to see it live means
+     * waiting for a handicap to move, and they stop moving for the season in
+     * October. The existing two-readings test above covers the ids; this covers
+     * what a reader of the two stores would actually compare.
+     */
+    it('keeps both of a dual-run day and still agrees on the daily view', () => {
+        const legacy: HandicapHistoryEntry[] = [
+            ...committed,
+            // What `update-handicaps.yml` commits: stamped when it committed.
+            { player: 'sami-h', date: '2026-09-18', handicap: 5.2, observed: '2026-09-18T05:01:06Z' },
+        ]
+        const backup: HandicapHistoryEntry[] = [
+            ...legacy,
+            // What the job wrote for itself, half a minute earlier, having read
+            // the same pre-change file and reached the same answer.
+            { player: 'sami-h', date: '2026-09-18', handicap: 5.2, observed: '2026-09-18T05:00:35Z' },
+        ]
+
+        const rendered = parse(render(backup))
+
+        // The drift, stated as a number so that nobody reading a row count later
+        // mistakes it for a bug: one row ahead per change, permanently.
+        expect(rendered.length).toBe(legacy.length + 1)
+
+        // And the thing that makes the drift harmless: the site reads days, not
+        // readings, and both stores answer every day identically.
+        const daily = (entries: HandicapHistoryEntry[]) =>
+            new Map(latestPerDay(entries).map((entry) => [`${entry.player} ${entry.date}`, entry.handicap]))
+        expect(daily(rendered)).toEqual(daily(legacy))
+
+        // Superset, the criterion's second clause: nothing the old pipeline
+        // committed is missing from the backup.
+        const ids = new Set(rendered.map(documentId))
+        expect(legacy.every((entry) => ids.has(documentId(entry)))).toBe(true)
+    })
+
+    /**
+     * The same day with two *different* values, which is the case the criterion
+     * was originally written for and which the dual-run does not produce.
+     *
+     * Worth keeping next to the one above, because it is the only one of the two
+     * that can observe `latestPerDay` sorting on `observed`. With the equal
+     * values a dual-run produces, picking either row gives the same answer, so
+     * that test would pass against a `latestPerDay` that returned whichever row
+     * it happened to see first.
+     *
+     * Fed the entries directly and deliberately out of order, *not* through
+     * `render`. Going through the render sorts them on the way past, which hides
+     * exactly the behaviour being asserted — the first version of this test did
+     * that and went on passing with `latestPerDay`'s own sort deleted.
+     */
+    it('takes the later reading when a day holds two different values', () => {
+        const history: HandicapHistoryEntry[] = [
+            { player: 'sami-h', date: '2026-09-18', handicap: 5.2, observed: '2026-09-18T13:41:09Z' },
+            { player: 'sami-h', date: '2026-09-18', handicap: 4.8, observed: '2026-09-18T05:00:35Z' },
+        ]
+        const daily = latestPerDay(history)
+        expect(daily).toHaveLength(1)
+        expect(daily[0]!.handicap).toBe(5.2)
+    })
+
     it('is stable: rendering twice produces the same bytes', () => {
         // Phantom diffs are the failure this prevents. An unstable render commits
         // a whole-file change on every tick, and the append-only guard refuses
