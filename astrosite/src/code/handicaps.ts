@@ -5,16 +5,9 @@ import { createWisegolfSession } from "@hector/wisegolf/src/wisegolf-api.ts";
 
 import { type HandicapHistoryEntry as Entry, schema as EntrySchema } from "@hector/schemas/src/handicaps.ts";
 
-import { loadFromAdmin } from "./admin-api";
+import { loadFromAdmin, readBackup } from "./admin-api";
 
-// The committed backup, inlined by the bundler at build time.
-//
-// `?raw` rather than `node:fs` so that this module stays isomorphic. The site is
-// a static build today with nothing hydrated, so a file read would work — right
-// until the first component carries a `client:` directive, at which point it
-// breaks the client bundle instead of this file. It also makes a missing backup a
-// build error rather than an empty history.
-import committedBackup from "../../../data/handicaps/observations.ndjson?raw";
+
 
 /**
  * The whole history, resolved once, before anything asks for a player's.
@@ -39,7 +32,7 @@ import committedBackup from "../../../data/handicaps/observations.ndjson?raw";
  */
 const handicapData = await loadFromAdmin<Entry>({
     path: "/api/handicaps/history",
-    backup: committedBackup,
+    backup: readBackup("data/handicaps/observations.ndjson"),
     backupPath: "data/handicaps/observations.ndjson",
     what: "handicap history",
     parse: (ndjson) =>

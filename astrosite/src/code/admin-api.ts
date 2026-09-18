@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 /**
  * Where the site's scraped data comes from, and the rule for choosing.
  *
@@ -34,6 +37,32 @@
  * to get the asymmetry subtly wrong, in a way that only shows up as a quietly
  * stale page.
  */
+
+/**
+ * A committed backup, read from disk.
+ *
+ * `readFileSync` against a path relative to the working directory, rather than a
+ * bundler's `?raw` import. The first version of this used `?raw`, which inlines
+ * the file at build time and reads beautifully — and broke
+ * `update-handicaps.yml`, which runs `astrosite/src/workflows/update-handicaps.ts`
+ * through `npx tsx` with no bundler in sight. Node was handed a `.ndjson` and
+ * answered `ERR_UNKNOWN_FILE_EXTENSION`; the scrape was dead for six hours before
+ * anyone noticed, because the thing it broke was not the thing being changed.
+ *
+ * So: no bundler-only syntax in a module the workflows can reach. Relative to the
+ * working directory rather than to `import.meta.url`, because the built site runs
+ * this module from inside a bundled chunk where `import.meta.url` points at the
+ * chunk. Every one of the three callers — `astro build`, `tsx`, and `vitest` —
+ * runs from `astrosite/`, which is the assumption `data.ts` already makes with
+ * its own `glob("src/data/...")`.
+ *
+ * Throws when the file is missing, which is the right direction: the backup is
+ * the last resort, and a last resort that silently reads as empty is worse than
+ * none at all.
+ */
+export function readBackup(pathFromRepoRoot: string): string {
+    return readFileSync(join("..", pathFromRepoRoot), "utf-8");
+}
 
 /** The admin service's base URL and the ID token that gets past IAP. Both, or neither. */
 export type Credentials = {
@@ -73,7 +102,7 @@ export function credentialsFrom(env: Record<string, string | undefined>): Creden
 export type LoadOptions<T> = {
     /** The path under the admin service, e.g. `/api/handicaps/history`. */
     path: string;
-    /** The committed backup, as a `?raw` import. */
+    /** The committed backup's contents, from `readBackup` above. */
     backup: string;
     /** NDJSON to rows, validating each one. */
     parse: (ndjson: string) => T[];

@@ -1,10 +1,6 @@
 import { type HandicapCheck, schema as HandicapCheckSchema } from "@hector/schemas/src/handicap-checks.ts";
 
-import { loadFromAdmin } from "./admin-api";
-
-// The committed backup, inlined by the bundler at build time. See the note beside
-// the same import in `handicaps.ts` for why `?raw` and not `node:fs`.
-import committedBackup from "../../../data/handicaps/checks.ndjson?raw";
+import { loadFromAdmin, readBackup } from "./admin-api";
 
 /**
  * Every recorded sweep of the handicap sources, oldest first.
@@ -24,7 +20,7 @@ import committedBackup from "../../../data/handicaps/checks.ndjson?raw";
  */
 const checkData = await loadFromAdmin<HandicapCheck>({
     path: "/api/handicaps/checks",
-    backup: committedBackup,
+    backup: readBackup("data/handicaps/checks.ndjson"),
     backupPath: "data/handicaps/checks.ndjson",
     what: "handicap sweep log",
     parse: (ndjson) =>
