@@ -100,6 +100,49 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Whether this deploy can read the handicap history from the admin service.
+      #
+      # Unconfigured is not a failure, and that is the same call
+      # `.github/actions/request-deploy` makes for the same reason: a project that
+      # has not been wired up yet should not have red deploys. The build handles
+      # it — with no credentials it reads `data/handicaps/observations.ndjson` and
+      # says so in the log, which is the supported way a fork builds this site.
+      #
+      # What *is* a failure is being configured and unable to reach the service,
+      # and that failure belongs to the build rather than to this step. See
+      # `astrosite/src/code/handicap-history-source.ts` for why there is no third
+      # branch where it quietly publishes the backup instead.
+      - name: Decide whether the build can read the handicap history
+        id: handicaps
+        run: |
+          missing=""
+          [ -n "${{ vars.GH_WIF_PROVIDER }}" ]           || missing="$missing GH_WIF_PROVIDER"
+          [ -n "${{ vars.GCP_PROJECT_ID }}" ]            || missing="$missing GCP_PROJECT_ID"
+          [ -n "${{ vars.TF_ADMIN_DOMAIN }}" ]           || missing="$missing TF_ADMIN_DOMAIN"
+          [ -n "${{ secrets.TF_IAP_OAUTH_CLIENT_ID }}" ] || missing="$missing TF_IAP_OAUTH_CLIENT_ID"
+          if [ -n "$missing" ]; then
+            echo "::notice::Building from the committed handicap backup — unconfigured:$missing."
+            echo "live=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "live=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Authenticate to Google
+        id: auth
+        if: steps.handicaps.outputs.live == 'true'
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GH_WIF_PROVIDER }}
+          # The scheduler's identity, which already holds IAP access. This build
+          # reads; it is not given anything that can write.
+          service_account: hector-scheduler@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+          # An ID token for IAP rather than an access token: IAP authenticates the
+          # caller from this, and the audience has to be the OAuth client in front
+          # of the service or it is rejected.
+          token_format: id_token
+          id_token_audience: ${{ secrets.TF_IAP_OAUTH_CLIENT_ID }}
+          id_token_include_email: true
+
       - name: Build the site
         working-directory: astrosite
         run: |
@@ -112,6 +155,13 @@ jobs:
           # Public URL of the leaderboard proxy. Unset simply leaves the live
           # leaderboard off, and every page renders from the last published snapshot.
           PUBLIC_LEADERBOARD_PROXY_URL: ${{ vars.PUBLIC_LEADERBOARD_PROXY_URL }}
+          # Both or neither. `handicap-history-source.ts` refuses a half-configured
+          # build rather than falling back, because setting one of these is a
+          # statement that this deploy was wired to the API and answering a typo
+          # with the backup is a silent stale publish. The `if` on the auth step
+          # above is what keeps them in step: unconfigured leaves both empty.
+          HANDICAP_HISTORY_URL: ${{ steps.handicaps.outputs.live == 'true' && format('https://{0}/api/handicaps/history', vars.TF_ADMIN_DOMAIN) || '' }}
+          HANDICAP_HISTORY_TOKEN: ${{ steps.auth.outputs.id_token }}
 
       - name: Upload the built site
         uses: actions/upload-pages-artifact@v5
