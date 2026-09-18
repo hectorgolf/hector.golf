@@ -83,7 +83,12 @@ const allThrough = Math.min(...(leaderboards.hector || [])
     .map(entry => entry.through)
     .map(through => parseInt(through.split('/')[0] || '0')))
 
-const fieldAndBucketsTitle = eventHasStarted(event) ? 'Field and buckets' : 'Field and Projected Buckets'
+// "Projected" is a promise that these may still move, and a lock is somebody saying
+// they will not — usually because the split has been announced. Keeping the word after
+// that is the page disagreeing with what the players were told, which is the thing
+// `bucketsLocked` exists to stop.
+const bucketsAreSettled = eventHasStarted(event) || event.bucketsLocked === true
+const fieldAndBucketsTitle = bucketsAreSettled ? 'Field and buckets' : 'Field and Projected Buckets'
 ---
 
 <Layout title={event.name} section="events">

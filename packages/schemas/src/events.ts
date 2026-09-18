@@ -249,6 +249,7 @@ export const hectorEventSchema = BaseEventSchema.extend({
             ),
         )
         .optional(),
+    bucketsLocked: z.boolean().optional(),
     results: hectorResultsSchema.optional(),
     leaderboardSheet: z.string().optional(),
 });

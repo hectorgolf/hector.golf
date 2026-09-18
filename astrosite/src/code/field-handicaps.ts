@@ -39,9 +39,11 @@ export type HandicapUnderBasis = {
 /**
  * What the split was drawn on, and which half of it the player landed in.
  *
- * Settles at `bucket_freeze` — 08:00 on the first morning, where the event is
- * played. `bucket` is numbered from 1 and is null for an event with no split: every
- * Hector before 2024, and any event whose split has not been drawn yet.
+ * Settles at `bucket_freeze` — 08:00 on the first morning, where the event is played
+ * — or earlier, at whatever moment `buckets_locked` was set, which is not recorded
+ * and so is read as "at the latest, when this file was generated". `bucket` is
+ * numbered from 1 and is null for an event with no split: every Hector before 2024,
+ * and any event whose split has not been drawn yet.
  */
 export type BucketingBasis = HandicapUnderBasis & {
     bucket: number | null;
@@ -66,10 +68,23 @@ export type FieldHandicapEntry = {
 /**
  * An event's field and its handicaps, for app.hector.golf.
  *
- * `bucket_freeze` is when the split stops moving, published as an instant so that a
- * consumer can compare it against `generatedAt` and tell a settled split from a
- * provisional one without reimplementing the rule. Null for an event whose start
- * date cannot be resolved to one, which no committed Hector currently is.
+ * `bucket_freeze` is when the split stops moving *by the clock*, published as an
+ * instant so that a consumer can compare it against `generatedAt` and tell a settled
+ * split from a provisional one without reimplementing the rule. Null for an event
+ * whose start date cannot be resolved to one, which no committed Hector currently is.
+ *
+ * `buckets_locked` is the other half of that question, and a consumer wanting "is
+ * this split final?" has to read both. A split can be settled by hand before the
+ * freeze — once it has been announced, the freeze on the first morning is days too
+ * late to protect what the players were told — and from that moment `bucket_freeze`
+ * alone answers "provisional" about a split that is final. It is a decision rather
+ * than a time, so it is published as the boolean it is instead of being folded into
+ * the instant beside it, which would claim a freeze at an hour that never happened.
+ *
+ * It says nothing about the handicaps printed beside the names: those are refreshed
+ * from the live history for any event that is not yet past, locked or not. A locked
+ * split showing yesterday's numbers would be a staler second copy of something the
+ * site already publishes correctly.
  *
  * `handicaps_checked` is the field-wide freshness guarantee: the *oldest*
  * `playing.observed` in the file, so "every handicap here was checked at least this
@@ -93,6 +108,7 @@ export type FieldHandicapsPayload = {
     /** When this file was generated, i.e. when the site was last built. */
     generatedAt: string;
     bucket_freeze: string | null;
+    buckets_locked: boolean;
     handicaps_checked: string | null;
     handicaps_checked_approximate: boolean;
     handicaps: FieldHandicapEntry[];
@@ -234,9 +250,18 @@ const entryFor = (id: string, bases: Bases, split: Map<string, Placement>): Fiel
 /** An event's field and its handicaps, as published at `/events/hector/<id>/handicaps.json`. */
 export function fieldHandicaps(event: HectorEvent, now: Date = new Date()): FieldHandicapsPayload {
     const today = isoDate(now);
+    const generatedAt = isoInstantNow(now);
     // `isPastEvent` with the clock passed in, which it does not take.
     const eventIsOver = event.timing.end < today;
     const bucketFreeze = bucketsFreezeAt(event)?.toUTC().toISO({ suppressMilliseconds: true }) ?? null;
+    const bucketsLocked = event.bucketsLocked === true;
+    // When the split actually stopped moving. A lock is not a time and the moment it
+    // was set is not recorded, so the only honest upper bound for a locked split is
+    // now — and citing a sweep from after that as the basis for a split that is
+    // already settled would claim the buckets could have used a reading nobody had
+    // taken yet. Both spellings are UTC to the second, so they compare as strings.
+    const splitSettledAt =
+        bucketsLocked && bucketFreeze !== null && generatedAt < bucketFreeze ? generatedAt : bucketFreeze;
     const bases: Bases = {
         // The split settles on the first morning and the playing handicap on the last
         // day, so those are the days each is read as of — but never before that day
@@ -247,13 +272,13 @@ export function fieldHandicaps(event: HectorEvent, now: Date = new Date()): Fiel
             playing: eventIsOver ? event.timing.end : today,
         },
         checked: {
-            bucketing: bucketFreeze,
+            bucketing: splitSettledAt,
             // As of the last day rather than of now, for the same reason the handicaps
             // are: a sweep run in 2026 says nothing about the field that played in
             // 2024. A live event is capped at `now` instead — the log cannot hold a
             // sweep from the future in production, but this function's answer should
             // depend on the clock it is given rather than on that being true.
-            playing: eventIsOver ? `${event.timing.end}T23:59:59Z` : isoInstantNow(now),
+            playing: eventIsOver ? `${event.timing.end}T23:59:59Z` : generatedAt,
         },
         eventIsOver,
         checks: getHandicapChecks(),
@@ -262,8 +287,9 @@ export function fieldHandicaps(event: HectorEvent, now: Date = new Date()): Fiel
     const handicaps = event.participants.map((id) => entryFor(id, bases, split)).sort(byPlayingHandicapThenName);
     return {
         event: event.id,
-        generatedAt: isoInstantNow(now),
+        generatedAt,
         bucket_freeze: bucketFreeze,
+        buckets_locked: bucketsLocked,
         // Derived from the entries rather than from the log, so it cannot disagree
         // with them: it is one of the values above, `approximate` and all, not a
         // fourth reading of the log.

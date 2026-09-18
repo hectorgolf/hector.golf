@@ -181,7 +181,7 @@ split they landed in) and `playing` — and each of those is `{ hcp, observed }`
 
 | | Frozen | `hcp` read from |
 | --- | --- | --- |
-| `bucketing` | `bucket_freeze` — 08:00 on the first morning, local to the event | The number in the committed event file, which is what the split was computed from |
+| `bucketing` | `bucket_freeze` — 08:00 on the first morning, local to the event — or earlier, if `buckets_locked` | The number in the committed event file, which is what the split was computed from |
 | `playing` | When the event ends | The observation log, or `getPlayerById` while the event is live |
 
 The bucketing handicap is read from the **committed** event file rather than from the `HectorEvent`
@@ -194,6 +194,19 @@ under two names.
 `bucket_freeze` is published as an instant so a consumer can compare it against `generatedAt` and
 tell a settled split from a provisional one without reimplementing the rule; `bucketsFreezeAt()` in
 `data.ts` is that rule, and `bucketsAreOpen()` is now defined in terms of it so the two cannot drift.
+
+`buckets_locked` is the other half of that question, and a consumer asking "is this split final?"
+has to read both. It mirrors `event.bucketsLocked`, which settles a split *before* the clock would —
+see [data-ownership.md](./data-ownership.md). Since a split can be final before `bucket_freeze`, the
+instant alone would answer "provisional" about one nobody intends to touch again. It is published as
+the boolean it is rather than folded into the instant beside it, because a lock is a decision and not
+a time, and expressing it as one would mean publishing a freeze at an hour that never happened. It is
+always present, `false` for an unlocked event.
+
+The lock says nothing about the handicaps printed beside the names. Those are refreshed from the live
+history for any event that is not yet past, locked or not — the split is what was announced, the
+numbers are information about the players, and a locked split showing yesterday's handicaps would be
+a staler second copy of something the site already publishes correctly.
 
 Each basis's `observed` is when we last *asked* the sources about that player — the same question at
 the two ends of an event. `handicaps_checked` is the field-wide **guarantee**: the oldest
@@ -211,7 +224,9 @@ than no instant, because the reader cannot tell. Not when the handicap last chan
 has not moved since August is no less current for it, and "we checked at 03:02 and it is still 15.4"
 is what answers a player whose eBirdie shows something else. Each is read as of the moment its
 handicap settled, `bucket_freeze` and the event's last day respectively, because a sweep that ran
-after a split settled cannot be what the split was drawn from.
+after a split settled cannot be what the split was drawn from. On a locked event the bucketing basis
+stops at the earlier of `bucket_freeze` and the build itself: the moment the lock was set is not
+recorded, so the build is the only honest upper bound for a split that is already settled.
 
 They are instants rather than dates, and deliberately so: the gap this explains is measured in hours
 — the Union's WHS batch runs at about 03:00 and re-runs during office hours when the nightly run
@@ -492,7 +507,10 @@ files:
   stored bucket handicaps from the live history, so "Projected Buckets" stay current between
   scheduled data runs. "Future" here means before 08:00 on the first morning in the event's own time
   zone (`bucketsAreOpen` in `data.ts`), not before the first date: the Draft after round one reads
-  these, so they must not move once play has begun.
+  these, so they must not move once play has begun. The refresh is deliberately *not* stopped by
+  `event.bucketsLocked`, which freezes which players are in which bucket and not the numbers shown
+  beside their names. The event page does drop the word "Projected" from its heading for a locked
+  split, because that word is a promise the lock has withdrawn.
 - **Participant back-fill** — if `participants` is empty, `populateMissingParticipants()`
   reconstructs it from `results.teams[].players` or from the matchplay bracket's `left`/`right`.
 - **Winner inference** — `events/hector/[slug].astro` promotes the top leaderboard row to
@@ -713,8 +731,16 @@ the current handicap through the source chain and appends changed values to `han
 (replacing a same-day duplicate if the association re-ran a batch). It then re-sorts each upcoming
 event's participants with `sortPlayersForBucketing` — by current handicap, tie-broken so that a
 player whose handicap is *falling* ranks ahead of one whose is rising — and splits them into two
-equal buckets written back into the event JSON. `getPlayerHandicapFromHistory` and
-`sortPlayersForBucketing` are exported specifically so the unit tests can import them.
+equal buckets written back into the event JSON. `getPlayerHandicapFromHistory`,
+`sortPlayersForBucketing` and `bucketsToRecompute` are exported specifically so the unit tests can
+import them.
+
+`bucketsToRecompute` is which events that last step runs for, and it applies two predicates kept
+apart on purpose: `bucketsAreOpen`, which is about the clock, and `event.bucketsLocked`, which is
+somebody having settled the split early. It returns the locked events as well as the open ones so the
+run can log what it left alone and why — a lock that stops a recompute silently reads as a bug the
+first time somebody wonders why the buckets did not move. An event past its freeze is in neither
+list: there is nothing left for the lock to stop, so nothing is logged about it.
 
 **`update-leaderboards.ts`** — selects Hector events that hold a `leaderboardSheet` URL and have
 already started (`updateFutureEvents = false`), then dispatches on the URL shape: `app.hector.golf/*`

@@ -72,8 +72,10 @@ published between 03:00 and 05:00 UTC now misses the buckets where before it had
 
 That is the accepted cost, on the same grounds the hourly version accepted its own smaller one: the
 buckets are projected until the morning of the event, and a value arriving that late is one the Union
-itself published late. What bought it is halving the load on WiseGolf — see `terraform/scheduler.tf`,
-where the cadence and the reason for it live together.
+itself published late. Unless somebody has settled the split sooner — `event.bucketsLocked` stops
+the recompute early, and after that no tick reaches the buckets at all. What bought it is halving
+the load on WiseGolf — see `terraform/scheduler.tf`, where the cadence and the reason for it live
+together.
 
 The afternoon tick is a single one, for a retry that finished during office hours. By then the round
 is under way and the handicaps are whatever they were at the first tee, so it is about the site
@@ -207,7 +209,9 @@ With `observed`, that reconstructs in one step, and the reconstruction is a comp
 assumption. A Hector's buckets stop moving at 08:00 local — 05:00 UTC for a Finnish venue, 06:00 UTC
 for Konopiště — so **which readings the buckets could have used is whichever ticks fell before that
 time**, and `observed` says which ones those were. A busier tick schedule means the answer is no longer
-"the morning scrape" but a specific instant you can read off the entry.
+"the morning scrape" but a specific instant you can read off the entry. For a split that was locked
+before its freeze the boundary is the lock instead, and the lock records no moment of its own — the
+last commit to the event's `buckets` is what dates it.
 
 So if `observationsOn(history, "…", "2026-09-24")` gives:
 
@@ -234,5 +238,6 @@ value was *read* with when CI got round to *committing* it.
 - [data-ownership.md](./data-ownership.md) — why `player.handicap` is a stopgap rather than an
   override, and why CI owns it.
 - `bucketsAreOpen()` in `astrosite/src/code/data.ts` — the 08:00 freeze this document keeps referring
-  to, and why an event carries a time zone.
+  to, and why an event carries a time zone. `event.bucketsLocked` is the other way a split stops
+  moving, and it can come days earlier — see [data-ownership.md](./data-ownership.md).
 - [architecture.md](./architecture.md) §8 — the data pipeline the scrape is part of.

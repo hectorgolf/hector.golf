@@ -27,10 +27,12 @@ Tracked nowhere but inside a document that otherwise describes how things are, w
 [`docs/README.md`](docs/README.md).
 
 The other item that was here — `event.bucketsLocked` and `player.biographyLocked`, specified by
-`data-ownership.md` and implemented by nothing — has become two plans, which is where something
-that has not happened belongs: [`docs/plans/biography-locking.md`](docs/plans/biography-locking.md)
-and [`docs/plans/bucket-locking.md`](docs/plans/bucket-locking.md). The biography one is the live
-problem of the two. `update-player-biographies` rewrites all 45 biographies on every run, twice a
+`data-ownership.md` and implemented by nothing — became two plans, which is where something that has
+not happened belongs. `event.bucketsLocked` has since been built
+([`docs/plans/bucket-locking.md`](docs/plans/bucket-locking.md), phases 1-3 on 2026-09-18; the
+admin cannot set it yet, so it is set by editing the event file). That leaves the biography one
+[`docs/plans/biography-locking.md`](docs/plans/biography-locking.md), which was always the live
+problem of the two: `update-player-biographies` rewrites all 45 biographies on every run, twice a
 month, so the field `data-ownership.md` classes as authored is in practice CI's, and a hand-edited
 biography has a fortnight to live.
 

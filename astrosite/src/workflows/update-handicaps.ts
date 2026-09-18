@@ -12,6 +12,7 @@ import { playersData, hectorEvents, hasParticipants, bucketsAreOpen, pathToEvent
 import { getPlayerName, updatePlayerData } from "../code/players.ts";
 import type { Player } from "@hector/schemas/src/players.ts";
 import { type HandicapHistoryEntry, latestPerDay } from "@hector/schemas/src/handicaps.ts";
+import { type HectorEvent } from "@hector/schemas/src/events.ts";
 import { type HandicapCheck } from "@hector/schemas/src/handicap-checks.ts";
 
 /**
@@ -315,15 +316,6 @@ const updateHandicapsForAllPlayers = async () => {
     persistHandicapCheckToDisk(updatedPlayers, observed);
 };
 
-type HectorEvent = {
-    id: string;
-    name: string;
-    timing: { start: string; end: string };
-    format: string;
-    participants: Array<string>;
-    buckets: undefined | Array<Array<{ id: string; handicap: number }>>;
-};
-
 export function sortPlayersForBucketing(handicapHistory: Array<HandicapHistoryEntry>, p1: Player, p2: Player): number {
     // First, sort by current handicap (lowest first)
     const player1Handicap = getPlayerHandicapFromHistory(p1.id, handicapHistory);
@@ -344,13 +336,45 @@ export function sortPlayersForBucketing(handicapHistory: Array<HandicapHistoryEn
     return getPlayerName(p1).localeCompare(getPlayerName(p2));
 }
 
+/**
+ * The Hectors a run may redraw the split for, and the ones a lock is holding.
+ *
+ * Two predicates, kept apart because they answer different questions. `bucketsAreOpen`
+ * is about the clock — buckets freeze at 08:00 on the first morning, local to the
+ * event, because the Draft after round one reads them — so it is not "upcoming".
+ * `bucketsLocked` is somebody saying the split is settled *before* that, which is a
+ * decision and not a time, and folding it into the clock rule would make
+ * `bucketsFreezeAt` publish an instant that never happened.
+ *
+ * Returned as a pair rather than as one filtered list so the caller can say which
+ * events it is leaving alone and why. A lock that stops a recompute silently is a
+ * suspected bug the first time somebody wonders why the buckets did not move.
+ *
+ * Exported for the unit tests; the run below is the only caller.
+ */
+export const bucketsToRecompute = (
+    events: Array<HectorEvent>,
+    now: Date = new Date(),
+): { recompute: Array<HectorEvent>; locked: Array<HectorEvent> } => {
+    const open = events.filter(hasParticipants).filter((e) => bucketsAreOpen(e, now));
+    return {
+        recompute: open.filter((e) => !e.bucketsLocked),
+        locked: open.filter((e) => e.bucketsLocked === true),
+    };
+};
+
 const updateBucketsForUpcomingEvents = async () => {
     const handicapHistory: Array<HandicapHistoryEntry> = readJsonFile(pathToHandicapHistoryJson, []);
 
     console.log(`Updating buckets for events whose buckets are still open...`);
-    // Not "upcoming": buckets freeze at 08:00 on the first morning, local to the
-    // event, because the Draft after round one reads them. See `bucketsAreOpen`.
-    const eventsToUpdate = hectorEvents.filter(hasParticipants).filter((e) => bucketsAreOpen(e)) as HectorEvent[];
+    const { recompute: eventsToUpdate, locked } = bucketsToRecompute(hectorEvents);
+
+    for (const event of locked) {
+        console.log(
+            `Leaving the buckets for ${event.name} on ${formatEventDates(event)} alone: bucketsLocked is set, ` +
+                `so this split is settled even though it would otherwise still be open.`,
+        );
+    }
 
     for (const event of eventsToUpdate) {
         console.log(`Updating buckets for ${event.name} on ${formatEventDates(event)}...`);
