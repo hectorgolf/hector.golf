@@ -1,8 +1,9 @@
 # Moving the handicap scrape into Firestore
 
 *Written 2026-09-15. **Steps 0 and 1 are done and deployed** — the job has been shadowing
-`update-handicaps.yml` on every scheduled tick since 2026-09-16. Step 2 is next, and is the one
-with a deadline. What each step did, and what it cost, is recorded under the step.*
+`update-handicaps.yml` on every scheduled tick since 2026-09-16, and on 2026-09-18 the two pipelines
+finally decided the same live change independently and agreed. Step 2 is next, and the evidence it
+was waiting for now exists. What each step did, and what it cost, is recorded under the step.*
 
 The handicap history is the first dataset to move from "a JSON file in git, written by a GitHub
 Actions runner" to "a Firestore collection, written by the admin service". This document is the plan
@@ -244,14 +245,31 @@ four runs a day that was 23,000 Firestore reads against a free tier of 50,000, a
 year from now. One scan costs 6,000 a day. That was a bug rather than a property of the design, and
 it would have surfaced as a bill rather than an error.
 
-**What the shadow period is still waiting for.** As of 2026-09-16 it has not yet seen a handicap
-move. The day's only change — `lauri-p` → 12 — was committed at 04:01 UTC, four and a half hours
-before the job was deployed. A manual run after the morning window cannot show one either: by then
-`handicaps.json` holds the day's values, the job reconciles them in, and WiseGolf agrees. The
-evidence comes from the scheduled ticks at 03:00, 05:00 and 07:00 UTC, where the job and the workflow
-decide against the same pre-publication state within a minute of each other.
+**The paired decision arrived on 2026-09-18, and the two pipelines agreed.** On the 05:00 UTC tick:
 
-### Step 2 — live writes ⏳ *next*
+| | Time | Verdict |
+| --- | --- | --- |
+| The job (shadow) | 05:00:35Z | `sami-h` 4.8 → 5.2, recorded in `job-runs` |
+| `update-handicaps.yml` | 05:01:06Z | `Sami H: 4.8 -> 5.2`, committed to `handicaps.json` |
+
+Thirty-one seconds apart, same player, same pair of numbers, and — the part that makes it evidence
+rather than a coincidence — the job read `handicaps.json` *before* the workflow wrote it, so it
+reached that answer without being told it. The ordering argued for above is not merely implemented;
+it has now been observed doing its job on a real change.
+
+Two days of ticks either side of it reported `0 changes`, which is the correct answer on a day
+nothing moved: the 07:00 tick that followed already had the workflow's commit to reconcile, agreed
+with it, and found nothing to do. No runaway, no double-count.
+
+**The run log across the whole shadow period**, read from `job-runs` on 2026-09-18: fourteen runs
+retained, thirteen `ok` and one `failed`. Every one of the eight *scheduled* runs succeeded. The
+failure was a local development run on 2026-09-16 19:21 UTC, recorded against
+`someone-else@example.com` — the dev IAP stand-in's account — which means an admin on a laptop was
+pointed at production Firestore rather than the emulator. Worth knowing because it is the one way
+this collection can be written by hand, and because it is not a fault in anything this plan builds:
+run the admin with `FIRESTORE_EMULATOR_HOST` set and it cannot happen.
+
+### Step 2 — live writes ⏳ *next, and now evidenced*
 
 Flip `dryRun` off. Firestore and the NDJSON backup both become real, with the append-only guard
 armed. `handicaps.json` is still the build input and still written by the old workflow, so the two
@@ -262,10 +280,30 @@ contact with a Tuesday: for every `(player, date)`, `latestPerDay` over the NDJS
 `latestPerDay` over `handicaps.json`; the NDJSON is a superset; and every extra row is explainable as
 a second reading the old schedule missed.
 
-That last clause is the interesting one, and it is close to untested: **no `(player, date)` pair in
-the entire 1,406-entry history has more than one reading**, and `observed` exists on nine entries,
-all written on 2026-09-14. Multiple readings a day are days old as a capability. The case most likely
-to make the two stores disagree has never actually happened.
+That last clause was written as the risky one, on the grounds that **no `(player, date)` pair in the
+entire 1,406-entry history has more than one reading** and multiple readings a day were days old
+as a capability. The 2026-09-18 change settles it, in an unexpected direction: *the dual-run manufactures
+the double reading itself, on every change, and will keep doing so for as long as both pipelines
+run.*
+
+The two pipelines stamp the same reading at the moment each of them takes it — 05:00:35Z for the job,
+05:01:06Z for the workflow — and the document id is `${player}_${date}_${observed}`. So once `dryRun`
+is off, one handicap moving produces **two** documents: the job's own scrape, and the workflow's row
+reconciled in on the following tick. Same player, same date, same value, thirty-one seconds apart.
+
+This is good news for the criterion rather than bad, and it is worth being precise about why:
+
+- `latestPerDay` sorts on `date` then `observed` and keeps the last, and both rows carry the same
+  handicap — so it returns 5.2 either way. **The first clause holds.**
+- The NDJSON gains a row `handicaps.json` does not have. **The second clause holds**, and the extra
+  row is explainable — just not by the explanation the plan anticipated. It is not the Union
+  publishing twice; it is our own two pipelines reading once each.
+
+The consequence to carry into the comparison: expect the NDJSON to run **exactly one row ahead per
+change**, permanently, rather than to match row for row. Anyone diffing counts rather than
+`latestPerDay` will see a drift that is correct and looks like a bug. The capability the plan called
+untested is now exercised on every single change, which is a better rehearsal than waiting for the
+Union to publish twice would have been.
 
 ### Step 3 — move the reader, once
 
