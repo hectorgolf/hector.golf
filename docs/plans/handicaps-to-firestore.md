@@ -474,6 +474,45 @@ deploy: the workflow's, dispatched explicitly, the same as before any of this be
 so a race is a 409 rather than corruption — but it needs refetch-and-retry, and the render must be
 deterministic (order by `date`, `observed`, `player`) or it will commit phantom diffs.
 
+**Nothing serialises the two deploys either, and one direction of that is unsafe.** A merge that both
+adds an endpoint to the admin *and* teaches the site to read it starts `deploy-admin` and
+`deploy-site` at the same moment. They are separate workflows with separate durations; neither waits
+for the other. The site build can therefore reach an admin that is still serving the previous image,
+ask for a route it does not have, and get a 404.
+
+This is not hypothetical. It happened on 2026-09-18 at 17:34, when the sweep-log change landed as one
+commit: `deploy-site` asked for `/api/handicaps/checks` and was refused, the build failed, and the
+site stayed on a build from seven hours earlier until the next deploy.
+
+The failure was the designed one — a build with credentials that cannot reach the API fails rather
+than publishing the backup as though it were current — so nothing wrong was published, and the cost
+was staleness rather than a lie. That is the direction to be wrong in, and it is why the mitigations
+below are about avoiding a red build rather than about avoiding a bad one.
+
+The race only exists in one direction. Deploying the admin *first* is always safe: an endpoint nobody
+reads yet harms nothing. So the rule is the expand-then-contract one every producer/consumer split
+across two deploy units has: **ship the endpoint, let it deploy, then ship the reader.** Two merges,
+no machinery, and the only thing it costs is remembering.
+
+Three further mitigations were considered. Which of them is worth building depends on how often this
+shape recurs, and with three scrapes still to move it will recur:
+
+- **A readiness wait in `deploy-site`.** Before building, ask the admin for the routes this build
+  needs and wait — a couple of minutes at most — for them to answer. `deploy-admin` takes about a
+  minute, so a wait absorbs the race rather than reporting it, and a healthy deploy pays one request.
+  This is the only one of the three that turns the failure into a delay.
+- **A clearer message on 404 specifically.** The build already names the URL and the status; a 404
+  could add "is `deploy-admin` still running?". It fixes the diagnosis, not the failure, and the
+  diagnosis was not the slow part.
+- **Falling back to the backup when the fetch fails.** Rejected, and worth writing down so that it
+  stays rejected: it is the third branch `admin-api.ts` deliberately does not have. It would convert
+  every occurrence of this into a silent publication of stale handicaps, which is the outcome the
+  whole asymmetry exists to prevent. A red deploy is the cheap failure here.
+
+Worth knowing either way: a failed deploy is not permanent. `deploy-site` carries
+`cadence: { every: '1d' }` in `workflows.ts`, so the tick republishes within a day even if nobody
+notices, and any data change dispatches it sooner.
+
 ## Consequences for the docs
 
 Landing step 2 makes [`data-ownership.md`](../current/data-ownership.md) wrong in two tables — both
