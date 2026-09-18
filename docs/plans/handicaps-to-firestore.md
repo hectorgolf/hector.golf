@@ -394,7 +394,8 @@ by design.
 ### Step 4 — retire the old workflow
 
 Only after `player.handicap`, `handicap-checks.json` and `event.buckets` have a new home. See the
-table above.
+table above. **Two of the three are settled as of 2026-09-18; `event.buckets` is the only one left,
+and it is blocked on a different plan.**
 
 **`handicap-checks.json` has one, as of 2026-09-18.** It went through steps 1 to 3 in a single move,
 because by then the harness existed and the pattern had been run twice: `handicap-checks` in
@@ -404,18 +405,32 @@ array, and not for tidiness — the append-only guard is line-oriented, so a JSO
 guarded at all. And it is written by the *handicaps* job rather than one of its own, because a check
 records that scrape; a separate job would have to sweep WiseGolf again to have anything to say.
 
-**The remaining two are not the same kind of problem**, and it is worth saying so here rather than
-discovering it halfway:
+**`player.handicap` is done too, as of 2026-09-18, and it was never a move.** Since step 3 the site
+resolves a handicap as `player.handicap ?? latest-from-the-history` and the history is a fetch away,
+so the stored field was load-bearing only where the history is silent — the stopgap case it was
+invented for. Nothing needed relocating; CI needed to stop writing it, which resolves the ownership
+conflict in [`data-ownership.md`](../current/data-ownership.md) instead of carrying it somewhere
+else. The field stays, narrowed to that one meaning: a player WiseGolf has never heard of has no
+history to cross-reference and nowhere else for a hand-entered value to live.
 
-`player.handicap` may not need moving at all. Since step 3 the site resolves a handicap as
-`player.handicap ?? latest-from-the-history`, and the history is now a fetch away — so the stored
-field is load-bearing only when the history has nothing, which is exactly the stopgap case it was
-invented for. The move is therefore to **stop CI writing it**, not to relocate the writer, which
-resolves the ownership conflict in [`data-ownership.md`](../current/data-ownership.md) instead of
-carrying it somewhere else. The admin's roster was the one reader that would lose by that, and as of
-2026-09-18 it reads `handicap-snapshots/latest` — one document holding every player's latest
-handicap, rebuilt from the whole history on every run, so a page load costs one read rather than a
-scan of fourteen hundred.
+Two things made it larger than deleting a line.
+
+The forty stored values had to go with it, because the site *prefers* the stored value — leaving them
+would have frozen every handicap at whatever it was that afternoon, which is worse than before. They
+were safe to clear because all forty equalled what the history already said, checked before anything
+was touched.
+
+And the write was in three places, not one. `updatePlayerData` persists the whole player object and
+`getPlayerById` resolves the handicap before returning one, so anything reading a player and writing
+it back stores the resolved value — `update-player-biographies.ts` and
+`update-player-club-memberships.ts` both do, every run. Deleting the obvious write would have left
+those two putting it back, and the field would have looked maintained while nothing maintained it. The
+rule lives in the writer instead, and a test fails if a committed file starts carrying a cached
+handicap again.
+
+The admin's roster was the one reader that would have lost by this, and it reads
+`handicap-snapshots/latest` — one document holding every player's latest handicap, rebuilt from the
+whole history on every run, so a page load costs one read rather than a scan of fourteen hundred.
 
 `event.buckets` is genuinely blocked, and not on this plan. Buckets are written into event documents,
 and Firestore holds hector events as a *mirror the admin reads* rather than as their source — so a
