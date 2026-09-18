@@ -54,12 +54,15 @@ const failureMessage = reason && reason in FAILURE_MESSAGES ? FAILURE_MESSAGES[r
  * Bring the mirror of GitHub's runs up to date, then read the log out of
  * Firestore.
  *
- * The sync is what this page spends its latency on, and it is the same five
- * requests the page used to spend reading GitHub live — one page of each
- * workflow's history. The difference is what happens to them: they are written
- * down, so the log below can reach further back than a page, and so an
- * unreachable GitHub costs this page the *newest* runs rather than all of them.
- * `lib/workflow-runs.ts` has the argument in full.
+ * The sync is what this page spends its latency on: five requests, made at once,
+ * each asking only whether anything has run since the last visit. What makes
+ * them cheap is the mirror itself — everything below the high-water mark is
+ * already held, so the question fits in a page of ten runs rather than a hundred.
+ * `lib/workflow-runs.ts` has the argument, and the measurement, in full.
+ *
+ * It is also why the log below can reach further back than a page, and why an
+ * unreachable GitHub now costs this page the *newest* runs rather than all of
+ * them.
  *
  * Awaited before anything reads the token's expiry, which is the one ordering
  * constraint on this page — see the note further down.

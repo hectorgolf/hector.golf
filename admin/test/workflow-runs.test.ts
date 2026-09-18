@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { WorkflowRun } from '../src/lib/github.ts'
 import type { DispatchableWorkflow } from '../src/lib/workflows.ts'
-import { PER_PAGE, sync, type StoredWorkflowRun } from '../src/lib/workflow-runs.ts'
+import { PER_PAGE, PROBE_PAGE, sync, type StoredWorkflowRun } from '../src/lib/workflow-runs.ts'
 
 /**
  * Mirroring GitHub's run history into Firestore.
@@ -83,15 +83,28 @@ function fakeFirestore(stored: StoredWorkflowRun[] = []) {
     return { db: db as any, written, deleted }
 }
 
-/** GitHub's list, served a page at a time, counting what was asked for. */
+/**
+ * GitHub's list, served a page at a time, recording what was asked for.
+ *
+ * It honours `perPage`, and that is not a detail: a stand-in that answered every
+ * request with a hundred runs would let the probe look like it worked while the
+ * deployed service downloaded 1.5 MB per workflow per page load, which is exactly
+ * the bug these tests were written after.
+ */
 function fakeGitHub(runs: WorkflowRun[]) {
-    const pages: number[] = []
+    const asked: { page: number; perPage: number }[] = []
     return {
-        pages,
-        read: async (_workflow: DispatchableWorkflow, page: number) => {
-            pages.push(page)
-            const from = (page - 1) * PER_PAGE
-            return { ok: true as const, runs: runs.slice(from, from + PER_PAGE) }
+        asked,
+        get pages() {
+            return asked.map((call) => call.page)
+        },
+        get sizes() {
+            return asked.map((call) => call.perPage)
+        },
+        read: async (_workflow: DispatchableWorkflow, page: number, perPage: number) => {
+            asked.push({ page, perPage })
+            const from = (page - 1) * perPage
+            return { ok: true as const, runs: runs.slice(from, from + perPage) }
         },
     }
 }
@@ -103,24 +116,50 @@ const stored = (runNumber: number, over: Partial<StoredWorkflowRun> = {}): Store
 })
 
 describe('syncing what GitHub has run', () => {
-    it('stops at the first page holding a run it already has', async () => {
-        // The normal case, and the one the whole design is for: six new runs a
-        // day against a page of a hundred means the answer is always on page one.
+    it('asks for a small page when it is only checking whether anything is new', async () => {
+        // The normal case, and the one that decides what the Operations page
+        // costs. A page of a hundred runs is 1.5 MB of JSON; the mirror already
+        // holds everything below the high-water mark, so the probe only has to
+        // reach back far enough to find it.
         const history = Array.from({ length: 450 }, (_, index) => run(1500 - index))
         const github = fakeGitHub(history)
         const { db, written } = fakeFirestore([stored(1497)])
 
         const result = await sync([workflow], { db, runs: github.read, maxPages: 10 })
 
-        expect(github.pages).toEqual([1])
+        expect(github.asked).toEqual([{ page: 1, perPage: PROBE_PAGE }])
         expect(result.fetched).toBe(1)
-        // Only the three above the high-water mark, not the hundred on the page.
+        // Only the three above the high-water mark, not the ten on the page.
         expect([...written.keys()].sort()).toEqual([
             'handicaps_1498',
             'handicaps_1499',
             'handicaps_1500',
         ])
         expect(result.stored).toBe(3)
+    })
+
+    it('walks the full pages when more has happened than the probe can see', async () => {
+        // A service that was asleep for days, or a workflow somebody ran in a
+        // loop. The probe cannot reach what we hold, so it falls through — and
+        // re-reads its ten as part of the first full page rather than carrying
+        // them over, so nothing is written twice.
+        const history = Array.from({ length: 450 }, (_, index) => run(1500 - index))
+        const github = fakeGitHub(history)
+        const { db, written } = fakeFirestore([stored(1300)])
+
+        const result = await sync([workflow], { db, runs: github.read, maxPages: 10 })
+
+        expect(github.asked).toEqual([
+            { page: 1, perPage: PROBE_PAGE },
+            { page: 1, perPage: PER_PAGE },
+            { page: 2, perPage: PER_PAGE },
+            // Page 2 ends at run 1301, one above the mark, so it takes a third
+            // page to actually reach what we hold.
+            { page: 3, perPage: PER_PAGE },
+        ])
+        // 1301..1500, once each: the probe's ten are among them, written once.
+        expect(written.size).toBe(200)
+        expect(result.stored).toBe(200)
     })
 
     it('pages back through the history the first time it meets a workflow', async () => {
@@ -133,7 +172,14 @@ describe('syncing what GitHub has run', () => {
 
         const result = await sync([workflow], { db, runs: github.read, maxPages: 10 })
 
-        expect(github.pages).toEqual([1, 2, 3])
+        // No probe: a workflow with nothing stored has no high-water mark to find
+        // and is going to read the whole history anyway, so it wants the big
+        // pages from the start.
+        expect(github.asked).toEqual([
+            { page: 1, perPage: PER_PAGE },
+            { page: 2, perPage: PER_PAGE },
+            { page: 3, perPage: PER_PAGE },
+        ])
         expect(written.size).toBe(250)
         expect(result.stored).toBe(250)
     })
@@ -171,6 +217,25 @@ describe('syncing what GitHub has run', () => {
         expect(written.has('handicaps_1499')).toBe(false)
     })
 
+    it('goes back for a run still in flight from below the probe, rather than stranding it', async () => {
+        // Below the high-water mark, so nothing makes it new; below the probe, so
+        // nothing fetches it. Stopping at the probe would leave the row reading
+        // `queued` for good and the pending query carrying it forever.
+        const history = Array.from({ length: 450 }, (_, index) => run(1500 - index))
+        const github = fakeGitHub(history)
+        const { db, written } = fakeFirestore([
+            stored(1500),
+            stored(1450, { status: 'in_progress', conclusion: null, pending: true }),
+        ])
+
+        await sync([workflow], { db, runs: github.read, maxPages: 10 })
+
+        expect(github.sizes).toEqual([PROBE_PAGE, PER_PAGE])
+        const repaired = written.get('handicaps_1450')
+        expect(repaired).toMatchObject({ status: 'completed', conclusion: 'success' })
+        expect(repaired && 'pending' in repaired).toBe(false)
+    })
+
     it('marks a run that has not finished, so the next sync comes back for it', async () => {
         const github = fakeGitHub([run(1501, { status: 'in_progress', conclusion: null })])
         const { db, written } = fakeFirestore([stored(1500)])
@@ -202,6 +267,39 @@ describe('syncing what GitHub has run', () => {
         expect(result.failures).toEqual([{ slug: 'handicaps', reason: 'rate-limited' }])
         expect(written.size).toBe(200)
     })
+
+    it('asks the workflows at once rather than one after another', async () => {
+        /*
+         * A barrier rather than a stopwatch: every read blocks until all three
+         * have arrived, so a sync that awaits one workflow before starting the
+         * next can never get past the first and the test times out instead of
+         * passing slowly.
+         *
+         * Worth a test of its own because the serial version looked completely
+         * correct — same results, same writes, five round trips one after another
+         * instead of at once — and cost the Operations page several seconds a
+         * load. Nothing about its output said so.
+         */
+        const workflows = ['handicaps', 'leaderboards', 'deploy'].map((slug) => ({ ...workflow, slug }))
+        const { db } = fakeFirestore()
+
+        let arrived = 0
+        let release: () => void
+        const everybody = new Promise<void>((resolve) => (release = resolve))
+
+        const result = await sync(workflows, {
+            db,
+            runs: async () => {
+                arrived += 1
+                if (arrived === workflows.length) release!()
+                await everybody
+                return { ok: true as const, runs: [run(1500)] }
+            },
+        })
+
+        expect(arrived).toBe(workflows.length)
+        expect(result.failures).toEqual([])
+    }, 2_000)
 
     it('reports a failure per workflow rather than giving up on the rest', async () => {
         const deploy: DispatchableWorkflow = { ...workflow, slug: 'deploy', file: 'deploy-site.yml' }

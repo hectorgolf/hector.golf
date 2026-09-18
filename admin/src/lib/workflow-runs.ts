@@ -58,6 +58,24 @@ export const FORWARD_PAGES = 3
 export const SEED_PAGES = 10
 
 /**
+ * How many runs to ask for when checking whether anything is new.
+ *
+ * This is the number that decides what the Operations page costs, and getting it
+ * wrong is what made the page take ten seconds to render. A page of a hundred
+ * runs is **1.5 MB** of JSON from GitHub — a run object carries its repository,
+ * head repository and head commit, so it is around 15 kB on its own — and
+ * fetching that per workflow means seven megabytes downloaded and parsed to
+ * discover, almost always, that nothing has run since the last visit.
+ *
+ * The mirror is what makes a small page enough: everything below the high-water
+ * mark is already held, so a probe only has to reach back far enough to *find*
+ * that mark. Ten runs is a day and a half at six runs a day, against a tick that
+ * syncs four times a day, so the probe reaches it every time in practice — and
+ * when it does not, the full walk below is still there to catch up.
+ */
+export const PROBE_PAGE = 10
+
+/**
  * A run as we keep it: GitHub's own fields, plus which workflow it belongs to.
  *
  * `slug` rather than the workflow's file name, because the slug is what the
@@ -84,9 +102,11 @@ export type SyncOptions = {
     /** How many pages of one workflow's list this sync may fetch. */
     maxPages?: number
     /** Injectable so the sync can be tested without a fetch. */
-    runs?: (workflow: DispatchableWorkflow, page: number) => Promise<
-        { ok: true; runs: WorkflowRun[] } | { ok: false; reason: GitHubFailure }
-    >
+    runs?: (
+        workflow: DispatchableWorkflow,
+        page: number,
+        perPage: number
+    ) => Promise<{ ok: true; runs: WorkflowRun[] } | { ok: false; reason: GitHubFailure }>
 }
 
 export type SyncResult = {
@@ -132,11 +152,9 @@ export async function sync(
     const now = options.now ?? new Date()
     const maxPages = options.maxPages ?? FORWARD_PAGES
     const read =
-        options.runs ?? ((workflow: DispatchableWorkflow, page: number) => github().recentRuns(workflow, PER_PAGE, page))
-
-    const failures: SyncResult['failures'] = []
-    let stored = 0
-    let fetched = 0
+        options.runs ??
+        ((workflow: DispatchableWorkflow, page: number, perPage: number) =>
+            github().recentRuns(workflow, perPage, page))
 
     let unfinished: Map<string, Set<number>>
     try {
@@ -149,21 +167,35 @@ export async function sync(
         unfinished = new Map()
     }
 
-    for (const workflow of workflows) {
-        try {
-            const outcome = await one(db, workflow, {
-                maxPages,
-                read,
-                pending: unfinished.get(workflow.slug) ?? new Set(),
-            })
-            stored += outcome.stored
-            fetched += outcome.fetched
-            if (outcome.failure) failures.push({ slug: workflow.slug, reason: outcome.failure })
-        } catch (error) {
-            console.error('Could not mirror a workflow history', { workflow: workflow.slug }, error)
-            failures.push({ slug: workflow.slug, reason: 'unknown' })
-        }
-    }
+    /*
+     * In parallel, because the workflows are independent and this runs while
+     * somebody waits for a page.
+     *
+     * It was a `for ... await` loop to begin with, which is the same five round
+     * trips one after another rather than at once — and the comment on the call
+     * site claimed parallelism the code did not have. Five serial requests is the
+     * other half of why the Operations page went from one second to ten.
+     */
+    const outcomes = await Promise.all(
+        workflows.map(async (workflow) => {
+            try {
+                return await one(db, workflow, {
+                    maxPages,
+                    read,
+                    pending: unfinished.get(workflow.slug) ?? new Set(),
+                })
+            } catch (error) {
+                console.error('Could not mirror a workflow history', { workflow: workflow.slug }, error)
+                return { stored: 0, fetched: 0, failure: 'unknown' as const, slug: workflow.slug }
+            }
+        })
+    )
+
+    const failures = outcomes.flatMap((outcome, index) =>
+        outcome.failure ? [{ slug: workflows[index]!.slug, reason: outcome.failure }] : []
+    )
+    const stored = outcomes.reduce((total, outcome) => total + outcome.stored, 0)
+    const fetched = outcomes.reduce((total, outcome) => total + outcome.fetched, 0)
 
     try {
         await trimByAge(db, RUNS, now)
@@ -199,11 +231,57 @@ async function one(
      */
     const newest = await newestRunNumber(db, workflow.slug)
 
-    const writes: StoredWorkflowRun[] = []
     let fetched = 0
+    const wanted = (runs: readonly WorkflowRun[]) =>
+        runs.filter((run) => run.runNumber > newest || options.pending.has(run.runNumber))
+
+    /*
+     * The probe, and the reason this is not just the loop below with a smaller
+     * number: almost every sync is a question with the answer "nothing", and the
+     * cheapest way to ask it is a page barely longer than the gap it is checking.
+     * See `PROBE_PAGE` for what the alternative costs.
+     *
+     * Skipped when there is no high-water mark to find, which is a workflow being
+     * seeded — that one wants the big pages, since it is going to read the whole
+     * history either way.
+     */
+    if (newest > 0) {
+        const probe = await options.read(workflow, 1, PROBE_PAGE)
+        fetched += 1
+        if (!probe.ok) return { stored: 0, fetched, failure: probe.reason }
+
+        // Reached what we hold, or reached the end of a history shorter than the
+        // probe. Either way there is nothing above this page left to find.
+        const enough = probe.runs.some((run) => run.runNumber <= newest) || probe.runs.length < PROBE_PAGE
+
+        /*
+         * Unless something we marked in flight is older than the probe can see.
+         *
+         * That run would otherwise never be looked at again: it is below the
+         * high-water mark, so nothing makes it new, and below the probe, so
+         * nothing fetches it. The row would sit at `queued` for good, and the
+         * pending query would carry it forever. Rare — a run is normally
+         * refreshed by the very next sync, while it is still near the top — but
+         * permanent when it happens, so it is worth one full walk to repair.
+         */
+        const lowest = probe.runs.at(-1)?.runNumber ?? 0
+        const stranded =
+            probe.runs.length === PROBE_PAGE && [...options.pending].some((number) => number < lowest)
+
+        if (enough && !stranded) {
+            const writes = wanted(probe.runs).map((run) => asStored(run, workflow.slug))
+            return { stored: await store(db, writes), fetched }
+        }
+        // More than a probe's worth has happened since the last sync — a service
+        // asleep for days, or a workflow somebody ran in a loop. Fall through and
+        // walk it properly, from the top: these ten are re-read as part of the
+        // first full page rather than carried over, so nothing is written twice.
+    }
+
+    const writes: StoredWorkflowRun[] = []
 
     for (let page = 1; page <= options.maxPages; page += 1) {
-        const outcome = await options.read(workflow, page)
+        const outcome = await options.read(workflow, page, PER_PAGE)
         fetched += 1
         if (!outcome.ok) {
             // What has already been collected is still written: a rate limit on
@@ -212,11 +290,7 @@ async function one(
             return { stored, fetched, failure: outcome.reason }
         }
 
-        for (const run of outcome.runs) {
-            if (run.runNumber > newest || options.pending.has(run.runNumber)) {
-                writes.push(asStored(run, workflow.slug))
-            }
-        }
+        writes.push(...wanted(outcome.runs).map((run) => asStored(run, workflow.slug)))
 
         // The stop the whole design is for: the page reached back into what we
         // already hold, so everything below it is held too.

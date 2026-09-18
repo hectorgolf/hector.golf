@@ -664,13 +664,21 @@ in July": the run list is paged at 100, so anything deeper cost a loop of reques
 runs after 90 days regardless. Mirroring makes both halves the same kind of thing — one database, one
 query, paging as deep as the retention goes, and runs that outlive GitHub's own copy.
 
-The sync is cheap because run numbers only ever go up. It asks for the newest page, writes the runs
-above the highest one it already holds, and stops as soon as that page contains a run it has seen
-before — which, at six runs a day against a page of a hundred, is the first page every time. A
-workflow it has never seen has no such run to stop at, so the same loop walks back through everything
-GitHub still has and seeds the archive. The only runs that need rewriting rather than adding are the
-ones that were still going when last seen, and `pending` marks exactly those: one small query finds
-every run whose conclusion is still unknown.
+The sync is cheap because run numbers only ever go up. It asks for the newest runs, writes the ones
+above the highest it already holds, and stops as soon as it sees a run it has seen before. A workflow
+it has never met has no such run to stop at, so the same loop walks back through everything GitHub
+still has and seeds the archive. The only runs that need rewriting rather than adding are the ones
+that were still going when last seen, and `pending` marks exactly those.
+
+**How many runs it asks for is the number that decides what the page costs**, and getting it wrong is
+what made `/operations` take ten seconds instead of one. A GitHub run object carries its repository,
+head repository and head commit, so it is about 15 kB on its own and a page of a hundred is **1.5 MB**
+— seven megabytes across five workflows, downloaded and parsed on a one-CPU instance to discover,
+almost always, that nothing has run since the last visit. The mirror is what makes a small page
+enough: everything below the high-water mark is already held, so the probe only has to reach back far
+enough to *find* that mark, and ten runs is a day and a half against a tick that syncs four times a
+day. When the probe cannot reach it — a service asleep for days — the full walk is still there. The
+five probes go out at once, not one after another.
 
 It runs on every page load *and* on every tick. The page load is what keeps the log current; the tick
 is what keeps it complete, because an archive topped up only when somebody opens a page has holes for
