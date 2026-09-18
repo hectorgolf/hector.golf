@@ -349,18 +349,24 @@ async function one(
         .sort((a, b) => a.getTime() - b.getTime())[0]
 
     /*
-     * The margin is applied to whichever of the two is earlier, and applying it
-     * to the in-flight run as well is not belt and braces. `created:>T` is
-     * exclusive, so a window starting exactly at that run's timestamp leaves out
-     * the one run it was widened to collect — and `startedAt` is
-     * `run_started_at`, which is at or after the `created_at` the filter
-     * compares against, so starting level with it would miss the run twice over.
+     * The margin goes on our own clock and not on GitHub's.
+     *
+     * `syncedAt` is a moment this service wrote down, compared against times
+     * GitHub assigned, so it gets the skew margin. The in-flight run's timestamp
+     * *is* GitHub's own value handed back to it, and there is no skew between a
+     * clock and itself — so it is used exactly, which the inclusive `created:>=`
+     * makes safe. `>` would answer a window set to a run's own timestamp with
+     * that very run missing.
+     *
+     * Checked before relying on it: across 259 runs of three workflows, every
+     * one had `run_started_at` equal to `created_at`, so the `startedAt` stored
+     * here is the value the filter compares against rather than an approximation
+     * of it.
      */
     const since =
         options.syncedAt &&
         new Date(
-            Math.min(options.syncedAt.getTime(), inFlightSince?.getTime() ?? Number.POSITIVE_INFINITY) -
-                SKEW_MARGIN_MS
+            Math.min(options.syncedAt.getTime() - SKEW_MARGIN_MS, inFlightSince?.getTime() ?? Number.POSITIVE_INFINITY)
         )
 
     const writes: StoredWorkflowRun[] = []

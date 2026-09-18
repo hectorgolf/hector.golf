@@ -677,14 +677,23 @@ seven megabytes across five workflows, downloaded and parsed on a one-CPU instan
 almost always, that nothing has run since the last visit.
 
 So the sync does not ask for a page of history at all. It asks
-[`created:>{last sync}`](https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-workflow)
+[`created:>={last sync}`](https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-workflow)
 and lets GitHub do the filtering, which answers the usual question — "anything new?" — in **36
-bytes**. The window reaches back past the last sync by a skew margin, and further still when a run's
-outcome is not yet known: `created` filters on when a run *started existing*, so a run queued an hour
-ago and finished since is older than the last sync and would otherwise be left out permanently. The
-five requests go out at once, not one after another, and a workflow asked about in the last ten
-seconds is not asked again at all — a reload, a back button and a double-click are one sync between
-them.
+bytes**. The five requests go out at once, and a workflow asked about in the last ten seconds is not
+asked again at all: a reload, a back button and a double-click are one sync between them.
+
+The window reaches back further when a run's outcome is not yet known, because `created` filters on
+when a run *started existing* — a run queued an hour ago and finished since is older than the last
+sync and would otherwise be left out permanently, leaving a row reading `queued` for good. **The
+operator is `>=` and that is load-bearing**: the window is then set to that run's own timestamp, and
+`>` answers it with the one run it was asking about missing. Verified against the API —
+`>2026-09-18T17:52:52Z` returns nothing where `>=` returns run #1542.
+
+The skew margin goes on our own clock and not on GitHub's. `syncedAt` is a moment this service wrote
+down and compares against times GitHub assigned, so it gets one; a run's timestamp is GitHub's own
+value handed back, and there is no skew between a clock and itself. That the stored `startedAt` is
+the value the filter compares against was checked rather than assumed: across 259 runs of three
+workflows, every `run_started_at` equalled its `created_at`.
 
 **One property of that filter is worth knowing before relying on it: GitHub answers an unparseable
 `created` with zero runs and a 200.** A bad timestamp does not fail, it silently reports that nothing

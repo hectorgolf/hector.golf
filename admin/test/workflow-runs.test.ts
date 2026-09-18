@@ -128,8 +128,11 @@ function fakeGitHub(runs: WorkflowRun[]) {
         asked,
         read: async (_workflow: DispatchableWorkflow, page: number, perPage: number, createdSince?: Date) => {
             asked.push({ page, perPage, ...(createdSince ? { createdSince: createdSince.toISOString() } : {}) })
+            // Inclusive, like `created:>=`. A stand-in using `>` would quietly
+            // pass a sync that asks with `>` and loses the run on the boundary —
+            // which is the run the window is usually set to.
             const matching = createdSince
-                ? runs.filter((candidate) => new Date(candidate.startedAt) > createdSince)
+                ? runs.filter((candidate) => new Date(candidate.startedAt) >= createdSince)
                 : runs
             const from = (page - 1) * perPage
             return { ok: true as const, runs: matching.slice(from, from + perPage) }
@@ -181,9 +184,9 @@ describe('asking GitHub only for what is new', () => {
 
         await sync([workflow], { db, runs: github.read, now: NOW })
 
-        expect(github.asked[0]!.createdSince).toBe(
-            new Date(Date.parse(inFlight.startedAt) - SKEW_MARGIN_MS).toISOString()
-        )
+        // Exactly the run's own timestamp, with no margin: it is GitHub's value
+        // handed back, and the inclusive `created:>=` reaches it.
+        expect(github.asked[0]!.createdSince).toBe(inFlight.startedAt)
         const repaired = written.get('handicaps_1400')
         expect(repaired).toMatchObject({ status: 'completed', conclusion: 'success' })
         expect(repaired && 'pending' in repaired).toBe(false)

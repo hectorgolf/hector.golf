@@ -150,6 +150,23 @@ describe('reading recent runs', () => {
         )
     })
 
+    it('asks inclusively for runs created since a moment, encoded so the operator survives', async () => {
+        /*
+         * `>=` rather than `>`, and it is not a nicety. The mirror sets this
+         * window to a run's own timestamp when it is chasing an outcome it does
+         * not know yet, and against the real API `>2026-09-18T17:52:52Z` returns
+         * nothing where `>=` returns the run. The characters have to be encoded
+         * or the query string eats them.
+         */
+        const { client, fetch } = clientAnswering(runsResponse([]))
+        await client.recentRuns(handicaps, 100, 1, new Date('2026-09-18T17:52:52.000Z'))
+
+        expect(String(fetch.mock.calls[0]![0])).toBe(
+            'https://api.github.com/repos/hectorgolf/hector.golf/actions/workflows/update-handicaps.yml/runs' +
+                '?per_page=100&page=1&created=%3E%3D2026-09-18T17%3A52%3A52.000Z'
+        )
+    })
+
     it('asks for the page it was given, which is how the mirror walks back through a history', async () => {
         // `lib/workflow-runs.ts` pages back the first time it meets a workflow.
         // Everything else takes the default and gets the newest page.
