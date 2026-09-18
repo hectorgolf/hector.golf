@@ -670,15 +670,28 @@ it has never met has no such run to stop at, so the same loop walks back through
 still has and seeds the archive. The only runs that need rewriting rather than adding are the ones
 that were still going when last seen, and `pending` marks exactly those.
 
-**How many runs it asks for is the number that decides what the page costs**, and getting it wrong is
-what made `/operations` take ten seconds instead of one. A GitHub run object carries its repository,
-head repository and head commit, so it is about 15 kB on its own and a page of a hundred is **1.5 MB**
-— seven megabytes across five workflows, downloaded and parsed on a one-CPU instance to discover,
-almost always, that nothing has run since the last visit. The mirror is what makes a small page
-enough: everything below the high-water mark is already held, so the probe only has to reach back far
-enough to *find* that mark, and ten runs is a day and a half against a tick that syncs four times a
-day. When the probe cannot reach it — a service asleep for days — the full walk is still there. The
-five probes go out at once, not one after another.
+**What it asks for is the number that decides what the page costs**, and getting it wrong is what
+made `/operations` take ten seconds instead of one. A GitHub run object carries its repository, head
+repository and head commit, so it is about 15 kB on its own and a page of a hundred is **1.5 MB** —
+seven megabytes across five workflows, downloaded and parsed on a one-CPU instance to discover,
+almost always, that nothing has run since the last visit.
+
+So the sync does not ask for a page of history at all. It asks
+[`created:>{last sync}`](https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-workflow)
+and lets GitHub do the filtering, which answers the usual question — "anything new?" — in **36
+bytes**. The window reaches back past the last sync by a skew margin, and further still when a run's
+outcome is not yet known: `created` filters on when a run *started existing*, so a run queued an hour
+ago and finished since is older than the last sync and would otherwise be left out permanently. The
+five requests go out at once, not one after another, and a workflow asked about in the last ten
+seconds is not asked again at all — a reload, a back button and a double-click are one sync between
+them.
+
+**One property of that filter is worth knowing before relying on it: GitHub answers an unparseable
+`created` with zero runs and a 200.** A bad timestamp does not fail, it silently reports that nothing
+has ever run again — and the likeliest source of one is this project's own stack, since
+`@google-cloud/firestore` stores a `Date` as a `Timestamp` and a `Timestamp` in a URL is garbage. So
+the mark is parsed and re-rendered before it is sent, and anything that does not survive that falls
+back to the unfiltered walk. Slow and correct beats fast and silent.
 
 It runs on every page load *and* on every tick. The page load is what keeps the log current; the tick
 is what keeps it complete, because an archive topped up only when somebody opens a page has holes for
