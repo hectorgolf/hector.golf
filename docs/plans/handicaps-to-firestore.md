@@ -317,9 +317,12 @@ The rule matters more than the mechanism:
 - **Credentials present but the fetch fails** — fail the build. Never silently publish stale data on
   the real deploy path.
 
-The backup moves to `data/handicaps/observations.ndjson`: out of `deploy-site.yml`'s path filter, so
-the admin decides when to deploy, and out of the Prettier-ignored `astrosite/src/data/` tree, so it
-needs adding to [`.prettierignore`](../../.prettierignore) in the same commit.
+~~The backup moves to `data/handicaps/observations.ndjson`~~ — **done in step 2 instead.** The move
+was planned here because that is when the reader stops needing the file where the site can see it.
+It happened a step early for a better reason: until step 2 the file did not exist, so changing the
+path cost nothing, where doing it afterwards would have meant migrating a committed file and an
+append-only guard pointed at the wrong history. Moving it also removed the extra deploys step 2
+would otherwise have caused, which is what prompted it.
 
 The endpoint dispatches `deploy-site.yml` when anything changed, which it already knows how to do.
 
@@ -358,9 +361,20 @@ which does not obviously flip it. Note that `astrosite` *does* use Octokit, in
 `code/leaderboards/github.ts`, so the precedent exists if the count ever grows.
 
 **A PAT's pushes trigger workflows.** Unlike `GITHUB_TOKEN`, whose recursion guard is the entire
-reason `request-deploy` exists. So the admin committing under `astrosite/**` fires `deploy-site.yml`
-by itself, and during step 2 that is a second deploy per change. Step 3 moves the file out of the
-path filter, which resolves it.
+reason `request-deploy` exists. So anything this service commits under `astrosite/**` fires
+`deploy-site.yml` by itself — which is why the backup is not kept there.
+
+This was first written as "a second deploy per change", to be tolerated until step 3. Two corrections
+followed, and the second removed the problem rather than describing it. The count was wrong: a tick
+that saw a change would have cost **three** deploys where one is right — the job's commit, the
+workflow's dispatch, and the job's commit again on the next tick, when it reconciles the workflow's
+row and the render grows rather than matching. That third one is the `observed`-stamp asymmetry a
+second time, and it is the one the original note missed.
+
+Rather than tolerate three, step 2 put the backup at `data/handicaps/observations.ndjson` from the
+start. Nothing builds from that file, so nothing should redeploy for it, and the cost of the move was
+zero at a moment when the file had never been written. A change therefore still costs exactly one
+deploy: the workflow's, dispatched explicitly, the same as before any of this began.
 
 **Nothing serialises the admin's commit against the workflows.** The Contents API needs the blob SHA,
 so a race is a 409 rather than corruption — but it needs refetch-and-retry, and the render must be

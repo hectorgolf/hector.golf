@@ -316,12 +316,12 @@ describe('reading a file', () => {
     it('asks for the path on main and decodes what comes back', async () => {
         const { client, fetch } = clientAnswering(fileResponse('one\ntwo\n'))
 
-        const result = await client.readFile('astrosite/src/data/handicaps.ndjson')
+        const result = await client.readFile('data/handicaps/observations.ndjson')
 
         expect(result).toEqual({ ok: true, file: { present: true, text: 'one\ntwo\n', sha: 'blob-sha' } })
         const [url] = fetch.mock.calls[0]!
         expect(url).toBe(
-            'https://api.github.com/repos/hectorgolf/hector.golf/contents/astrosite/src/data/handicaps.ndjson?ref=main'
+            'https://api.github.com/repos/hectorgolf/hector.golf/contents/data/handicaps/observations.ndjson?ref=main'
         )
     })
 
@@ -356,7 +356,7 @@ describe('reading a file', () => {
 
 describe('committing a file', () => {
     const request = {
-        path: 'astrosite/src/data/handicaps.ndjson',
+        path: 'data/handicaps/observations.ndjson',
         text: 'one\ntwo\n',
         message: "Update 1 player's handicap",
         sha: 'blob-sha',
