@@ -23,7 +23,7 @@ will mislead you.
 | --- | --- | --- |
 | [`biography-locking.md`](plans/biography-locking.md) | `player.biographyLocked`, so the twice-monthly regeneration stops overwriting edited biographies | **No.** The field is in no schema, page or script |
 | [`bucket-locking.md`](plans/bucket-locking.md) | `event.bucketsLocked`, so an announced split can be settled before the first morning | **No,** and it argues with itself about whether it should be. Read its last section first |
-| [`dev-server-in-process.md`](plans/dev-server-in-process.md) | Running `astro dev` inside `dev-iap.ts` through Astro's programmatic API, instead of spawning its CLI | **No.** The script still spawns the CLI; the daemonising bug it came from is fixed another way |
+| [`dev-server-in-process.md`](plans/dev-server-in-process.md) | Running `astro dev` inside `dev-iap.ts` through Astro's programmatic API, instead of spawning its CLI | **Phase 1, on 2026-09-18.** The spawn is gone and the script *is* the dev server. Phase 2 — dropping the proxy for `handle()` — is the only thing left in it |
 | [`functions-migration.md`](plans/functions-migration.md) | Moving the four Cloud Functions out of `gen-lang-client-0537211409` into `hector-golf` | **All but one step.** Phases 1–6 and 8 done 2026-09-14, the old functions deleted 2026-09-17. Only the old Gemini API key is left |
 | [`sheets-credential-wif.md`](plans/sheets-credential-wif.md) | Retiring the last downloadable service account key, in favour of Workload Identity | **Yes,** all six phases on 2026-09-14. Kept only for two items that expire 2026-10-14 — a deleted account's undelete window and an orphaned key — and deletable after that |
 
@@ -32,13 +32,21 @@ of a decision that was otherwise a description of how things already are. A prop
 descriptive document is read as description by everybody who did not write it, which is how two
 fields that do not exist came to be documented beside seven that do.
 
-A partly-executed plan is the case the lifecycle below does not cover, and `functions-migration.md`
-is the one still in it. Both plans were waiting on the same calendar — a credential deleted a week
+A partly-executed plan is the case the lifecycle below does not cover, and two files are in it for
+different reasons. `functions-migration.md` is waiting on a date. Both it and `sheets-credential-wif.md`
+were waiting on the same calendar — a credential deleted a week
 after its replacement went live — and both stopped waiting early once the evidence was in:
 `sheets-credential-wif.md` phase 6 went on the day phase 5 verified green, and the old functions
 went on 2026-09-17 after three days of silence rather than seven. What is left of
 `functions-migration.md` is one API key, so it stays in `plans/` until that is deleted and then
-takes the move-or-delete call on its own. The column is what keeps it honest in the meantime.
+takes the move-or-delete call on its own.
+
+`dev-server-in-process.md` is the other kind. Its phase 2 is not waiting on a date but on
+experience: it asks whether the proxy hop that phase 1 kept has ever earned its keep, and that is
+not answerable until phase 1 has been lived with. It stays until the answer goes either way — and
+then it is deleted, because phase 1 is already described where it belongs, in the script.
+
+The column is what keeps both honest in the meantime.
 
 ## [`experiments/`](experiments/) — what was built and not adopted
 

@@ -5,7 +5,7 @@
  *
  *   Firestore   the emulator, either one already running or one started here
  *   GitHub      `fake-github.ts`, in this process
- *   IAP         `dev-iap.ts`, which this spawns and which spawns `astro dev`
+ *   IAP         `dev-iap.ts`, which this spawns and which is the dev server
  *
  *   npm run dev:fake
  *
@@ -63,8 +63,6 @@ const STAND_IN_ROSTER_SIZE = 24
  *
  * Both places, because a workspace hoists shared dependencies to the root and
  * this one is shared: looking only in `admin/node_modules` finds nothing here.
- * The same two candidates `astroBinary()` in `dev-iap.ts` searches, and for the
- * same reason.
  */
 function tsxBinary(): string {
     const candidates = [join(here, '../node_modules/.bin/tsx'), join(here, '../../node_modules/.bin/tsx')]
