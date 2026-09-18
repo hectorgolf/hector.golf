@@ -32,7 +32,7 @@ owns what.
 
 | Field | Kind | Owner | Notes |
 | --- | --- | --- | --- |
-| `handicaps.json` history | Derived | CI | Scraped from WiseGolf. Never hand-edited. Each entry records when it was read, because the Golf Union's batch can land at almost any hour — see [handicap-updates.md](./handicap-updates.md) |
+| handicap observations | Derived | the admin service | Scraped from WiseGolf. Never hand-edited. Firestore's `handicap-observations` is the source since 2026-09-18; `data/handicaps/observations.ndjson` is a backup, and the site reads `/api/handicaps/history`. Each entry records when it was read, because the Golf Union's batch can land at almost any hour — see [handicap-updates.md](./handicap-updates.md) |
 | `player.handicap` | Derived, with a stopgap | CI | The best known handicap. CI writes it whenever WiseGolf has one; a person fills it when WiseGolf does not, and CI supersedes that as soon as it can. When CI writes it is its own subject — see [handicap-updates.md](./handicap-updates.md) |
 | `event.buckets` | Derived | CI | Recomputed on every tick until 08:00 on the first morning, local to the event, and never again after that — or until `event.bucketsLocked` says the split is settled, whichever comes first |
 | `event.bucketsLocked` | Authored | Human | The one lock that exists. Unset everywhere, and unset means "nobody has taken this split over"; set, it stops the recompute early. See below |
@@ -140,7 +140,8 @@ refreshed by `npm run seed` — rather than as their source:
 | `events/hector/` | `update-handicaps`, `update-leaderboards` | mirror, for reading | no |
 | `events/finnkampen/` | by hand | mirror, for reading | no |
 | `players/` | `update-handicaps`, `update-player-biographies`, `update-player-club-memberships` | mirror, for reading | no |
-| `handicaps.json`, `courses/` | the scrape / by hand | not in Firestore | no |
+| handicap observations | the admin service's job | **source of truth** | no — backed up to `data/handicaps/observations.ndjson`, and read by the site through the API |
+| `courses/` | by hand | not in Firestore | no |
 
 Exporting a mirror would publish stale data over a fresh scrape and revert it silently — and because
 the scrape commits its own work, the loss would look like the losing side of a merge nobody
@@ -150,6 +151,14 @@ A collection moves into the exported column on the day the admin can author it *
 writer has been moved to Firestore. Those two things have to happen together: either one alone
 recreates the conflict in the other direction.
 
+Handicaps are the first dataset to have finished half of that pair, and they show what the other half
+of the table looks like. Their scheduled writer has moved — the admin service scrapes and writes
+`handicap-observations` — but nobody authors a handicap, so there is no editor to wait for and the
+collection never joins the exported column. Instead the site reads it back through
+`/api/handicaps/history`, and git keeps a backup rather than the output. That is a third arrangement
+the original two columns did not anticipate, and the right one for anything `Derived` with no human
+writer to conflict with. See [`plans/handicaps-to-firestore.md`](../plans/handicaps-to-firestore.md).
+
 The files therefore changed role rather than changing content. They used to be the input; they are
 now the output. Three things follow:
 
@@ -158,11 +167,19 @@ now the output. Three things follow:
   hand- and scrape-owned, and the export leaves them alone.
 - Deleting an event or a player in the admin deletes its file on the next export. That is deliberate
   — without it, a deletion would be impossible to express and the site would show the thing forever.
-- The site build stays hermetic: no credentials, no network, and a fork can still build it. Git also
-  keeps a reviewable history of every change the admin made, so the fix for a bad edit is a revert.
+- A fork can still build the site, and that promise survived the handicap migration intact — but it
+  is no longer the same sentence as "the build is hermetic". A build **with** credentials fetches the
+  handicap history from the admin service; one **without** them reads the committed backup and prints
+  a notice saying so. Both are supported; only the second is hermetic. A build that has credentials
+  and cannot use them fails rather than falling back, because publishing a week-old handicap on the
+  morning of a Draft is worse than not publishing. Git also keeps a reviewable history of every
+  change the admin made, so the fix for a bad edit is a revert.
 
-`astrosite/src/data/courses/` and `handicaps.json` are further out still: hand-maintained and
-scrape-written respectively, not in Firestore at all, and not seeded.
+`astrosite/src/data/courses/` is further out still: hand-maintained, not in Firestore at all, and not
+seeded. `handicaps.json` used to be described here the same way; it has since moved to Firestore and
+is the one dataset that has, so the row above covers it instead. The file itself is still written by
+`update-handicaps.yml` and still committed, because three other things that workflow produces have
+nowhere else to go yet — see step 4 of the plan.
 
 ### The two scripts are complements
 

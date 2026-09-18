@@ -1,10 +1,12 @@
 # Moving the handicap scrape into Firestore
 
-*Written 2026-09-15. **Steps 0, 1 and 2 are done and deployed.** The job shadowed
-`update-handicaps.yml` from 2026-09-16, the two pipelines decided the same live change independently
-and agreed on 2026-09-18, and the job began writing for real the same day. Firestore is now a second
-system of record for handicaps; `handicaps.json` is still what the site builds from, which is step 3.
-What each step did, and what it cost, is recorded under the step.*
+*Written 2026-09-15. **Steps 0 to 3 are done and deployed, all on 2026-09-16 and 2026-09-18.** The
+job shadowed `update-handicaps.yml`, the two pipelines decided the same live change independently and
+agreed, the job began writing for real, and the site now builds from `/api/handicaps/history` with the
+committed NDJSON as a credential-less fallback. Firestore is the system of record for handicaps and
+git holds a backup. Step 4 is all that is left, and it is blocked on three outputs of
+`update-handicaps.yml` that this plan does not otherwise touch. What each step did, and what it cost,
+is recorded under the step.*
 
 The handicap history is the first dataset to move from "a JSON file in git, written by a GitHub
 Actions runner" to "a Firestore collection, written by the admin service". This document is the plan
@@ -341,7 +343,7 @@ observation of its own. The +1 begins at the next handicap that moves, when the 
 double-reading case — the shadow period is where the evidence for it came from, and the first real
 change is where it should be checked again.
 
-### Step 3 — move the reader, once
+### Step 3 — move the reader, once ✅ *done 2026-09-18*
 
 The build fetches `/api/handicaps/history`, with the committed backup as a credential-less fallback.
 The rule matters more than the mechanism:
@@ -361,6 +363,33 @@ append-only guard pointed at the wrong history. Moving it also removed the extra
 would otherwise have caused, which is what prompted it.
 
 The endpoint dispatches `deploy-site.yml` when anything changed, which it already knows how to do.
+
+**What it took, and the one thing that decided the shape.** The site's accessors are synchronous and
+called from `.astro` templates inside `.map()` callbacks and from the middle of `events.ts`, so an
+async reader would have turned a data-source change into a rewrite of every call site. The history is
+resolved once in a top-level await instead and the accessors are untouched; the module graph does the
+sequencing, and a failure there is a failed build, which is what the rule above wants.
+
+Three rules were added that the plan had not written down, each because the alternative fails
+quietly. A **half-configured** build fails rather than falling back, since setting one of the two
+variables is a statement that this deploy was wired to the API and answering a typo with the backup
+is the same silent stale publish by another route. An **empty** answer fails the build though it is
+a valid 200 at the endpoint — the endpoint cannot tell an empty store from one nobody has filled,
+and a build of this site can. And the backup is imported with `?raw` rather than read with
+`node:fs`, which keeps the module isomorphic and makes a missing backup a build error instead of an
+empty history.
+
+**Jobs can now ask for a deploy.** Moving the backup out of `astrosite/` in step 2 stopped its
+commits publishing the site, which was right while nothing built from it and wrong the moment
+something did. Jobs carry `publishes`, and one that does dispatches `deploy-site.yml` when it found
+changes — *changes*, not "it committed something", because the reconcile tick commits rows the site
+is already showing and deploying for those would restore the three-per-change count that moving the
+file removed.
+
+**Verified end to end on 2026-09-18.** The deploy that followed the merge ran the WIF step rather
+than skipping it, printed no fallback notice, built 328 pages, and published a `sami-h` page carrying
+the 5.2 observed that morning. A build that had failed to reach the API would have gone red instead,
+by design.
 
 ### Step 4 — retire the old workflow
 
