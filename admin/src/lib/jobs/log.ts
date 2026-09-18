@@ -1,6 +1,7 @@
 import type { Firestore } from '@google-cloud/firestore'
 
 import { firestore } from '../firestore.ts'
+import { trimByAge } from '../retention.ts'
 
 /**
  * What happened, the last few times a job ran.
@@ -26,16 +27,12 @@ import { firestore } from '../firestore.ts'
 
 export const RUNS = 'job-runs'
 
-/**
- * How many entries to keep per job.
- *
- * Trimmed rather than kept forever, unlike the observation log this service
- * writes. The distinction is the one `handicap-checks.json` already draws: the
- * observations are the data and are kept for good; this is operational history,
- * useful for days rather than years, and at six runs a day an untrimmed
- * collection is 2,200 documents a year per job for a page that shows five.
+/*
+ * How long a run is kept, and the trim that enforces it, live in
+ * `lib/retention.ts` — shared with the mirror of GitHub's runs, because the two
+ * are one list on the page and a log that is complete down to one date and
+ * half-complete below it is worse than either horizon alone.
  */
-export const KEEP_PER_JOB = 50
 
 /** One thing a run changed, in the terms the job itself uses. */
 export type Change = {
@@ -63,7 +60,7 @@ export type JobRun = {
     commit?: string
 }
 
-export type RecordOptions = { db?: Firestore }
+export type RecordOptions = { db?: Firestore; now?: Date }
 
 /**
  * Write one run, and trim the tail.
@@ -80,20 +77,12 @@ export async function record(run: JobRun, options: RecordOptions = {}): Promise<
         // somehow records twice overwrites rather than accumulating, and so the
         // document id sorts usefully in the console.
         await db.collection(RUNS).doc(`${run.slug}_${run.startedAt}`).set(defined(run))
-        await trim(db, run.slug)
+        await trimByAge(db, RUNS, options.now ?? new Date())
     } catch (error) {
         console.error('Could not record a job run', { slug: run.slug, outcome: run.outcome }, error)
     }
 }
 
-/**
- * Drop everything past `KEEP_PER_JOB`.
- *
- * `offset()` is billed as reads for the documents it skips, so this costs about
- * fifty reads a run whatever it finds — a few hundred a day, against a free tier
- * of fifty thousand. Worth knowing rather than worth optimising: the alternative
- * is tracking a cursor in another document, which is a read too.
- */
 /**
  * The run without its absent optional fields.
  *
@@ -114,21 +103,35 @@ function defined(run: JobRun): Record<string, unknown> {
     return Object.fromEntries(Object.entries(run).filter(([, value]) => value !== undefined))
 }
 
-async function trim(db: Firestore, slug: string): Promise<void> {
-    const snapshot = await db
-        .collection(RUNS)
-        .where('slug', '==', slug)
-        .orderBy('startedAt', 'desc')
-        .offset(KEEP_PER_JOB)
-        .get()
-    if (snapshot.empty) return
-
-    const batch = db.batch()
-    for (const document of snapshot.docs) batch.delete(document.ref)
-    await batch.commit()
+/**
+ * The most recent runs of *every* job, newest first, for the run log.
+ *
+ * Separate from `recent` rather than a parameter of it, because the queries are
+ * different in the way that matters to Firestore: `recent` filters by slug and
+ * orders by time, which needs a composite index, while this only orders. It is
+ * also the one the log wants — a merged chronology does not care which job a row
+ * came from, and asking per job would mean N queries and then throwing most of
+ * the answers away.
+ *
+ * `limit` is what bounds the cost, and it is the caller's business how deep the
+ * page goes: at the default this is a hundred document reads against a free tier
+ * of fifty thousand a day.
+ */
+export async function recentAll(limit = 100, options: RecordOptions = {}): Promise<JobRun[]> {
+    const db = options.db ?? firestore()
+    try {
+        const snapshot = await db.collection(RUNS).orderBy('startedAt', 'desc').limit(limit).get()
+        return snapshot.docs.map((document) => document.data() as JobRun)
+    } catch (error) {
+        console.error('Could not read the job run history', error)
+        return []
+    }
 }
 
-/** The most recent runs of one job, newest first, for the Operations page. */
+/**
+ * The most recent runs of one job, newest first: for the card that summarises it
+ * on the Operations page, and for the run log narrowed to that job alone.
+ */
 export async function recent(slug: string, limit = 5, options: RecordOptions = {}): Promise<JobRun[]> {
     const db = options.db ?? firestore()
     try {

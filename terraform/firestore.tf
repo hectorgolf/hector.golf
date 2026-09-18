@@ -110,3 +110,55 @@ resource "google_firestore_backup_schedule" "weekly" {
   # procedure.
   deletion_policy = "ABANDON"
 }
+
+# The two composite indexes the run log needs.
+#
+# Firestore indexes every field on its own automatically, which covers most of
+# what this project asks of it — but not a query that filters on one field and
+# orders by another, and both halves of the run log do exactly that: "this
+# workflow's runs, newest first", "this job's runs, newest first". Without these
+# the query fails with FAILED_PRECONDITION and a link to a console page that
+# creates the index by hand.
+#
+# Declared here rather than created from that link because of how the failure
+# reads from the outside. Both call sites catch and degrade to an empty list, so
+# a missing index does not raise an error anywhere a person looks: the Operations
+# page simply says "No runs recorded yet" about a service that has been running
+# happily for weeks. That is a bad enough failure mode to be worth the terraform,
+# and a one-line reason to never let one of these queries exist undeclared.
+#
+# The order of the fields matters and is not alphabetical: the equality field
+# comes first, then the one being ordered on, in the direction it is ordered.
+# Firestore serves the reverse direction from the same index, so DESCENDING here
+# also answers an ascending scan.
+resource "google_firestore_index" "job_runs_by_slug" {
+  project    = var.project_id
+  database   = google_firestore_database.hector.name
+  collection = "job-runs"
+
+  fields {
+    field_path = "slug"
+    order      = "ASCENDING"
+  }
+
+  fields {
+    field_path = "startedAt"
+    order      = "DESCENDING"
+  }
+}
+
+resource "google_firestore_index" "workflow_runs_by_slug" {
+  project    = var.project_id
+  database   = google_firestore_database.hector.name
+  collection = "workflow-runs"
+
+  fields {
+    field_path = "slug"
+    order      = "ASCENDING"
+  }
+
+  fields {
+    field_path = "startedAt"
+    order      = "DESCENDING"
+  }
+}

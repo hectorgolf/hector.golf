@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { type JobRun, record } from '../src/lib/jobs/log.ts'
+import { KEEP_FOR_DAYS, TRIM_BATCH } from '../src/lib/retention.ts'
 
 /**
  * Writing a run to the log.
@@ -28,8 +29,16 @@ function rejectUndefined(data: Record<string, unknown>): void {
     }
 }
 
-function fakeFirestore() {
+/**
+ * A stand-in that remembers what was written and what the trim asked for.
+ *
+ * `expired` is what the trim query is told to return — empty by default, so an
+ * ordinary run records without tidying anything up, which is the common case.
+ */
+function fakeFirestore(expired: string[] = []) {
     const written = new Map<string, Record<string, unknown>>()
+    const deleted: string[] = []
+    const trim = { field: '', op: '', cutoff: '', limit: 0 }
     const db = {
         collection: () => ({
             doc: (id: string) => ({
@@ -38,12 +47,27 @@ function fakeFirestore() {
                     written.set(id, data)
                 },
             }),
-            // The trim query. Empty, so a run records without needing one.
-            where: () => ({ orderBy: () => ({ offset: () => ({ get: async () => ({ empty: true, docs: [] }) }) }) }),
+            where: (field: string, op: string, cutoff: string) => {
+                Object.assign(trim, { field, op, cutoff })
+                return {
+                    limit: (limit: number) => {
+                        trim.limit = limit
+                        return {
+                            get: async () => ({
+                                empty: expired.length === 0,
+                                docs: expired.map((id) => ({ ref: id })),
+                            }),
+                        }
+                    },
+                }
+            },
         }),
-        batch: () => ({ delete: vi.fn(), commit: vi.fn() }),
+        batch: () => ({
+            delete: (ref: string) => deleted.push(ref),
+            commit: vi.fn(),
+        }),
     }
-    return { db: db as any, written }
+    return { db: db as any, written, deleted, trim }
 }
 
 /**
@@ -127,5 +151,58 @@ describe('recording a job run', () => {
         }
 
         await expect(record(run(), { db: db as any })).resolves.toBeUndefined()
+    })
+})
+
+describe('keeping the log to its retention', () => {
+    const now = new Date('2026-09-18T09:00:00.000Z')
+
+    it('asks for the runs that have aged out, whichever job wrote them', async () => {
+        const { db, trim } = fakeFirestore()
+
+        await record(run(), { db, now })
+
+        // One inequality on one field, and no slug: retention is a property of
+        // the log rather than of each job, and this shape is served by the
+        // automatic index rather than by a composite one somebody has to
+        // remember to create.
+        expect([trim.field, trim.op]).toEqual(['startedAt', '<'])
+        expect(trim.cutoff).toBe('2026-03-22T09:00:00.000Z')
+        expect(new Date(trim.cutoff).getTime()).toBe(now.getTime() - KEEP_FOR_DAYS * 24 * 60 * 60 * 1000)
+    })
+
+    it('deletes what it found, in one bounded batch', async () => {
+        const { db, deleted, trim } = fakeFirestore(['handicaps_2026-01-02T03:00:00Z', 'handicaps_2026-01-03T03:00:00Z'])
+
+        await record(run(), { db, now })
+
+        expect(deleted).toEqual(['handicaps_2026-01-02T03:00:00Z', 'handicaps_2026-01-03T03:00:00Z'])
+        // Under Firestore's 500-write batch limit, and a bound rather than a
+        // target: the tick that finds a thousand expired runs is the one that
+        // must not issue a thousand deletes.
+        expect(trim.limit).toBe(TRIM_BATCH)
+        expect(TRIM_BATCH).toBeLessThan(500)
+    })
+
+    it('still records the run when the tidying up fails', async () => {
+        // The trim is best-effort and deliberately not part of the caller's
+        // success: a run that did its work and then failed to tidy up is a run
+        // that worked.
+        const written = new Map<string, Record<string, unknown>>()
+        const db = {
+            collection: () => ({
+                doc: (id: string) => ({ set: async (data: Record<string, unknown>) => void written.set(id, data) }),
+                where: () => ({
+                    limit: () => ({
+                        get: async () => {
+                            throw new Error('Firestore is having a bad day')
+                        },
+                    }),
+                }),
+            }),
+        }
+
+        await expect(record(run(), { db: db as any, now })).resolves.toBeUndefined()
+        expect(written.has('handicaps_2026-09-16T09:10:15.257Z')).toBe(true)
     })
 })
