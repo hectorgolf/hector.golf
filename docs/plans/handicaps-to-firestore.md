@@ -1,9 +1,10 @@
 # Moving the handicap scrape into Firestore
 
-*Written 2026-09-15. **Steps 0 and 1 are done and deployed** — the job has been shadowing
-`update-handicaps.yml` on every scheduled tick since 2026-09-16, and on 2026-09-18 the two pipelines
-finally decided the same live change independently and agreed. Step 2 is next, and the evidence it
-was waiting for now exists. What each step did, and what it cost, is recorded under the step.*
+*Written 2026-09-15. **Steps 0, 1 and 2 are done and deployed.** The job shadowed
+`update-handicaps.yml` from 2026-09-16, the two pipelines decided the same live change independently
+and agreed on 2026-09-18, and the job began writing for real the same day. Firestore is now a second
+system of record for handicaps; `handicaps.json` is still what the site builds from, which is step 3.
+What each step did, and what it cost, is recorded under the step.*
 
 The handicap history is the first dataset to move from "a JSON file in git, written by a GitHub
 Actions runner" to "a Firestore collection, written by the admin service". This document is the plan
@@ -269,7 +270,7 @@ pointed at production Firestore rather than the emulator. Worth knowing because 
 this collection can be written by hand, and because it is not a fault in anything this plan builds:
 run the admin with `FIRESTORE_EMULATOR_HOST` set and it cannot happen.
 
-### Step 2 — live writes ⏳ *next, and now evidenced*
+### Step 2 — live writes ✅ *done 2026-09-18*
 
 Flip `dryRun` off. Firestore and the NDJSON backup both become real, with the append-only guard
 armed. `handicaps.json` is still the build input and still written by the old workflow, so the two
@@ -304,6 +305,41 @@ change**, permanently, rather than to match row for row. Anyone diffing counts r
 `latestPerDay` will see a drift that is correct and looks like a bug. The capability the plan called
 untested is now exercised on every single change, which is a better rehearsal than waiting for the
 Union to publish twice would have been.
+
+**What the first real run did.** Started by hand from `/operations` at 2026-09-18 08:27:26Z and
+finished twelve seconds later, `outcome: ok`, `dryRun: false`, commit
+[`d52f44f`](https://github.com/hectorgolf/hector.golf/commit/d52f44f606cff9deea059d08ce833102d8c57994).
+It reconciled the whole committed history into Firestore, rendered it, and created
+`data/handicaps/observations.ndjson` at 1,408 lines, authored `hector-admin <noreply@hector.golf>`
+with the message "Reconcile the handicap observation log".
+
+Run against production, the criterion above passes on every clause:
+
+| | |
+| --- | --- |
+| NDJSON rows | 1,408 |
+| `handicaps.json` entries | 1,408 |
+| Documents in `handicap-observations` | 1,408 |
+| NDJSON a superset of `handicaps.json` | yes |
+| `latestPerDay` identical across both | yes, all 1,408 pairs |
+| Rows in the NDJSON and not in `handicaps.json` | 0 |
+
+Three things this settled that nothing before it could.
+
+**The token's `Contents: write` scope works.** `push: True` said the grant existed; until this commit
+nothing had ever used it, and a wrong scope would have surfaced here as a failed run rather than
+earlier. It did not.
+
+**The backup's new home keeps the deploys down.** No `deploy-site.yml` run followed the commit — the
+last one was 08:03, from a workflow dispatched by hand. Moving the file out of `astrosite/` in
+step 2 rather than step 3 is why a change still costs one deploy.
+
+**The row drift has not started yet, and that is correct.** The run found `changes: 0`: it
+reconciled git's rows in, scraped, and WiseGolf agreed with every one of them, so the job wrote no
+observation of its own. The +1 begins at the next handicap that moves, when the job stamps
+`observed` before the workflow stamps a later one. Live mode has therefore not yet exercised the
+double-reading case — the shadow period is where the evidence for it came from, and the first real
+change is where it should be checked again.
 
 ### Step 3 — move the reader, once
 
