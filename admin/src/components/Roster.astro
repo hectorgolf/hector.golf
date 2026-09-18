@@ -2,6 +2,7 @@
 import type { MatchplayEvent } from '@hector/schemas/src/events.ts'
 import type { Player } from '@hector/schemas/src/players.ts'
 import { fullName } from '../lib/players.ts'
+import { read as readHandicapSnapshot } from '../lib/handicaps/snapshot.ts'
 
 interface Props {
 	event: MatchplayEvent
@@ -10,6 +11,32 @@ interface Props {
 }
 
 const { event, players, names } = Astro.props
+
+/*
+ * Where the handicaps in this table come from, and why there are two places.
+ *
+ * `player.handicap` is the stopgap: on the site it resolves as
+ * `override ?? fromHistory`, and the override is a figure somebody typed for a
+ * player WiseGolf has never heard of. `update-handicaps.yml` also writes it
+ * today, which is why this table has been able to read it alone — and step 4 of
+ * `docs/plans/handicaps-to-firestore.md` retires that workflow, at which point
+ * the field stops being refreshed and only genuine overrides remain in it.
+ *
+ * So the order below is the site's order, and survives that change without
+ * another edit: the hand-set value wins where there is one, and everyone else
+ * gets what the observation log last saw. Reading the snapshot rather than the
+ * log is the whole point — one document instead of 1,408, on a page that is
+ * loaded far more often than a handicap moves.
+ *
+ * Read here rather than in the page, because this component only renders while
+ * a tournament is in signup. A started tournament pays nothing for it.
+ *
+ * Missing is normal until the job that writes it is wired up, and this falls
+ * back to exactly what it showed before rather than failing the page.
+ */
+const observed = await readHandicapSnapshot()
+const handicapOf = (id: string): number | undefined =>
+	players.find((p) => p.id === id)?.handicap ?? observed?.players[id]?.handicap
 
 const inField = event.participants
 const available = players
@@ -37,22 +64,19 @@ const available = players
 						</tr>
 					</thead>
 					<tbody>
-						{inField.map((pid) => {
-							const player = players.find((p) => p.id === pid)
-							return (
-								<tr>
-									<td>{names.get(pid) ?? pid}</td>
-									<td class="num">{player?.handicap ?? '—'}</td>
-									<td class="right">
-										<form method="POST">
-											<input type="hidden" name="action" value="remove-player" />
-											<input type="hidden" name="playerId" value={pid} />
-											<button type="submit" class="secondary">Remove</button>
-										</form>
-									</td>
-								</tr>
-							)
-						})}
+						{inField.map((pid) => (
+							<tr>
+								<td>{names.get(pid) ?? pid}</td>
+								<td class="num">{handicapOf(pid) ?? '—'}</td>
+								<td class="right">
+									<form method="POST">
+										<input type="hidden" name="action" value="remove-player" />
+										<input type="hidden" name="playerId" value={pid} />
+										<button type="submit" class="secondary">Remove</button>
+									</form>
+								</td>
+							</tr>
+						))}
 					</tbody>
 				</table>
 			</div>
@@ -69,7 +93,7 @@ const available = players
 						{available.map((p) => (
 							<option value={p.id}>
 								{fullName(p)}
-								{p.handicap !== undefined ? ` (${p.handicap})` : ''}
+								{handicapOf(p.id) !== undefined ? ` (${handicapOf(p.id)})` : ''}
 							</option>
 						))}
 					</select>
