@@ -1154,14 +1154,12 @@ A dispatched run is queued for three seconds and running for twelve, so the "run
 a page that refreshes itself until it is done. That covers the run log's `pending` path end to end
 locally: a run is mirrored while it is still going, and rewritten once it is not.
 
-**One thing the GitHub stand-in does not model: the `created` filter.** It reads `per_page` and
-`page` and ignores the window, so it answers every sync with the same runs the real API would have
-narrowed away. Locally that is merely wasteful — the mirror writes what it already holds — but it
-means the cheap path the Operations page depends on is not exercised here, and neither is the
-failure it is built around, since a stand-in that ignores the filter can never answer a malformed
-one with the empty list GitHub returns. Until it does, that behaviour is covered by
-[`admin/test/workflow-runs.test.ts`](../../admin/test/workflow-runs.test.ts) and by reading the real
-API by hand.
+The stand-in also honours the `created` window, **including the way GitHub fails**: a filter it
+cannot parse is answered with zero runs and a 200, not an error. That is the behaviour the mirror is
+built around — it refuses to send a timestamp it cannot vouch for — and a stand-in that answered a
+bad filter with the whole history instead would hide the one failure that code exists to prevent.
+It logs a line when it does not understand a filter, since the response cannot say anything and a
+developer deserves better than the silence production gets.
 
 Nothing in `admin/scripts/` reaches a deployment: the runtime stage of
 [`admin/Dockerfile`](../../admin/Dockerfile) copies `admin/dist` and nothing else. The one stand-in
