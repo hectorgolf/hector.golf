@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { HandicapHistoryEntry } from '@hector/schemas/src/handicaps.ts'
 import type { Player } from '@hector/schemas/src/players.ts'
 
-import { type HandicapReader, decide, isoDateToday, isoInstantNow, scrape } from '../src/lib/jobs/handicaps.ts'
+import { type HandicapReader, decide, isoDateToday, isoInstantNow, scrape, sweepOf } from '../src/lib/jobs/handicaps.ts'
 
 /**
  * What the job decides, without standing in for Firestore, GitHub or WiseGolf.
@@ -143,5 +143,75 @@ describe('deciding what to write', () => {
     it('starts from nothing without complaining, which is what an empty Firestore is', () => {
         const { entries } = decide([], new Map([['a', 14.7]]), NOON)
         expect(entries).toHaveLength(1)
+    })
+})
+
+/**
+ * The sweep a run attests to, and why its arithmetic has to match the workflow's.
+ *
+ * Both pipelines write to the same log while the migration is in progress, and
+ * `lastCheckedFor` takes the latest sweep that did not skip a player. So a player
+ * counted as checked by one pipeline and skipped by the other is dated
+ * differently depending on which sweep happened to land last — and that date is
+ * published at `/events/hector/:id/handicaps.json`, which app.hector.golf reads.
+ *
+ * Pinned against `sweepOf` in `astrosite/src/workflows/update-handicaps.ts`,
+ * which is the definition being matched rather than a second opinion about it.
+ */
+describe('the sweep a run records', () => {
+    const scraped = (readings: Record<string, number>, skipped: string[]) => ({
+        readings: new Map(Object.entries(readings)),
+        skipped,
+    })
+
+    it('counts the players a source answered for', () => {
+        const sweep = sweepOf(scraped({ 'sami-h': 5.2, 'lauri-p': 12 }, ['ricke-b']), '2026-09-18T05:00:35Z')
+
+        expect(sweep).toEqual({
+            at: '2026-09-18T05:00:35Z',
+            checked: 2,
+            skipped: ['ricke-b'],
+        })
+    })
+
+    it('agrees with the workflow, whose arithmetic it has to match', async () => {
+        // `checked = players.length - skipped.length` there; `readings.size`
+        // here. The same number by two routes, which is the point — a scrape
+        // answers for exactly the players it did not skip.
+        const { sweepOf: workflowSweepOf } = await import('../../astrosite/src/workflows/update-handicaps.ts')
+
+        const players = [
+            { id: 'sami-h', handicapChecked: true },
+            { id: 'lauri-p', handicapChecked: true },
+            { id: 'ricke-b', handicapChecked: false },
+        ] as Parameters<typeof workflowSweepOf>[0]
+
+        const theirs = workflowSweepOf(players, '2026-09-18T05:00:35Z')
+        const ours = sweepOf(scraped({ 'sami-h': 5.2, 'lauri-p': 12 }, ['ricke-b']), '2026-09-18T05:00:35Z')
+
+        expect(ours).toEqual(theirs)
+    })
+
+    it('records a sweep that skipped everyone it could not reach, not a count of them', () => {
+        // A list rather than a number, because `lastCheckedFor` answers per
+        // player. A count could not.
+        const sweep = sweepOf(scraped({ 'sami-h': 5.2 }, ['ricke-b', 'panu-l']), '2026-09-18T05:00:35Z')
+        expect(sweep.skipped).toEqual(['ricke-b', 'panu-l'])
+    })
+
+    it('never claims a sweep is approximate', () => {
+        // The field exists to mark entries reconstructed after the fact. A live
+        // sweep leaves it off, which is what keeps the two tellable apart.
+        const sweep = sweepOf(scraped({ 'sami-h': 5.2 }, []), '2026-09-18T05:00:35Z')
+        expect(sweep.approximate).toBeUndefined()
+        expect(Object.keys(sweep)).not.toContain('approximate')
+    })
+
+    it('stamps the sweep with the instant the run used for its observations', () => {
+        // The same `now`, so a sweep and the readings it attests to carry the
+        // same timestamp — as the workflow's do, where one `observed` is passed
+        // to both writers.
+        const now = new Date('2026-09-18T05:00:35.412Z')
+        expect(sweepOf(scraped({ 'sami-h': 5.2 }, []), isoInstantNow(now)).at).toBe('2026-09-18T05:00:35Z')
     })
 })

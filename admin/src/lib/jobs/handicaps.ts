@@ -4,6 +4,15 @@ import type { Player } from '@hector/schemas/src/players.ts'
 import type { HandicapSource } from '@hector/wisegolf/src/handicap-source-api.ts'
 import { createWisegolfSession } from '@hector/wisegolf/src/wisegolf-api.ts'
 
+import type { HandicapCheck } from '@hector/schemas/src/handicap-checks.ts'
+
+import {
+    all as allChecks,
+    insert as insertChecks,
+    missingFrom as checksMissingFrom,
+    parse as parseChecks,
+    render as renderChecks,
+} from '../handicaps/checks.ts'
 import { all, insert, missingFrom, parse, render } from '../handicaps/observations.ts'
 import { listPlayers } from '../repository/events.ts'
 import { wisegolfCredentials } from '../secrets.ts'
@@ -42,6 +51,18 @@ import type { Change } from './log.ts'
  * entry a repository-wide `prettier --check` fails rather than merely churning.
  */
 export const BACKUP_PATH = 'data/handicaps/observations.ndjson'
+
+/**
+ * Where the sweep log's backup lives.
+ *
+ * Beside the observation log and for the same reasons: outside `astrosite/` so
+ * that committing it does not publish the site, and NDJSON so that the
+ * append-only guard — which is line-oriented — can actually guard it.
+ */
+export const CHECKS_BACKUP_PATH = 'data/handicaps/checks.ndjson'
+
+/** Where the old pipeline's sweep log is read from, for the reconcile. */
+export const LEGACY_CHECKS_PATH = 'astrosite/src/data/handicap-checks.json'
 
 /** Where the old pipeline's output is read from, for the reconcile. */
 export const LEGACY_PATH = 'astrosite/src/data/handicaps.json'
@@ -198,7 +219,7 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
     // that and stops the allowance being a deadline.
     const stored = await all()
 
-    // 1. Bring the store up to date with whatever the old pipeline committed.
+    // 1. Bring both stores up to date with whatever the old pipeline committed.
     const legacy = await dependencies.readFile(LEGACY_PATH)
     const committed: HandicapHistoryEntry[] = legacy === undefined ? [] : JSON.parse(legacy)
     const missing = missingFrom(stored, committed)
@@ -207,6 +228,28 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
         await insert(missing)
         console.log(`Reconciled ${missing.length} observations from ${LEGACY_PATH} into the store`)
     }
+
+    /*
+     * The sweep log gets the same treatment, and it is worth saying why it is a
+     * second reconcile rather than a second job.
+     *
+     * A check records *this* scrape — who answered and who did not — so it can
+     * only be written by whatever did the scraping. A separate job would have to
+     * sweep WiseGolf again to have anything to say, which is a second sweep per
+     * tick for a record of the first one. One scrape, two outputs, the way the
+     * workflow this replaces has always done it.
+     */
+    const storedChecks = await allChecks()
+    const legacyChecks = await dependencies.readFile(LEGACY_CHECKS_PATH)
+    const committedChecks: HandicapCheck[] = legacyChecks === undefined ? [] : JSON.parse(legacyChecks)
+    const missingChecks = checksMissingFrom(storedChecks, committedChecks)
+
+    if (!dryRun && missingChecks.length > 0) {
+        await insertChecks(missingChecks)
+        console.log(`Reconciled ${missingChecks.length} sweeps from ${LEGACY_CHECKS_PATH} into the store`)
+    }
+
+    const checkHistory = [...storedChecks, ...missingChecks]
 
     /*
      * What the store holds after the reconcile — or would, on a dry run.
@@ -267,6 +310,8 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
     // 3. Decide what is new, against that history.
     const { entries, changes } = decide(history, readings, now)
 
+    const sweep = sweepOf({ readings, skipped }, isoInstantNow(now))
+
     if (dryRun) {
         // The entire output of a shadow run: what it would have done, in the run
         // log and in Cloud Logging, having touched neither store.
@@ -279,13 +324,14 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
         // stdout — so the one thing worth reading arrives shredded, and a filter
         // matching "Shadow run" returns the sentence without the evidence.
         console.log(
-            `Shadow run: ${changes.length} observation(s) would have been written: ${JSON.stringify(changes)}`
+            `Shadow run: ${changes.length} observation(s) and a sweep would have been written: ${JSON.stringify(changes)}`
         )
         return { outcome: 'ok', changes }
     }
 
     // 4. Write them.
     if (entries.length > 0) await insert(entries)
+    await insertChecks([sweep])
 
     // 5. Render everything and commit if the result differs from what is there.
     //
@@ -300,9 +346,53 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
             : 'Reconcile the handicap observation log'
     const written = await dependencies.commit(BACKUP_PATH, rendered, message)
 
-    return written.ok
-        ? { outcome: 'ok', changes, commit: written.commit }
-        : { outcome: 'failed', detail: written.detail, changes }
+    /*
+     * The sweep log is committed second, and separately.
+     *
+     * Two commits rather than one, because the Contents API writes one file at a
+     * time and the trees API is the dependency `github.ts` decided against — see
+     * its note on the count being the thing to watch. Two files is not yet that
+     * day: the append-only guard applies per file, both are idempotent, and a
+     * run that commits the first and dies before the second is repaired by the
+     * next run's reconcile, which is the property the whole design rests on.
+     *
+     * Unconditional where the observation log's commit is not, because this file
+     * gains a line on every sweep: there is no "nothing changed" case for it.
+     */
+    const checksWritten = await dependencies.commit(
+        CHECKS_BACKUP_PATH,
+        renderChecks([...checkHistory, sweep]),
+        `Record a handicap sweep at ${sweep.at}`,
+    )
+
+    if (!written.ok) return { outcome: 'failed', detail: written.detail, changes }
+    if (!checksWritten.ok) return { outcome: 'failed', detail: checksWritten.detail, changes }
+
+    return { outcome: 'ok', changes, commit: written.commit }
+}
+
+/**
+ * The sweep a scrape attests to, written whether or not anything moved.
+ *
+ * Extracted and exported so that its semantics can be pinned against the
+ * workflow's `sweepOf`, which is the thing they have to match. `lastCheckedFor`
+ * reads both logs the same way and takes the latest sweep that did not skip a
+ * player — so while both pipelines are writing, a player counted differently by
+ * the two would be dated differently depending on which sweep happened to land
+ * last. That is a published number: `/events/hector/:id/handicaps.json` carries
+ * it, and app.hector.golf reads it.
+ *
+ * `checked` is how many players a source answered for, and `skipped` is everyone
+ * else — a player with no club and a player whose sources all failed are
+ * deliberately not told apart, because neither was checked and that is the only
+ * thing a reader acts on.
+ *
+ * No `undefined` case, where the workflow's version has one for a sweep that
+ * reached nobody: `run` has already returned by then, on the same judgement for
+ * the same reason.
+ */
+export function sweepOf(result: ScrapeResult, at: string): HandicapCheck {
+    return { at, checked: result.readings.size, skipped: result.skipped }
 }
 
 /** Re-exported for the tests, which pin the backup's shape rather than the write. */
