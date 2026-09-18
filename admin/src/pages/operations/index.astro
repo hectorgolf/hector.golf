@@ -162,6 +162,17 @@ const jobLog: JobRun[] = JOBS.flatMap((job) => jobHistories.get(job.slug) ?? [])
 
 const ranJob = jobBySlug(Astro.url.searchParams.get("ranJob") ?? undefined);
 
+/*
+ * Whether anything on this page is still in shadow mode.
+ *
+ * The lede below explains what a shadow run is, which is worth a sentence only
+ * while one exists. Handicaps went live on 2026-09-18 and is currently the only
+ * job, so that sentence would otherwise describe nothing on the page — and the
+ * next dataset to arrive will land in shadow mode and want it back. Derived
+ * rather than deleted, so it comes and goes on its own.
+ */
+const anyShadowed = JOBS.some((job) => job.dryRun);
+
 const JOB_TONE_PILL = {
 	good: "pill-victor",
 	bad: "pill-matchplay",
@@ -339,9 +350,17 @@ const now = new Date();
 		<h2>Jobs this service runs itself</h2>
 		<p class="lede-note">
 			These do not go to GitHub — the work happens in this service, in the request. The same Cloud Scheduler call
-			that dispatches the workflows above runs every job marked scheduled, so their histories line up. A{" "}
-			<strong>shadow</strong> run computes what it would have written and writes nothing; see
-			<code>docs/plans/handicaps-to-firestore.md</code>.
+			that dispatches the workflows above runs every job marked scheduled, so their histories line up.{" "}
+			{
+				/* Its own sentence rather than a clause, so that dropping it leaves the
+				   one after it still starting with a capital. */
+				anyShadowed && (
+					<>
+						A <strong>shadow</strong> run computes what it would have written and writes nothing.{" "}
+					</>
+				)
+			}
+			See <code>docs/plans/handicaps-to-firestore.md</code>.
 		</p>
 
 		<div class="workflows">

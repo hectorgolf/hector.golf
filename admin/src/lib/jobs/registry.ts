@@ -196,9 +196,18 @@ export const JOBS: readonly Job[] = [
         slug: 'handicaps',
         label: "Players' official handicaps",
         blurb: "Reads every player's current handicap from WiseGolf into Firestore, and keeps the git backup in step.",
-        // Shadow mode. Step 2 of the plan flips this, in its own commit, once the
-        // run log has shown a week of boring diffs.
-        dryRun: true,
+        // Live since 2026-09-18, which is step 2 of the plan. The bar written
+        // here was "a week of boring diffs"; what it actually got was two days
+        // and a single paired decision, and the plan explains why that was the
+        // right trade — the changes stop for the season in October, so a week of
+        // waiting risked buying no evidence at all rather than more of it.
+        //
+        // What the one pair proved is the part that could not be proved offline:
+        // on 2026-09-18 at 05:00 UTC this job read `handicaps.json`, scraped, and
+        // said `sami-h` 4.8 -> 5.2 thirty-one seconds before the workflow
+        // committed the identical change. It reached that answer without having
+        // been told it, which is the whole of what the shadow period was for.
+        dryRun: false,
         // On the tick from the start, because shadow mode is only worth anything
         // if it runs as often as the thing it is shadowing. The tick also
         // dispatches `update-handicaps.yml`, so each run produces a pair of

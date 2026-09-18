@@ -19,19 +19,29 @@ import type { Change } from './log.ts'
  */
 
 /**
- * Where the backup lives, during the transition.
+ * Where the backup lives.
  *
- * Still under `astrosite/src/data/` for now, which has two consequences worth
- * knowing about while step 2 of the plan is running. It is inside
- * `deploy-site.yml`'s path filter, and a commit made with this service's token
- * *does* trigger workflows — unlike one made with `GITHUB_TOKEN`, whose
- * recursion guard is the whole reason `.github/actions/request-deploy` exists —
- * so each commit here publishes the site by itself. And it is inside the tree
- * `.prettierignore` already covers, so nothing reformats it.
+ * Outside `astrosite/`, and that is the whole point of the location rather than
+ * tidiness. `deploy-site.yml` and `check-site.yml` both filter on
+ * `astrosite/**`, and a commit made with this service's token *does* trigger
+ * workflows — unlike one made with `GITHUB_TOKEN`, whose recursion guard is the
+ * entire reason `.github/actions/request-deploy` exists. A backup kept inside
+ * that tree would therefore publish the site every time it was written, twice
+ * per change once the reconcile round is counted, for a file nothing builds
+ * from.
  *
- * Step 3 moves it to `data/handicaps/observations.ndjson`, out of both.
+ * The plan had this move in step 3, alongside the reader. It happens here
+ * instead because the file did not exist yet when step 2 began: moving a path
+ * before anything is committed to it costs nothing, where moving it afterwards
+ * means a committed file to migrate and an append-only guard looking at the
+ * wrong history.
+ *
+ * The cost of leaving `astrosite/src/data/` is that `.prettierignore` no longer
+ * covers this by accident, so it names the file directly. Prettier cannot infer
+ * a parser for `.ndjson` and *errors* rather than reformatting, so without that
+ * entry a repository-wide `prettier --check` fails rather than merely churning.
  */
-export const BACKUP_PATH = 'astrosite/src/data/handicaps.ndjson'
+export const BACKUP_PATH = 'data/handicaps/observations.ndjson'
 
 /** Where the old pipeline's output is read from, for the reconcile. */
 export const LEGACY_PATH = 'astrosite/src/data/handicaps.json'

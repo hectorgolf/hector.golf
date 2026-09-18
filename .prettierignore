@@ -9,3 +9,11 @@ package-lock.json
 # onto one ("courses": [""]). Letting a formatter near these files would undo the
 # writers on every save, which is the exact churn they were changed to stop.
 astrosite/src/data/
+
+# The handicap observation log, written by the admin service rather than by a
+# build. It lives outside astrosite/ so that committing it does not trip
+# deploy-site.yml's path filter, which also takes it out of the rule above.
+# Prettier cannot infer a parser for .ndjson and errors on it rather than
+# reformatting, so this is the difference between `prettier --check .` passing
+# and failing.
+data/handicaps/
