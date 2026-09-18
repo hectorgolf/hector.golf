@@ -102,7 +102,9 @@ async function waitUntilListening(hostPort: string, timeoutMs = 60_000): Promise
  * already running belongs to whoever started it, holds data they may want, and
  * must survive this process exiting.
  */
-type Emulator = { hostPort: string; ours: boolean }
+type Emulator =
+    | { hostPort: string; ours: false }
+    | { hostPort: string; ours: true; child: ChildProcess }
 
 /**
  * The Firestore emulator, started only if one is not already there.
@@ -155,8 +157,17 @@ async function ensureEmulator(): Promise<Emulator> {
         process.exit(1)
     }
 
-    return { hostPort, ours: true }
+    return { hostPort, ours: true, child }
 }
+
+/**
+ * How long to wait for the emulator to finish going down.
+ *
+ * It takes about a second, and the deadline is only for the case where it
+ * wedges: a development tool that will not give the terminal back is worse than
+ * one that leaves something running and says which port it is on.
+ */
+const EMULATOR_SHUTDOWN_DEADLINE_MS = 5_000
 
 /**
  * Stop the emulator, if it was ours to stop.
@@ -174,9 +185,19 @@ async function ensureEmulator(): Promise<Emulator> {
  *
  * `POST /shutdown` is the emulator's own door, it answers 200, and it works
  * wherever this runs, which a process-group kill does not.
+ *
+ * The 200 is not the end of it, though, and that is the second half of this
+ * function. The emulator answers in about 30ms, releases the port at around
+ * 600ms, and `gcloud` exits at about a second — having printed the JVM's
+ * shutdown lines somewhere in between. Returning on the 200 meant exiting into
+ * the middle of all that, so the shell prompt came back and the emulator carried
+ * on writing underneath it. Waiting for the child is what makes the last line of
+ * output the last line of output, and it is the stronger check besides: a closed
+ * port says the listener is gone, an exited child says the JVM is.
  */
 async function stopEmulator(emulator: Emulator): Promise<void> {
     if (!emulator.ours) return
+
     try {
         await fetch(`http://${emulator.hostPort}/shutdown`, {
             method: 'POST',
@@ -185,8 +206,30 @@ async function stopEmulator(emulator: Emulator): Promise<void> {
             signal: AbortSignal.timeout(3_000),
         })
     } catch {
-        // Already gone, or never came up. Either way there is nothing left to do
-        // and nothing worth saying on the way out of a development tool.
+        // Already gone, or never came up. Either way there is nothing left to
+        // ask of it, and the wait below has its own deadline.
+    }
+
+    // The POST above is unconditional, and this check comes after it rather than
+    // before, which was a bug the first time round: `gcloud` is a wrapper, and
+    // an exited wrapper does not mean an exited emulator — the JVM below it
+    // reparents to init and carries on holding the port, which is the whole
+    // reason the shutdown goes over HTTP in the first place. Skipping the POST
+    // on a dead wrapper orphaned exactly the emulator this function exists to
+    // stop. What a dead wrapper does mean is that there is no `exit` left to
+    // wait for, so only the wait is skipped.
+    if (emulator.child.exitCode !== null || emulator.child.signalCode !== null) return
+
+    const stopped = await Promise.race([
+        once(emulator.child, 'exit').then(() => true),
+        new Promise<false>((resolve) => setTimeout(() => resolve(false), EMULATOR_SHUTDOWN_DEADLINE_MS)),
+    ])
+    if (!stopped) {
+        console.error(
+            `\nThe Firestore emulator did not finish stopping within ${EMULATOR_SHUTDOWN_DEADLINE_MS}ms.\n` +
+                `It may still be holding ${emulator.hostPort}, which the next \`npm run dev:fake\` would\n` +
+                'meet as "Address already in use".\n'
+        )
     }
 }
 
