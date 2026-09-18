@@ -100,7 +100,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Whether this deploy can read the handicap history from the admin service.
+      # Whether this deploy can read the scraped data from the admin service.
       #
       # Unconfigured is not a failure, and that is the same call
       # `.github/actions/request-deploy` makes for the same reason: a project that
@@ -110,10 +110,10 @@ jobs:
       #
       # What *is* a failure is being configured and unable to reach the service,
       # and that failure belongs to the build rather than to this step. See
-      # `astrosite/src/code/handicap-history-source.ts` for why there is no third
+      # `astrosite/src/code/admin-api.ts` for why there is no third
       # branch where it quietly publishes the backup instead.
-      - name: Decide whether the build can read the handicap history
-        id: handicaps
+      - name: Decide whether the build can read from the admin service
+        id: admin_api
         run: |
           missing=""
           [ -n "${{ vars.GH_WIF_PROVIDER }}" ]           || missing="$missing GH_WIF_PROVIDER"
@@ -121,7 +121,7 @@ jobs:
           [ -n "${{ vars.TF_ADMIN_DOMAIN }}" ]           || missing="$missing TF_ADMIN_DOMAIN"
           [ -n "${{ secrets.TF_IAP_OAUTH_CLIENT_ID }}" ] || missing="$missing TF_IAP_OAUTH_CLIENT_ID"
           if [ -n "$missing" ]; then
-            echo "::notice::Building from the committed handicap backup — unconfigured:$missing."
+            echo "::notice::Building from the committed backups — unconfigured:$missing."
             echo "live=false" >> "$GITHUB_OUTPUT"
           else
             echo "live=true" >> "$GITHUB_OUTPUT"
@@ -129,7 +129,7 @@ jobs:
 
       - name: Authenticate to Google
         id: auth
-        if: steps.handicaps.outputs.live == 'true'
+        if: steps.admin_api.outputs.live == 'true'
         uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ vars.GH_WIF_PROVIDER }}
@@ -155,13 +155,19 @@ jobs:
           # Public URL of the leaderboard proxy. Unset simply leaves the live
           # leaderboard off, and every page renders from the last published snapshot.
           PUBLIC_LEADERBOARD_PROXY_URL: ${{ vars.PUBLIC_LEADERBOARD_PROXY_URL }}
-          # Both or neither. `handicap-history-source.ts` refuses a half-configured
+          # A base URL rather than one per dataset: the site reads two logs through
+          # this already and two more scrapes are planned, so a variable pair per
+          # collection would mean editing this step every time the admin learns to
+          # serve something. The path belongs to the caller, which knows which log
+          # it wants.
+          #
+          # Both or neither. `admin-api.ts` refuses a half-configured
           # build rather than falling back, because setting one of these is a
           # statement that this deploy was wired to the API and answering a typo
           # with the backup is a silent stale publish. The `if` on the auth step
           # above is what keeps them in step: unconfigured leaves both empty.
-          HANDICAP_HISTORY_URL: ${{ steps.handicaps.outputs.live == 'true' && format('https://{0}/api/handicaps/history', vars.TF_ADMIN_DOMAIN) || '' }}
-          HANDICAP_HISTORY_TOKEN: ${{ steps.auth.outputs.id_token }}
+          ADMIN_API_URL: ${{ steps.admin_api.outputs.live == 'true' && format('https://{0}', vars.TF_ADMIN_DOMAIN) || '' }}
+          ADMIN_API_TOKEN: ${{ steps.auth.outputs.id_token }}
 
       - name: Upload the built site
         uses: actions/upload-pages-artifact@v5

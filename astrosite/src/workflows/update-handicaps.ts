@@ -13,7 +13,7 @@ import { getPlayerName, updatePlayerData } from "../code/players.ts";
 import type { Player } from "@hector/schemas/src/players.ts";
 import { type HandicapHistoryEntry, latestPerDay } from "@hector/schemas/src/handicaps.ts";
 import { type HectorEvent } from "@hector/schemas/src/events.ts";
-import { type HandicapCheck } from "@hector/schemas/src/handicap-checks.ts";
+import { type HandicapCheck, sweepOf as buildSweep } from "@hector/schemas/src/handicap-checks.ts";
 
 /**
  * Get the player's handicap from their history.
@@ -116,8 +116,10 @@ type PlayerWithHandicapChanges = Player & {
  */
 export const sweepOf = (players: PlayerWithHandicapChanges[], at: string): HandicapCheck | undefined => {
     const skipped = players.filter((player) => !player.handicapChecked).map((player) => player.id);
-    const checked = players.length - skipped.length;
-    return checked === 0 ? undefined : { at, checked, skipped };
+    // The shape and the "nobody answered" rule live in `@hector/schemas`, because
+    // the admin service's job has to make both judgements identically — see the
+    // note on `sweepOf` in `admin/src/lib/jobs/handicaps.ts`.
+    return buildSweep(at, players.length - skipped.length, skipped);
 };
 
 /**
