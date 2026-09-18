@@ -50,7 +50,7 @@ import { all, render } from '../../../lib/handicaps/observations.ts'
 /**
  * The `Accept` a browser sends and a build does not.
  *
- * `handicap-history-source.ts` asks for `application/x-ndjson` explicitly, so
+ * `astrosite/src/code/admin-api.ts` asks for `application/x-ndjson` explicitly, so
  * the build is never the caller this is true for.
  */
 const wantsHtml = (request: Request) => (request.headers.get('accept') ?? '').includes('text/html')

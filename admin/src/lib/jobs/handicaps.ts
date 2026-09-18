@@ -4,7 +4,7 @@ import type { Player } from '@hector/schemas/src/players.ts'
 import type { HandicapSource } from '@hector/wisegolf/src/handicap-source-api.ts'
 import { createWisegolfSession } from '@hector/wisegolf/src/wisegolf-api.ts'
 
-import type { HandicapCheck } from '@hector/schemas/src/handicap-checks.ts'
+import { type HandicapCheck, sweepOf as buildSweep } from '@hector/schemas/src/handicap-checks.ts'
 
 import {
     all as allChecks,
@@ -392,7 +392,14 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
  * the same reason.
  */
 export function sweepOf(result: ScrapeResult, at: string): HandicapCheck {
-    return { at, checked: result.readings.size, skipped: result.skipped }
+    const sweep = buildSweep(at, result.readings.size, result.skipped)
+    if (!sweep) {
+        // Unreachable from `run`, which returns before this on an empty scrape.
+        // Thrown rather than returned so that a future caller cannot get an
+        // `undefined` past the type system and write a sweep that says nothing.
+        throw new Error('A scrape that reached nobody has no sweep to record')
+    }
+    return sweep
 }
 
 /** Re-exported for the tests, which pin the backup's shape rather than the write. */

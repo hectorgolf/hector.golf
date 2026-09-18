@@ -110,7 +110,7 @@ jobs:
       #
       # What *is* a failure is being configured and unable to reach the service,
       # and that failure belongs to the build rather than to this step. See
-      # `astrosite/src/code/handicap-history-source.ts` for why there is no third
+      # `astrosite/src/code/admin-api.ts` for why there is no third
       # branch where it quietly publishes the backup instead.
       - name: Decide whether the build can read from the admin service
         id: admin_api

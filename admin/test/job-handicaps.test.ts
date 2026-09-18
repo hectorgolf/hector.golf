@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from 'vitest'
 import type { HandicapHistoryEntry } from '@hector/schemas/src/handicaps.ts'
 import type { Player } from '@hector/schemas/src/players.ts'
 
+import { sweepOf as buildSweep } from '@hector/schemas/src/handicap-checks.ts'
+
 import { type HandicapReader, decide, isoDateToday, isoInstantNow, scrape, sweepOf } from '../src/lib/jobs/handicaps.ts'
 
 /**
@@ -174,22 +176,23 @@ describe('the sweep a run records', () => {
         })
     })
 
-    it('agrees with the workflow, whose arithmetic it has to match', async () => {
-        // `checked = players.length - skipped.length` there; `readings.size`
-        // here. The same number by two routes, which is the point — a scrape
-        // answers for exactly the players it did not skip.
-        const { sweepOf: workflowSweepOf } = await import('../../astrosite/src/workflows/update-handicaps.ts')
+    it('builds the sweep through the one definition both pipelines use', () => {
+        // Not "asserts the two agree", which is what this was and why it reached
+        // into `astrosite/` — a path the admin's container image does not copy,
+        // so `astro check` failed inside Docker and nowhere else. The shape and
+        // the "nobody answered" rule now live in `@hector/schemas`, and both
+        // pipelines call it. Agreement is structural rather than checked.
+        const at = '2026-09-18T05:00:35Z'
+        expect(sweepOf(scraped({ 'sami-h': 5.2, 'lauri-p': 12 }, ['ricke-b']), at)).toEqual(
+            buildSweep(at, 2, ['ricke-b']),
+        )
+    })
 
-        const players = [
-            { id: 'sami-h', handicapChecked: true },
-            { id: 'lauri-p', handicapChecked: true },
-            { id: 'ricke-b', handicapChecked: false },
-        ] as Parameters<typeof workflowSweepOf>[0]
-
-        const theirs = workflowSweepOf(players, '2026-09-18T05:00:35Z')
-        const ours = sweepOf(scraped({ 'sami-h': 5.2, 'lauri-p': 12 }, ['ricke-b']), '2026-09-18T05:00:35Z')
-
-        expect(ours).toEqual(theirs)
+    it('refuses to build a sweep for a scrape that reached nobody', () => {
+        // `run` returns before this, so it is unreachable there — thrown rather
+        // than returned so a future caller cannot slip an empty sweep past the
+        // type system and record that we looked when we did not.
+        expect(() => sweepOf(scraped({}, ['ricke-b']), '2026-09-18T05:00:35Z')).toThrow(/reached nobody/)
     })
 
     it('records a sweep that skipped everyone it could not reach, not a count of them', () => {

@@ -72,6 +72,11 @@ export const schema = z.object({
 
 export type HandicapCheck = z.infer<typeof schema>;
 
+/** A sweep, or nothing when no source answered and there is nothing to attest to. */
+export function sweepOf(at: string, checked: number, skipped: readonly string[]): HandicapCheck | undefined {
+    return checked === 0 ? undefined : { at, checked, skipped: [...skipped] };
+}
+
 /** Sweeps oldest first. */
 export function compareChecks(a: HandicapCheck, b: HandicapCheck): number {
     return a.at.localeCompare(b.at);
