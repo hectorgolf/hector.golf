@@ -98,6 +98,7 @@ import http, { type IncomingHttpHeaders, type IncomingMessage, type ServerRespon
 import { dirname, join } from 'node:path'
 import type { Duplex } from 'node:stream'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { styleText } from 'node:util'
 
 import { dev } from 'astro'
 
@@ -533,9 +534,20 @@ async function main(): Promise<void> {
     })
 
     server.listen(port, '127.0.0.1', () => {
-        console.log(
-            `\nIAP stand-in on http://localhost:${port} — the dev server, in this process, on ${astro.address.port}`
-        )
+        // The one address worth opening, made the loudest thing on the screen —
+        // and the other one quietened. Astro has already printed its own URL a
+        // few lines above, in cyan, and that is the port *without* an identity:
+        // the admin renders as "not signed in" there, which is the confusion
+        // this whole script exists to remove. Left as two plain URLs, the wrong
+        // one is the eye-catching one.
+        //
+        // `styleText` rather than escape codes by hand: it returns the string
+        // untouched when stdout is not a colour-capable terminal, so a piped or
+        // redirected run stays free of control characters and the address stays
+        // copy-pasteable. It honours NO_COLOR too.
+        const here = styleText(['bold', 'green'], `http://localhost:${port}`)
+        const behind = styleText('dim', `the dev server, in this process, on ${astro.address.port}`)
+        console.log(`\nIAP stand-in on ${here} — ${behind}`)
         console.log(`Accounts configured: ${accounts.length}`)
         console.log('Sign out from the admin itself; it clears the cookie and asks again.\n')
     })
