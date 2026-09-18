@@ -136,8 +136,32 @@ describe('a locked split, as published', () => {
         // the basis runs to the freeze and cites the newest sweep in the log.
         const open = fieldHandicaps(hector2026(), wellBefore).handicaps.find((p) => p.id === 'lasse-k')!
         const shut = fieldHandicaps(locked(), wellBefore).handicaps.find((p) => p.id === 'lasse-k')!
-        expect(open.bucketing.observed).toBe('2026-09-18T05:01:06Z')
-        expect(shut.bucketing.observed).toBe('2026-09-17T05:00:45Z')
+
+        /*
+         * Asserted as a relationship rather than as two literals, and the reason is
+         * worth stating because the literals read as more precise.
+         *
+         * `bucketing.observed` is a sweep's `at` out of `handicap-checks.json`, and
+         * that file gains an entry on *every* run of `update-handicaps.yml` whether
+         * a handicap moved or not — four scheduled runs a day, plus any pressed by
+         * hand. So the unlocked basis, which cites the newest sweep there is, has a
+         * new value several times a day. Pinning it made this a test that failed on
+         * a timer: it was written against the 05:01 sweep and was already wrong by
+         * the 08:03 one, on the same morning, without a line of source changing.
+         *
+         * What the test is actually about survives the change intact. Locked, the
+         * basis stops at a sweep that had already happened when the split was
+         * settled; unlocked, it runs on to a later one. That ordering is the whole
+         * behaviour, and it does not care which sweeps they are.
+         */
+        expect(shut.bucketing.observed).not.toBeNull()
+        expect(open.bucketing.observed).not.toBeNull()
+
+        // Locked: bounded by the moment the split was settled.
+        expect(shut.bucketing.observed! <= wellBefore.toISOString()).toBe(true)
+
+        // Unlocked: strictly later, which is the difference the lock makes.
+        expect(open.bucketing.observed! > shut.bucketing.observed!).toBe(true)
     })
 
     it('leaves the handicaps beside the names alone', () => {
