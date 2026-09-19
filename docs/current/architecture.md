@@ -801,7 +801,7 @@ the history.
 | --- | --- | --- | --- |
 | `update-handicaps.ts` | Every two hours 03:00–07:00, and 12:00, by Cloud Scheduler. No cron | WiseGolf | `handicaps.json`, `handicap-checks.json`, event `buckets` |
 | `update-leaderboards.ts` | Every two hours 03:00–07:00, and 12:00, by Cloud Scheduler. No cron | Sheets / app.hector.golf | `leaderboards/*.json` (via API), event `results.teams` |
-| `update-player-biographies.ts` | Every 15 days, on the first tick that finds it due, and only while a Hector is upcoming. No cron | GCP function, WiseGolf | `players/*.json` `biography`, `clubs.json` |
+| `update-player-biographies.ts` | Every 15 days, on the first tick that finds it due, and only while a Hector is upcoming. No cron | GCP function, WiseGolf | `players/*.json` `biography` where `biographyLocked` is unset, `clubs.json` |
 | `update-player-club-memberships.ts` | Every 30 days, on the first tick that finds it due. No cron | WiseGolf | `players/*.json` `club` |
 
 **`update-handicaps.ts`** — the largest at 310 lines. For each player holding a `club`, it fetches
@@ -830,7 +830,18 @@ home club resolved through `clubs.json`, past appearances, Hector/Victor wins, `
 next event and whether they are playing it, a `retired` flag when more than seven events have passed
 since their last appearance, and **the biographies already generated in this run** so the model
 avoids repeating phrasing) and POSTs it to the `GeneratePlayerBiography` Cloud Function. As a side
-effect it regenerates `clubs.json` by merging the club lists from all handicap sources.
+effect it regenerates `clubs.json` by merging the club lists from all handicap sources — and that
+side effect fires **at import time**, from a module-level IIFE, so importing this module at all
+scrapes WiseGolf and rewrites the file from whatever comes back. Something without credentials gets
+nothing back and writes `[]` over 1,402 lines of committed club data, which is why the logic worth
+unit-testing was put in `src/code/biographies.ts` instead of beside its caller.
+
+[`biographiesToRegenerate`](../../astrosite/src/code/biographies.ts) is which players it rewrites,
+and it is the counterpart of `bucketsToRecompute` above: a player whose `biographyLocked` is set is
+skipped, and returned so the run can log who it left alone and why. The locked biographies are still
+handed to the model as phrasing to avoid, because they remain on the page beside whatever the run
+writes — dropping them from the run entirely would let a regenerated biography echo a sentence
+already published under somebody else's name.
 
 It writes nothing at all unless a Hector is upcoming, and `isUpcomingEvent` compares start dates, so
 it stops writing the day after an event begins and does not write again until the next event file is

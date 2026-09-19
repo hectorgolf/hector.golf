@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 
 import { hectorEvents, hasParticipants, isUpcomingEvent, isPastEvent } from "../code/data.ts";
 import { getAllPlayers, getPlayerName, updatePlayerData } from "../code/players.ts";
+import { biographiesToRegenerate } from "../code/biographies.ts";
 import { type Player } from "@hector/schemas/src/players.ts";
 import { type EventTiming, type HectorEvent } from "@hector/schemas/src/events.ts";
 
@@ -202,10 +203,22 @@ async function generateBiography(input: PlayerBiographyInput): Promise<string[]>
 }
 
 async function updateBiographiesForEvent(_: HectorEvent) {
-    getAllPlayers();
+    const { regenerate, locked, alreadyPublished } = biographiesToRegenerate(getAllPlayers());
     const commitMessage: string[] = [];
-    const generatedBiographies: string[] = [];
-    for (const player of getAllPlayers()) {
+
+    // Seeded with what the locked players already say rather than starting empty;
+    // see `biographiesToRegenerate` for why that is load-bearing.
+    const generatedBiographies: string[] = [...alreadyPublished];
+
+    console.log(`Regenerating ${regenerate.length} biographies; ${locked.length} are locked.`);
+    for (const player of locked) {
+        console.log(
+            `Leaving ${getPlayerName(player)}'s biography alone: biographyLocked is set, so this one is ` +
+                `somebody's rather than the generator's. Clear the field to hand it back.`,
+        );
+    }
+
+    for (const player of regenerate) {
         const input = await extractPlayerBiographyInput(player, generatedBiographies);
         const biography = await generateBiography(input);
         const playerName = getPlayerName(player);
@@ -215,9 +228,10 @@ async function updateBiographiesForEvent(_: HectorEvent) {
         generatedBiographies.push(...biography);
     }
     if (commitMessage.length > 0) {
+        const left = locked.length > 0 ? ` (${locked.length} left alone, biographyLocked)` : "";
         writeFileSync(
             pathToCommitMessage,
-            `Updated biographies for ${commitMessage.length} players:\n${commitMessage.map((m) => `- ${m}`).join("\n")}`,
+            `Updated biographies for ${commitMessage.length} players${left}:\n${commitMessage.map((m) => `- ${m}`).join("\n")}`,
         );
     }
 }
