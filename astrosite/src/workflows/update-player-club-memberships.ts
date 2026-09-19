@@ -26,13 +26,24 @@ const pathToClubMembershipUpdateCommitMessage = join(
     "../../.update-player-club-memberships-commit",
 );
 
-if (existsSync(pathToClubMembershipUpdateCommitMessage)) {
-    console.log(`Deleting pre-existing commit message file: ${resolve(pathToClubMembershipUpdateCommitMessage)}`);
-    rmSync(pathToClubMembershipUpdateCommitMessage, { force: true });
-} else {
-    console.log(`Creating an empty commit message file: ${resolve(pathToClubMembershipUpdateCommitMessage)}`);
-}
-writeFileSync(pathToClubMembershipUpdateCommitMessage, "");
+/**
+ * Start the run's commit message from empty.
+ *
+ * Inside the run rather than at module scope, for the reason its twins in
+ * `update-handicaps.ts` and `update-player-biographies.ts` are: an import must not
+ * touch the working tree. This file is gitignored, so unlike the player JSON it
+ * would never have shown up in a diff — an import simply threw away a message a
+ * real run had left for `commit-changes.sh`.
+ */
+const resetCommitMessage = () => {
+    if (existsSync(pathToClubMembershipUpdateCommitMessage)) {
+        console.log(`Deleting pre-existing commit message file: ${resolve(pathToClubMembershipUpdateCommitMessage)}`);
+        rmSync(pathToClubMembershipUpdateCommitMessage, { force: true });
+    } else {
+        console.log(`Creating an empty commit message file: ${resolve(pathToClubMembershipUpdateCommitMessage)}`);
+    }
+    writeFileSync(pathToClubMembershipUpdateCommitMessage, "");
+};
 
 const persistPlayersToDisk = async (players: Player[]) => {
     if (players.length === 0) {
@@ -130,7 +141,14 @@ const updateClubMemberships = async () => {
 };
 
 const run = async () => {
+    resetCommitMessage();
     await updateClubMemberships();
 };
 
-run();
+// Only when this file is the thing being run, as in `update-handicaps.ts`. The run
+// rewrites player JSON through `updatePlayerData`, so an import that wanted one of
+// the functions above would have scraped WiseGolf and committed its guesses about
+// who belongs to which club first.
+if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
+    run();
+}
