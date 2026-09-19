@@ -830,18 +830,25 @@ home club resolved through `clubs.json`, past appearances, Hector/Victor wins, `
 next event and whether they are playing it, a `retired` flag when more than seven events have passed
 since their last appearance, and **the biographies already generated in this run** so the model
 avoids repeating phrasing) and POSTs it to the `GeneratePlayerBiography` Cloud Function. As a side
-effect it regenerates `clubs.json` by merging the club lists from all handicap sources — and that
-side effect fires **at import time**, from a module-level IIFE, so importing this module at all
-scrapes WiseGolf and rewrites the file from whatever comes back. Something without credentials gets
-nothing back and writes `[]` over 1,402 lines of committed club data, which is why the logic worth
-unit-testing was put in `src/code/biographies.ts` instead of beside its caller.
+effect it also regenerates `clubs.json` by merging the club lists from all handicap sources.
 
-[`biographiesToRegenerate`](../../astrosite/src/code/biographies.ts) is which players it rewrites,
-and it is the counterpart of `bucketsToRecompute` above: a player whose `biographyLocked` is set is
-skipped, and returned so the run can log who it left alone and why. The locked biographies are still
-handed to the model as phrasing to avoid, because they remain on the page beside whatever the run
-writes — dropping them from the run entirely would let a regenerated biography echo a sentence
-already published under somebody else's name.
+That side effect used to fire **at import time**, from a module-level IIFE, so importing the module
+at all scraped WiseGolf and rewrote the file from whatever came back — and anything without
+credentials, a test above all, got nothing back and wrote `[]` over 1,402 lines of committed club
+data without failing or saying so. The club list is now fetched lazily and memoised, the file is
+written by the run, and `run()` is behind the same `argv[1]` guard as `update-handicaps.ts`.
+`workflow-import-writes-nothing.test.ts` is the assertion that keeps it that way, because the
+failure it guards against was entirely silent. The run also declines to write an *empty* club list,
+for the reason `persistHandicapCheckToDisk` declines to record a sweep that reached nobody. The
+other three scripts in this table still call their `run()` at module scope and are still unsafe to
+import.
+
+`biographiesToRegenerate` is which players it rewrites, and it is the counterpart of
+`bucketsToRecompute` above: a player whose `biographyLocked` is set is skipped, and returned so the
+run can log who it left alone and why. The locked biographies are still handed to the model as
+phrasing to avoid, because they remain on the page beside whatever the run writes — dropping them
+from the run entirely would let a regenerated biography echo a sentence already published under
+somebody else's name.
 
 It writes nothing at all unless a Hector is upcoming, and `isUpcomingEvent` compares start dates, so
 it stops writing the day after an event begins and does not write again until the next event file is

@@ -40,11 +40,12 @@ conflict in the other direction.
 **Regenerate also needs single-player generation to be callable.** `generateBiography` is reachable
 only from a whole-roster run today, and the roster is also what supplies the "do not reuse this
 phrasing" context. So a single-player regeneration has to decide what to hand it — the same question
-step 2 answered in the other direction, where a run seeds that context with the locked players'''
+step 2 answered in the other direction, where a run seeds that context with the locked players'
 existing text so a regenerated biography cannot echo a published one.
 
-It also has to get past `golfClubs`, the module-level IIFE in `update-player-biographies.ts`:
-importing that module scrapes WiseGolf and rewrites `src/data/clubs.json` from the answer. That is
-tolerable in a workflow whose job is to rewrite it and intolerable in a request handler, so whatever
-the admin calls has to be something else — which is why step 2'''s testable half went to
-`src/code/biographies.ts` rather than staying beside its caller.
+It no longer has to get past `golfClubs`. That was a module-level IIFE in
+`update-player-biographies.ts`, so importing the module scraped WiseGolf and rewrote
+`src/data/clubs.json` from the answer — tolerable in a workflow whose job is to rewrite the file,
+intolerable in a request handler. The club list is now fetched lazily, the file is written by the
+run, and `run()` only fires when the script is the thing being executed, so the admin can import
+what it needs. `biographiesToRegenerate` moved back beside its caller when that landed.
