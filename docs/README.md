@@ -23,7 +23,7 @@ will mislead you.
 | --- | --- | --- |
 | [`biography-locking.md`](plans/biography-locking.md) | `player.biographyLocked`, so the twice-monthly regeneration stops overwriting edited biographies | **No.** The field is in no schema, page or script |
 | [`bucket-locking.md`](plans/bucket-locking.md) | `event.bucketsLocked`, so an announced split can be settled before the first morning | **Phases 1-3,** on 2026-09-18. The field exists, `update-handicaps` honours it and `handicaps.json` publishes it. Phase 4, setting it from the admin, is blocked on Hector events being authorable there at all — until then it is set by editing the event file |
-| [`handicaps-to-firestore.md`](plans/handicaps-to-firestore.md) | Moving the handicap scrape out of a GitHub Actions runner writing JSON, and into the admin writing Firestore — and the job harness the three scrapes behind it will reuse | **Steps 0 and 1.** The job has shadowed `update-handicaps.yml` on every scheduled tick since 2026-09-16. Step 2, live writes, is next and is the one with a deadline |
+| [`handicaps-to-firestore.md`](plans/handicaps-to-firestore.md) | Moving the handicap scrape out of a GitHub Actions runner writing JSON, and into the admin writing Firestore — and the job harness the three scrapes behind it will reuse | **Steps 0 to 3,** on 2026-09-16 and 2026-09-18. Firestore is the system of record for handicaps, git holds the backup, and the site builds from `/api/handicaps/history`. Step 4 retires `update-handicaps.yml` and is blocked on the last of its three other outputs: `event.buckets`, which waits on [`bucket-locking.md`](plans/bucket-locking.md) phase 4 |
 | [`functions-migration.md`](plans/functions-migration.md) | Moving the four Cloud Functions out of `gen-lang-client-0537211409` into `hector-golf` | **All but one step.** Phases 1–6 and 8 done 2026-09-14, the old functions deleted 2026-09-17. Only the old Gemini API key is left |
 | [`sheets-credential-wif.md`](plans/sheets-credential-wif.md) | Retiring the last downloadable service account key, in favour of Workload Identity | **Yes,** all six phases on 2026-09-14. Kept only for two items that expire 2026-10-14 — a deleted account's undelete window and an orphaned key — and deletable after that |
 
@@ -34,11 +34,14 @@ fields that did not exist came to be documented beside seven that did. One of th
 and `data-ownership.md` describes it rather than proposing it.
 
 A partly-executed plan is the case the lifecycle below does not cover, and three files are in it.
-`handicaps-to-firestore.md` is the ordinary sort: a migration with steps, halfway through them, and
+`handicaps-to-firestore.md` is the ordinary sort: a migration with steps, four of its five done, and
 it records under each step what that step cost. The column and the ticks in the file say where it
-is. `bucket-locking.md` is the same shape with a different reason for stopping — three of its four
-phases are the whole of the feature, and the fourth is a UI that cannot be built until the admin
-owns Hector events.
+is. Its last step is held up by another plan in this table rather than by anything in itself, which
+is worth knowing before reading it as almost-finished — `event.buckets` cannot move while Hector
+events are authored by editing JSON files. `bucket-locking.md` is the same shape with a different
+reason for stopping — three of its four phases are the whole of the feature, and the fourth is a UI
+that cannot be built until the admin owns Hector events. It is the plan the one above is waiting
+for.
 
 `functions-migration.md` is the awkward sort, because what it is waiting for is a date. Both it and
 `sheets-credential-wif.md` were waiting on the same calendar — a credential deleted a week after its
