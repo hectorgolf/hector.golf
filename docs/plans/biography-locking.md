@@ -14,20 +14,34 @@ while the code does the opposite; the longer argument is in this file's git hist
    re-runs generation for that one player.
 
 Saving is the act of taking the field over, so the lock is not a checkbox to remember — one somebody
-forgets is indistinguishable from no lock at all on the 25th.
+forgets is indistinguishable from no lock at all on the day the job next runs.
 
 ## Why
 
 `update-player-biographies.ts` regenerates **every** biography on every run, with no "only if empty"
-guard, no diff and no skip. The cron is `30 2 10,25 * *`, so a hand-written paragraph lives about
-fifteen days and then disappears in a commit nobody was watching — the silent revert
-`data-ownership.md` exists to prevent.
+guard, no diff and no skip. It runs about every fifteen days — `cadence: { every: '15d' }` in
+[`workflows.ts`](../../admin/src/lib/workflows.ts), dispatched by the tick rather than by a cron of
+its own — so a hand-written paragraph lives a fortnight and then disappears in a commit nobody was
+watching, which is the silent revert `data-ownership.md` exists to prevent. The run on 2026-09-10
+rewrote all 45.
 
-Two things make it worse than a fortnightly reset sounds. The job only runs when a Hector is
-upcoming, so rewrites cluster exactly when somebody is correcting the text everyone is about to read.
-And generation is not idempotent — each biography is generated partly from the others produced in the
-same run — so a rerun does not reproduce the previous text and there is nothing to restore an edit
-from but git.
+Generation is also not idempotent — each biography is generated partly from the others produced in
+the same run — so a rerun does not reproduce the previous text and there is nothing to restore an
+edit from but git.
+
+**The schedule has a second gate, and it is the one worth knowing.** The job writes nothing unless a
+Hector is upcoming, and `isUpcomingEvent` compares start dates, so it stops writing the day after an
+event begins and does not write again until the next one is committed. It keeps *running* throughout
+— four fortnightly runs between 2026-01-25 and 2026-03-10 all went green and all committed nothing,
+and the next one to rewrite anything was on 2026-03-21, the day `HECTOR2026.json` was added. Green is
+therefore not evidence that a biography survived, which is worth knowing before reading the run log
+for reassurance. Rewrites also do not cluster around an event: they run fortnightly through the
+months before it and stop when it arrives.
+
+That makes now the cheap moment to land this. The last run was 2026-09-10, the next is due
+2026-09-25, and HECTOR2026 starts on the 24th — so nothing is due to be rewritten, and nothing will
+be until a HECTOR2027 exists. The lock wants to be in before that first run of the next season,
+because it is the one that takes back every edit made in the quiet.
 
 **A flag rather than "fill only when empty".** That is the rule `data-ownership.md` states for
 authored fields, and applied literally it would end biographies rather than protect them: all 45

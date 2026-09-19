@@ -799,10 +799,10 @@ the history.
 
 | Script | Schedule (UTC) | Reads | Writes |
 | --- | --- | --- | --- |
-| `update-handicaps.ts` | Every two hours 03:00–07:00, and 12:00, by Cloud Scheduler. No cron | WiseGolf | `handicaps.json`, `players/*.json`, event `buckets` |
+| `update-handicaps.ts` | Every two hours 03:00–07:00, and 12:00, by Cloud Scheduler. No cron | WiseGolf | `handicaps.json`, `handicap-checks.json`, event `buckets` |
 | `update-leaderboards.ts` | Every two hours 03:00–07:00, and 12:00, by Cloud Scheduler. No cron | Sheets / app.hector.golf | `leaderboards/*.json` (via API), event `results.teams` |
-| `update-player-biographies.ts` | `30 2 10,25 * *` | GCP function, WiseGolf | `players/*.json` `biography`, `clubs.json` |
-| `update-player-club-memberships.ts` | `15 22 15 * *` | WiseGolf | `players/*.json` `club` |
+| `update-player-biographies.ts` | Every 15 days, on the first tick that finds it due, and only while a Hector is upcoming. No cron | GCP function, WiseGolf | `players/*.json` `biography`, `clubs.json` |
+| `update-player-club-memberships.ts` | Every 30 days, on the first tick that finds it due. No cron | WiseGolf | `players/*.json` `club` |
 
 **`update-handicaps.ts`** — the largest at 310 lines. For each player holding a `club`, it fetches
 the current handicap through the source chain and appends changed values to `handicaps.json`
@@ -831,6 +831,12 @@ next event and whether they are playing it, a `retired` flag when more than seve
 since their last appearance, and **the biographies already generated in this run** so the model
 avoids repeating phrasing) and POSTs it to the `GeneratePlayerBiography` Cloud Function. As a side
 effect it regenerates `clubs.json` by merging the club lists from all handicap sources.
+
+It writes nothing at all unless a Hector is upcoming, and `isUpcomingEvent` compares start dates, so
+it stops writing the day after an event begins and does not write again until the next event file is
+committed. The run itself still fires and still goes green — the four between 2026-01-25 and
+2026-03-10 all did, and all committed nothing, the next rewrite being on 2026-03-21, the day
+`HECTOR2026.json` was added. A green run therefore does not mean a biography was regenerated.
 
 **`update-player-club-memberships.ts`** — for players with no `club`, searches every source by name
 and assigns a club **only when exactly one** club matches.
