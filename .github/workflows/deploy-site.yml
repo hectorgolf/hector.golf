@@ -175,9 +175,11 @@ jobs:
             --base "${{ steps.pages.outputs.base_path }}"
         env:
           # No WiseGolf credentials: the build does not talk to WiseGolf. `handicaps.ts`
-          # exports `getPlayerHandicap`, but no page calls it — handicaps are read from
-          # the admin service or the committed backup — so `createWisegolfSession` is
-          # never constructed here. The scrape lives in the three update workflows.
+          # no longer has a function that constructs a session — handicaps are read from
+          # the admin service or the committed backup — so nothing a page imports reaches
+          # `createWisegolfSession`. The remaining callers are the three scrapers under
+          # `src/workflows/`, which `astro build` never imports and which run from the
+          # three update workflows, where the credentials are.
           #
           # Public URL of the leaderboard proxy. Unset simply leaves the live
           # leaderboard off, and every page renders from the last published snapshot.

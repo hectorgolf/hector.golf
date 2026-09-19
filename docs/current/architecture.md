@@ -587,10 +587,12 @@ Notable details:
   handicap: without them two of its three tests fail, on the name `WiseGolf (disabled)` and on an
   `undefined` handicap. (Three more tests in that directory fail on a missing `HECTOR_APP_API_KEY`,
   so five failures under `test-unit` is the expected count on a machine with no secrets.)
-  `deploy-site.yml` does not, and no longer passes them: `handicaps.ts` exports
-  `getPlayerHandicap`, but nothing the build renders calls it — pages read the history from the
-  admin service or the committed backup — so a credential-free `astro build` produces all 328 pages
-  without ever constructing a session.
+  `deploy-site.yml` does not, and no longer passes them: pages read the history from the admin
+  service or the committed backup, and `handicaps.ts` no longer carries the unused
+  `getPlayerHandicap` that used to be the one thing in the render path able to construct a session.
+  The remaining `createWisegolfSession` callers are the three scrapers under `src/workflows/`, which
+  the build never imports, so a credential-free `astro build` produces all 328 pages without ever
+  constructing a session.
 - **Google Sheets access is layout-tolerant**: rather than fixed ranges, `google-sheets.ts` searches
   the `LEADERBOARD` tab for anchor cells (`findCellContaining`, `findCellBelowContaining`,
   `findEmptyCellBelow`) and derives the data range from them.
