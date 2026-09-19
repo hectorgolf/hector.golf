@@ -50,8 +50,10 @@
  * exercised — `not-configured` is decided in `github.ts` before a request is
  * made, and `unauthorized` is available from the failure knob.
  *
- * It also serves file contents **read-only from the working tree** and keeps
- * commits in memory. A stand-in that wrote to the checkout would turn a shadow
+ * It also serves file contents and directory listings **read-only from the
+ * working tree**, and keeps commits in memory. A listing unions the two, so a
+ * file this stand-in was asked to create is in its directory even though the
+ * checkout has never heard of it. A stand-in that wrote to the checkout would turn a shadow
  * run into an edit of the repository, which is the one thing `dryRun` exists to
  * prevent.
  *
@@ -65,7 +67,7 @@
  */
 import parseDuration from 'parse-duration'
 
-import { readFileSync, existsSync } from 'node:fs'
+import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs'
 import http, { type IncomingMessage, type ServerResponse } from 'node:http'
 import { createHash } from 'node:crypto'
 import { dirname, join, normalize } from 'node:path'
@@ -521,6 +523,27 @@ export function handle(state: FakeState, repository: string, req: IncomingMessag
             // rather than a failure.
             return json(res, 404, { message: 'Not Found' })
         }
+
+        if (statSync(onDisk).isDirectory()) {
+            // GitHub answers a directory on this same endpoint with an array,
+            // which is what `listDirectory` parses and what `readFile` refuses.
+            const prefix = file.replace(/\/$/, '')
+            const entries = readdirSync(onDisk, { withFileTypes: true }).map((entry) => ({
+                name: entry.name,
+                path: `${prefix}/${entry.name}`,
+                type: entry.isDirectory() ? 'dir' : 'file',
+            }))
+            // A file committed through this stand-in and not on disk is still in
+            // the directory as far as a caller is concerned — and a commit that
+            // creates a file is the case a shadow run turning real runs into.
+            const committed = [...state.written.keys()]
+                .filter((written) => written.startsWith(`${prefix}/`))
+                .filter((written) => !written.slice(prefix.length + 1).includes('/'))
+                .filter((written) => !entries.some((entry) => entry.path === written))
+                .map((written) => ({ name: written.slice(prefix.length + 1), path: written, type: 'file' }))
+            return json(res, 200, [...entries, ...committed])
+        }
+
         const text = readFileSync(onDisk, 'utf-8')
         return json(res, 200, {
             content: Buffer.from(text, 'utf-8').toString('base64'),

@@ -5,7 +5,7 @@ import {
     compareObservations,
     type HandicapHistoryEntry,
 } from '@hector/schemas/src/handicaps.ts'
-import { getPlayerHandicapFromHistory } from '../../src/workflows/update-handicaps'
+import { getPlayerHandicapFromHistory } from '@hector/schemas/src/handicaps.ts'
 
 /**
  * `handicaps.json` is a log of readings, not a table of days. The Golf Union

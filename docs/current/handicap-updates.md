@@ -237,7 +237,8 @@ value was *read* with when CI got round to *committing* it.
 
 - [data-ownership.md](./data-ownership.md) — why `player.handicap` is a stopgap rather than an
   override, and why CI owns it.
-- `bucketsAreOpen()` in `astrosite/src/code/data.ts` — the 08:00 freeze this document keeps referring
-  to, and why an event carries a time zone. `event.bucketsLocked` is the other way a split stops
-  moving, and it can come days earlier — see [data-ownership.md](./data-ownership.md).
+- `bucketsAreOpen()` in `packages/schemas/src/buckets.ts` — the 08:00 freeze this document keeps
+  referring to, and why an event carries a time zone; `astrosite/src/code/data.ts` re-exports it.
+  `event.bucketsLocked` is the other way a split stops moving, and it can come days earlier — see
+  [data-ownership.md](./data-ownership.md).
 - [architecture.md](./architecture.md) §8 — the data pipeline the scrape is part of.

@@ -205,6 +205,19 @@ describe('the stand-in, as the client sees it', () => {
         expect(outcome).toEqual({ ok: true, file: { present: false } })
     })
 
+    it('answers a directory with the files in it, which is what the bucket recompute reads', async () => {
+        const outcome = await client.listDirectory('astrosite/src/data/events/hector')
+        expect(outcome.ok).toBe(true)
+        if (!outcome.ok) return expect.fail('expected the directory to be listed')
+        expect(outcome.files.length).toBeGreaterThan(0)
+        expect(outcome.files.every((path) => path.startsWith('astrosite/src/data/events/hector/'))).toBe(true)
+        expect(outcome.files).toEqual([...outcome.files].sort())
+    })
+
+    it('fails on a directory that is not there, rather than calling it empty', async () => {
+        expect(await client.listDirectory('astrosite/src/data/nowhere')).toEqual({ ok: false, reason: 'not-found' })
+    })
+
     it('takes a commit and serves it back, without touching the checkout', async () => {
         const path = 'astrosite/src/data/handicaps/history.json'
         const committed = await client.commitFile({

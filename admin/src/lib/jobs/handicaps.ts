@@ -10,11 +10,11 @@ import {
     all as allChecks,
     insert as insertChecks,
     missingFrom as checksMissingFrom,
-    parse as parseChecks,
     render as renderChecks,
 } from '../handicaps/checks.ts'
 import { all, insert, missingFrom, parse, render } from '../handicaps/observations.ts'
 import { write as writeSnapshot } from '../handicaps/snapshot.ts'
+import { recompute } from './buckets.ts'
 import { listPlayers } from '../repository/events.ts'
 import { wisegolfCredentials } from '../secrets.ts'
 import type { Change } from './log.ts'
@@ -194,6 +194,9 @@ export type JobDependencies = {
     // GitHub, through the service's own token.
     readFile(path: string): Promise<string | undefined>
     commit(path: string, text: string, message: string): Promise<{ ok: true; commit: string } | { ok: false; detail: string }>
+    /** The two more the bucket recompute needs, and nothing else here uses. */
+    listDirectory(path: string): Promise<string[]>
+    replace(path: string, text: string, message: string): Promise<{ ok: true; commit: string } | { ok: false; detail: string }>
 
     /**
      * The run's instant, asked for exactly once.
@@ -231,7 +234,7 @@ export type JobDependencies = {
  * the tests pass their own. Nothing else constructs a set of dependencies, so
  * this is the only place the job's outside world is named twice.
  */
-export const LIVE: Omit<JobDependencies, 'readFile' | 'commit' | 'now'> = {
+export const LIVE: Omit<JobDependencies, 'readFile' | 'commit' | 'listDirectory' | 'replace' | 'now'> = {
     observations: all,
     addObservations: insert,
     checks: allChecks,
@@ -383,7 +386,12 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
         console.log(
             `Shadow run: ${changes.length} observation(s) and a sweep would have been written: ${JSON.stringify(changes)}`
         )
-        return { outcome: 'ok', changes }
+        // The buckets are worked out on a shadow run too. They are a function of
+        // the handicaps this run just read, so skipping them would make a shadow
+        // run silent about the half of the job that is still shadowing even when
+        // the rest of it is not.
+        const shadowBuckets = await recompute(dependencies, players, [...history, ...entries], now, true)
+        return { outcome: 'ok', changes: [...changes, ...shadowBuckets.changes] }
     }
 
     // 4. Write them.
@@ -447,7 +455,24 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
     if (!written.ok) return { outcome: 'failed', detail: written.detail, changes }
     if (!checksWritten.ok) return { outcome: 'failed', detail: checksWritten.detail, changes }
 
-    return { outcome: 'ok', changes, commit: written.commit }
+    /*
+     * 6. Redraw the splits, from the handicaps this run just read.
+     *
+     * Last, and after the commits rather than before them, because the buckets
+     * are derived from the observations: a run that failed to record what it read
+     * has no business publishing a split computed from it.
+     *
+     * A bucket failure does not undo the handicaps, which are already committed
+     * and correct. It is reported, and it fails the run so that the Operations
+     * page says so.
+     */
+    const buckets = await recompute(dependencies, players, [...history, ...entries], now, false)
+    const everything = [...changes, ...buckets.changes]
+    if (buckets.outcome === 'failed') {
+        return { outcome: 'failed', detail: buckets.detail, changes: everything, commit: written.commit }
+    }
+
+    return { outcome: 'ok', changes: everything, commit: written.commit }
 }
 
 /**

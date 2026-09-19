@@ -56,6 +56,8 @@ type Recorded = {
     addedChecks: HandicapCheck[]
     snapshots: Array<{ entries: HandicapHistoryEntry[]; now: Date }>
     commits: Array<{ path: string; text: string; message: string }>
+    /** What the bucket recompute rewrote. Its own rules are `job-buckets.test.ts`. */
+    replaced: Array<{ path: string; text: string; message: string }>
     sourcesBuilt: number
 }
 
@@ -67,13 +69,31 @@ type Recorded = {
  * it is about. `recorded` is what the run did, in the order it did it.
  */
 function harness(over: Partial<JobDependencies> = {}, files: Record<string, string> = {}) {
-    const recorded: Recorded = { added: [], addedChecks: [], snapshots: [], commits: [], sourcesBuilt: 0 }
+    const recorded: Recorded = {
+        added: [],
+        addedChecks: [],
+        snapshots: [],
+        commits: [],
+        replaced: [],
+        sourcesBuilt: 0,
+    }
 
     const dependencies: JobDependencies = {
         readFile: async (path) => files[path],
         commit: async (path, text, message) => {
             recorded.commits.push({ path, text, message })
             return { ok: true, commit: `sha-${recorded.commits.length}` }
+        },
+        /*
+         * No events, so the bucket recompute at the end of a run has nothing to
+         * redraw and these are never reached. Present because `run` calls it,
+         * and overridable by a test that wants to watch it — what the recompute
+         * decides is `job-buckets.test.ts`, not this file.
+         */
+        listDirectory: async () => [],
+        replace: async (path, text, message) => {
+            recorded.replaced.push({ path, text, message })
+            return { ok: true, commit: `buckets-${recorded.replaced.length}` }
         },
         now: () => NOON,
         observations: async () => [],

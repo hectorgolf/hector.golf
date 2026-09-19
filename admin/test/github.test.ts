@@ -382,6 +382,90 @@ describe('reading a file', () => {
     })
 })
 
+describe('listing a directory', () => {
+    const listing = (entries: Array<Record<string, unknown>>) =>
+        new Response(JSON.stringify(entries), {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+        })
+
+    it('asks for the path on main and returns the files in it', async () => {
+        const { client, fetch } = clientAnswering(
+            listing([
+                { name: 'HECTOR2026.json', path: 'astrosite/src/data/events/hector/HECTOR2026.json', type: 'file' },
+                { name: 'HECTOR2025.json', path: 'astrosite/src/data/events/hector/HECTOR2025.json', type: 'file' },
+            ])
+        )
+
+        const result = await client.listDirectory('astrosite/src/data/events/hector')
+
+        // Sorted, so a caller's commit order does not depend on GitHub's.
+        expect(result).toEqual({
+            ok: true,
+            files: [
+                'astrosite/src/data/events/hector/HECTOR2025.json',
+                'astrosite/src/data/events/hector/HECTOR2026.json',
+            ],
+        })
+        const [url] = fetch.mock.calls[0]!
+        expect(url).toBe(
+            'https://api.github.com/repos/hectorgolf/hector.golf/contents/astrosite/src/data/events/hector?ref=main'
+        )
+    })
+
+    it('leaves subdirectories out rather than walking them', async () => {
+        const { client } = clientAnswering(
+            listing([
+                { name: 'hector', path: 'astrosite/src/data/events/hector', type: 'dir' },
+                { name: 'README.md', path: 'astrosite/src/data/events/README.md', type: 'file' },
+            ])
+        )
+        expect(await client.listDirectory('astrosite/src/data/events')).toEqual({
+            ok: true,
+            files: ['astrosite/src/data/events/README.md'],
+        })
+    })
+
+    it('is empty for a directory with nothing in it, which is not the same as missing', async () => {
+        const { client } = clientAnswering(listing([]))
+        expect(await client.listDirectory('astrosite/src/data/events/hector')).toEqual({ ok: true, files: [] })
+    })
+
+    it('fails on a directory that is not there, where readFile would report absence', async () => {
+        // The asymmetry is deliberate. A backup that does not exist yet is the
+        // normal first run; a data directory that has vanished is not, and a
+        // caller reading that as "no events" would recompute nothing and say it
+        // succeeded.
+        const { client } = clientAnswering(new Response('{"message":"Not Found"}', { status: 404 }))
+        expect(await client.listDirectory('astrosite/src/data/events/nope')).toEqual({
+            ok: false,
+            reason: 'not-found',
+        })
+    })
+
+    it('refuses a file, which GitHub answers as an object', async () => {
+        // The mirror image of readFile refusing a directory, and refused for the
+        // same reason: quietly returning nothing would read as an empty one.
+        const { client } = clientAnswering(
+            new Response(JSON.stringify({ content: 'eyJ9', encoding: 'base64', sha: 'x' }), { status: 200 })
+        )
+        expect(await client.listDirectory('astrosite/src/data/clubs.json')).toEqual({ ok: false, reason: 'unknown' })
+    })
+
+    it('refuses an entry with no path rather than inventing one', async () => {
+        const { client } = clientAnswering(listing([{ name: 'HECTOR2026.json', type: 'file' }]))
+        expect(await client.listDirectory('astrosite/src/data/events/hector')).toEqual({
+            ok: false,
+            reason: 'unknown',
+        })
+    })
+
+    it('still classifies a refused listing', async () => {
+        const { client } = clientAnswering(refused(401))
+        expect(await client.listDirectory('anything')).toEqual({ ok: false, reason: 'unauthorized' })
+    })
+})
+
 describe('committing a file', () => {
     const request = {
         path: 'data/handicaps/observations.ndjson',

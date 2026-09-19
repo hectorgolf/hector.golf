@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { guard } from '../src/lib/jobs/backup.ts'
+import { appendOnly, wholesale } from '../src/lib/jobs/registry.ts'
 
 /**
  * The append-only guard, which is what makes the file in git a backup rather
@@ -72,6 +73,59 @@ describe('committing a rendered backup', () => {
         expect(verdict).toEqual({
             verdict: 'refuse',
             detail: 'the render has 2 fewer lines than the committed file',
+        })
+    })
+})
+
+/**
+ * The two rules a commit can be made under, and why there are two.
+ *
+ * `appendOnly` is the guard above: the file *is* its history, so a rewrite
+ * destroys the only copy of what it used to say and nothing can recover it.
+ *
+ * `wholesale` is for a file whose previous versions live in git — an event's
+ * JSON, which the bucket recompute rewrites in full. A bad write there is a
+ * revert, which is the whole reason `data-ownership.md` gives for the repository
+ * being the database. Applying the guard to it would refuse every recompute that
+ * moved a player between buckets, which is the only thing a recompute does.
+ */
+describe('the rule a commit is made under', () => {
+    const before = file('{"a":1}', '{"b":2}')
+
+    describe('appendOnly', () => {
+        it('writes when the render only adds', () => {
+            expect(appendOnly(file('{"a":1}', '{"b":2}', '{"c":3}'), 'x.ndjson')(before)).toEqual({
+                write: file('{"a":1}', '{"b":2}', '{"c":3}'),
+            })
+        })
+
+        it('skips an identical render rather than making an empty commit', () => {
+            expect(appendOnly(before, 'x.ndjson')(before)).toEqual({ skip: true })
+        })
+
+        it('refuses a rewrite', () => {
+            const decision = appendOnly(file('{"a":1}', '{"b":99}'), 'x.ndjson')(before)
+            expect(decision).toHaveProperty('refuse')
+        })
+    })
+
+    describe('wholesale', () => {
+        it('writes whatever it is given, including the rewrite appendOnly refuses', () => {
+            const rewritten = file('{"a":1}', '{"b":99}')
+            expect(wholesale(rewritten)(before)).toEqual({ write: rewritten })
+        })
+
+        it('writes a shorter file, which is a split losing a participant', () => {
+            const shorter = file('{"a":1}')
+            expect(wholesale(shorter)(before)).toEqual({ write: shorter })
+        })
+
+        it('skips identical text, so an unchanged split costs no commit', () => {
+            expect(wholesale(before)(before)).toEqual({ skip: true })
+        })
+
+        it('writes the first version when there is no file yet', () => {
+            expect(wholesale(before)(undefined)).toEqual({ write: before })
         })
     })
 })

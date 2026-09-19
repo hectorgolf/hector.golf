@@ -1,5 +1,6 @@
 import { expect, describe, it } from "vitest";
-import { getPlayerHandicapFromHistory, sortPlayersForBucketing } from "../../src/workflows/update-handicaps";
+import { getPlayerHandicapFromHistory } from "@hector/schemas/src/handicaps.ts";
+import { bucketingOrder } from "@hector/schemas/src/buckets.ts";
 import type { HandicapHistoryEntry } from "@hector/schemas/src/handicaps.ts";
 import type { Player } from "@hector/schemas/src/players.ts";
 
@@ -61,11 +62,29 @@ const eldrick: Player = {
     contact: { phone: "<omitted>" },
 };
 
+/**
+ * The comparator takes the name renderer rather than importing one, and that is the
+ * only part of this that moved when the sort did.
+ *
+ * The site renders a player's name with the last name shortened for privacy, which it
+ * can only do by reading the whole roster: the shortened form is the shortest prefix
+ * that is unique among the players sharing a first name. That closure cannot live in
+ * `@hector/schemas`, and the admin service — which has no roster on disk — has nothing
+ * to build it from. So the tiebreak asks for a name instead of deciding how to make one.
+ *
+ * The two renderers cannot disagree on today's data. A shortened last name differs from
+ * its neighbours' at or before the truncation point, by construction, so ordering on
+ * "Eero H" and "Eero S" is the same ordering as on "Eero Halmetoja" and "Eero Somervuo".
+ * That is a property of the roster rather than of the code, which is why this is a
+ * parameter and not a rewrite.
+ */
+const nameOf = (player: Player): string => `${player.name.first} ${player.name.last}`;
+
 describe("Sorting for buckets", () => {
-    describe("sortPlayersForBucketing()", () => {
+    describe("bucketingOrder()", () => {
 
         function sort(...players: Player[]): string[] {
-            return players.sort((a, b) => sortPlayersForBucketing(history, a, b)).map(p => p.id);
+            return players.sort(bucketingOrder(history, nameOf)).map(p => p.id);
         }
 
         describe("with different handicaps", () => {
@@ -81,6 +100,25 @@ describe("Sorting for buckets", () => {
                 expect(sort(adam, david)).toStrictEqual([david.id, adam.id]);
                 expect(sort(adam, eldrick)).toStrictEqual([eldrick.id, adam.id]);
                 expect(sort(david, eldrick)).toStrictEqual([david.id, eldrick.id]);
+            });
+        });
+
+        describe("with nothing between them at all", () => {
+            // Adam and Eldrick are level today and level yesterday, so the name is
+            // what decides — which is the one thing the caller supplies.
+            const flat: Array<HandicapHistoryEntry> = [
+                { player: "adam", date: "2025-08-03", handicap: 10.0 },
+                { player: "eldrick", date: "2025-08-03", handicap: 10.0 },
+            ];
+
+            it("falls back to the name the caller renders", () => {
+                const byName = [eldrick, adam].sort(bucketingOrder(flat, nameOf)).map(p => p.id);
+                expect(byName).toStrictEqual(["adam", "eldrick"]);
+
+                const backwards = [adam, eldrick]
+                    .sort(bucketingOrder(flat, (p) => p.name.first.split("").reverse().join("")))
+                    .map(p => p.id);
+                expect(backwards).toStrictEqual(["eldrick", "adam"]);
             });
         });
     });

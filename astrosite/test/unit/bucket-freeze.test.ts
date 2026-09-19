@@ -6,6 +6,23 @@ import { hectorEventSchema, type Event } from '@hector/schemas/src/events.ts'
  * Buckets decide the Draft played after round one, so they have to stop moving
  * before anyone tees off on the first morning. The cutoff is 08:00 where the
  * event is, which is the whole reason an event carries a time zone.
+ *
+ * `isUpcomingEvent` is deliberately not the boundary. It compares calendar dates, so it
+ * stays true for the whole of the first day — and the handicap sweep's second run of the
+ * day is at 13:00 UTC, mid-afternoon at a European venue and very possibly after the
+ * Draft itself. A player whose handicap moved that morning would be shuffled between
+ * buckets underneath a Draft about to use them.
+ *
+ * `bucketsFreezeAt` is kept separate from the question `bucketsAreOpen` asks of it
+ * because the instant is also published: `/events/hector/:id/handicaps.json` carries it
+ * as `bucket_freeze`, so a consumer can tell a settled split from a provisional one
+ * without reimplementing the 08:00-where-the-event-is rule and the UTC fallback. Two
+ * copies of that rule would be one too many.
+ *
+ * Both now live in `@hector/schemas/src/buckets.ts`, so that the admin service can
+ * import them; `src/code/data.ts` re-exports them and cannot hold them, because it globs
+ * the filesystem at module scope. The rationale lives here rather than beside the code
+ * because schema files in this repository carry one-liners.
  */
 
 const eventAt = (start: string, timezone?: string) =>

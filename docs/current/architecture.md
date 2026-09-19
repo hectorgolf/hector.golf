@@ -192,7 +192,8 @@ under two names.
 
 `bucket_freeze` is published as an instant so a consumer can compare it against `generatedAt` and
 tell a settled split from a provisional one without reimplementing the rule; `bucketsFreezeAt()` in
-`data.ts` is that rule, and `bucketsAreOpen()` is now defined in terms of it so the two cannot drift.
+`packages/schemas/src/buckets.ts` is that rule, and `bucketsAreOpen()` is defined in terms of it so
+the two cannot drift.
 
 `buckets_locked` is the other half of that question, and a consumer asking "is this split final?"
 has to read both. It mirrors `event.bucketsLocked`, which settles a split *before* the clock would —
@@ -822,14 +823,24 @@ the history.
 | `update-player-biographies.ts` | Every 15 days, on the first tick that finds it due, and only while a Hector is upcoming. No cron | GCP function, WiseGolf | `players/*.json` `biography` where `biographyLocked` is unset, `clubs.json` |
 | `update-player-club-memberships.ts` | Every 30 days, on the first tick that finds it due. No cron | WiseGolf | `players/*.json` `club` |
 
-**`update-handicaps.ts`** — the largest at 310 lines. For each player holding a `club`, it fetches
+**`update-handicaps.ts`** — the largest at 367 lines. For each player holding a `club`, it fetches
 the current handicap through the source chain and appends changed values to `handicaps.json`
 (replacing a same-day duplicate if the association re-ran a batch). It then re-sorts each upcoming
-event's participants with `sortPlayersForBucketing` — by current handicap, tie-broken so that a
-player whose handicap is *falling* ranks ahead of one whose is rising — and splits them into two
-equal buckets written back into the event JSON. `getPlayerHandicapFromHistory`,
-`sortPlayersForBucketing` and `bucketsToRecompute` are exported specifically so the unit tests can
-import them.
+event's participants with `bucketingOrder` — by current handicap, tie-broken so that a player whose
+handicap is *falling* ranks ahead of one whose is rising — and splits them into two equal buckets
+written back into the event JSON.
+
+The bucketing rules themselves are not in this file. `bucketingOrder`, `bucketsToRecompute`,
+`splitIntoBuckets` and the `bucketsAreOpen` / `bucketsFreezeAt` / `hasParticipants` predicates live
+in `packages/schemas/src/buckets.ts`, and `getPlayerHandicapFromHistory` beside `latestPerDay` in
+`packages/schemas/src/handicaps.ts`. They moved there so the admin service can import them — it
+cannot import `src/code/data.ts` at all, which globs the filesystem at module scope — and
+`src/code/data.ts` re-exports the predicates so the site's call sites are unchanged.
+
+`bucketingOrder` takes the name renderer as a parameter rather than importing one. Its last tiebreak
+is the player's name, and the site renders that with the last name shortened for privacy, which it
+can only do by reading the whole roster; that closure cannot follow the sort into a schema package.
+See `test/unit/bucketing.test.ts` for why the two renderers cannot disagree on today's data.
 
 `bucketsToRecompute` is which events that last step runs for, and it applies two predicates kept
 apart on purpose: `bucketsAreOpen`, which is about the clock, and `event.bucketsLocked`, which is
@@ -837,6 +848,23 @@ somebody having settled the split early. It returns the locked events as well as
 run can log what it left alone and why — a lock that stops a recompute silently reads as a bug the
 first time somebody wonders why the buckets did not move. An event past its freeze is in neither
 list: there is nothing left for the lock to stop, so nothing is logged about it.
+
+**The admin service works out the same split, and writes nothing.** Since 2026-09-20 the handicaps
+job ends by recomputing every open split from the handicaps it has just read —
+[`admin/src/lib/jobs/buckets.ts`](../../admin/src/lib/jobs/buckets.ts) — and reporting what it would
+change to the run log, while `BUCKETS_ARE_COMMITTED` keeps it from committing any of it. That is the
+shadow period from [`plans/handicaps-to-firestore.md`](../plans/handicaps-to-firestore.md), and the
+comparison is meaningful because the tick dispatches the workflow first and runs the job second, so
+both decide against the same base state. The bar for turning the writes on is one tick where the
+buckets actually move and the two agree about where everybody went.
+
+When it does write, it will write **git**, not Firestore, and it is worth knowing why the obvious
+place is the wrong one: Firestore holds Hector events as a mirror the admin reads, so a scheduled
+writer there would race the export. Git keeps the ownership in [data-ownership.md](./data-ownership.md)
+exactly as it is. The recompute rewrites the raw JSON with only `buckets` replaced rather than
+writing the parsed event back, so a default the schema gains later is not materialised into thirteen
+files that never carried it; `test/unit/data-formatting.test.ts` holds the two writers to identical
+bytes for as long as both exist.
 
 **`update-leaderboards.ts`** — selects Hector events that hold a `leaderboardSheet` URL and have
 already started (`updateFutureEvents = false`), then dispatches on the URL shape: `app.hector.golf/*`
@@ -1179,7 +1207,7 @@ has to be stopped over HTTP, and answers before it has finished.
 | --- | --- | --- |
 | IAP | [`scripts/dev-iap.ts`](../../admin/scripts/dev-iap.ts) — a proxy that sets the identity headers IAP sets, and honours its sign-out URL | It is in front, so nothing in the application knows |
 | Firestore | The `gcloud` emulator, `gcloud components install cloud-firestore-emulator` | `FIRESTORE_EMULATOR_HOST`, which `@google-cloud/firestore` honours with no code of ours |
-| GitHub | [`scripts/fake-github.ts`](../../admin/scripts/fake-github.ts) — dispatches, run history (paged), file contents and commits, plus a page behind each run's link | `GITHUB_API_BASE_URL`, **loopback addresses only** |
+| GitHub | [`scripts/fake-github.ts`](../../admin/scripts/fake-github.ts) — dispatches, run history (paged), file contents, directory listings and commits, plus a page behind each run's link | `GITHUB_API_BASE_URL`, **loopback addresses only** |
 | WiseGolf | [`packages/wisegolf/src/drifting-handicap-source.ts`](../../packages/wisegolf/src/drifting-handicap-source.ts) — handicaps that wander within ±2.0 of where they started | `WISEGOLF_STAND_IN_ROSTER`, a path to the players to pretend about |
 
 Two of those variables carry **data** rather than switching on a mode, and deliberately: an address
@@ -1311,7 +1339,7 @@ npm test              # both, in sequence
 | `test/unit/dates.test.ts` | Pure | ISO date validation, arithmetic, weekdays, and `formatDateRange()` across the same-day / same-month / cross-month / cross-year shapes |
 | `test/unit/rounds.test.ts` | Pure | `dateOfRound()` and `titleOfRound()`, including month rollover and single-round days |
 | `test/unit/handicap-history.test.ts` | Pure | `getPlayerHandicapFromHistory()` including `offsetFromEnd` lookups |
-| `test/unit/bucketing.test.ts` | Pure | `sortPlayersForBucketing()`, including the rising/falling tie-break |
+| `test/unit/bucketing.test.ts` | Pure | `bucketingOrder()`, including the rising/falling tie-break and the injected name renderer |
 | `test/unit/scoring.test.ts` | Pure | Maximum score per hole, and which formats it applies to |
 | `test/unit/strings.test.ts` | Pure | `redact()` |
 | `test/unit/palette.test.ts` | Pure + **reads the real stylesheet** | Token parsing, `var()` resolution, hue and WCAG contrast maths, and the palette rules the site ships (see §3) |

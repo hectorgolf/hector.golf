@@ -2,7 +2,6 @@ import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { glob } from "glob";
-import { DateTime } from "luxon";
 
 import {
     type Event,
@@ -14,6 +13,18 @@ import {
 import { type Course, schema as CourseSchema } from "@hector/schemas/src/courses.ts";
 import { type Player, schema as PlayerSchema } from "@hector/schemas/src/players.ts";
 import { isoDateToday, parseIsoDate } from "@hector/schemas/src/dates.ts";
+
+/**
+ * The bucketing rules live in `@hector/schemas` so that the admin service can import
+ * them; this module cannot be imported at all, because it globs the filesystem at
+ * module scope. Re-exported here so the site's call sites keep their import.
+ */
+export {
+    BUCKETS_FREEZE_AT_HOUR,
+    bucketsAreOpen,
+    bucketsFreezeAt,
+    hasParticipants,
+} from "@hector/schemas/src/buckets.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -89,57 +100,6 @@ export function isUpcomingEvent(event: Event | undefined): boolean {
 }
 
 /**
- * The hour of the first morning at which a Hector's buckets stop moving.
- *
- * Local to the event, not to whatever is running the job.
- */
-export const BUCKETS_FREEZE_AT_HOUR = 8;
-
-/**
- * True while an event's buckets may still be recomputed.
- *
- * The buckets decide the Draft after round one, where each player picks a partner
- * from the opposite bucket, so they have to be settled before anyone tees off —
- * and they are derived from handicaps, which the scrape keeps moving. A player
- * whose handicap changes on the first morning would otherwise be moved between
- * buckets underneath a Draft that is about to use them.
- *
- * `isUpcomingEvent` is not the boundary: it compares calendar dates, so it stays
- * true for the whole of the first day, and the handicap job's second run of the
- * day is at 13:00 UTC — mid-afternoon at a European venue, long after the first
- * tee time and very possibly after the Draft itself.
- *
- * Without `timing.timezone` there is no way to know when 08:00 on the first
- * morning was, so the buckets close at the start of that date in UTC instead.
- * That is earlier than the intended cutoff everywhere east of Greenwich and never
- * later, which is the direction to be wrong in: buckets that stopped too early are
- * a stale split, buckets that stopped too late are a Draft played against a
- * different one than the players were shown.
- */
-export function bucketsAreOpen(event: Event | undefined, now: Date = new Date()): boolean {
-    const freezesAt = bucketsFreezeAt(event);
-    if (!freezesAt) return false;
-    return now.getTime() < freezesAt.toMillis();
-}
-
-/**
- * The moment an event's buckets stop moving, or undefined if there is no saying.
- *
- * The rule itself, separated from the question `bucketsAreOpen` asks of it, because
- * it is also published: `/events/hector/:id/handicaps.json` carries this instant so
- * that a consumer can tell a settled split from a provisional one without
- * reimplementing the 08:00-where-the-event-is rule and the UTC fallback below. Two
- * copies of that rule would be one too many.
- */
-export function bucketsFreezeAt(event: Event | undefined): DateTime | undefined {
-    if (!event) return undefined;
-    const zone = event.timing.timezone ?? "UTC";
-    const hour = event.timing.timezone ? BUCKETS_FREEZE_AT_HOUR : 0;
-    const freezesAt = DateTime.fromISO(event.timing.start, { zone }).set({ hour });
-    return freezesAt.isValid ? freezesAt : undefined;
-}
-
-/**
  * Filter function for selecting past events.
  *
  * @param event `Event` object to evaluate the predicate against.
@@ -163,16 +123,6 @@ export function yearOfEvent(event: HectorEvent|MatchplayEvent|FinnkampenEvent): 
 
 export function endDateOfEvent(event: Event): Date {
     return parseIsoDate(event.timing.end)
-}
-
-/**
- * Filter function for dropping `Event`s without participants.
- *
- * @param event `Event` object to evaluate the predicate against.
- * @returns true if the `Event` has participants.
- */
-export function hasParticipants(event: Event | undefined): boolean {
-    return (event?.participants?.length || 0) > 0;
 }
 
 /**
