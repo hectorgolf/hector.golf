@@ -1,7 +1,5 @@
 import { type Player } from "@hector/schemas/src/players.ts";
-import { type HandicapSource } from "@hector/wisegolf/src/handicap-source-api.ts";
 import { type HandicapHistoryEntry, latestPerDay } from "@hector/schemas/src/handicaps.ts";
-import { createWisegolfSession } from "@hector/wisegolf/src/wisegolf-api.ts";
 
 import { type HandicapHistoryEntry as Entry, schema as EntrySchema } from "@hector/schemas/src/handicaps.ts";
 
@@ -42,21 +40,6 @@ const handicapData = await loadFromAdmin<Entry>({
             .filter((line) => line.trim().length > 0)
             .map((line) => EntrySchema.parse(JSON.parse(line))),
 });
-
-function createSources(): Promise<HandicapSource[]> {
-    return Promise.all([createWisegolfSession()]);
-}
-
-export const getPlayerHandicap = async (player: Player): Promise<number | undefined> => {
-    let hcp: number | undefined = undefined;
-    if (player.club) {
-        const sources = await createSources();
-        for (let i = 0; i < sources.length && hcp === undefined; i++) {
-            hcp = await sources[i].getPlayerHandicap(player.name.first, player.name.last, player.club);
-        }
-    }
-    return hcp;
-};
 
 export const getPlayerHandicapHistory = (player: Player): HandicapHistoryEntry[] => {
     return getPlayerHandicapHistoryById(player.id);

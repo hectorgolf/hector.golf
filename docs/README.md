@@ -21,6 +21,7 @@ will mislead you.
 
 | | | executed? |
 | --- | --- | --- |
+| [`authoring-players-and-events.md`](plans/authoring-players-and-events.md) | Moving players, Hector events and Finnkampen events from the mirrored column to the owned one, and giving each an editor — the one piece of work the other two are waiting on | **No.** The admin authors matchplay and nothing else |
 | [`biography-locking.md`](plans/biography-locking.md) | `player.biographyLocked`, so the twice-monthly regeneration stops overwriting edited biographies | **No.** The field is in no schema, page or script |
 | [`bucket-locking.md`](plans/bucket-locking.md) | `event.bucketsLocked`, so an announced split can be settled before the first morning | **Mostly,** on 2026-09-18. The field exists, the handicaps job honours it and the payload publishes it; it is set by editing the event file. What is left is setting it from the admin, blocked on Hector events being authorable there at all |
 
@@ -36,21 +37,26 @@ stops: what to do, why it is worth doing, and what has to be removed first. What
 did, and what each step of it cost, is in git history and in `current/` — keeping it in the plan
 made both files read as records, which is the one thing a prescriptive document must not do.
 
-Both are waiting on the same thing: the admin can author matchplay events and nothing else, so
-Hector events and players are mirrored from the committed files and anything written to the mirror
-is reverted by the next `npm run seed`. Until that changes, a bucket lock cannot be set from the
-admin and neither can a biography lock. One piece of work unblocks both plans.
+Two of the three are waiting on the same thing: the admin can author matchplay events and nothing
+else, so Hector events and players are mirrored from the committed files and anything written to the
+mirror is reverted by the next `npm run seed`. Until that changes, a bucket lock cannot be set from
+the admin and neither can a biography lock. That one piece of work is the third plan,
+[`authoring-players-and-events.md`](plans/authoring-players-and-events.md), which is written the
+other way round from its two dependants: they each describe a small piece of UI, and it describes
+the ownership transfer underneath them all.
 
-`handicaps-to-firestore.md` was the third, and was waiting on the same thing until it turned out
-not to be. Its last step was deleting `update-handicaps.yml`, blocked on `event.buckets` — and that
-blocker was about writing buckets to *Firestore*, where a scheduled writer would race the export.
-Writing them to git instead is the same write the workflow was already making, from a different
-process, and leaves the ownership rule untouched. The workflow went on 2026-09-20 and the file went
-with it: the pull requests that executed it are the record, and what survives is in
+`handicaps-to-firestore.md` was a fourth, and was listed here as waiting on the same thing until it
+turned out not to be. Its last step was deleting `update-handicaps.yml`, blocked on `event.buckets`
+— and that blocker was about writing buckets to *Firestore*, where a scheduled writer would race the
+export. Writing them to **git** instead is the same write the workflow was already making, from a
+different process, and it leaves the ownership rule untouched. The workflow went on 2026-09-20 and
+the plan went with it: the pull requests that executed it are the record, and what survives is in
 [`architecture.md`](current/architecture.md) §8 and
-[`handicap-updates.md`](current/handicap-updates.md). The lesson worth keeping is that a blocker is
-worth re-reading before it is inherited — this one had been restated three times, and was true of
-one implementation rather than of the problem.
+[`handicap-updates.md`](current/handicap-updates.md).
+
+The lesson is worth keeping even though the file is not. A blocker is worth re-reading before it is
+inherited: this one had been restated in three plans and a `current/` document, and was true of one
+implementation rather than of the problem.
 
 `functions-migration.md` and `sheets-credential-wif.md` were the awkward sort, because what they
 were waiting for was a date rather than a decision — both on the same calendar, a credential

@@ -323,7 +323,11 @@ export const JOBS: readonly Job[] = [
         // The site reads `/api/handicaps/history` as of step 3, so a handicap
         // this job finds has to reach a rebuilt page somehow.
         publishes: true,
-        run: (dryRun) => handicaps.run({ readFile, listDirectory, commit, replace, now: () => new Date() }, dryRun),
+        run: (dryRun) =>
+            handicaps.run(
+                { readFile, listDirectory, commit, replace, now: () => new Date(), ...handicaps.LIVE },
+                dryRun
+            ),
     },
 ]
 
