@@ -587,10 +587,10 @@ Notable details:
   handicap: without them two of its three tests fail, on the name `WiseGolf (disabled)` and on an
   `undefined` handicap. (Three more tests in that directory fail on a missing `HECTOR_APP_API_KEY`,
   so five failures under `test-unit` is the expected count on a machine with no secrets.)
-  `deploy-site.yml` still sets the pair on its build step, and no longer needs to: `handicaps.ts`
-  exports `getPlayerHandicap`, but nothing the build renders calls it — pages read the history from
-  the admin service or the committed backup — so a credential-free `astro build` produces all 328
-  pages without ever constructing a session.
+  `deploy-site.yml` does not, and no longer passes them: `handicaps.ts` exports
+  `getPlayerHandicap`, but nothing the build renders calls it — pages read the history from the
+  admin service or the committed backup — so a credential-free `astro build` produces all 328 pages
+  without ever constructing a session.
 - **Google Sheets access is layout-tolerant**: rather than fixed ranges, `google-sheets.ts` searches
   the `LEADERBOARD` tab for anchor cells (`findCellContaining`, `findCellBelowContaining`,
   `findEmptyCellBelow`) and derives the data range from them.
@@ -946,8 +946,8 @@ their absence degrades; this is what reads them.
 | `TF_IAP_OAUTH_CLIENT_ID` | Secret | both Terraform workflows; also the four update workflows, which pass it to `request-deploy` |
 | `TF_IAP_OAUTH_CLIENT_SECRET` | Secret | `terraform-plan`, `terraform-apply` |
 | `PUBLIC_LEADERBOARD_PROXY_URL` | Variable | `deploy-site`, `check-site` — absent, live leaderboards drop out of the build |
-| `WISEGOLF_USERNAME` | Secret | PR checks (the live `wisegolf-api` tests) and the three update workflows; `deploy-site` still sets it, but the build no longer reads it |
-| `WISEGOLF_PASSWORD` | Secret | PR checks (the live `wisegolf-api` tests) and the three update workflows; `deploy-site` still sets it, but the build no longer reads it |
+| `WISEGOLF_USERNAME` | Secret | PR checks (the live `wisegolf-api` tests), three update workflows — not `deploy-site`, whose build never calls WiseGolf |
+| `WISEGOLF_PASSWORD` | Secret | PR checks (the live `wisegolf-api` tests), three update workflows — not `deploy-site`, whose build never calls WiseGolf |
 | `HECTOR_APP_API_KEY` | Secret | `update-leaderboards`, `check-site` |
 | `ASTROSITE_API_KEY` | Secret | `update-player-biographies` |
 | `GIT_COMMITTER_EMAIL` | Secret | the four update workflows and `export-admin-data` — the address they commit as |

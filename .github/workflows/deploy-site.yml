@@ -174,8 +174,11 @@ jobs:
             --site "${{ steps.pages.outputs.origin }}" \
             --base "${{ steps.pages.outputs.base_path }}"
         env:
-          WISEGOLF_USERNAME: ${{ secrets.WISEGOLF_USERNAME }}
-          WISEGOLF_PASSWORD: ${{ secrets.WISEGOLF_PASSWORD }}
+          # No WiseGolf credentials: the build does not talk to WiseGolf. `handicaps.ts`
+          # exports `getPlayerHandicap`, but no page calls it — handicaps are read from
+          # the admin service or the committed backup — so `createWisegolfSession` is
+          # never constructed here. The scrape lives in the three update workflows.
+          #
           # Public URL of the leaderboard proxy. Unset simply leaves the live
           # leaderboard off, and every page renders from the last published snapshot.
           PUBLIC_LEADERBOARD_PROXY_URL: ${{ vars.PUBLIC_LEADERBOARD_PROXY_URL }}
