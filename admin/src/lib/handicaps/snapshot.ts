@@ -26,9 +26,9 @@ import { firestore } from '../firestore.ts'
  * **Not a build input.** The site's player pages draw a handicap *history*
  * chart, so the build needs the whole log regardless, and
  * `/api/handicaps/history` already serves it. Pointing the build at a document
- * derived from that log would recreate, in a new shape, the problem
- * `docs/plans/handicaps-to-firestore.md` states as "a backup that is also the
- * build input is not a backup": a generated artifact on the production path,
+ * derived from that log would recreate, in a new shape, the problem that "a
+ * backup that is also the build input is not a backup": a generated artifact on
+ * the production path,
  * with the thing it was generated from no longer being read. This is for the
  * admin UI.
  *

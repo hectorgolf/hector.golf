@@ -15,8 +15,9 @@ import { ROUTES, credentialsFrom } from "../src/code/admin-api";
  * though it were current. The site then stayed seven hours stale.
  *
  * `deploy-admin` takes about a minute, so waiting turns that failure into a
- * delay. See *Decisions* in `docs/plans/handicaps-to-firestore.md` for the three
- * alternatives and why this is the only one that does.
+ * delay. Pinning the build to the committed backup, retrying without waiting and
+ * failing loudly were all considered; this is the only one that removes the
+ * outage rather than relocating it.
  *
  * It does not replace the rule. Shipping the endpoint and the reader in separate
  * merges is still the right way round, and costs nothing; this is what stops the

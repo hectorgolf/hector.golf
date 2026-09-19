@@ -22,8 +22,8 @@ will mislead you.
 | | | executed? |
 | --- | --- | --- |
 | [`biography-locking.md`](plans/biography-locking.md) | `player.biographyLocked`, so the twice-monthly regeneration stops overwriting edited biographies | **No.** The field is in no schema, page or script |
-| [`bucket-locking.md`](plans/bucket-locking.md) | `event.bucketsLocked`, so an announced split can be settled before the first morning | **Phases 1-3,** on 2026-09-18. The field exists, `update-handicaps` honours it and `handicaps.json` publishes it. Phase 4, setting it from the admin, is blocked on Hector events being authorable there at all — until then it is set by editing the event file |
-| [`handicaps-to-firestore.md`](plans/handicaps-to-firestore.md) | Moving the handicap scrape out of a GitHub Actions runner writing JSON, and into the admin writing Firestore — and the job harness the three scrapes behind it will reuse | **Steps 0 to 3,** on 2026-09-16 and 2026-09-18. Firestore is the system of record for handicaps, git holds the backup, and the site builds from `/api/handicaps/history`. Step 4 retires `update-handicaps.yml` and is blocked on the last of its three other outputs: `event.buckets`, which waits on [`bucket-locking.md`](plans/bucket-locking.md) phase 4 |
+| [`bucket-locking.md`](plans/bucket-locking.md) | `event.bucketsLocked`, so an announced split can be settled before the first morning | **Mostly,** on 2026-09-18. The field exists, `update-handicaps` honours it and the payload publishes it; it is set by editing the event file. What is left is setting it from the admin, blocked on Hector events being authorable there at all |
+| [`handicaps-to-firestore.md`](plans/handicaps-to-firestore.md) | Moving the handicap scrape out of a GitHub Actions runner writing JSON, and into the admin writing Firestore — and the job harness the three scrapes behind it will reuse | **Mostly,** on 2026-09-16 and 2026-09-18. Firestore is the system of record for handicaps, git holds the backup, and the site builds from `/api/handicaps/history`. What is left is deleting `update-handicaps.yml`, blocked on the last of its three other outputs: `event.buckets`, which waits on the row above |
 
 The two locking plans came out of `current/data-ownership.md`, which specified both fields as part
 of a decision that was otherwise a description of how things already are. A proposal in a
@@ -32,14 +32,16 @@ fields that did not exist came to be documented beside seven that did. One of th
 and `data-ownership.md` describes it rather than proposing it.
 
 A partly-executed plan is the case the lifecycle below does not cover, and two files are in it.
-`handicaps-to-firestore.md` is the ordinary sort: a migration with steps, four of its five done, and
-it records under each step what that step cost. The column and the ticks in the file say where it
-is. Its last step is held up by another plan in this table rather than by anything in itself, which
-is worth knowing before reading it as almost-finished — `event.buckets` cannot move while Hector
-events are authored by editing JSON files. `bucket-locking.md` is the same shape with a different
-reason for stopping — three of its four phases are the whole of the feature, and the fourth is a UI
-that cannot be built until the admin owns Hector events. It is the plan the one above is waiting
-for.
+Both were trimmed to what has *not* happened on 2026-09-19, so each answers three questions and
+stops: what to do, why it is worth doing, and what has to be removed first. What the executed part
+did, and what each step of it cost, is in git history and in `current/` — keeping it in the plan
+made both files read as records, which is the one thing a prescriptive document must not do.
+
+All three of them are now waiting on the same thing, which is easier to see at this length than it
+was at the old one: the admin can author matchplay events and nothing else, so Hector events and
+players are mirrored from the committed files and anything written to the mirror is reverted by the
+next `npm run seed`. Until that changes, `event.buckets` cannot move, a bucket lock cannot be set
+from the admin, and neither can a biography lock. One piece of work unblocks three plans.
 
 `functions-migration.md` and `sheets-credential-wif.md` were the awkward sort, because what they
 were waiting for was a date rather than a decision — both on the same calendar, a credential

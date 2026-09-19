@@ -5,8 +5,8 @@ import { all, render } from '../../../lib/handicaps/observations.ts'
 /**
  * The handicap observation log, as the site builds from it.
  *
- * Step 3 of `docs/plans/handicaps-to-firestore.md`: the reader moves here, once,
- * rather than to the committed NDJSON and off it again later. A backup that is
+ * The site's reader moved here in one step, rather than to the committed NDJSON
+ * and off it again later. A backup that is
  * also the build input is not a backup — it is the production path under a
  * misleading name — so the site asks this and keeps the committed file for the
  * builds that cannot.
