@@ -15,8 +15,13 @@ import { ROUTES, credentialsFrom } from "../src/code/admin-api";
  * though it were current. The site then stayed seven hours stale.
  *
  * `deploy-admin` takes about a minute, so waiting turns that failure into a
- * delay. See *Decisions* in `docs/plans/handicaps-to-firestore.md` for the three
- * alternatives and why this is the only one that does.
+ * delay. It is one of three mitigations that were considered, and the other two
+ * are worth knowing: a clearer message on a 404, which fixes the diagnosis
+ * rather than the failure and the diagnosis was never the slow part; and falling
+ * back to the committed backup when the fetch fails, which was rejected and
+ * should stay rejected — it is the third branch `admin-api.ts` deliberately does
+ * not have, and it would turn every occurrence of this into a silent
+ * publication of stale handicaps. A red deploy is the cheap failure here.
  *
  * It does not replace the rule. Shipping the endpoint and the reader in separate
  * merges is still the right way round, and costs nothing; this is what stops the

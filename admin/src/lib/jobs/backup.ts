@@ -31,8 +31,8 @@
  *
  * A wrong value *appended* is still appended. The guard protects the history,
  * not the newest row. That is the right division: the newest row is what the
- * acceptance criterion in `docs/plans/handicaps-to-firestore.md` compares
- * against the old pipeline, and the history is what nothing else protects.
+ * shadow period compared against the old pipeline, and the history is what
+ * nothing else protects.
  */
 
 export type GuardVerdict =

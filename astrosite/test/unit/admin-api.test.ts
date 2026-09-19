@@ -8,8 +8,7 @@ import { credentialsFrom, loadFromAdmin } from '../../src/code/admin-api'
  * Where the site build gets its handicaps, and — the part worth testing — what it
  * does when it cannot.
  *
- * Step 3 of `docs/plans/handicaps-to-firestore.md` states the rule as an
- * asymmetry: a build with no credentials reads the committed backup and says so,
+ * The rule is an asymmetry: a build with no credentials reads the committed backup and says so,
  * a build *with* credentials that cannot reach the API fails. Every failure mode
  * here is silent by nature — a stale handicap looks exactly like a current one on
  * a rendered page — so the branches are pinned rather than described.
