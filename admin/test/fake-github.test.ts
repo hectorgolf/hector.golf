@@ -81,6 +81,8 @@ describe('the stand-in, as the client sees it', () => {
     let server: Server
     let client: GitHubClient
     let state: FakeState
+    /** For the one case the client cannot express: a filter it would never build. */
+    let base: string
 
     beforeAll(async () => {
         state = emptyState()
@@ -91,6 +93,7 @@ describe('the stand-in, as the client sees it', () => {
         server = createServer(state, repository)
         await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
         const { port } = server.address() as AddressInfo
+        base = `http://127.0.0.1:${port}`
         client = createGitHubClient({
             repository,
             token: async () => 'fake-token',
@@ -137,6 +140,56 @@ describe('the stand-in, as the client sees it', () => {
     it('honours per_page, because the page asks for ten and shows what it gets', async () => {
         const outcome = await client.recentRuns(handicaps, 1)
         expect(outcome.ok && outcome.runs.length).toBe(1)
+    })
+
+    it('narrows the history to the window the mirror asks for', async () => {
+        // The question every sync asks: "anything since last time?" Against the
+        // real API this is the difference between 36 bytes and 1.5 MB, so a
+        // stand-in that ignored it would let the cheap path look exercised while
+        // nothing local ever took it.
+        const all = await client.recentRuns(handicaps, 100)
+        expect(all.ok).toBe(true)
+        if (!all.ok) return
+        const newest = all.runs[0]!
+
+        const since = await client.recentRuns(handicaps, 100, 1, new Date(newest.startedAt))
+        expect(since.ok && since.runs.map((run) => run.runNumber)).toEqual([newest.runNumber])
+
+        const after = await client.recentRuns(handicaps, 100, 1, new Date(Date.now() + 60_000))
+        expect(after.ok && after.runs).toEqual([])
+    })
+
+    it('includes a run sitting exactly on the boundary, because the client asks with >=', async () => {
+        /*
+         * The mirror sets this window to a run's own timestamp when it is
+         * chasing an outcome it does not know yet, so an exclusive boundary
+         * would answer with the one run it was asking about missing. Real
+         * GitHub was checked on this: `>` returns nothing where `>=` returns
+         * the run.
+         */
+        const all = await client.recentRuns(handicaps, 100)
+        if (!all.ok) return expect.fail('expected a history')
+        const oldest = all.runs[all.runs.length - 1]!
+
+        const outcome = await client.recentRuns(handicaps, 100, 1, new Date(oldest.startedAt))
+        expect(outcome.ok && outcome.runs.map((run) => run.runNumber)).toContain(oldest.runNumber)
+    })
+
+    it('answers a filter it cannot parse with no runs, which is what GitHub does', async () => {
+        /*
+         * The failure `lib/workflow-runs.ts` is built around, and the reason
+         * this stand-in models the filter at all. An unparseable `created` is
+         * not a 422 — it is zero runs and a 200, indistinguishable from a
+         * repository where nothing has happened. Asked here through a raw fetch
+         * rather than the client, because the client renders its window from a
+         * `Date` and so cannot produce a malformed one.
+         */
+        const response = await fetch(
+            `${base}/repos/${repository}/actions/workflows/${handicaps.file}/runs?created=${encodeURIComponent('>tuesday')}`,
+            { headers: { authorization: 'Bearer stand-in' } }
+        )
+        expect(response.status).toBe(200)
+        expect((await response.json()).workflow_runs).toEqual([])
     })
 
     it('serves a file out of the working tree in the encoding the client decodes', async () => {

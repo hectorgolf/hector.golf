@@ -149,6 +149,42 @@ export function seedHistory(state: FakeState, workflowFiles: readonly string[], 
 }
 
 /**
+ * GitHub's `created` search filter, as far as this project uses it.
+ *
+ * Returns a predicate over `created_at`, or `undefined` when the value is one
+ * this stand-in does not understand — which the caller answers with an empty
+ * list, because **that is what real GitHub does**. An unparseable filter is not
+ * a 422 there; it is zero runs and a 200, which is indistinguishable from a
+ * repository where nothing has happened. `lib/workflow-runs.ts` is built around
+ * that behaviour — it refuses to send a timestamp it cannot vouch for — and a
+ * stand-in that answered a bad filter with the whole history instead would hide
+ * the one failure that code exists to prevent.
+ *
+ * `>` and `>=` only, because those are what the mirror sends. A date with no
+ * time is accepted the way the search syntax defines it, since that is the form
+ * somebody types into a curl by hand: `>=2026-09-18` starts at the beginning of
+ * that day and `>2026-09-18` starts after the end of it.
+ */
+export function createdFilter(value: string): ((createdAt: string) => boolean) | undefined {
+    const match = /^(>=|>)\s*(\S+)$/.exec(value.trim())
+    if (!match) return undefined
+
+    const [, operator, instant] = match
+    const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(instant!)
+    const parsed = new Date(dateOnly ? `${instant}T00:00:00Z` : instant!)
+    if (Number.isNaN(parsed.getTime())) return undefined
+
+    // A bare date names a whole day, so `>` means after the last moment of it.
+    const from = dateOnly && operator === '>' ? parsed.getTime() + 24 * 60 * 60 * 1000 : parsed.getTime()
+    const inclusive = operator === '>=' || dateOnly
+
+    return (createdAt: string) => {
+        const at = new Date(createdAt).getTime()
+        return inclusive ? at >= from : at > from
+    }
+}
+
+/**
  * What a run looks like now.
  *
  * Derived from its age rather than advanced by a timer, so there is nothing to
@@ -440,8 +476,28 @@ export function handle(state: FakeState, repository: string, req: IncomingMessag
         // walk loop happily against a hundred duplicates.
         const page = Math.max(1, Number(url.searchParams.get('page') ?? 1))
         const from = (page - 1) * limit
+
+        /*
+         * The window, applied before the page, because that is the order the
+         * real API applies them in and the difference is visible: filtering a
+         * page would hand back fewer than `per_page` rows and stop the mirror's
+         * walk a page early.
+         */
+        const created = url.searchParams.get('created')
+        const within = created === null ? () => true : createdFilter(created)
+        if (created !== null && !within) {
+            // Answered as an empty list, exactly as GitHub does. Logged because
+            // the response cannot say anything and a developer staring at a
+            // quiet log deserves better than the silence production gets.
+            console.warn(
+                `fake-github: did not understand created=${created}, answering with no runs — ` +
+                    `which is what GitHub does with a filter it cannot parse`
+            )
+        }
+
         const matching = state.runs
             .filter((run) => run.workflowFile === runs[1])
+            .filter((run) => (within ? within(run.startedAt) : false))
             .sort((a, b) => b.startedAt.localeCompare(a.startedAt))
             .slice(from, from + limit)
         const host = req.headers.host ?? `127.0.0.1:${DEFAULT_PORT}`
