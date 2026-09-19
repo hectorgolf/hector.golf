@@ -1,0 +1,238 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro'
+import PageHeader from '@hector/ui/components/PageHeader.astro'
+import Breadcrumb from '@hector/ui/components/Breadcrumb.astro'
+import MirrorNotice from '../../components/MirrorNotice.astro'
+import ReadOnlyField from '../../components/ReadOnlyField.astro'
+
+import { formatEventDates } from '@hector/schemas/src/dates.ts'
+import { getPlayer, listEvents } from '../../lib/repository/events.ts'
+import { read as readHandicapSnapshot } from '../../lib/handicaps/snapshot.ts'
+import { PLAYER_MIRROR } from '../../lib/mirror.ts'
+import { formatHandicap, fullName, resolveHandicap } from '../../lib/players.ts'
+
+const { id } = Astro.params
+if (!id) return Astro.redirect('/players')
+
+const player = await getPlayer(id)
+if (!player) return new Response('Player not found', { status: 404 })
+
+/*
+ * Appearances are read out of the whole events collection, which is eighteen
+ * documents. Worth the reads: a player's record is mostly text, and the question
+ * somebody actually opens this page with — "has this person played a Hector, and
+ * which" — is not answerable from the player document at all, because the
+ * relation is stored on the event's `participants`.
+ *
+ * It is also the check that matters before these become editable. Deleting a
+ * player leaves every event that named them pointing at nothing, and this is the
+ * page that would have to say so.
+ */
+const [events, observed] = await Promise.all([listEvents(), readHandicapSnapshot()])
+const appearances = events.filter((event) => event.participants.includes(player.id))
+
+const handicap = resolveHandicap(player, observed?.players[player.id])
+const biography = player.biography ?? []
+---
+
+<AdminLayout title={fullName(player)}>
+	<Breadcrumb title="Players" href="/players" />
+
+	<div class="row-between">
+		<PageHeader
+			title={fullName(player)}
+			eyebrow="Player"
+			meta={[player.club, `${appearances.length} appearance${appearances.length === 1 ? '' : 's'}`]}
+		/>
+		<span class="pill pill-outline">Read-only</span>
+	</div>
+
+	<MirrorNotice mirror={PLAYER_MIRROR} what="This player" />
+
+	<section class="stack">
+		<h2>Details</h2>
+
+		<div class="fields">
+			<ReadOnlyField label="First name" value={player.name.first} />
+			<ReadOnlyField label="Last name" value={player.name.last} />
+			<ReadOnlyField label="Id" value={player.id} hint="The document key and the filename." />
+		</div>
+
+		<div class="fields">
+			<ReadOnlyField label="Club" value={player.club} hint="Authored. The scrape fills it only when it is empty." />
+			<ReadOnlyField label="Gender" value={player.gender} />
+			<ReadOnlyField
+				label="Privacy"
+				value={player.privacy ?? 'None'}
+				hint={
+					player.privacy === 'shorten-last-name'
+						? 'The public site shortens the last name. The admin never does.'
+						: undefined
+				}
+			/>
+		</div>
+
+		<div class="fields">
+			<ReadOnlyField
+				label="Handicap"
+				value={formatHandicap(handicap)}
+				hint={
+					handicap === undefined
+						? 'Neither WiseGolf nor the file has one.'
+						: handicap.source === 'observed'
+							? `What WiseGolf last reported${handicap.observed ? `, read ${handicap.observed}` : ''}.`
+							: 'Hand-set, for a player WiseGolf has never heard of. A stopgap, not an override — WiseGolf replaces it as soon as it has a figure.'
+				}
+			/>
+			<ReadOnlyField label="Phone" value={player.contact.phone} />
+			<ReadOnlyField
+				label="Image"
+				value={player.image ?? 'None'}
+				hint="Player images are files on disk, not in Firestore, and no player sets this field."
+			/>
+		</div>
+	</section>
+
+	<section class="stack">
+		<div class="row-between">
+			<h2>Biography</h2>
+			<span class="meta">
+				{biography.length} {biography.length === 1 ? 'paragraph' : 'paragraphs'}
+				{player.biographyLocked && <span class="pill pill-violet">locked</span>}
+			</span>
+		</div>
+
+		<p class="hint">
+			{
+				player.biographyLocked
+					? 'Locked, so update-player-biographies leaves it alone. It still shows the model this text, so a regenerated biography elsewhere does not echo a sentence published here.'
+					: 'Not locked, so update-player-biographies rewrites it on its next run — twice a month. An edit made today has a fortnight to live.'
+			}
+		</p>
+
+		{
+			biography.length === 0 ? (
+				<p class="notice">No biography.</p>
+			) : (
+				<div class="prose">
+					{biography.map((paragraph) => (
+						<p>{paragraph}</p>
+					))}
+				</div>
+			)
+		}
+	</section>
+
+	<section class="stack">
+		<div class="row-between">
+			<h2>Prompt hints</h2>
+			<span class="meta">{player.misc?.length ?? 0}</span>
+		</div>
+		<p class="hint">
+			Authored. The biography generator reads these and writes nothing back to them.
+		</p>
+		{
+			!player.misc?.length ? (
+				<p class="notice">No hints.</p>
+			) : (
+				<ul class="hints">
+					{player.misc.map((hint) => (
+						<li>{hint}</li>
+					))}
+				</ul>
+			)
+		}
+	</section>
+
+	{
+		player.aliases?.length ? (
+			<section class="stack">
+				<h2>Aliases</h2>
+				<ul class="hints">
+					{player.aliases.map((alias) => (
+						<li>
+							{alias.first} {alias.last}
+						</li>
+					))}
+				</ul>
+			</section>
+		) : null
+	}
+
+	<section class="stack">
+		<div class="row-between">
+			<h2>Appearances</h2>
+			<span class="meta">{appearances.length}</span>
+		</div>
+
+		{
+			appearances.length === 0 ? (
+				<p class="notice">
+					Not in any event's field. The Finnkampen events name their players with ids the
+					player collection does not have, so an appearance there does not show here.
+				</p>
+			) : (
+				<div class="tablewrap">
+					<table class="datagrid">
+						<thead>
+							<tr>
+								<th>Event</th>
+								<th>Format</th>
+								<th>When</th>
+							</tr>
+						</thead>
+						<tbody>
+							{appearances.map((event) => (
+								<tr>
+									<td><a href={`/events/${event.format}/${event.id}`}>{event.name}</a></td>
+									<td>{event.format}</td>
+									<td class="num">{formatEventDates(event)}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			)
+		}
+	</section>
+</AdminLayout>
+
+<style>
+	h2 {
+		margin: 0;
+		font-family: var(--font-serif);
+		font-size: 1.2rem;
+	}
+
+	.hint {
+		margin: 0;
+		font-size: 0.8rem;
+		color: var(--text-dim);
+	}
+
+	.prose {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		max-width: 48rem;
+		color: var(--text-muted);
+	}
+
+	.prose p {
+		margin: 0;
+	}
+
+	.hints {
+		margin: 0;
+		padding-left: 1.1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.3rem;
+		color: var(--text-muted);
+		font-size: 0.92rem;
+	}
+
+	.meta .pill {
+		margin-left: 0.5rem;
+	}
+</style>

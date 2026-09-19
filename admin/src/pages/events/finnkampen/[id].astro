@@ -1,0 +1,140 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro'
+import PageHeader from '@hector/ui/components/PageHeader.astro'
+import Breadcrumb from '@hector/ui/components/Breadcrumb.astro'
+import MirrorNotice from '../../../components/MirrorNotice.astro'
+import EventDetailsView from '../../../components/EventDetailsView.astro'
+import Participants from '../../../components/Participants.astro'
+import ReadOnlyField from '../../../components/ReadOnlyField.astro'
+
+import { EventFormat, type FinnkampenEvent } from '@hector/schemas/src/events.ts'
+import { getEventOfFormat, listPlayers } from '../../../lib/repository/events.ts'
+import { eventMirror } from '../../../lib/mirror.ts'
+import { displayName, nameById } from '../../../lib/players.ts'
+
+const { id } = Astro.params
+if (!id) return Astro.redirect('/events/finnkampen')
+
+const event: FinnkampenEvent | undefined = await getEventOfFormat(id, EventFormat.Finnkampen)
+if (!event) return new Response('Finnkampen event not found', { status: 404 })
+
+const players = await listPlayers()
+const names = nameById(players)
+const mirror = eventMirror(EventFormat.Finnkampen)
+
+const teams = event.results?.teams ?? []
+/*
+ * `winners.finnkampen` is typed as an array of strings and holds *team names* in
+ * both committed events — "Ukkometsot" — where a Hector's winners are player
+ * ids. Printed as stored rather than resolved against the roster, because
+ * resolving would quietly turn a name nobody can look up into a name that looks
+ * like it failed to resolve. An editor for this format will have to decide which
+ * of the two the field means; today the data answers only for these two events.
+ */
+const winners = event.results?.winners.finnkampen ?? []
+---
+
+<AdminLayout title={event.name}>
+	<Breadcrumb title="Finnkampen" href="/events/finnkampen" />
+
+	<div class="row-between">
+		<PageHeader
+			title={event.name}
+			eyebrow="Finnkampen"
+			meta={[event.location, `${event.participants.length} player${event.participants.length === 1 ? '' : 's'}`]}
+		/>
+		<span class="pill pill-outline">Read-only</span>
+	</div>
+
+	{mirror && <MirrorNotice mirror={mirror} what="This event" />}
+
+	<EventDetailsView event={event} />
+
+	<section class="stack">
+		<h2>Results</h2>
+
+		<div class="fields">
+			<ReadOnlyField
+				label="Won by"
+				value={winners.join(', ')}
+				hint="Stored as a team name here, unlike a Hector's winners, which are player ids."
+			/>
+			<ReadOnlyField label="Courses" value={event.courses?.join(', ')} hint="Course ids; courses are not in Firestore." />
+		</div>
+
+		{
+			teams.length === 0 ? (
+				<p class="notice">No teams recorded.</p>
+			) : (
+				<div class="teams">
+					{teams.map((team) => (
+						<article class="card team">
+							<header>
+								<h3>{team.name}</h3>
+								<span class="meta">{team.players.length} players</span>
+							</header>
+							<ul>
+								{team.players.map((pid) => (
+									<li class:list={[{ unknown: !names.has(pid) }]}>
+										{displayName(names, pid)}
+									</li>
+								))}
+							</ul>
+						</article>
+					))}
+				</div>
+			)
+		}
+	</section>
+
+	<Participants ids={event.participants} names={names} />
+</AdminLayout>
+
+<style>
+	h2 {
+		margin: 0;
+		font-family: var(--font-serif);
+		font-size: 1.2rem;
+	}
+
+	h3 {
+		margin: 0;
+		font-size: 0.95rem;
+	}
+
+	.teams {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+		gap: 1rem;
+	}
+
+	.team {
+		padding: 1rem 1.1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+
+	.team header {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+	}
+
+	.team ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		font-size: 0.9rem;
+	}
+
+	/* An id the player collection does not have; see Participants.astro. */
+	.team li.unknown {
+		font-family: var(--font-num);
+		font-size: 0.82rem;
+		color: var(--text-dim);
+	}
+</style>

@@ -180,7 +180,18 @@ main {
 	gap: 0.35rem;
 }
 
-.field > label {
+/*
+ * Both spellings of a field label: the `<label>` a form field has, and the
+ * `<span class="label">` a read-only one has instead. A read-only field labels
+ * nothing focusable, so a `<label>` there would point a screen reader at a
+ * control that is not on the page.
+ *
+ * They share a rule rather than resembling each other, because the read-only
+ * pages are a rehearsal for the forms that replace them — the value moves from a
+ * `<p>` into an `<input>` and the label above it should not shift by a pixel.
+ */
+.field > label,
+.field > .label {
 	font-family: var(--font-score);
 	text-transform: uppercase;
 	letter-spacing: 0.09em;
@@ -188,9 +199,45 @@ main {
 	color: var(--text-dim);
 }
 
+/* The read-only counterpart of an input: same box, no border, not focusable. */
+.field > .value {
+	margin: 0;
+	font-size: 0.95rem;
+	color: var(--text);
+	/* Matches the input's own vertical padding, so the label sits where it does
+	   above a box. No horizontal padding: text with nothing drawn around it wants
+	   to line up with the label, not with the inside of an absent border. */
+	padding: 0.5rem 0;
+}
+
+/*
+ * Only the plain-text form keeps its own line breaks, the way the `<textarea>`
+ * it stands in for does. A field whose value is markup — a list of paragraphs, a
+ * row of pills — would otherwise render the template's own indentation.
+ */
+.field > p.value {
+	white-space: pre-wrap;
+}
+
+/* Nothing there, said out loud. See ReadOnlyField.astro. */
+.field > .value.empty {
+	color: var(--text-faint);
+}
+
 .field .hint {
 	font-size: 0.8rem;
 	color: var(--text-dim);
+}
+
+/*
+ * A row of fields that want to sit side by side. `EventDetailsFields.astro` has
+ * its own two-column `.pair` for the date boxes; this is the general case, used
+ * by the read-only pages where six short values would otherwise be six rows.
+ */
+.fields {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+	gap: 0.5rem 1.5rem;
 }
 
 input[type='text'],

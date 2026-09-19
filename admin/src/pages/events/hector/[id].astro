@@ -1,0 +1,328 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro'
+import PageHeader from '@hector/ui/components/PageHeader.astro'
+import Breadcrumb from '@hector/ui/components/Breadcrumb.astro'
+import MirrorNotice from '../../../components/MirrorNotice.astro'
+import EventDetailsView from '../../../components/EventDetailsView.astro'
+import Participants from '../../../components/Participants.astro'
+import ReadOnlyField from '../../../components/ReadOnlyField.astro'
+
+import { EventFormat, type HectorEvent } from '@hector/schemas/src/events.ts'
+import { bucketsAreOpen, bucketsFreezeAt } from '@hector/schemas/src/buckets.ts'
+import { getEventOfFormat, listPlayers } from '../../../lib/repository/events.ts'
+import { eventMirror } from '../../../lib/mirror.ts'
+import { displayName, nameById } from '../../../lib/players.ts'
+import {
+	bucketRange,
+	bucketsSummary,
+	competitionsOf,
+	gameFormatDetails,
+	maxStrokesOverParOf,
+	roundLabel,
+} from '../../../lib/events/hector.ts'
+
+const { id } = Astro.params
+if (!id) return Astro.redirect('/events/hector')
+
+const event: HectorEvent | undefined = await getEventOfFormat(id, EventFormat.Hector)
+if (!event) return new Response('Hector event not found', { status: 404 })
+
+const players = await listPlayers()
+const names = nameById(players)
+const mirror = eventMirror(EventFormat.Hector)
+
+/*
+ * When the split stops moving, and whether it already has.
+ *
+ * Three states, and they are not the same question asked twice. `bucketsLocked`
+ * is a person saying "this split is settled"; the freeze is the clock saying the
+ * same thing at 08:00 on the first morning, local to the event. A finished event
+ * is past both. Showing all three is what `docs/plans/bucket-locking.md` wants a
+ * bucket editor to sit beside — the lock alone protects a split CI computed, and
+ * the pair is what lets somebody fix one.
+ */
+const freezesAt = bucketsFreezeAt(event)
+const open = bucketsAreOpen(event)
+const bucketState = event.bucketsLocked
+	? 'Locked — somebody has settled this split'
+	: open
+		? 'Open — recomputed on every tick until the freeze'
+		: 'Frozen — the first morning has passed'
+
+const winners = event.results?.winners
+const teams = event.results?.teams ?? []
+---
+
+<AdminLayout title={event.name}>
+	<Breadcrumb title="Hector" href="/events/hector" />
+
+	<div class="row-between">
+		<PageHeader
+			title={event.name}
+			eyebrow="Hector"
+			meta={[event.location, `${event.participants.length} player${event.participants.length === 1 ? '' : 's'}`]}
+		/>
+		<span class="pill pill-hector">Read-only</span>
+	</div>
+
+	{mirror && <MirrorNotice mirror={mirror} what="This event" />}
+
+	<EventDetailsView event={event} />
+
+	<section class="stack">
+		<h2>Scoring</h2>
+		<div class="fields">
+			<ReadOnlyField
+				label="Max strokes over par"
+				value={event.maxStrokesOverPar}
+				hint="What a hole can cost at most. A round may override it."
+			/>
+			<ReadOnlyField label="Courses" value={event.courses?.join(', ')} hint="Course ids; courses are not in Firestore." />
+			<ReadOnlyField label="Leaderboard sheet">
+				{
+					event.leaderboardSheet ? (
+						<a href={event.leaderboardSheet} rel="noreferrer noopener" target="_blank">
+							Google Sheet
+						</a>
+					) : (
+						<span class="none">—</span>
+					)
+				}
+			</ReadOnlyField>
+		</div>
+	</section>
+
+	<section class="stack">
+		<div class="row-between">
+			<h2>Rounds</h2>
+			<span class="meta">{event.rounds?.length ?? 0} rounds</span>
+		</div>
+
+		{
+			!event.rounds?.length ? (
+				<p class="notice">No rounds recorded.</p>
+			) : (
+				<div class="rounds">
+					{event.rounds.map((round) => (
+						<article class="card round">
+							<header>
+								<h3>{roundLabel(round)}</h3>
+								<span class="meta">
+									{round.course} · {round.tee} tee · par+{maxStrokesOverParOf(event, round)}
+								</span>
+							</header>
+							<ul class="formats">
+								{round.gameFormats.map((format) => (
+									<li>
+										<span class="format-name">{format.format}</span>
+										<span class="pill pill-outline">{competitionsOf(format)}</span>
+										{gameFormatDetails(format).length > 0 && (
+											<span class="format-detail">{gameFormatDetails(format).join(' · ')}</span>
+										)}
+									</li>
+								))}
+							</ul>
+						</article>
+					))}
+				</div>
+			)
+		}
+		<p class="hint">
+			Rounds are written once a year, by the person who also maintains the game-format schema.
+			The plan for making this editable recommends a validated textarea over this structure
+			rather than a form for each of its fields; this is the view that means nobody has to open
+			the JSON to read it.
+		</p>
+	</section>
+
+	<section class="stack">
+		<div class="row-between">
+			<h2>Buckets</h2>
+			<span class="meta">{bucketsSummary(event.buckets)}</span>
+		</div>
+
+		<div class="fields">
+			<ReadOnlyField label="State" value={bucketState} />
+			<ReadOnlyField
+				label="Freezes at"
+				value={freezesAt?.toFormat('yyyy-LL-dd HH:mm ZZZZ')}
+				hint={
+					event.timing.timezone
+						? '08:00 on the first morning, local to the event.'
+						: 'No time zone on the event, so there is no local 08:00 to freeze at.'
+				}
+			/>
+			<ReadOnlyField
+				label="Locked"
+				value={event.bucketsLocked === undefined ? 'Unset' : String(event.bucketsLocked)}
+				hint="Unset means nobody has taken this split over. Set it by editing the event file."
+			/>
+		</div>
+
+		{
+			!event.buckets?.length ? (
+				<p class="notice">No split drawn.</p>
+			) : (
+				<div class="buckets">
+					{event.buckets.map((bucket, index) => (
+						<article class="card bucket">
+							<header>
+								<h3>Bucket {index + 1}</h3>
+								<span class="meta">
+									{bucket.length} players{bucketRange(bucket) ? ` · ${bucketRange(bucket)}` : ''}
+								</span>
+							</header>
+							<ol>
+								{bucket.map((entry) => (
+									<li>
+										<span class="who">{displayName(names, entry.id)}</span>
+										<span class="num">{entry.handicap ?? '—'}</span>
+									</li>
+								))}
+							</ol>
+						</article>
+					))}
+				</div>
+			)
+		}
+		<p class="hint">
+			The handicaps here are the ones the split was drawn on, which for a finished event is not
+			what those players play off today.
+		</p>
+	</section>
+
+	<section class="stack">
+		<h2>Results</h2>
+
+		<div class="fields">
+			<ReadOnlyField
+				label="Hector"
+				value={(winners?.hector ?? []).map((pid) => displayName(names, pid)).join(' & ')}
+			/>
+			<ReadOnlyField
+				label="Victor"
+				value={(winners?.victor ?? []).map((pid) => displayName(names, pid)).join(' & ')}
+			/>
+		</div>
+
+		{
+			teams.length === 0 ? (
+				<p class="notice">No teams recorded. CI back-fills these only when there are none.</p>
+			) : (
+				<div class="tablewrap">
+					<table class="datagrid">
+						<thead>
+							<tr>
+								<th>Team</th>
+								<th>Players</th>
+							</tr>
+						</thead>
+						<tbody>
+							{teams.map((team) => (
+								<tr>
+									<td>{team.name}</td>
+									<td>{team.players.map((pid) => displayName(names, pid)).join(', ')}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			)
+		}
+	</section>
+
+	<Participants ids={event.participants} names={names} />
+</AdminLayout>
+
+<style>
+	h2 {
+		margin: 0;
+		font-family: var(--font-serif);
+		font-size: 1.2rem;
+	}
+
+	h3 {
+		margin: 0;
+		font-size: 0.95rem;
+	}
+
+	.hint {
+		margin: 0;
+		font-size: 0.8rem;
+		color: var(--text-dim);
+	}
+
+	.none {
+		color: var(--text-faint);
+	}
+
+	.rounds,
+	.buckets {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+		gap: 1rem;
+	}
+
+	.round,
+	.bucket {
+		padding: 1rem 1.1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+
+	.round header,
+	.bucket header {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+	}
+
+	.formats {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.formats li {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.4rem;
+		border-top: 1px solid var(--line);
+		padding-top: 0.5rem;
+	}
+
+	.format-name {
+		font-weight: 500;
+	}
+
+	.format-detail {
+		flex-basis: 100%;
+		font-size: 0.8rem;
+		color: var(--text-dim);
+	}
+
+	.bucket ol {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+	}
+
+	.bucket li {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.75rem;
+		font-size: 0.9rem;
+	}
+
+	.bucket .num {
+		color: var(--text-dim);
+	}
+</style>

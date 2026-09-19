@@ -1,0 +1,108 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro'
+import PageHeader from '@hector/ui/components/PageHeader.astro'
+import Breadcrumb from '@hector/ui/components/Breadcrumb.astro'
+import MirrorNotice from '../../../components/MirrorNotice.astro'
+
+import { EventFormat, type HectorEvent } from '@hector/schemas/src/events.ts'
+import { formatEventDates } from '@hector/schemas/src/dates.ts'
+import { listEventsOfFormat, listPlayers } from '../../../lib/repository/events.ts'
+import { eventMirror } from '../../../lib/mirror.ts'
+import { bucketsSummary } from '../../../lib/events/hector.ts'
+import { displayName, nameById } from '../../../lib/players.ts'
+import type { Player } from '@hector/schemas/src/players.ts'
+
+/*
+ * Thirteen events, newest first, which is what `listEvents` already orders by.
+ * No pagination and no filter: thirteen rows fit on a screen, and the year is
+ * in the name.
+ *
+ * Players are read for the winners column alone. That is forty-six document
+ * reads to render two names per row, which would be the wrong trade on a page
+ * loaded often — but the alternative is a column of `lasse-k`, and who won is
+ * most of what anybody opens a list of finished tournaments to see. The
+ * matchplay detail page already pays the same cost for the same reason.
+ */
+let events: HectorEvent[] = []
+let players: Player[] = []
+let error: string | undefined
+
+try {
+	;[events, players] = await Promise.all([listEventsOfFormat(EventFormat.Hector), listPlayers()])
+} catch {
+	// The reason goes to Cloud Logging; the page says only that it failed.
+	error = 'Could not read the events. Check the service logs.'
+}
+
+const names = nameById(players)
+const mirror = eventMirror(EventFormat.Hector)
+
+const winnersOf = (event: HectorEvent): string =>
+	(event.results?.winners?.hector ?? []).map((id) => displayName(names, id)).join(' & ')
+---
+
+<AdminLayout title="Hector">
+	<Breadcrumb title="Events" href="/events" />
+
+	<PageHeader
+		title="Hector"
+		lede="Every Hector Trophée, as the store holds it."
+	/>
+
+	{mirror && <MirrorNotice mirror={mirror} what="A Hector event" />}
+
+	{error && <p class="notice bad">{error}</p>}
+
+	{!error && events.length === 0 && (
+		<p class="notice">
+			No Hector events in the store. <code>npm run seed</code> imports them from the committed
+			files.
+		</p>
+	)}
+
+	{
+		events.length > 0 && (
+			<div class="tablewrap">
+				<table class="datagrid">
+					<thead>
+						<tr>
+							<th>Event</th>
+							<th>When</th>
+							<th>Where</th>
+							<th>Field</th>
+							<th>Rounds</th>
+							<th>Buckets</th>
+							<th>Hector</th>
+						</tr>
+					</thead>
+					<tbody>
+						{events.map((event) => (
+							<tr>
+								<td>
+									<a href={`/events/hector/${event.id}`}>{event.name}</a>
+									{event.ignore && (
+										<span class="pill pill-outline" title="ignore is set, so the public site skips it">
+											Hidden
+										</span>
+									)}
+								</td>
+								<td class="num">{formatEventDates(event)}</td>
+								<td>{event.location}</td>
+								<td class="num">{event.participants.length}</td>
+								<td class="num">{event.rounds?.length ?? 0}</td>
+								<td>{bucketsSummary(event.buckets)}</td>
+								<td>{winnersOf(event) || '—'}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		)
+	}
+</AdminLayout>
+
+<style>
+	td .pill {
+		margin-left: 0.5rem;
+	}
+</style>

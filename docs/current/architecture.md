@@ -23,7 +23,7 @@ Five moving parts:
 | Part | Location | Role |
 | --- | --- | --- |
 | Astro site | `astrosite/` | Static site generator, domain logic, committed JSON data, and the workflow scripts |
-| Admin service | `admin/` | Astro SSR on Cloud Run behind IAP: the `/operations` page, the dispatch endpoints Cloud Scheduler calls, and the jobs this service runs itself |
+| Admin service | `admin/` | Astro SSR on Cloud Run behind IAP: the `/operations` page, the dispatch endpoints Cloud Scheduler calls, the jobs this service runs itself, the matchplay editor, and read-only views of the data it mirrors — Hector events, Finnkampen events and players |
 | Shared packages | `packages/` | `@hector/schemas`, `@hector/ui`, `@hector/wisegolf` — the three things the site and the admin both use |
 | Cloud Functions | `backend/backend-functions/` | Four independent HTTP-triggered GCP functions: one public leaderboard proxy, one private biography writer, two dormant experiments |
 | CI/CD | `.github/workflows/` | Fifteen workflows: three deploys, four PR checks, four scheduled data updates, two Terraform, two admin data workflows |
@@ -94,7 +94,7 @@ waiting for a deploy.
 │   ├── scripts/commit-changes.sh
 │   └── test/{unit,astro}/
 ├── admin/                      # Astro SSR on Cloud Run behind IAP (see §11 for running it locally)
-│   ├── src/pages/              # /operations, /events, and the api/ endpoints
+│   ├── src/pages/              # /operations, /events, /players, and the api/ endpoints
 │   ├── src/lib/                # github.ts, jobs/, workflow-runs.ts, runlog.ts, identity.ts, secrets.ts
 │   └── scripts/                # seed, export, and the three local stand-ins — not copied into the image
 ├── packages/                   # Shared by the site and the admin
@@ -1393,6 +1393,15 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
   system is restated by hand, so it will not follow a token change in `hector.css`.
 - `astrosite/.env.sample` is missing the `MSCORECARD_EMAIL` / `MSCORECARD_PASSWORD` pair the
   mScorecard CLI needs. `HECTOR_APP_API_KEY` used to be missing too and is now there.
+- **Twenty participant ids in the committed events match no player document.** All eighteen in
+  `FINNKAMPEN2022` — that event spells its field `lasse-koskela-hcp183` where the player collection
+  keys on `lasse-k` — and two in `HECTOR2017`, `tuomas-lesonen` and `tommy-nordberg`, who have no
+  file at all. `FINNKAMPEN2021` is clean. Nothing renders these today: the site has no Finnkampen
+  route, and its Hector pages resolve a field through the roster and drop what does not match. The
+  admin's read-only event pages show them as stored and count them, which is how the number above is
+  known. It matters before either format becomes editable — a participant picker cannot offer an id
+  no collection has, so the reconciliation is work the authoring plan's step 1 and step 3 each
+  inherit.
 - **A finished Hector's bucket table shows today's handicaps, not the ones its split was drawn on.**
   `events/hector/[slug].astro` renders that column as `getPlayerHandicapById(player.id)`, which is
   the last entry in the history with no date bound at all — so it neither reads the handicaps stored

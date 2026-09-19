@@ -1,0 +1,49 @@
+---
+/**
+ * One value, labelled the way the form field that will replace it is labelled.
+ *
+ * The shape is `EventDetailsFields.astro`'s, minus the input: same `.field`
+ * wrapper, same label typography, same hint underneath. That is the point rather
+ * than a coincidence — these pages exist so that Hector events, Finnkampen
+ * events and players can be *read* in the admin before they can be written, and
+ * the cheapest way to keep that from being throwaway work is for the read view
+ * to be the form with the boxes taken out. Turning one of these editable is
+ * replacing the `<p>` with an `<input>` and putting a `<form>` around the
+ * section, not redesigning the page.
+ *
+ * A `<span class="label">` rather than a `<label>`, because there is nothing
+ * focusable for it to label; see the rule in `admin.css`.
+ *
+ * An empty value renders as an em dash in the faint colour rather than as
+ * nothing at all. A blank where a value should be is indistinguishable from a
+ * field that failed to render, and most of what these pages show is optional in
+ * the schema — half the players have no `misc`, most events have no `hero_image`
+ * — so "nothing here" is an answer worth printing.
+ */
+interface Props {
+	label: string
+	/** Omitted or empty renders as the em dash. Numbers include 0, which is a value. */
+	value?: string | number | null
+	/** One line under the value, in the same place a form's hint goes. */
+	hint?: string
+}
+
+const { label, value, hint } = Astro.props
+
+const text = value === undefined || value === null || value === '' ? undefined : String(value)
+const hasSlot = Astro.slots.has('default')
+---
+
+<div class="field">
+	<span class="label">{label}</span>
+	{
+		hasSlot ? (
+			<div class="value">
+				<slot />
+			</div>
+		) : (
+			<p class:list={['value', { empty: text === undefined }]}>{text ?? '—'}</p>
+		)
+	}
+	{hint && <span class="hint">{hint}</span>}
+</div>

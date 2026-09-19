@@ -3,7 +3,7 @@ import '@hector/ui/styles/hector.css'
 import '../styles/admin.css'
 import HectorMark from '@hector/ui/components/HectorMark.astro'
 
-import { SECTIONS, sectionForPath } from '../lib/sections.ts'
+import { SECTIONS, hasPage, sectionForPath } from '../lib/sections.ts'
 import { SIGN_OUT_URL, viewerFromHeaders } from '../lib/identity.ts'
 
 interface Props {
@@ -30,7 +30,7 @@ const viewer = viewerFromHeaders(Astro.request.headers)
 			<nav aria-label="Sections">
 				{
 					SECTIONS.map((section) =>
-						section.available ? (
+						hasPage(section) ? (
 							<a
 								href={`/${section.slug}`}
 								aria-current={current?.slug === section.slug ? 'page' : undefined}

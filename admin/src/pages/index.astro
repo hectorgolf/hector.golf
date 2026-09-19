@@ -1,7 +1,18 @@
 ---
 import AdminLayout from '../layouts/AdminLayout.astro'
 import PageHeader from '@hector/ui/components/PageHeader.astro'
-import { SECTIONS } from '../lib/sections.ts'
+import { SECTIONS, hasPage } from '../lib/sections.ts'
+
+/*
+ * The pill says what a card's readiness is, and the two states that get one are
+ * the two a reader could be wrong about. `editable` gets none: a section with no
+ * pill is the ordinary case, and labelling it would make the other two look like
+ * exceptions rather than like the majority of the admin, which today they are.
+ */
+const PILL: Partial<Record<(typeof SECTIONS)[number]['readiness'], string>> = {
+	'read-only': 'Read-only',
+	planned: 'Not built yet',
+}
 ---
 
 <AdminLayout title="Dashboard">
@@ -10,10 +21,12 @@ import { SECTIONS } from '../lib/sections.ts'
 	<div class="sections">
 		{
 			SECTIONS.map((section) => (
-				<article class:list={['card', 'section-card', { soon: !section.available }]}>
+				<article class:list={['card', 'section-card', { soon: section.readiness === 'planned' }]}>
 					<h2>
-						{section.available ? <a href={`/${section.slug}`}>{section.label}</a> : section.label}
-						{!section.available && <span class="pill pill-outline">Not built yet</span>}
+						{hasPage(section) ? <a href={`/${section.slug}`}>{section.label}</a> : section.label}
+						{PILL[section.readiness] && (
+							<span class="pill pill-outline">{PILL[section.readiness]}</span>
+						)}
 					</h2>
 					<p>{section.blurb}</p>
 				</article>

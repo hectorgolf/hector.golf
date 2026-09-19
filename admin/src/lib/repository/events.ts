@@ -30,6 +30,9 @@ type StoredDocument = {
     updatedBy: string
 }
 
+/** The member of the union a format names, so a page gets that format's fields. */
+type EventOfFormat<F extends EventFormat> = Extract<Event, { format: F }>
+
 const EVENTS = 'events'
 const PLAYERS = 'players'
 
@@ -71,21 +74,43 @@ export async function countEventsByFormat(): Promise<Record<string, number>> {
     return counts
 }
 
-export async function listMatchplayEvents(): Promise<MatchplayEvent[]> {
-    const events = await listEvents()
-    return events.filter((e): e is MatchplayEvent => e.format === EventFormat.Matchplay)
-}
-
 /**
- * Undefined for an id that is not a matchplay event, the same as for one that
- * does not exist: a caller holding a matchplay route has no use for a Hector
- * event, and conflating the two here would push the check into every page.
+ * The one event of a given format, narrowed to that format's type.
+ *
+ * Every page under `/events/<format>/` wants exactly this, and wants the same
+ * answer — undefined — for an id that does not exist and for one that belongs to
+ * another format. A caller holding a Hector route has no use for a matchplay
+ * tournament, and conflating the two here would push the check into every page.
+ *
+ * Generic rather than one function per format because the difference between
+ * them was the format literal and nothing else, and step 0 of
+ * `docs/plans/authoring-players-and-events.md` asks for the write side to be
+ * generalised the same way. Doing the read half first costs nothing and is what
+ * the read-only pages are built on; the write half carries an ownership refusal
+ * with it, which is a decision rather than a refactor.
  */
-export async function getMatchplayEvent(id: string): Promise<MatchplayEvent | undefined> {
+export async function getEventOfFormat<F extends EventFormat>(
+    id: string,
+    format: F
+): Promise<EventOfFormat<F> | undefined> {
     const doc = await firestore().collection(EVENTS).doc(id).get()
     if (!doc.exists) return undefined
     const event = parse<Event>(genericEventSchema, doc.data(), id)
-    return event?.format === EventFormat.Matchplay ? event : undefined
+    return event?.format === format ? (event as EventOfFormat<F>) : undefined
+}
+
+/** Every event of one format, newest first, the way `listEvents` orders them. */
+export async function listEventsOfFormat<F extends EventFormat>(format: F): Promise<EventOfFormat<F>[]> {
+    const events = await listEvents()
+    return events.filter((e): e is EventOfFormat<F> => e.format === format)
+}
+
+export function listMatchplayEvents(): Promise<MatchplayEvent[]> {
+    return listEventsOfFormat(EventFormat.Matchplay)
+}
+
+export function getMatchplayEvent(id: string): Promise<MatchplayEvent | undefined> {
+    return getEventOfFormat(id, EventFormat.Matchplay)
 }
 
 /**
@@ -140,4 +165,18 @@ export async function listPlayers(): Promise<Player[]> {
         .map((d) => parse<Player>(playerSchema, d.data(), d.id))
         .filter((p): p is Player => p !== undefined)
         .sort((a, b) => `${a.name.first} ${a.name.last}`.localeCompare(`${b.name.first} ${b.name.last}`))
+}
+
+/**
+ * One player, or undefined when the id is not in the store.
+ *
+ * Reads the document rather than filtering `listPlayers()`, which is forty-six
+ * reads to answer a question about one of them. Same parse and the same silence
+ * on a schema failure — a player page is a place to find out a document is
+ * malformed, but not by rendering half of it.
+ */
+export async function getPlayer(id: string): Promise<Player | undefined> {
+    const doc = await firestore().collection(PLAYERS).doc(id).get()
+    if (!doc.exists) return undefined
+    return parse<Player>(playerSchema, doc.data(), id)
 }

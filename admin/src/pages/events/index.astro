@@ -1,8 +1,14 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro'
 import PageHeader from '@hector/ui/components/PageHeader.astro'
-import { EVENT_FAMILIES } from '../../lib/sections.ts'
+import { EVENT_FAMILIES, hasPage } from '../../lib/sections.ts'
 import { countEventsByFormat } from '../../lib/repository/events.ts'
+
+/** Same two labelled states as the dashboard; see `src/pages/index.astro`. */
+const PILL: Partial<Record<(typeof EVENT_FAMILIES)[number]['readiness'], string>> = {
+	'read-only': 'Read-only',
+	planned: 'Not built yet',
+}
 
 /**
  * Counts come from the store rather than being hard-coded, so a format that
@@ -33,14 +39,16 @@ try {
 	<div class="families">
 		{
 			EVENT_FAMILIES.map((family) => (
-				<article class:list={['card', 'family-card', { soon: !family.available }]}>
+				<article class:list={['card', 'family-card', { soon: family.readiness === 'planned' }]}>
 					<h2>
-						{family.available ? (
+						{hasPage(family) ? (
 							<a href={`/events/${family.slug}`}>{family.label}</a>
 						) : (
 							family.label
 						)}
-						{!family.available && <span class="pill pill-outline">Not built yet</span>}
+						{PILL[family.readiness] && (
+							<span class="pill pill-outline">{PILL[family.readiness]}</span>
+						)}
 					</h2>
 					<p>{family.blurb}</p>
 					{!error && (

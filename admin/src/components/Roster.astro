@@ -1,7 +1,7 @@
 ---
 import type { MatchplayEvent } from '@hector/schemas/src/events.ts'
 import type { Player } from '@hector/schemas/src/players.ts'
-import { fullName } from '../lib/players.ts'
+import { fullName, resolveHandicap } from '../lib/players.ts'
 import { read as readHandicapSnapshot } from '../lib/handicaps/snapshot.ts'
 
 interface Props {
@@ -15,28 +15,25 @@ const { event, players, names } = Astro.props
 /*
  * Where the handicaps in this table come from, and why there are two places.
  *
- * `player.handicap` is the stopgap: on the site it resolves as
- * `override ?? fromHistory`, and the override is a figure somebody typed for a
- * player WiseGolf has never heard of. `update-handicaps.yml` also writes it
- * today, which is why this table has been able to read it alone — and step 4 of
- * `docs/plans/handicaps-to-firestore.md` retires that workflow, at which point
- * the field stops being refreshed and only genuine overrides remain in it.
+ * `resolveHandicap` is the rule and `lib/players.ts` explains it: what WiseGolf
+ * last reported wins, and `player.handicap` is the stopgap that fills a gap the
+ * history has never had a reading for. This used to be an expression here, in
+ * the opposite order — which was the site's order before the precedence was
+ * reversed on 2026-09-18, and stayed here after.
  *
- * So the order below is the site's order, and survives that change without
- * another edit: the hand-set value wins where there is one, and everyone else
- * gets what the observation log last saw. Reading the snapshot rather than the
- * log is the whole point — one document instead of 1,408, on a page that is
- * loaded far more often than a handicap moves.
+ * Reading the snapshot rather than the observation log is the whole point: one
+ * document instead of 1,408, on a page that is loaded far more often than a
+ * handicap moves.
  *
  * Read here rather than in the page, because this component only renders while
  * a tournament is in signup. A started tournament pays nothing for it.
  *
- * Missing is normal until the job that writes it is wired up, and this falls
- * back to exactly what it showed before rather than failing the page.
+ * Missing is normal — an emulator seeded a minute ago has no snapshot — and
+ * falls back to the stored field rather than failing the page.
  */
 const observed = await readHandicapSnapshot()
 const handicapOf = (id: string): number | undefined =>
-	players.find((p) => p.id === id)?.handicap ?? observed?.players[id]?.handicap
+	resolveHandicap(players.find((p) => p.id === id) ?? {}, observed?.players[id])?.value
 
 const inField = event.participants
 const available = players
