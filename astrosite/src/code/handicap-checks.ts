@@ -14,9 +14,9 @@ import { ROUTES, loadFromAdmin, readBackup } from "./admin-api";
  * `getHandicapChecks()` is called from the middle of building a payload and
  * making it async would turn a data-source change into a rewrite of its callers.
  *
- * It used to be `import checkData from "../data/handicap-checks.json"`. That file
- * is still written by `update-handicaps.yml` and still committed; it is no longer
- * what the site reads. See `docs/plans/handicaps-to-firestore.md`.
+ * It used to be `import checkData from "../data/handicap-checks.json"`. Nothing
+ * writes that file any more; it is still committed, and the admin's handicaps job
+ * still reconciles from it. See the note in `handicaps.ts` beside its twin.
  */
 const checkData = await loadFromAdmin<HandicapCheck>({
     path: ROUTES.checks,

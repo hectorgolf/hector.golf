@@ -34,7 +34,7 @@ permissions:
 # Shared with the other three data updates on purpose: they all end in the same
 # `git pull -r && git push` in commit-changes.sh, and GitHub delivers this
 # workflow's cron hours late, so "it runs at a different time" was never an
-# interlock. See update-handicaps.yml for the full note.
+# interlock. See update-leaderboards.yml for the full note.
 concurrency:
   group: "data-update"
   cancel-in-progress: false

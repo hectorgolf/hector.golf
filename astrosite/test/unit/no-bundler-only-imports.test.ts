@@ -9,10 +9,14 @@ import { describe, expect, it } from 'vitest'
  * This exists because of a six-hour outage nobody noticed. `handicaps.ts` was
  * given `import backup from "…/observations.ndjson?raw"`, which is Vite syntax:
  * it inlines the file at build time, reads beautifully, and works in `astro
- * build` and in vitest, because both are Vite. `update-handicaps.yml` runs
+ * build` and in vitest, because both are Vite. `update-handicaps.yml` ran
  * `src/workflows/update-handicaps.ts` through `npx tsx` with no bundler in
  * sight, and Node answered `ERR_UNKNOWN_FILE_EXTENSION: Unknown file extension
  * ".ndjson"`. The scrape died on the next tick.
+ *
+ * That particular workflow has since moved into the admin service and its script
+ * is gone, but the shape of the mistake has not: three scrapes still run this way
+ * and `src/code/` is shared with them.
  *
  * Every check that could have caught it ran under Vite. `astro check` passed,
  * the whole suite passed, the site built 328 pages. The one caller that does not
@@ -51,7 +55,7 @@ describe('what the workflows can import', () => {
         // A path typo here would make every assertion below vacuous.
         expect(reachable.length).toBeGreaterThan(10)
         expect(reachable.some((path) => path.endsWith('code/handicaps.ts'))).toBe(true)
-        expect(reachable.some((path) => path.endsWith('workflows/update-handicaps.ts'))).toBe(true)
+        expect(reachable.some((path) => path.endsWith('workflows/update-leaderboards.ts'))).toBe(true)
     })
 
     it.each([

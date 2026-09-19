@@ -152,13 +152,16 @@ describe('deciding what to write', () => {
  * The sweep a run attests to, and why its arithmetic has to match the workflow's.
  *
  * Both pipelines write to the same log while the migration is in progress, and
- * `lastCheckedFor` takes the latest sweep that did not skip a player. So a player
- * counted as checked by one pipeline and skipped by the other is dated
- * differently depending on which sweep happened to land last — and that date is
- * published at `/events/hector/:id/handicaps.json`, which app.hector.golf reads.
+ * `lastCheckedFor` takes the latest sweep that did not skip a player, and that
+ * date is published at `/events/hector/:id/handicaps.json`, which
+ * app.hector.golf reads.
  *
- * Pinned against `sweepOf` in `astrosite/src/workflows/update-handicaps.ts`,
- * which is the definition being matched rather than a second opinion about it.
+ * These cases were written against `sweepOf` in
+ * `astrosite/src/workflows/update-handicaps.ts`, to pin the two pipelines to the
+ * same answer while both were writing sweeps. That file is gone and this is the
+ * only definition left, so they now say what a sweep *is* rather than that two
+ * agree — which is worth keeping: the sweep log still holds rows both wrote, and
+ * a change here would date those differently from the ones beside them.
  */
 describe('the sweep a run records', () => {
     const scraped = (readings: Record<string, number>, skipped: string[]) => ({

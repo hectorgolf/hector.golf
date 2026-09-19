@@ -128,16 +128,16 @@ function convertWisegolfClubToGolfClub(club: WisegolfClub): GolfClub {
  * to log in with.
  *
  * `supplied` is how a caller that does not keep its credentials in the
- * environment provides them; omitting it keeps the environment behaviour the
- * four `astrosite` workflows have always had. Supplying them sets them for the
- * process, because the memoized lookups below reach for them long after this
- * function has returned.
+ * environment provides them — the admin service does, reading them from Secret
+ * Manager; omitting it keeps the environment behaviour the `astrosite` workflows
+ * have always had. Supplying them sets them for the process, because the
+ * memoized lookups below reach for them long after this function has returned.
  *
  * Missing credentials stay a warning and a null source rather than a throw. That
- * is not new, and it is load-bearing: `update-handicaps.ts` gathers its sources
- * with `Promise.allSettled` and carries on with whichever answered, so a site
- * build on a laptop with no credentials produces a run that finds nothing rather
- * than a crash.
+ * is not new, and it is load-bearing: a caller gathers its sources with
+ * `Promise.allSettled` and carries on with whichever answered, so a site build on
+ * a laptop with no credentials produces a run that finds nothing rather than a
+ * crash.
  */
 export const createWisegolfSession = async (supplied?: WisegolfCredentials): Promise<WisegolfSession> => {
     if (supplied) {

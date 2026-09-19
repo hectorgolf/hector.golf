@@ -138,7 +138,7 @@ export async function execute(job: Job, by: string): Promise<Execution> {
     await record(jobRun);
     console.log(`Recorded job run`, jobRun);
 
-    await publish(job, result.outcome, result.changes.length);
+    await publish(job, result.outcome, result.changes.length, result.deployStartsItself);
 
     return {
         slug: job.slug,
@@ -172,6 +172,19 @@ export async function execute(job: Job, by: string): Promise<Execution> {
  *
  * A run that found changes is the one where a page will actually look different.
  *
+ * ## Why a run can have changed something and still not ask
+ *
+ * Since the bucket recompute moved here, a run can also commit *inside*
+ * `astrosite/` — an event's `buckets`, which is within `deploy-site.yml`'s path
+ * filter. A commit made with this service's token does trigger workflows, unlike
+ * one made with `GITHUB_TOKEN`, so that push starts a deploy on its own and
+ * asking for a second one would build the same commit twice.
+ *
+ * `deployStartsItself` is the job saying which of the two it is. It is reported
+ * by the job rather than inferred here, because "did anything land under
+ * `astrosite/`" is a question about what was written and this function only sees
+ * a count.
+ *
  * ## What a failure here is, and is not
  *
  * Not a failed run. The data is written and committed by the time this is
@@ -184,11 +197,20 @@ export async function publish(
     job: Job,
     outcome: JobRun["outcome"],
     changes: number,
+    /** True when a commit already under `astrosite/` will start the deploy itself. */
+    deployStartsItself: boolean = false,
     /** Injectable so the rules above can be tested without a GitHub. */
     dispatch: (workflow: DispatchableWorkflow) => Promise<DispatchOutcome> = (workflow) =>
         github().dispatch(workflow),
 ): Promise<void> {
     if (!job.publishes || job.dryRun || outcome !== "ok" || changes === 0) return;
+    if (deployStartsItself) {
+        console.log("Not asking for a deploy: a commit under astrosite/ has already started one", {
+            job: job.slug,
+            changes,
+        });
+        return;
+    }
 
     const deploy = workflowBySlug("deploy");
     if (!deploy) {

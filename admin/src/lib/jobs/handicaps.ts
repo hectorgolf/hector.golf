@@ -191,6 +191,12 @@ export type JobResult = {
     detail?: string
     changes: Change[]
     commit?: string
+    /**
+     * Whether a commit landed inside `astrosite/`, which GitHub answers with a
+     * deploy of its own. See `publish()` in `execute.ts` for why that is worth
+     * saying rather than letting both happen.
+     */
+    deployStartsItself?: boolean
 }
 
 /**
@@ -412,11 +418,18 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
      */
     const buckets = await recompute(dependencies, players, [...history, ...entries], now, false)
     const everything = [...changes, ...buckets.changes]
+    const deployStartsItself = buckets.committed.length > 0
     if (buckets.outcome === 'failed') {
-        return { outcome: 'failed', detail: buckets.detail, changes: everything, commit: written.commit }
+        return {
+            outcome: 'failed',
+            detail: buckets.detail,
+            changes: everything,
+            commit: written.commit,
+            deployStartsItself,
+        }
     }
 
-    return { outcome: 'ok', changes: everything, commit: written.commit }
+    return { outcome: 'ok', changes: everything, commit: written.commit, deployStartsItself }
 }
 
 /**

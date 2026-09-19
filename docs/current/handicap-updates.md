@@ -14,8 +14,16 @@ look identical may be a day apart in provenance, and nothing in the value says s
 ## The chain
 
 ```text
-Finnish Golf Union (WHS batch)  →  WiseGolf  →  update-handicaps.ts  →  handicaps.json
+Finnish Golf Union (WHS batch)  →  WiseGolf  →  the admin's handicaps job  →  Firestore
+                                                                          ↘  data/handicaps/*.ndjson (backup)
+                                                                          ↘  event buckets (git)
 ```
+
+Until 2026-09-20 the middle of that chain was `update-handicaps.ts` on a GitHub Actions runner,
+writing `src/data/handicaps.json`. Both of those are gone: the scrape runs in the admin service, and
+the site reads `/api/handicaps/history`. `handicaps.json` is still committed and still read, once
+per run, so that rows written before the move cannot be lost — see
+[`architecture.md`](./architecture.md) §8.
 
 ## What the Union does
 
@@ -51,6 +59,11 @@ thing that does. The workflows used to keep their own `schedule:` crons as a bac
 delivered hours late, which made them a second clock that was always wrong, and they were deleted.
 The trade is that a Cloud Scheduler or admin outage now means no updates at all, silently, where it
 previously meant late ones.
+
+Since 2026-09-20 the handicap sweep is not a workflow at all: the tick runs it inside the admin
+service, which reads WiseGolf, writes Firestore, commits the backup, and redraws the buckets of
+every event whose split is still open. That last one is what kept `update-handicaps.yml` alive after
+the rest had moved.
 
 | Ticks | UTC | Summer (EEST) | Winter (EET) |
 | --- | --- | --- | --- |

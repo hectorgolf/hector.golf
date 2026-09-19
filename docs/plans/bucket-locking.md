@@ -9,7 +9,7 @@ record of what each phase cost, is in this file's git history — what the code 
 
 Let the admin set and clear `event.bucketsLocked`, ideally beside an editor for the split itself.
 
-The field exists, `update-handicaps` skips a locked event and says so, and
+The field exists, the admin's handicaps job skips a locked event and says so, and
 `/events/hector/:id/handicaps.json` publishes it as `buckets_locked`. Setting it today means editing
 the event's JSON file by hand and committing it, which is how Hector events are edited at all.
 
@@ -32,8 +32,13 @@ to protect.
 **Hector events are not authorable in the admin.** `admin/src/lib/ownership.ts` owns matchplay and
 mirrors everything else, so `npm run seed` refreshes Hector events from the committed files after
 every scrape and a lock written to the mirror is reverted within hours. Moving events into the owned
-column is the blocker — the same one [`biography-locking.md`](./biography-locking.md) and
-[`handicaps-to-firestore.md`](./handicaps-to-firestore.md) are waiting on.
+column is the blocker — the same one [`biography-locking.md`](./biography-locking.md) is waiting on.
+
+`handicaps-to-firestore.md` used to be waiting on it too, and stopped: its recompute writes buckets
+to **git** rather than to the mirror, which is the same write the deleted workflow made and leaves
+the ownership rule alone. That does not help here. A lock is set by a person in the admin UI, and
+the admin has only the mirror to write to — so this one really is blocked on the mirror becoming the
+source, where the recompute never needed that at all.
 
 This goes in with a bucket editor rather than ahead of one. Alone it protects a split CI computed;
 the pair is what lets somebody fix one.

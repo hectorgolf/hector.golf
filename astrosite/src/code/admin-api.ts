@@ -43,13 +43,16 @@ import { join } from "node:path";
  *
  * `readFileSync` against a path relative to the working directory, rather than a
  * bundler's `?raw` import. The first version of this used `?raw`, which inlines
- * the file at build time and reads beautifully — and broke
- * `update-handicaps.yml`, which runs `astrosite/src/workflows/update-handicaps.ts`
- * through `npx tsx` with no bundler in sight. Node was handed a `.ndjson` and
+ * the file at build time and reads beautifully — and broke the handicap scrape,
+ * which then ran `astrosite/src/workflows/update-handicaps.ts` through `npx tsx`
+ * with no bundler in sight. Node was handed a `.ndjson` and
  * answered `ERR_UNKNOWN_FILE_EXTENSION`; the scrape was dead for six hours before
  * anyone noticed, because the thing it broke was not the thing being changed.
  *
- * So: no bundler-only syntax in a module the workflows can reach. Relative to the
+ * That scrape has since moved into the admin service, but three others still run
+ * exactly this way and share `src/code/`, so the rule stands and
+ * `test/unit/no-bundler-only-imports.test.ts` enforces it. No bundler-only syntax
+ * in a module the workflows can reach. Relative to the
  * working directory rather than to `import.meta.url`, because the built site runs
  * this module from inside a bundled chunk where `import.meta.url` points at the
  * chunk. Every one of the three callers — `astro build`, `tsx`, and `vitest` —

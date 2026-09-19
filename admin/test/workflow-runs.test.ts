@@ -28,10 +28,10 @@ import {
  */
 
 const workflow: DispatchableWorkflow = {
-    slug: 'handicaps',
-    file: 'update-handicaps.yml',
-    label: "Players' official handicaps",
-    blurb: 'Reads handicaps.',
+    slug: 'leaderboards',
+    file: 'update-leaderboards.yml',
+    label: 'Tournament leaderboards',
+    blurb: 'Reads leaderboards.',
     cadence: 'tick',
 }
 
@@ -52,7 +52,7 @@ const run = (runNumber: number, over: Partial<WorkflowRun> = {}): WorkflowRun =>
 
 const stored = (runNumber: number, over: Partial<StoredWorkflowRun> = {}): StoredWorkflowRun => ({
     ...run(runNumber),
-    slug: 'handicaps',
+    slug: 'leaderboards',
     ...over,
 })
 
@@ -141,7 +141,7 @@ function fakeGitHub(runs: WorkflowRun[]) {
 }
 
 /** A sync state as a previous run would have left it. */
-const syncedAt = (at: string) => ({ syncedAt: { handicaps: at } })
+const syncedAt = (at: string) => ({ syncedAt: { leaderboards: at } })
 
 describe('asking GitHub only for what is new', () => {
     it('asks for runs created since the last sync, rather than for a page of history', async () => {
@@ -167,7 +167,7 @@ describe('asking GitHub only for what is new', () => {
 
         const result = await sync([workflow], { db, runs: github.read, now: NOW })
 
-        expect([...written.keys()]).toEqual(['handicaps_1500'])
+        expect([...written.keys()]).toEqual(['leaderboards_1500'])
         expect(result.stored).toBe(1)
     })
 
@@ -187,7 +187,7 @@ describe('asking GitHub only for what is new', () => {
         // Exactly the run's own timestamp, with no margin: it is GitHub's value
         // handed back, and the inclusive `created:>=` reaches it.
         expect(github.asked[0]!.createdSince).toBe(inFlight.startedAt)
-        const repaired = written.get('handicaps_1400')
+        const repaired = written.get('leaderboards_1400')
         expect(repaired).toMatchObject({ status: 'completed', conclusion: 'success' })
         expect(repaired && 'pending' in repaired).toBe(false)
     })
@@ -199,7 +199,7 @@ describe('asking GitHub only for what is new', () => {
         await sync([workflow], { db, runs: github.read, now: NOW })
 
         expect(marks).toHaveLength(1)
-        expect(marks[0]!.syncedAt).toEqual({ handicaps: NOW.toISOString() })
+        expect(marks[0]!.syncedAt).toEqual({ leaderboards: NOW.toISOString() })
     })
 
     it('leaves the mark alone for a workflow that could not be read', async () => {
@@ -213,7 +213,7 @@ describe('asking GitHub only for what is new', () => {
             runs: async () => ({ ok: false as const, reason: 'rate-limited' as const }),
         })
 
-        expect(result.failures).toEqual([{ slug: 'handicaps', reason: 'rate-limited' }])
+        expect(result.failures).toEqual([{ slug: 'leaderboards', reason: 'rate-limited' }])
         expect(marks.flatMap((mark) => Object.keys(mark.syncedAt ?? {}))).toEqual([])
     })
 })
@@ -238,7 +238,7 @@ describe('refusing to send a timestamp it cannot vouch for', () => {
 
     it('walks the history unfiltered rather than sending a mark that will not parse', async () => {
         const github = fakeGitHub([run(1500), run(1499)])
-        const { db } = fakeFirestore([stored(1499)], { syncedAt: { handicaps: 'last Tuesday' } })
+        const { db } = fakeFirestore([stored(1499)], { syncedAt: { leaderboards: 'last Tuesday' } })
 
         await sync([workflow], { db, runs: github.read, now: NOW, maxPages: 3 })
 
@@ -330,7 +330,7 @@ describe('meeting a workflow for the first time', () => {
 
         expect(github.asked).toEqual([{ page: 1, perPage: PER_PAGE }])
         // Only the three above the high-water mark, not the hundred on the page.
-        expect([...written.keys()].sort()).toEqual(['handicaps_1498', 'handicaps_1499', 'handicaps_1500'])
+        expect([...written.keys()].sort()).toEqual(['leaderboards_1498', 'leaderboards_1499', 'leaderboards_1500'])
     })
 })
 
@@ -347,7 +347,7 @@ describe('when things go wrong', () => {
          * another instead of at once — and cost the Operations page several
          * seconds a load.
          */
-        const workflows = ['handicaps', 'leaderboards', 'deploy'].map((slug) => ({ ...workflow, slug }))
+        const workflows = ['leaderboards', 'biographies', 'deploy'].map((slug) => ({ ...workflow, slug }))
         const { db } = fakeFirestore()
 
         let arrived = 0
@@ -388,7 +388,7 @@ describe('when things go wrong', () => {
             },
         })
 
-        expect(result.failures).toEqual([{ slug: 'handicaps', reason: 'rate-limited' }])
+        expect(result.failures).toEqual([{ slug: 'leaderboards', reason: 'rate-limited' }])
         expect(written.size).toBe(200)
     })
 
@@ -406,7 +406,7 @@ describe('when things go wrong', () => {
         })
 
         expect(result.failures).toEqual([{ slug: 'deploy', reason: 'unauthorized' }])
-        expect(written.has('handicaps_1500')).toBe(true)
+        expect(written.has('leaderboards_1500')).toBe(true)
     })
 
     it('marks a run that has not finished, so the next sync comes back for it', async () => {
@@ -415,7 +415,7 @@ describe('when things go wrong', () => {
 
         await sync([workflow], { db, runs: github.read, now: NOW })
 
-        expect(written.get('handicaps_1501')).toMatchObject({ pending: true })
+        expect(written.get('leaderboards_1501')).toMatchObject({ pending: true })
     })
 
     it('never throws, because a page render and a tick both continue without it', async () => {
@@ -438,7 +438,7 @@ describe('when things go wrong', () => {
             runs: async () => ({ ok: true as const, runs: [run(1500)] }),
         })
 
-        expect(result.failures).toEqual([{ slug: 'handicaps', reason: 'unknown' }])
+        expect(result.failures).toEqual([{ slug: 'leaderboards', reason: 'unknown' }])
         expect(result.stored).toBe(0)
     })
 })

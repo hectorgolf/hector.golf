@@ -58,24 +58,22 @@ import { SEED_PAGES, sync } from '../../../lib/workflow-runs.ts'
  *
  * Two lists, one tick: the GitHub workflows in `workflows.ts` and the in-process
  * jobs in `jobs/registry.ts`. A dataset moves from the first list to the second
- * as it migrates — `docs/plans/handicaps-to-firestore.md` — and during the
- * migration it is briefly in both, which is the point rather than a mistake.
+ * as it migrates, and during the migration it is briefly in both — which is the
+ * point rather than a mistake. Handicaps made that move and is now only a job;
+ * the three scrapes still on the first list are the ones left.
  *
- * **Workflows are dispatched first, jobs second, and the order is load-bearing
- * in two directions.**
+ * **Workflows are dispatched first, jobs second, and the order is load-bearing.**
  *
  * A dispatch is two API calls that return in milliseconds; a job is a 45-player
  * scrape. Dispatching first keeps the promptness this whole mechanism exists to
  * buy — GitHub's own schedule delivery runs hours late, which is the problem
  * being solved — and means a job that hangs cannot stop the workflows starting.
  *
- * It also makes the shadow comparison mean something. The handicaps job reads
- * `handicaps.json` at the start of its run, seconds after the dispatch and
- * minutes before `update-handicaps.yml` commits anything. So both pipelines
- * decide against the *same* base state, and their answers are directly
- * comparable. Running the job first, or on a schedule of its own an hour later,
- * would have the job read a file the workflow had already updated — and it would
- * agree with the workflow by construction, having been told the answer.
+ * It mattered a second way while a dataset was in both lists: the job read the
+ * workflow's committed file seconds after the dispatch and minutes before the
+ * workflow rewrote it, so the two decided against the same base state and their
+ * answers could be compared. That is how the handicaps job was proved before the
+ * workflow was deleted, and it is how the next one will be.
  *
  * ## A failing job does not fail the tick
  *

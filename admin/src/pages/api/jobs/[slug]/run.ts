@@ -39,11 +39,14 @@ import { jobBySlug } from '../../../../lib/jobs/registry.ts'
  *
  * ## Why the redirect uses `ranJob` rather than `ran`
  *
- * Because a slug is only unique within its own list, and `handicaps` is in both:
- * `update-handicaps.yml` is the workflow and the in-process scrape is the job,
- * deliberately, since they are the same dataset during the migration. With one
- * parameter the Operations page cannot tell which of the two just ran, and
+ * Because a slug is only unique within its own list, and `handicaps` was in
+ * both while the workflow and the job ran the same dataset side by side. With one
+ * parameter the Operations page could not tell which of the two just ran, and
  * whichever it checked first would claim every press.
+ *
+ * The overlap is over — `update-handicaps.yml` is gone — but the two lists remain
+ * and the next dataset to move will be in both again, which is exactly when a
+ * parameter that had quietly been made ambiguous would be worst.
  *
  * ## CSRF
  *

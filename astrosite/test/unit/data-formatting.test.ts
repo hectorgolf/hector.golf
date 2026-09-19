@@ -53,22 +53,20 @@ describe("committed JSON data files", () => {
 });
 
 /**
- * The two writers of a Hector event file produce the same bytes.
+ * A Hector event file is the same whether it is written parsed or raw.
  *
- * `update-handicaps.ts` writes the *parsed* event back — Zod's output, defaults
- * and all — while the admin's recompute writes the raw JSON with only `buckets`
- * replaced, so that a default the schema gains later is not materialised into
- * thirteen files that never carried it.
+ * The admin's bucket recompute writes the raw JSON with only `buckets` replaced,
+ * so that a default `hectorEventSchema` gains later is not materialised into
+ * thirteen files that never carried it — the objection `data-ownership.md` makes
+ * to giving `bucketsLocked` a default.
  *
- * Those are two different objects, and for the overlap in
- * `docs/plans/handicaps-to-firestore.md` — where the workflow still runs and the
- * recompute has begun writing — they have to serialise identically. If they do
- * not, the two writers take turns reformatting the same file on every tick, and
- * the diff that reveals it is hundreds of lines with no value changed.
- *
- * It fails the day the schema gains a default the files do not carry. The fix is
- * to decide which writer is right before both are running, which is the point of
- * finding out here.
+ * This was written when there were two writers and they had to agree: the
+ * deleted `update-handicaps.ts` wrote the *parsed* event back, Zod's defaults and
+ * all, and a disagreement would have had them reformatting the same file on
+ * alternate ticks. One writer is left, so what this pins now is narrower and
+ * still worth having: the day the schema gains a default the committed files do
+ * not carry, the recompute's next write would introduce it as an unexplained
+ * diff, and this fails first and says which field.
  */
 describe("Hector event files, as both writers would write them", () => {
     const events = dataFiles.filter((file) => file.startsWith("src/data/events/hector/"));

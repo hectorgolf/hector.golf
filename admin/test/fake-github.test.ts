@@ -76,7 +76,7 @@ describe('where GitHub is', () => {
  */
 describe('the stand-in, as the client sees it', () => {
     const repository = 'hectorgolf/hector.golf'
-    const handicaps = workflowBySlug('handicaps')!
+    const leaderboards = workflowBySlug('leaderboards')!
 
     let server: Server
     let client: GitHubClient
@@ -106,7 +106,7 @@ describe('the stand-in, as the client sees it', () => {
     })
 
     it('has a history before anything is pressed, which is what the log is for', async () => {
-        const outcome = await client.recentRuns(handicaps, 10)
+        const outcome = await client.recentRuns(leaderboards, 10)
         expect(outcome.ok).toBe(true)
         if (!outcome.ok) return
         expect(outcome.runs.length).toBeGreaterThan(0)
@@ -116,9 +116,9 @@ describe('the stand-in, as the client sees it', () => {
     })
 
     it('accepts a dispatch and then has a run to show for it', async () => {
-        const before = await client.recentRuns(handicaps, 10)
-        expect(await client.dispatch(handicaps)).toEqual({ ok: true })
-        const after = await client.recentRuns(handicaps, 10)
+        const before = await client.recentRuns(leaderboards, 10)
+        expect(await client.dispatch(leaderboards)).toEqual({ ok: true })
+        const after = await client.recentRuns(leaderboards, 10)
 
         expect(before.ok && after.ok).toBe(true)
         if (!before.ok || !after.ok) return
@@ -130,7 +130,7 @@ describe('the stand-in, as the client sees it', () => {
     })
 
     it('keeps one workflow out of another workflow\'s history', async () => {
-        const other = DISPATCHABLE_WORKFLOWS.find((workflow) => workflow.slug !== handicaps.slug)!
+        const other = DISPATCHABLE_WORKFLOWS.find((workflow) => workflow.slug !== leaderboards.slug)!
         const outcome = await client.recentRuns(other, 10)
         expect(outcome.ok).toBe(true)
         if (!outcome.ok) return
@@ -138,7 +138,7 @@ describe('the stand-in, as the client sees it', () => {
     })
 
     it('honours per_page, because the page asks for ten and shows what it gets', async () => {
-        const outcome = await client.recentRuns(handicaps, 1)
+        const outcome = await client.recentRuns(leaderboards, 1)
         expect(outcome.ok && outcome.runs.length).toBe(1)
     })
 
@@ -147,15 +147,15 @@ describe('the stand-in, as the client sees it', () => {
         // real API this is the difference between 36 bytes and 1.5 MB, so a
         // stand-in that ignored it would let the cheap path look exercised while
         // nothing local ever took it.
-        const all = await client.recentRuns(handicaps, 100)
+        const all = await client.recentRuns(leaderboards, 100)
         expect(all.ok).toBe(true)
         if (!all.ok) return
         const newest = all.runs[0]!
 
-        const since = await client.recentRuns(handicaps, 100, 1, new Date(newest.startedAt))
+        const since = await client.recentRuns(leaderboards, 100, 1, new Date(newest.startedAt))
         expect(since.ok && since.runs.map((run) => run.runNumber)).toEqual([newest.runNumber])
 
-        const after = await client.recentRuns(handicaps, 100, 1, new Date(Date.now() + 60_000))
+        const after = await client.recentRuns(leaderboards, 100, 1, new Date(Date.now() + 60_000))
         expect(after.ok && after.runs).toEqual([])
     })
 
@@ -167,11 +167,11 @@ describe('the stand-in, as the client sees it', () => {
          * GitHub was checked on this: `>` returns nothing where `>=` returns
          * the run.
          */
-        const all = await client.recentRuns(handicaps, 100)
+        const all = await client.recentRuns(leaderboards, 100)
         if (!all.ok) return expect.fail('expected a history')
         const oldest = all.runs[all.runs.length - 1]!
 
-        const outcome = await client.recentRuns(handicaps, 100, 1, new Date(oldest.startedAt))
+        const outcome = await client.recentRuns(leaderboards, 100, 1, new Date(oldest.startedAt))
         expect(outcome.ok && outcome.runs.map((run) => run.runNumber)).toContain(oldest.runNumber)
     })
 
@@ -185,7 +185,7 @@ describe('the stand-in, as the client sees it', () => {
          * `Date` and so cannot produce a malformed one.
          */
         const response = await fetch(
-            `${base}/repos/${repository}/actions/workflows/${handicaps.file}/runs?created=${encodeURIComponent('>tuesday')}`,
+            `${base}/repos/${repository}/actions/workflows/${leaderboards.file}/runs?created=${encodeURIComponent('>tuesday')}`,
             { headers: { authorization: 'Bearer stand-in' } }
         )
         expect(response.status).toBe(200)
@@ -219,7 +219,7 @@ describe('the stand-in, as the client sees it', () => {
     })
 
     it('takes a commit and serves it back, without touching the checkout', async () => {
-        const path = 'astrosite/src/data/handicaps/history.json'
+        const path = 'astrosite/src/data/leaderboards/history.json'
         const committed = await client.commitFile({
             path,
             text: '["first"]',
@@ -237,7 +237,7 @@ describe('the stand-in, as the client sees it', () => {
     })
 
     it('refuses a stale sha with the conflict the commit retry is written for', async () => {
-        const path = 'astrosite/src/data/handicaps/history.json'
+        const path = 'astrosite/src/data/leaderboards/history.json'
         const outcome = await client.commitFile({
             path,
             text: '["second"]',
@@ -259,13 +259,13 @@ describe('the stand-in, as the client sees it', () => {
         async (reason) => {
             const { port } = server.address() as AddressInfo
             await fetch(`http://127.0.0.1:${port}/_fake/fail?reason=${reason}`, { method: 'POST' })
-            expect(await client.dispatch(handicaps)).toEqual({ ok: false, reason })
+            expect(await client.dispatch(leaderboards)).toEqual({ ok: false, reason })
             await fetch(`http://127.0.0.1:${port}/_fake/fail?reason=none`, { method: 'POST' })
         }
     )
 
     it('is answering normally again once the knob is cleared', async () => {
-        expect(await client.dispatch(handicaps)).toEqual({ ok: true })
+        expect(await client.dispatch(leaderboards)).toEqual({ ok: true })
     })
 
     /**
@@ -291,7 +291,7 @@ describe('the stand-in, as the client sees it', () => {
             const { port } = server.address() as AddressInfo
             const mine = freshClient(port)
 
-            expect(await mine.dispatch(handicaps)).toEqual({ ok: true })
+            expect(await mine.dispatch(leaderboards)).toEqual({ ok: true })
             expect(mine.tokenExpiry()).toBeUndefined()
         })
 
@@ -300,7 +300,7 @@ describe('the stand-in, as the client sees it', () => {
             await setExpiry(port, '5d')
             const mine = freshClient(port)
 
-            expect(await mine.dispatch(handicaps)).toEqual({ ok: true })
+            expect(await mine.dispatch(leaderboards)).toEqual({ ok: true })
             // 5d out and read immediately, so the floor lands on 4 rather than 5.
             expect(mine.tokenExpiry()?.daysLeft).toBe(4)
 
@@ -318,7 +318,7 @@ describe('the stand-in, as the client sees it', () => {
             await setExpiry(port, '-2d')
             const mine = freshClient(port)
 
-            expect(await mine.dispatch(handicaps)).toEqual({ ok: true })
+            expect(await mine.dispatch(leaderboards)).toEqual({ ok: true })
             expect(mine.tokenExpiry()?.daysLeft).toBeLessThan(0)
 
             await setExpiry(port, 'none')
@@ -343,7 +343,7 @@ describe('the stand-in, as the client sees it', () => {
  */
 describe('the page behind a run', () => {
     const repository = 'hectorgolf/hector.golf'
-    const handicaps = workflowBySlug('handicaps')!
+    const leaderboards = workflowBySlug('leaderboards')!
 
     let server: Server
     let client: GitHubClient
@@ -351,7 +351,7 @@ describe('the page behind a run', () => {
 
     beforeAll(async () => {
         const state = emptyState()
-        seedHistory(state, [handicaps.file])
+        seedHistory(state, [leaderboards.file])
         server = createServer(state, repository)
         await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
         origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
@@ -363,7 +363,7 @@ describe('the page behind a run', () => {
     })
 
     it('is linked from the run the API reports, at an address that resolves', async () => {
-        const outcome = await client.recentRuns(handicaps, 1)
+        const outcome = await client.recentRuns(leaderboards, 1)
         expect(outcome.ok).toBe(true)
         if (!outcome.ok) return
 
@@ -374,7 +374,7 @@ describe('the page behind a run', () => {
     })
 
     it('answers that link with a page, without a bearer token', async () => {
-        const outcome = await client.recentRuns(handicaps, 1)
+        const outcome = await client.recentRuns(leaderboards, 1)
         if (!outcome.ok) return expect.fail('expected a run')
 
         // No Authorization header: a browser following a link sends none, and
@@ -385,14 +385,14 @@ describe('the page behind a run', () => {
 
         const html = await response.text()
         expect(html).toContain(`#${outcome.runs[0]!.runNumber}`)
-        expect(html).toContain(handicaps.file)
+        expect(html).toContain(leaderboards.file)
         // The one thing the page must never let anybody forget.
         expect(html).toContain('This is not GitHub')
     })
 
     it('shows a dispatched run progressing, and says it is still going', async () => {
-        expect(await client.dispatch(handicaps)).toEqual({ ok: true })
-        const outcome = await client.recentRuns(handicaps, 1)
+        expect(await client.dispatch(leaderboards)).toEqual({ ok: true })
+        const outcome = await client.recentRuns(leaderboards, 1)
         if (!outcome.ok) return expect.fail('expected a run')
 
         const html = await fetch(outcome.runs[0]!.url).then((response) => response.text())
