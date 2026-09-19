@@ -1,5 +1,5 @@
 import { expect, describe, it } from 'vitest'
-import { bucketsToRecompute } from '../../src/workflows/update-handicaps'
+import { bucketsToRecompute } from '@hector/schemas/src/buckets.ts'
 import { bucketsAreOpen, bucketsFreezeAt } from '../../src/code/data'
 import { fieldHandicaps } from '../../src/code/field-handicaps'
 import { getEventById } from '../../src/code/events'

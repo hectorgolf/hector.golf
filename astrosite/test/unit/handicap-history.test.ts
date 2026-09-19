@@ -1,5 +1,5 @@
 import { expect, describe, it } from "vitest";
-import { getPlayerHandicapFromHistory } from "../../src/workflows/update-handicaps";
+import { getPlayerHandicapFromHistory } from "@hector/schemas/src/handicaps.ts";
 import type { HandicapHistoryEntry } from "@hector/schemas/src/handicaps.ts";
 import type { Player } from "@hector/schemas/src/players.ts";
 

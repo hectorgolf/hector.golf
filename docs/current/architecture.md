@@ -193,7 +193,8 @@ under two names.
 
 `bucket_freeze` is published as an instant so a consumer can compare it against `generatedAt` and
 tell a settled split from a provisional one without reimplementing the rule; `bucketsFreezeAt()` in
-`data.ts` is that rule, and `bucketsAreOpen()` is now defined in terms of it so the two cannot drift.
+`packages/schemas/src/buckets.ts` is that rule, and `bucketsAreOpen()` is defined in terms of it so
+the two cannot drift.
 
 `buckets_locked` is the other half of that question, and a consumer asking "is this split final?"
 has to read both. It mirrors `event.bucketsLocked`, which settles a split *before* the clock would —
@@ -804,14 +805,24 @@ the history.
 | `update-player-biographies.ts` | Every 15 days, on the first tick that finds it due, and only while a Hector is upcoming. No cron | GCP function, WiseGolf | `players/*.json` `biography`, `clubs.json` |
 | `update-player-club-memberships.ts` | Every 30 days, on the first tick that finds it due. No cron | WiseGolf | `players/*.json` `club` |
 
-**`update-handicaps.ts`** — the largest at 310 lines. For each player holding a `club`, it fetches
+**`update-handicaps.ts`** — the largest at 367 lines. For each player holding a `club`, it fetches
 the current handicap through the source chain and appends changed values to `handicaps.json`
 (replacing a same-day duplicate if the association re-ran a batch). It then re-sorts each upcoming
-event's participants with `sortPlayersForBucketing` — by current handicap, tie-broken so that a
-player whose handicap is *falling* ranks ahead of one whose is rising — and splits them into two
-equal buckets written back into the event JSON. `getPlayerHandicapFromHistory`,
-`sortPlayersForBucketing` and `bucketsToRecompute` are exported specifically so the unit tests can
-import them.
+event's participants with `bucketingOrder` — by current handicap, tie-broken so that a player whose
+handicap is *falling* ranks ahead of one whose is rising — and splits them into two equal buckets
+written back into the event JSON.
+
+The bucketing rules themselves are not in this file. `bucketingOrder`, `bucketsToRecompute`,
+`splitIntoBuckets` and the `bucketsAreOpen` / `bucketsFreezeAt` / `hasParticipants` predicates live
+in `packages/schemas/src/buckets.ts`, and `getPlayerHandicapFromHistory` beside `latestPerDay` in
+`packages/schemas/src/handicaps.ts`. They moved there so the admin service can import them — it
+cannot import `src/code/data.ts` at all, which globs the filesystem at module scope — and
+`src/code/data.ts` re-exports the predicates so the site's call sites are unchanged.
+
+`bucketingOrder` takes the name renderer as a parameter rather than importing one. Its last tiebreak
+is the player's name, and the site renders that with the last name shortened for privacy, which it
+can only do by reading the whole roster; that closure cannot follow the sort into a schema package.
+See `test/unit/bucketing.test.ts` for why the two renderers cannot disagree on today's data.
 
 `bucketsToRecompute` is which events that last step runs for, and it applies two predicates kept
 apart on purpose: `bucketsAreOpen`, which is about the clock, and `event.bucketsLocked`, which is
@@ -1266,7 +1277,7 @@ npm test              # both, in sequence
 | `test/unit/dates.test.ts` | Pure | ISO date validation, arithmetic, weekdays, and `formatDateRange()` across the same-day / same-month / cross-month / cross-year shapes |
 | `test/unit/rounds.test.ts` | Pure | `dateOfRound()` and `titleOfRound()`, including month rollover and single-round days |
 | `test/unit/handicap-history.test.ts` | Pure | `getPlayerHandicapFromHistory()` including `offsetFromEnd` lookups |
-| `test/unit/bucketing.test.ts` | Pure | `sortPlayersForBucketing()`, including the rising/falling tie-break |
+| `test/unit/bucketing.test.ts` | Pure | `bucketingOrder()`, including the rising/falling tie-break and the injected name renderer |
 | `test/unit/scoring.test.ts` | Pure | Maximum score per hole, and which formats it applies to |
 | `test/unit/strings.test.ts` | Pure | `redact()` |
 | `test/unit/palette.test.ts` | Pure + **reads the real stylesheet** | Token parsing, `var()` resolution, hue and WCAG contrast maths, and the palette rules the site ships (see §3) |

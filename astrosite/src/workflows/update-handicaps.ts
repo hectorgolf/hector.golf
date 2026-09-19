@@ -8,40 +8,12 @@ import { createWisegolfSession } from "@hector/wisegolf/src/wisegolf-api.ts";
 import { formatEventDates, isoDateToday, isoInstantNow } from "@hector/schemas/src/dates.ts";
 import { writeJsonFile } from "../code/json.ts";
 
-import { playersData, hectorEvents, hasParticipants, bucketsAreOpen, pathToEventJson } from "../code/data.ts";
+import { playersData, hectorEvents, pathToEventJson } from "../code/data.ts";
 import { getPlayerName } from "../code/players.ts";
 import type { Player } from "@hector/schemas/src/players.ts";
-import { type HandicapHistoryEntry, latestPerDay } from "@hector/schemas/src/handicaps.ts";
-import { type HectorEvent } from "@hector/schemas/src/events.ts";
+import { type HandicapHistoryEntry, getPlayerHandicapFromHistory } from "@hector/schemas/src/handicaps.ts";
+import { bucketingOrder, bucketsToRecompute, splitIntoBuckets } from "@hector/schemas/src/buckets.ts";
 import { type HandicapCheck, sweepOf as buildSweep } from "@hector/schemas/src/handicap-checks.ts";
-
-/**
- * Get the player's handicap from their history.
- *
- * @param playerId The ID of the player.
- * @param handicapHistory The history of handicap entries.
- * @param offsetFromEnd (Optional) The offset from the end of the history to
- *                      retrieve. Defaults to 0 (the latest entry). Use -1 for
- *                      the second latest, -2 for the third latest, etc.
- * @returns The player's handicap at the specified offset, or undefined if not found.
- */
-export function getPlayerHandicapFromHistory(
-    playerId: string,
-    handicapHistory: Array<HandicapHistoryEntry>,
-    offsetFromEnd: number = 0,
-): number | undefined {
-    if (handicapHistory.length === 0) {
-        return undefined;
-    }
-    const absoluteOffset = -Math.abs(offsetFromEnd) - 1;
-    const maximumOffset = -(handicapHistory.length - 1);
-    const offset = Math.max(maximumOffset, absoluteOffset);
-    // Days, not readings: an offset of -1 means "the day before", and a handicap
-    // read twice today must not make this morning count as yesterday.
-    return latestPerDay(handicapHistory.filter((entry) => entry.player === playerId))
-        .map((entry) => entry.handicap)
-        .at(offset);
-}
 
 const getPlayerById = (id: string, handicapHistory: Array<HandicapHistoryEntry>): Player | undefined => {
     let record = playersData.find((record) => record.id === id) as Player;
@@ -322,53 +294,6 @@ const updateHandicapsForAllPlayers = async () => {
     persistHandicapCheckToDisk(updatedPlayers, observed);
 };
 
-export function sortPlayersForBucketing(handicapHistory: Array<HandicapHistoryEntry>, p1: Player, p2: Player): number {
-    // First, sort by current handicap (lowest first)
-    const player1Handicap = getPlayerHandicapFromHistory(p1.id, handicapHistory);
-    const player2Handicap = getPlayerHandicapFromHistory(p2.id, handicapHistory);
-    const hcpDifference = (player1Handicap ?? 0) - (player2Handicap ?? 0);
-    if (hcpDifference !== 0) {
-        return hcpDifference;
-    }
-    // If the current handicaps are equal, place the faster "rising" player first
-    const player1PreviousHcp = getPlayerHandicapFromHistory(p1.id, handicapHistory, -1);
-    const player2PreviousHcp = getPlayerHandicapFromHistory(p2.id, handicapHistory, -1);
-    const previousHcpDifference = (player1PreviousHcp ?? 0) - (player2PreviousHcp ?? 0);
-    if (previousHcpDifference !== 0) {
-        return -1 * previousHcpDifference;
-    }
-
-    // If still equal, sort by player name
-    return getPlayerName(p1).localeCompare(getPlayerName(p2));
-}
-
-/**
- * The Hectors a run may redraw the split for, and the ones a lock is holding.
- *
- * Two predicates, kept apart because they answer different questions. `bucketsAreOpen`
- * is about the clock — buckets freeze at 08:00 on the first morning, local to the
- * event, because the Draft after round one reads them — so it is not "upcoming".
- * `bucketsLocked` is somebody saying the split is settled *before* that, which is a
- * decision and not a time, and folding it into the clock rule would make
- * `bucketsFreezeAt` publish an instant that never happened.
- *
- * Returned as a pair rather than as one filtered list so the caller can say which
- * events it is leaving alone and why. A lock that stops a recompute silently is a
- * suspected bug the first time somebody wonders why the buckets did not move.
- *
- * Exported for the unit tests; the run below is the only caller.
- */
-export const bucketsToRecompute = (
-    events: Array<HectorEvent>,
-    now: Date = new Date(),
-): { recompute: Array<HectorEvent>; locked: Array<HectorEvent> } => {
-    const open = events.filter(hasParticipants).filter((e) => bucketsAreOpen(e, now));
-    return {
-        recompute: open.filter((e) => !e.bucketsLocked),
-        locked: open.filter((e) => e.bucketsLocked === true),
-    };
-};
-
 const updateBucketsForUpcomingEvents = async () => {
     const handicapHistory: Array<HandicapHistoryEntry> = readJsonFile(pathToHandicapHistoryJson, []);
 
@@ -391,13 +316,12 @@ const updateBucketsForUpcomingEvents = async () => {
         const participants: Array<{ id: string; handicap: number }> | undefined = event.participants
             ?.map((id) => getPlayerById(id, handicapHistory))
             ?.filter((p) => !!p)
-            ?.sort((p1, p2) => sortPlayersForBucketing(handicapHistory, p1, p2))
+            ?.sort(bucketingOrder(handicapHistory, getPlayerName))
             ?.map(trimPlayer);
         for (const participant of participants) {
             console.log(`- ${participant.id} ${participant.handicap}`);
         }
-        const bucket1 = participants?.slice(0, Math.ceil(participants.length / 2));
-        const bucket2 = participants?.slice(bucket1!.length);
+        const [bucket1, bucket2] = splitIntoBuckets(participants);
 
         console.log(`Bucket 1:`);
         bucket1.forEach((participant, index) => {
