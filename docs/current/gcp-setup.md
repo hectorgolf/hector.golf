@@ -1,7 +1,7 @@
 # The GCP project
 
 *Describes `hector-golf` as it stands. Last reviewed: 2026-09-19, when the run log's two Firestore
-indexes were added.*
+indexes were added and the last credential in the old project was deleted.*
 
 What is running in Google Cloud, and which of it cannot be changed. For the procedure that builds
 this from an empty project — whether for a second environment or to recover from losing this one —
@@ -44,11 +44,22 @@ one Workload Identity pool, as separate identities.
   `terraform apply`. Terraform owns everything around them — the APIs, the three identities, the
   secret containers, and the `allUsers` binding in
   [`cloud_run.tf`](../../terraform/cloud_run.tf) — which is the same division as the admin service.
-- **Nothing in `gen-lang-client-0537211409` any more**, apart from a Firestore database and one API
-  key. The four old copies of those functions were deleted on 2026-09-17; the project itself stays,
-  because its free-tier database is only usable inside it. The leftover `Generative Language API
-  Key` is the last thing to go — see phase 7 of
-  [`functions-migration.md`](../plans/functions-migration.md).
+- **Nothing in `gen-lang-client-0537211409` any more**, apart from a Firestore database and the
+  Firebase browser key that belongs to it. The four old copies of those functions were deleted on
+  2026-09-17 and the `Generative Language API Key` on 2026-09-19; the project itself stays, because
+  its free-tier database is only usable inside it.
+
+  Two dated notes on that deletion, both prunable once their windows close. The key was
+  `7e0ddaae-d620-43a7-ba5b-a834e1d0819b`, and a deleted key is recoverable with
+  `gcloud services api-keys undelete` for **30 days** — until about 2026-10-19. And the delete had
+  to be forced: the API refuses one with traffic in the last seven days, and the last Gemini call in
+  that project was on 2026-09-14, five days before. The metrics were checked rather than the check
+  ignored — `serviceruntime.googleapis.com/api/request_count` showed 45 requests on 2026-09-10,
+  three on 2026-09-14, and nothing after.
+- **One credential nobody identified**, deleted 2026-09-14 with the Sheets service account it
+  belonged to: a key ending `8fb97428`. Nothing is known to have used it. If something breaks
+  without explanation before **2026-10-14**, when its own recovery window closes, this is the first
+  place to look — after that this note can go.
 - **The Terraform state bucket**, which cannot describe itself. Step 2 creates it by hand; it is the
   one piece of infrastructure not in `terraform/`.
 

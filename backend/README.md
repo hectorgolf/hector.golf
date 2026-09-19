@@ -227,8 +227,7 @@ this repository, a GitHub secret or a CI runner.
 
 This was not true before 2026-09-14, when the functions lived outside the
 Terraform-managed project and their keys reached them by `--set-env-vars` from
-somebody's `.env`. See
-[docs/plans/functions-migration.md](../docs/plans/functions-migration.md).
+somebody's `.env`.
 
 ## Running it locally
 

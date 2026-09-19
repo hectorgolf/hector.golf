@@ -63,8 +63,8 @@ output "function_secrets" {
       printf %s "$KEY" | gcloud secrets versions add <secret-id> --data-file=-
 
     `printf %s` rather than `echo`, so no trailing newline ends up in the
-    secret. Rendered as --set-secrets flags, this map is what phase 4 of
-    docs/plans/functions-migration.md passes to each deploy.
+    secret. Rendered as --set-secrets flags, this map is what
+    .github/workflows/deploy-functions.yml passes to each deploy.
   EOT
   value       = local.function_secrets
 }

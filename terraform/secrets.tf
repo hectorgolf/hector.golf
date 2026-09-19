@@ -61,9 +61,8 @@ resource "google_secret_manager_secret_iam_member" "admin_runtime_reads_github_t
 }
 
 # ---------------------------------------------------------------------------
-# The three keys the Cloud Functions read, once they live in this project.
-# Phase 1 of docs/plans/functions-migration.md; the values go in by hand in
-# phase 3.
+# The three keys the Cloud Functions read. Created empty here; the values go in
+# by hand, because Terraform must never hold one.
 #
 # The rule above holds here too and matters more, because these are three keys
 # rather than one: **Terraform creates the container and never the value.**
