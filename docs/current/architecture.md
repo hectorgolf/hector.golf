@@ -571,9 +571,26 @@ Notable details:
   second provider is a matter of implementing the interface.
 - **WiseGolf client** uses `fetch-h2` with browser-mimicking headers, `micro-memoize` (15-minute TTL
   on the login, longer on club lists), and `p-ratelimit` throttling (5 req/s, concurrency 1).
-- **It calls `process.exit(1)` at import time** when `WISEGOLF_USERNAME` / `WISEGOLF_PASSWORD` are
-  missing. This is why the deploy workflow and the test suite both need WiseGolf credentials even
-  though neither performs a handicap fetch.
+- **Missing credentials produce a null source, not a crash.** `credentials()` in
+  [`wisegolf-api.ts`](../../packages/wisegolf/src/wisegolf-api.ts) resolves `WISEGOLF_USERNAME` /
+  `WISEGOLF_PASSWORD` *per call*, not at import time, so importing the module — for a type, or in a
+  test — does nothing and logs nothing. When there is nothing to log in with, and equally when the
+  login fails, `createWisegolfSession()` warns and hands back a `NullHandicapSource`: handicaps
+  resolve to `undefined`, `getClubs` and `resolveClubMembership` resolve to `[]`. That is
+  deliberate — `update-handicaps.ts` gathers its sources with `Promise.allSettled` and carries on
+  with whichever answered, so a run on a laptop finds nothing rather than dying. It is also quiet
+  enough to be dangerous: an empty `getClubs()` is exactly how importing
+  `update-player-biographies.ts` used to write `[]` over `src/data/clubs.json`, which is why
+  `refreshClubsJson()` now declines to write an empty list.
+- **Which jobs actually need the credentials.** The three update workflows do, because they scrape.
+  `check-site.yml` does, because `test/unit/integrations/wisegolf-api.test.ts` fetches a real
+  handicap: without them two of its three tests fail, on the name `WiseGolf (disabled)` and on an
+  `undefined` handicap. (Three more tests in that directory fail on a missing `HECTOR_APP_API_KEY`,
+  so five failures under `test-unit` is the expected count on a machine with no secrets.)
+  `deploy-site.yml` still sets the pair on its build step, and no longer needs to: `handicaps.ts`
+  exports `getPlayerHandicap`, but nothing the build renders calls it — pages read the history from
+  the admin service or the committed backup — so a credential-free `astro build` produces all 328
+  pages without ever constructing a session.
 - **Google Sheets access is layout-tolerant**: rather than fixed ranges, `google-sheets.ts` searches
   the `LEADERBOARD` tab for anchor cells (`findCellContaining`, `findCellBelowContaining`,
   `findEmptyCellBelow`) and derives the data range from them.
@@ -929,8 +946,8 @@ their absence degrades; this is what reads them.
 | `TF_IAP_OAUTH_CLIENT_ID` | Secret | both Terraform workflows; also the four update workflows, which pass it to `request-deploy` |
 | `TF_IAP_OAUTH_CLIENT_SECRET` | Secret | `terraform-plan`, `terraform-apply` |
 | `PUBLIC_LEADERBOARD_PROXY_URL` | Variable | `deploy-site`, `check-site` — absent, live leaderboards drop out of the build |
-| `WISEGOLF_USERNAME` | Secret | deploy, PR checks, three update workflows |
-| `WISEGOLF_PASSWORD` | Secret | deploy, PR checks, three update workflows |
+| `WISEGOLF_USERNAME` | Secret | PR checks (the live `wisegolf-api` tests) and the three update workflows; `deploy-site` still sets it, but the build no longer reads it |
+| `WISEGOLF_PASSWORD` | Secret | PR checks (the live `wisegolf-api` tests) and the three update workflows; `deploy-site` still sets it, but the build no longer reads it |
 | `HECTOR_APP_API_KEY` | Secret | `update-leaderboards`, `check-site` |
 | `ASTROSITE_API_KEY` | Secret | `update-player-biographies` |
 | `GIT_COMMITTER_EMAIL` | Secret | the four update workflows and `export-admin-data` — the address they commit as |
