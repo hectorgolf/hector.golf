@@ -65,7 +65,6 @@ graph LR
     CF --> GEM
     CF -->|"biography text"| WF
     DATA --> BUILD
-    WG -.->|"credentials required at import time"| BUILD
     BUILD --> PAGES
     PAGES --> BROWSER
     BROWSER -->|"polls every 30s, live events only"| LBP
