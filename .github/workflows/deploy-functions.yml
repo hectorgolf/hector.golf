@@ -12,7 +12,7 @@
 #
 # ## It deploys configuration, not only code
 #
-# This is what phases 1 to 6 of docs/plans/functions-migration.md bought. The
+# This is what moving the functions into hector-golf on 2026-09-14 bought. The
 # functions now run in hector-golf, the project terraform/ manages, and their
 # three keys live in Secret Manager containers that iam.tf grants the runtime
 # identity read on. So every deploy can state the whole of a function's

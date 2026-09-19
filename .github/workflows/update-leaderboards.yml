@@ -69,7 +69,7 @@ jobs:
       # leaderboard-reader holds no project roles at all. Its access to the two
       # spreadsheets comes from their being shared with its email address, so a
       # sheet that has not been shared fails with a 403 rather than with an
-      # authentication error. See docs/plans/sheets-credential-wif.md.
+      # authentication error.
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v3
         with:

@@ -148,8 +148,8 @@ resource "google_service_account_iam_member" "admin_deployer_act_as" {
 #
 # It replaces update-hector-leaderboard@gen-lang-client-…, which authenticated
 # with a downloadable JSON key and carried secretmanager.secretAccessor and
-# cloudbuild.builds.builder left over from a deleted Cloud Function. See
-# docs/plans/sheets-credential-wif.md.
+# cloudbuild.builds.builder left over from a deleted Cloud Function. It was
+# retired on 2026-09-14, and this was the last downloadable key in the project.
 # ---------------------------------------------------------------------------
 
 resource "google_service_account" "leaderboard_reader" {
@@ -180,7 +180,7 @@ resource "google_service_account_iam_member" "leaderboard_reader_impersonation" 
 
 # ---------------------------------------------------------------------------
 # The Cloud Functions identities: one the four functions run as, one that
-# deploys them. Phase 1 of docs/plans/functions-migration.md.
+# deploys them. Created when the functions moved into this project, 2026-09-14.
 #
 # Same runtime/deployer split as admin_runtime and admin_deployer above, and for
 # the same reason: shipping a new version of a function should not require an

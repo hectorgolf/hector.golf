@@ -565,7 +565,7 @@ files:
 Notable details:
 
 - **`HandicapSource` interface** —
-  [`handicap-source-api.ts`](../../astrosite/src/code/handicaps/handicap-source-api.ts) defines
+  [`handicap-source-api.ts`](../../packages/wisegolf/src/handicap-source-api.ts) defines
   `getPlayerHandicap`, `resolveClubMembership`, and `getClubs`, plus a `NullHandicapSource`
   fallback. `update-handicaps.ts` pops sources off a list and falls through on failure, so adding a
   second provider is a matter of implementing the interface.
@@ -880,8 +880,7 @@ It federates through `GH_WIF_PROVIDER`, the same pool every other workflow here 
 Until 2026-09-14 none of that was true: the functions ran in the `gen-lang-client-*` project, this
 workflow shipped inert behind a guard job, and it deliberately passed no environment variables at
 all because the only way to set one was `--set-env-vars` from somebody's `.env`. Both constraints
-were consequences of the project split, which
-[functions-migration.md](../plans/functions-migration.md) closed.
+were consequences of the project split, which the move into `hector-golf` closed on 2026-09-14.
 
 ### Secrets and variables
 
@@ -1073,8 +1072,8 @@ They need only `GCLOUD_PROJECT_ID` in `backend/backend-functions/.env`, since `-
 a deploy no longer needs the keys themselves; they name the project on the command line and set the
 quota project for that one invocation, so they never modify your active `gcloud` configuration.
 Before 2026-09-14 this was the *only* path, the functions lived outside the Terraform-managed
-project, and their keys reached them by `--set-env-vars` from somebody's `.env`. See
-[`docs/plans/functions-migration.md`](../plans/functions-migration.md).
+project, and their keys reached them by `--set-env-vars` from somebody's `.env`. What is left of
+that project is in [`gcp-setup.md`](gcp-setup.md).
 
 ## 11. Local development and operations
 
