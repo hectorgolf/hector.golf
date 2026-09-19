@@ -1,7 +1,7 @@
 # The GCP project
 
-*Describes `hector-golf` as it stands. Last reviewed: 2026-09-16, when weekly Firestore backups were
-added.*
+*Describes `hector-golf` as it stands. Last reviewed: 2026-09-19, when the run log's two Firestore
+indexes were added.*
 
 What is running in Google Cloud, and which of it cannot be changed. For the procedure that builds
 this from an empty project — whether for a second environment or to recover from losing this one —
@@ -18,6 +18,7 @@ Everything in [`terraform/`](../../terraform/) describes it, and CI applies it:
 | Resource | What it is for |
 | --- | --- |
 | Firestore database, Enterprise edition | The data store. `europe-north1`, native mode, PITR on, delete-protected, weekly backups kept four weeks |
+| Two Firestore composite indexes | `job-runs` and `workflow-runs`, each on (`slug`, `startedAt` descending) — the run log's "this workflow, newest first". Performance only, not a requirement: see the note on Enterprise indexing below |
 | Artifact Registry repository | Admin service container images, with cleanup policies |
 | Cloud Run service `hector-admin` | The admin UI and API, scaled to zero, IAP in front of it |
 | Eight service accounts | Two runtime identities (the admin service, and the functions), one for Terraform in CI, two for app deploys (the admin, and the functions), one the function builds run as, one for the scheduled data updates, and one that reads the leaderboard spreadsheets. The last holds no project roles at all; the functions' runtime holds none either, only read on three secrets |
@@ -112,6 +113,17 @@ Standard edition page prices some of the same lines differently.
 | Which database got the free tier | The first one created in the project keeps it |
 
 Everything else in `terraform/` can be changed by editing it and re-applying.
+
+**The edition changes how indexing works, in both directions, and it is worth knowing before
+debugging a query.** Enterprise runs every query whether an index exists or not — there is no
+`FAILED_PRECONDITION` for a missing composite index, which is what Standard answers one with — and
+it creates *no* indexes by default, where Standard builds a single-field index for every field on
+its own. So an index here is a performance choice, and the advice most search results give about
+Firestore indexes is about the other edition.
+
+Checked on 2026-09-18, before the two indexes above were added: the database held none at all, and
+`job-runs where slug == … order by startedAt desc` — live since 2026-09-16 — had been answering
+normally the whole time. §5 of [`architecture.md`](./architecture.md) has what those two are for.
 
 ## The two things Terraform does not own
 

@@ -96,7 +96,7 @@ waiting for a deploy.
 │   └── test/{unit,astro}/
 ├── admin/                      # Astro SSR on Cloud Run behind IAP (see §11 for running it locally)
 │   ├── src/pages/              # /operations, /events, and the api/ endpoints
-│   ├── src/lib/                # github.ts, jobs/, identity.ts, secrets.ts, run-now.ts
+│   ├── src/lib/                # github.ts, jobs/, workflow-runs.ts, runlog.ts, identity.ts, secrets.ts
 │   └── scripts/                # seed, export, and the three local stand-ins — not copied into the image
 ├── packages/                   # Shared by the site and the admin
 │   ├── schemas/                # Zod schemas; the source of truth for all types
@@ -658,11 +658,12 @@ newest and links to `/operations/runs`, which is the same table narrowable by wh
 went, a hundred rows at a time.
 
 Both halves come out of Firestore, which for the workflows means a **mirror of GitHub's run
-history** — [`admin/src/lib/workflow-runs.ts`](../../admin/src/lib/workflow-runs.ts). The page read
-GitHub live on every load until then, which answers "what happened last night" and not "what happened
-in July": the run list is paged at 100, so anything deeper cost a loop of requests, and GitHub deletes
-runs after 90 days regardless. Mirroring makes both halves the same kind of thing — one database, one
-query, paging as deep as the retention goes, and runs that outlive GitHub's own copy.
+history** — [`admin/src/lib/workflow-runs.ts`](../../admin/src/lib/workflow-runs.ts). Until
+2026-09-19 the page read GitHub live on every load, which answers "what happened last night" and
+not "what happened in July": the run list is paged at 100, so anything deeper cost a loop of
+requests, and GitHub deletes runs after 90 days regardless. Mirroring makes both halves the same
+kind of thing — one database, one query, paging as deep as the retention goes, and runs that outlive
+GitHub's own copy.
 
 The sync is cheap because run numbers only ever go up. It asks for the newest runs, writes the ones
 above the highest it already holds, and stops as soon as it sees a run it has seen before. A workflow
@@ -1128,7 +1129,7 @@ has to be stopped over HTTP, and answers before it has finished.
 | --- | --- | --- |
 | IAP | [`scripts/dev-iap.ts`](../../admin/scripts/dev-iap.ts) — a proxy that sets the identity headers IAP sets, and honours its sign-out URL | It is in front, so nothing in the application knows |
 | Firestore | The `gcloud` emulator, `gcloud components install cloud-firestore-emulator` | `FIRESTORE_EMULATOR_HOST`, which `@google-cloud/firestore` honours with no code of ours |
-| GitHub | [`scripts/fake-github.ts`](../../admin/scripts/fake-github.ts) — dispatches, run history, file contents and commits, plus a page behind each run's link | `GITHUB_API_BASE_URL`, **loopback addresses only** |
+| GitHub | [`scripts/fake-github.ts`](../../admin/scripts/fake-github.ts) — dispatches, run history (paged), file contents and commits, plus a page behind each run's link | `GITHUB_API_BASE_URL`, **loopback addresses only** |
 | WiseGolf | [`packages/wisegolf/src/drifting-handicap-source.ts`](../../packages/wisegolf/src/drifting-handicap-source.ts) — handicaps that wander within ±2.0 of where they started | `WISEGOLF_STAND_IN_ROSTER`, a path to the players to pretend about |
 
 Two of those variables carry **data** rather than switching on a mode, and deliberately: an address
@@ -1150,7 +1151,17 @@ WISEGOLF_STAND_IN_TICK=10s npm run dev:fake
 
 A dispatched run is queued for three seconds and running for twelve, so the "running" state on
 `/operations` — which a real dispatch takes minutes to reach — is visible, and each run's link opens
-a page that refreshes itself until it is done.
+a page that refreshes itself until it is done. That covers the run log's `pending` path end to end
+locally: a run is mirrored while it is still going, and rewritten once it is not.
+
+**One thing the GitHub stand-in does not model: the `created` filter.** It reads `per_page` and
+`page` and ignores the window, so it answers every sync with the same runs the real API would have
+narrowed away. Locally that is merely wasteful — the mirror writes what it already holds — but it
+means the cheap path the Operations page depends on is not exercised here, and neither is the
+failure it is built around, since a stand-in that ignores the filter can never answer a malformed
+one with the empty list GitHub returns. Until it does, that behaviour is covered by
+[`admin/test/workflow-runs.test.ts`](../../admin/test/workflow-runs.test.ts) and by reading the real
+API by hand.
 
 Nothing in `admin/scripts/` reaches a deployment: the runtime stage of
 [`admin/Dockerfile`](../../admin/Dockerfile) copies `admin/dist` and nothing else. The one stand-in

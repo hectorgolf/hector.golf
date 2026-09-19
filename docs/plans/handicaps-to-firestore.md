@@ -126,6 +126,13 @@ in-process there is no run to read, and the page's "4 hours ago" staleness hint 
 exactly the job nobody is yet sure about. The run log is also where the shadow diffs in step 1 go,
 which is why it is built first rather than last.
 
+> **Since 2026-09-19, both halves are in Firestore.** The sentence above stopped being true a day
+> after this plan was executed: GitHub's run list is now mirrored into `workflow-runs` as well, so
+> the Operations page reads one database rather than one database and five HTTP calls. The reasoning
+> that put the *job* log here — a page that goes blank for the thing nobody is sure about — turned
+> out to argue for the other half too, once the log was long enough to want paging and older than
+> GitHub's 90-day retention. See §5 of [`architecture.md`](../current/architecture.md).
+
 ### The backup, and what makes it one
 
 The NDJSON file in git is a **backup**: generated, disposable, not the source of truth, and not what
