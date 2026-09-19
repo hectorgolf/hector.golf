@@ -3,6 +3,7 @@ import { glob } from "glob";
 import { describe, expect, it } from "vitest";
 
 import { serializeJson } from "../../src/code/json.ts";
+import { hectorEventSchema } from "@hector/schemas/src/events.ts";
 
 /**
  * Holds the committed data files to the one format the writers produce.
@@ -48,5 +49,36 @@ describe("committed JSON data files", () => {
         // Comparing the whole text catches indentation, key order and the
         // trailing newline in one assertion.
         expect(raw).toEqual(serializeJson(JSON.parse(raw)));
+    });
+});
+
+/**
+ * The two writers of a Hector event file produce the same bytes.
+ *
+ * `update-handicaps.ts` writes the *parsed* event back — Zod's output, defaults
+ * and all — while the admin's recompute writes the raw JSON with only `buckets`
+ * replaced, so that a default the schema gains later is not materialised into
+ * thirteen files that never carried it.
+ *
+ * Those are two different objects, and for the overlap in
+ * `docs/plans/handicaps-to-firestore.md` — where the workflow still runs and the
+ * recompute has begun writing — they have to serialise identically. If they do
+ * not, the two writers take turns reformatting the same file on every tick, and
+ * the diff that reveals it is hundreds of lines with no value changed.
+ *
+ * It fails the day the schema gains a default the files do not carry. The fix is
+ * to decide which writer is right before both are running, which is the point of
+ * finding out here.
+ */
+describe("Hector event files, as both writers would write them", () => {
+    const events = dataFiles.filter((file) => file.startsWith("src/data/events/hector/"));
+
+    it("covers every Hector event", () => {
+        expect(events.length).toBeGreaterThan(10);
+    });
+
+    it.each(events)("%s survives a round trip through the schema unchanged", (file) => {
+        const raw = readFileSync(file, "utf-8");
+        expect(serializeJson(hectorEventSchema.parse(JSON.parse(raw)))).toEqual(raw);
     });
 });

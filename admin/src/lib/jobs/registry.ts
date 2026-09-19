@@ -150,6 +150,23 @@ const COMMITTER = {
 const COMMIT_ATTEMPTS = 3
 
 /**
+ * The files in a directory on `main`.
+ *
+ * Throws on any failure, including a directory that is not there — see
+ * `ListDirectoryOutcome` for why absence is not an answer here. A recompute that
+ * read "no events" from a failed lookup would leave every split stale and report
+ * success.
+ */
+async function listDirectory(path: string): Promise<string[]> {
+    const result = await github().listDirectory(path)
+    if (!result.ok) {
+        if (result.reason === 'not-configured') throw new NotConfigured(`listing ${path}`)
+        throw new Error(`Could not list ${path} on GitHub: ${result.reason}`)
+    }
+    return result.files
+}
+
+/**
  * Read a file from `main`, or `undefined` when it is not there.
  *
  * A read that *fails* throws rather than returning undefined, which matters more
@@ -300,7 +317,7 @@ export const JOBS: readonly Job[] = [
         // The site reads `/api/handicaps/history` as of step 3, so a handicap
         // this job finds has to reach a rebuilt page somehow.
         publishes: true,
-        run: (dryRun) => handicaps.run({ readFile, commit, now: () => new Date() }, dryRun),
+        run: (dryRun) => handicaps.run({ readFile, listDirectory, commit, replace, now: () => new Date() }, dryRun),
     },
 ]
 

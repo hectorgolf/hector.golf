@@ -831,6 +831,23 @@ run can log what it left alone and why — a lock that stops a recompute silentl
 first time somebody wonders why the buckets did not move. An event past its freeze is in neither
 list: there is nothing left for the lock to stop, so nothing is logged about it.
 
+**The admin service works out the same split, and writes nothing.** Since 2026-09-20 the handicaps
+job ends by recomputing every open split from the handicaps it has just read —
+[`admin/src/lib/jobs/buckets.ts`](../../admin/src/lib/jobs/buckets.ts) — and reporting what it would
+change to the run log, while `BUCKETS_ARE_COMMITTED` keeps it from committing any of it. That is the
+shadow period from [`plans/handicaps-to-firestore.md`](../plans/handicaps-to-firestore.md), and the
+comparison is meaningful because the tick dispatches the workflow first and runs the job second, so
+both decide against the same base state. The bar for turning the writes on is one tick where the
+buckets actually move and the two agree about where everybody went.
+
+When it does write, it will write **git**, not Firestore, and it is worth knowing why the obvious
+place is the wrong one: Firestore holds Hector events as a mirror the admin reads, so a scheduled
+writer there would race the export. Git keeps the ownership in [data-ownership.md](./data-ownership.md)
+exactly as it is. The recompute rewrites the raw JSON with only `buckets` replaced rather than
+writing the parsed event back, so a default the schema gains later is not materialised into thirteen
+files that never carried it; `test/unit/data-formatting.test.ts` holds the two writers to identical
+bytes for as long as both exist.
+
 **`update-leaderboards.ts`** — selects Hector events that hold a `leaderboardSheet` URL and have
 already started (`updateFutureEvents = false`), then dispatches on the URL shape: `app.hector.golf/*`
 against the app API, `docs.google.com/spreadsheets/*` against Sheets. It also back-fills
