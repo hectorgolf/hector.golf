@@ -853,12 +853,21 @@ That side effect used to fire **at import time**, from a module-level IIFE, so i
 at all scraped WiseGolf and rewrote the file from whatever came back — and anything without
 credentials, a test above all, got nothing back and wrote `[]` over 1,402 lines of committed club
 data without failing or saying so. The club list is now fetched lazily and memoised, the file is
-written by the run, and `run()` is behind the same `argv[1]` guard as `update-handicaps.ts`.
-`workflow-import-writes-nothing.test.ts` is the assertion that keeps it that way, because the
-failure it guards against was entirely silent. The run also declines to write an *empty* club list,
-for the reason `persistHandicapCheckToDisk` declines to record a sweep that reached nobody. The
-other three scripts in this table still call their `run()` at module scope and are still unsafe to
-import.
+written by the run, and `run()` is behind the same `argv[1]` guard as `update-handicaps.ts`. The run
+also declines to write an *empty* club list, for the reason `persistHandicapCheckToDisk` declines to
+record a sweep that reached nobody.
+
+**All four scripts are now safe to import.** Each one's entry point sits behind that same `argv[1]`
+guard, and everything that touches the filesystem or the network happens inside the run rather than
+at module scope — the commit-message sidecars that `update-handicaps.ts`,
+`update-player-biographies.ts` and `update-player-club-memberships.ts` reset were the other
+import-time writes, and being gitignored they never showed up in a diff at all.
+`workflow-import-writes-nothing.test.ts` is what keeps it that way, and it guards in two directions
+because neither catches the other's failure: it imports each script and compares every file under
+`src/data/` byte for byte, which catches a side effect whatever shape it is in, and it reads the
+sources and rejects a bare top-level call, which catches the write that needs credentials this
+machine does not have. A guardless `run()` that dies at a login it cannot make leaves the tree clean
+and looks like a pass.
 
 `biographiesToRegenerate` is which players it rewrites, and it is the counterpart of
 `bucketsToRecompute` above: a player whose `biographyLocked` is set is skipped, and returned so the
