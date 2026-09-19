@@ -4,7 +4,6 @@ import { fileURLToPath } from "url";
 
 import { hectorEvents, hasParticipants, isUpcomingEvent, isPastEvent } from "../code/data.ts";
 import { getAllPlayers, getPlayerName, updatePlayerData } from "../code/players.ts";
-import { biographiesToRegenerate } from "../code/biographies.ts";
 import { type Player } from "@hector/schemas/src/players.ts";
 import { type EventTiming, type HectorEvent } from "@hector/schemas/src/events.ts";
 
@@ -22,6 +21,7 @@ const DEBUG_GENAI_BIOGRAPHY = !!ENV.DEBUG_GENAI_BIOGRAPHY;
 // (__dirname is not available in ES6 modules)
 const __filename = fileURLToPath(import.meta.url);
 const pathToCommitMessage = join(dirname(__filename), "../../.update-player-biographies-commit");
+const pathToClubsJson = join(dirname(__filename), "../data/clubs.json");
 
 function createHandicapSources(): Promise<HandicapSource[]> {
     return Promise.all([createWisegolfSession()]);
@@ -44,33 +44,85 @@ function mergeClubs(instances: GolfClub[]): GolfClub {
     }
 }
 
-const golfClubs: Promise<GolfClub[]> = (async () => {
-    const sources = await createHandicapSources();
-    const clubs = (await Promise.all(sources.map((s) => s.getClubs()))).flat();
-    const sorted = clubs.sort((a, b) => a.abbreviation.localeCompare(b.abbreviation));
-    const merged = sorted
-        .map((c) => c.abbreviation)
-        .filter((abbr, index, self) => self.indexOf(abbr) === index)
-        .map((abbr) => mergeClubs(clubs.filter((c) => c.abbreviation === abbr)));
-    writeJsonFile(join(dirname(__filename), "../../src/data/clubs.json"), merged);
-    return merged;
-})();
+/**
+ * Every club the handicap sources know about, fetched once per process.
+ *
+ * A function rather than the module-level IIFE this used to be, and the change is
+ * not about tidiness. The IIFE meant that *importing* this module scraped WiseGolf
+ * and wrote the answer over `src/data/clubs.json`, so a test, a script, or anything
+ * else reaching in for one function did a network round trip and rewrote committed
+ * data as a side effect of the import statement. Whatever has no credentials — a
+ * test run, most obviously — gets nothing back, so what landed in the file was
+ * `[]`, in place of 1,402 lines of club data, with nothing failing and nothing said.
+ *
+ * Memoised, because `getClubName` is called once per player and the club list does
+ * not change inside a run. A rejection is memoised too, exactly as the IIFE's
+ * rejected promise was: a broken login fails the run rather than being retried once
+ * per player.
+ */
+let clubsFromSources: Promise<GolfClub[]> | undefined;
+
+const golfClubs = (): Promise<GolfClub[]> => {
+    clubsFromSources ??= (async () => {
+        const sources = await createHandicapSources();
+        const clubs = (await Promise.all(sources.map((s) => s.getClubs()))).flat();
+        const sorted = clubs.sort((a, b) => a.abbreviation.localeCompare(b.abbreviation));
+        return sorted
+            .map((c) => c.abbreviation)
+            .filter((abbr, index, self) => self.indexOf(abbr) === index)
+            .map((abbr) => mergeClubs(clubs.filter((c) => c.abbreviation === abbr)));
+    })();
+    return clubsFromSources;
+};
 
 async function getClubName(clubAbbreviation: string | undefined): Promise<string> {
     if (!clubAbbreviation) {
         return "unknown";
     }
-    const club = (await golfClubs).find((c) => c.abbreviation === clubAbbreviation);
+    const club = (await golfClubs()).find((c) => c.abbreviation === clubAbbreviation);
     return club?.name || "unknown";
 }
 
-if (existsSync(pathToCommitMessage)) {
-    console.log(`Deleting pre-existing commit message file: ${resolve(pathToCommitMessage)}`);
-    rmSync(pathToCommitMessage, { force: true });
-} else {
-    console.log(`Creating an empty commit message file: ${resolve(pathToCommitMessage)}`);
-}
-writeFileSync(pathToCommitMessage, "");
+/**
+ * Rewrite `clubs.json` from the sources.
+ *
+ * Still a side effect of this job rather than a job of its own — the club list is
+ * refreshed because a biography run needs it read anyway, and
+ * `docs/current/architecture.md` describes it that way — but now something the run
+ * does, rather than something importing the file does.
+ *
+ * It declines to write an empty list, for the reason `persistHandicapCheckToDisk`
+ * in `update-handicaps.ts` declines to record a sweep that reached nobody: no
+ * source answering is an outage, not a world with no golf clubs in it, and this
+ * file is the only copy. Moving the write out of import time stops a test from
+ * emptying it; this stops a failed run from doing the same thing, which is the same
+ * accident with a different trigger.
+ */
+const refreshClubsJson = async () => {
+    const clubs = await golfClubs();
+    if (clubs.length === 0) {
+        console.error(`No handicap source listed any clubs. Leaving ${resolve(pathToClubsJson)} as it is.`);
+        return;
+    }
+    writeJsonFile(pathToClubsJson, clubs);
+    console.log(`Wrote ${clubs.length} clubs to ${resolve(pathToClubsJson)}`);
+};
+
+/**
+ * Start the run's commit message from empty.
+ *
+ * Inside the run rather than at module scope, for the reason its twin in
+ * `update-handicaps.ts` is: an import must not touch the working tree.
+ */
+const resetCommitMessage = () => {
+    if (existsSync(pathToCommitMessage)) {
+        console.log(`Deleting pre-existing commit message file: ${resolve(pathToCommitMessage)}`);
+        rmSync(pathToCommitMessage, { force: true });
+    } else {
+        console.log(`Creating an empty commit message file: ${resolve(pathToCommitMessage)}`);
+    }
+    writeFileSync(pathToCommitMessage, "");
+};
 
 type EventNameAndYear = {
     name: string;
@@ -202,6 +254,53 @@ async function generateBiography(input: PlayerBiographyInput): Promise<string[]>
     }
 }
 
+/**
+ * The players a run may rewrite, and the ones a lock is holding.
+ *
+ * `player.biographyLocked` is somebody saying "this paragraph is mine now". The
+ * field it guards is classed *authored* in `docs/current/data-ownership.md` and
+ * behaved as *derived* without this: every run regenerated all 45 with no diff
+ * and no skip, so a hand-written biography lived a fortnight and then vanished
+ * in a commit nobody was watching.
+ *
+ * A separate flag rather than "fill only when empty", because all 45 players
+ * have a biography and that guard would therefore never write again — not for a
+ * better prompt, not for a first Hector win, not for a hint somebody added to
+ * `player.misc` for exactly that purpose. The generated text is *meant* to be
+ * regenerated; the part a person wrote is not, and a full field cannot tell
+ * those apart.
+ *
+ * Both lists are returned rather than one filtered list, so the caller can say
+ * who it left alone and why, exactly as `bucketsToRecompute` does in
+ * `update-handicaps.ts`. A lock that stops a rewrite silently is a suspected bug
+ * the first time somebody wonders why a correction did not take.
+ *
+ * `alreadyPublished` is the third thing a run needs and the one that is easy to
+ * leave out. `otherGeneratedBiographies` is the "do not reuse this phrasing"
+ * context the generator is given, and a locked biography is still on the page
+ * beside everything this run writes — so dropping those players from the run
+ * entirely would hand the model a roster with holes in it and let it echo, in a
+ * biography it does write, a sentence already published under somebody else's
+ * name. That is the one way this change could make the output worse than not
+ * having it, so the seed is returned here rather than assembled at the call site
+ * where nothing would fail if it went missing.
+ *
+ * Exported for the unit tests; `updateBiographiesForEvent` below is the only
+ * caller. It lived in `src/code/biographies.ts` for as long as importing this
+ * module scraped WiseGolf and rewrote `clubs.json` — see `golfClubs` above, where
+ * that no longer happens.
+ */
+export const biographiesToRegenerate = (
+    players: Array<Player>,
+): { regenerate: Array<Player>; locked: Array<Player>; alreadyPublished: Array<string> } => {
+    const locked = players.filter((p) => p.biographyLocked === true);
+    return {
+        regenerate: players.filter((p) => !p.biographyLocked),
+        locked,
+        alreadyPublished: locked.flatMap((player) => player.biography ?? []),
+    };
+};
+
 async function updateBiographiesForEvent(_: HectorEvent) {
     const { regenerate, locked, alreadyPublished } = biographiesToRegenerate(getAllPlayers());
     const commitMessage: string[] = [];
@@ -242,6 +341,12 @@ function eventToUpdateBiographiesFor(): HectorEvent | undefined {
 }
 
 const run = async () => {
+    console.log("Updating player biographies...");
+    resetCommitMessage();
+    // Unconditional, and before the check below, because that is where it has always
+    // been in effect: the old IIFE refreshed the club list on every run, including the
+    // ones that found no upcoming Hector and generated nothing.
+    await refreshClubsJson();
     const event = eventToUpdateBiographiesFor();
     if (event) {
         await updateBiographiesForEvent(event);
@@ -249,5 +354,10 @@ const run = async () => {
     console.log("Done updating player biographies.");
 };
 
-console.log("Updating player biographies...");
-run();
+// Only when this file is the thing being run, as in `update-handicaps.ts`. The tests
+// import it for `biographiesToRegenerate`, and without this an import empties the
+// commit message file, rescrapes the club list, rewrites `clubs.json` from the answer,
+// and starts generating 45 biographies against a live Cloud Function.
+if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
+    run();
+}
