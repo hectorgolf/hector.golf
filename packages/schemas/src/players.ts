@@ -20,6 +20,7 @@ export const schema = z.object({
     handicap: z.number().optional(),
     misc: z.array(z.string()).optional(),
     biography: z.array(z.string()).optional(),
+    biographyLocked: z.boolean().optional(),
 })
 
 export type Player = z.infer<typeof schema>;
