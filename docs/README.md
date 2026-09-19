@@ -21,6 +21,7 @@ will mislead you.
 
 | | | executed? |
 | --- | --- | --- |
+| [`authoring-players-and-events.md`](plans/authoring-players-and-events.md) | Moving players, Hector events and Finnkampen events from the mirrored column to the owned one, and giving each an editor — the one piece of work the other three are waiting on | **No.** The admin authors matchplay and nothing else |
 | [`biography-locking.md`](plans/biography-locking.md) | `player.biographyLocked`, so the twice-monthly regeneration stops overwriting edited biographies | **No.** The field is in no schema, page or script |
 | [`bucket-locking.md`](plans/bucket-locking.md) | `event.bucketsLocked`, so an announced split can be settled before the first morning | **Mostly,** on 2026-09-18. The field exists, `update-handicaps` honours it and the payload publishes it; it is set by editing the event file. What is left is setting it from the admin, blocked on Hector events being authorable there at all |
 | [`handicaps-to-firestore.md`](plans/handicaps-to-firestore.md) | Moving the handicap scrape out of a GitHub Actions runner writing JSON, and into the admin writing Firestore — and the job harness the three scrapes behind it will reuse | **Mostly,** on 2026-09-16 and 2026-09-18. Firestore is the system of record for handicaps, git holds the backup, and the site builds from `/api/handicaps/history`. What is left is deleting `update-handicaps.yml`, blocked on the last of its three other outputs: `event.buckets`, which waits on the row above |
@@ -37,11 +38,14 @@ stops: what to do, why it is worth doing, and what has to be removed first. What
 did, and what each step of it cost, is in git history and in `current/` — keeping it in the plan
 made both files read as records, which is the one thing a prescriptive document must not do.
 
-All three of them are now waiting on the same thing, which is easier to see at this length than it
-was at the old one: the admin can author matchplay events and nothing else, so Hector events and
-players are mirrored from the committed files and anything written to the mirror is reverted by the
-next `npm run seed`. Until that changes, `event.buckets` cannot move, a bucket lock cannot be set
-from the admin, and neither can a biography lock. One piece of work unblocks three plans.
+Three of the four are waiting on the same thing, which is easier to see at this length than it was at
+the old one: the admin can author matchplay events and nothing else, so Hector events and players are
+mirrored from the committed files and anything written to the mirror is reverted by the next
+`npm run seed`. Until that changes, `event.buckets` cannot move, a bucket lock cannot be set from the
+admin, and neither can a biography lock. That one piece of work is the fourth plan,
+[`authoring-players-and-events.md`](plans/authoring-players-and-events.md), which is written the
+other way round from its three dependants: they each describe a small piece of UI, and it describes
+the ownership transfer underneath them all.
 
 `functions-migration.md` and `sheets-credential-wif.md` were the awkward sort, because what they
 were waiting for was a date rather than a decision — both on the same calendar, a credential
