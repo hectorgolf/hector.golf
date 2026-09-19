@@ -1145,7 +1145,7 @@ has to be stopped over HTTP, and answers before it has finished.
 | --- | --- | --- |
 | IAP | [`scripts/dev-iap.ts`](../../admin/scripts/dev-iap.ts) — a proxy that sets the identity headers IAP sets, and honours its sign-out URL | It is in front, so nothing in the application knows |
 | Firestore | The `gcloud` emulator, `gcloud components install cloud-firestore-emulator` | `FIRESTORE_EMULATOR_HOST`, which `@google-cloud/firestore` honours with no code of ours |
-| GitHub | [`scripts/fake-github.ts`](../../admin/scripts/fake-github.ts) — dispatches, run history (paged), file contents and commits, plus a page behind each run's link | `GITHUB_API_BASE_URL`, **loopback addresses only** |
+| GitHub | [`scripts/fake-github.ts`](../../admin/scripts/fake-github.ts) — dispatches, run history (paged), file contents, directory listings and commits, plus a page behind each run's link | `GITHUB_API_BASE_URL`, **loopback addresses only** |
 | WiseGolf | [`packages/wisegolf/src/drifting-handicap-source.ts`](../../packages/wisegolf/src/drifting-handicap-source.ts) — handicaps that wander within ±2.0 of where they started | `WISEGOLF_STAND_IN_ROSTER`, a path to the players to pretend about |
 
 Two of those variables carry **data** rather than switching on a mode, and deliberately: an address

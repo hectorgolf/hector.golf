@@ -77,6 +77,21 @@ export type FileContent = { present: true; text: string; sha: string } | { prese
 export type ReadFileOutcome = { ok: true; file: FileContent } | { ok: false; reason: GitHubFailure }
 
 /**
+ * The files directly inside a directory, as repository-relative paths.
+ *
+ * Files only: a subdirectory is dropped rather than walked, because the one
+ * caller wants `astrosite/src/data/events/hector/*.json` and a recursive listing
+ * would be a different, more expensive request.
+ *
+ * A directory that is not there is a `not-found` failure rather than an empty
+ * list, which is the opposite of how `readFile` treats a missing file — and the
+ * asymmetry is the point. A backup that does not exist yet is the normal first
+ * run; a data directory that has vanished is not, and a caller that read it as
+ * "no events" would recompute nothing and report success.
+ */
+export type ListDirectoryOutcome = { ok: true; files: string[] } | { ok: false; reason: GitHubFailure }
+
+/**
  * `conflict` is separated out from the other failures because it is the only one
  * with a sensible automatic response: somebody else wrote the file between the
  * read and the write, so re-read and try again. The four data-update workflows
@@ -209,6 +224,17 @@ export type GitHubClient = {
         createdSince?: Date
     ): Promise<RunsOutcome>
     readFile(path: string, ref?: string): Promise<ReadFileOutcome>
+    /**
+     * What is in a directory, for a caller that has to write files it was not
+     * told the names of.
+     *
+     * GitHub pages this at 1,000 entries and this does not follow the pages. The
+     * directory it exists for holds eighteen events, and a data directory that
+     * grew past a thousand files would want a different API than Contents
+     * anyway — `readFile` already refuses a file this one cannot serve, for the
+     * same reason.
+     */
+    listDirectory(path: string, ref?: string): Promise<ListDirectoryOutcome>
     commitFile(request: CommitRequest): Promise<CommitOutcome>
     /**
      * What the token currently in use last said about its own expiry, or nothing
@@ -510,6 +536,46 @@ export function createGitHubClient(options: GitHubClientOptions): GitHubClient {
                     sha: body.sha,
                 },
             }
+        },
+
+        async listDirectory(path, ref = DISPATCH_REF) {
+            // The same endpoint `readFile` uses, and the same branch. A 404 is
+            // left in the failure list rather than allowed through: see
+            // `ListDirectoryOutcome` for why absence is not a valid answer here.
+            const url = `${contents}/${encodeURI(path)}?ref=${encodeURIComponent(ref)}`
+            const result = await call(url, { method: 'GET' }, [])
+            if (typeof result === 'string') return { ok: false, reason: result }
+
+            let body: unknown
+            try {
+                body = await result.json()
+            } catch (error) {
+                console.error('GitHub returned a directory listing that could not be parsed', { path }, error)
+                return { ok: false, reason: 'unknown' }
+            }
+
+            // An object rather than an array means this is a file, which is the
+            // mirror image of the check in `readFile` and is refused for the same
+            // reason: quietly returning nothing would read as an empty directory.
+            if (!Array.isArray(body)) {
+                console.error('GitHub answered a directory listing with something other than an array', { path })
+                return { ok: false, reason: 'unknown' }
+            }
+
+            const files: string[] = []
+            for (const entry of body) {
+                const item = entry as Record<string, unknown>
+                if (item?.type !== 'file') continue
+                if (typeof item.path !== 'string') {
+                    console.error('GitHub listed a directory entry with no path', { path })
+                    return { ok: false, reason: 'unknown' }
+                }
+                files.push(item.path)
+            }
+
+            // Sorted, so that a caller's logs and commit order do not depend on
+            // the order GitHub happened to answer in.
+            return { ok: true, files: files.sort() }
         },
 
         async commitFile(request) {
