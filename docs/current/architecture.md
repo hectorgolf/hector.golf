@@ -65,7 +65,6 @@ graph LR
     CF --> GEM
     CF -->|"biography text"| WF
     DATA --> BUILD
-    WG -.->|"credentials required at import time"| BUILD
     BUILD --> PAGES
     PAGES --> BROWSER
     BROWSER -->|"polls every 30s, live events only"| LBP
@@ -572,9 +571,28 @@ Notable details:
   second provider is a matter of implementing the interface.
 - **WiseGolf client** uses `fetch-h2` with browser-mimicking headers, `micro-memoize` (15-minute TTL
   on the login, longer on club lists), and `p-ratelimit` throttling (5 req/s, concurrency 1).
-- **It calls `process.exit(1)` at import time** when `WISEGOLF_USERNAME` / `WISEGOLF_PASSWORD` are
-  missing. This is why the deploy workflow and the test suite both need WiseGolf credentials even
-  though neither performs a handicap fetch.
+- **Missing credentials produce a null source, not a crash.** `credentials()` in
+  [`wisegolf-api.ts`](../../packages/wisegolf/src/wisegolf-api.ts) resolves `WISEGOLF_USERNAME` /
+  `WISEGOLF_PASSWORD` *per call*, not at import time, so importing the module — for a type, or in a
+  test — does nothing and logs nothing. When there is nothing to log in with, and equally when the
+  login fails, `createWisegolfSession()` warns and hands back a `NullHandicapSource`: handicaps
+  resolve to `undefined`, `getClubs` and `resolveClubMembership` resolve to `[]`. That is
+  deliberate — `update-handicaps.ts` gathers its sources with `Promise.allSettled` and carries on
+  with whichever answered, so a run on a laptop finds nothing rather than dying. It is also quiet
+  enough to be dangerous: an empty `getClubs()` is exactly how importing
+  `update-player-biographies.ts` used to write `[]` over `src/data/clubs.json`, which is why
+  `refreshClubsJson()` now declines to write an empty list.
+- **Which jobs actually need the credentials.** The three update workflows do, because they scrape.
+  `check-site.yml` does, because `test/unit/integrations/wisegolf-api.test.ts` fetches a real
+  handicap: without them two of its three tests fail, on the name `WiseGolf (disabled)` and on an
+  `undefined` handicap. (Three more tests in that directory fail on a missing `HECTOR_APP_API_KEY`,
+  so five failures under `test-unit` is the expected count on a machine with no secrets.)
+  `deploy-site.yml` does not, and no longer passes them: pages read the history from the admin
+  service or the committed backup, and `handicaps.ts` no longer carries the unused
+  `getPlayerHandicap` that used to be the one thing in the render path able to construct a session.
+  The remaining `createWisegolfSession` callers are the three scrapers under `src/workflows/`, which
+  the build never imports, so a credential-free `astro build` produces all 328 pages without ever
+  constructing a session.
 - **Google Sheets access is layout-tolerant**: rather than fixed ranges, `google-sheets.ts` searches
   the `LEADERBOARD` tab for anchor cells (`findCellContaining`, `findCellBelowContaining`,
   `findEmptyCellBelow`) and derives the data range from them.
@@ -802,7 +820,7 @@ the history.
 | --- | --- | --- | --- |
 | `update-handicaps.ts` | Every two hours 03:00–07:00, and 12:00, by Cloud Scheduler. No cron | WiseGolf | `handicaps.json`, `handicap-checks.json`, event `buckets` |
 | `update-leaderboards.ts` | Every two hours 03:00–07:00, and 12:00, by Cloud Scheduler. No cron | Sheets / app.hector.golf | `leaderboards/*.json` (via API), event `results.teams` |
-| `update-player-biographies.ts` | Every 15 days, on the first tick that finds it due, and only while a Hector is upcoming. No cron | GCP function, WiseGolf | `players/*.json` `biography`, `clubs.json` |
+| `update-player-biographies.ts` | Every 15 days, on the first tick that finds it due, and only while a Hector is upcoming. No cron | GCP function, WiseGolf | `players/*.json` `biography` where `biographyLocked` is unset, `clubs.json` |
 | `update-player-club-memberships.ts` | Every 30 days, on the first tick that finds it due. No cron | WiseGolf | `players/*.json` `club` |
 
 **`update-handicaps.ts`** — the largest at 367 lines. For each player holding a `club`, it fetches
@@ -858,7 +876,34 @@ home club resolved through `clubs.json`, past appearances, Hector/Victor wins, `
 next event and whether they are playing it, a `retired` flag when more than seven events have passed
 since their last appearance, and **the biographies already generated in this run** so the model
 avoids repeating phrasing) and POSTs it to the `GeneratePlayerBiography` Cloud Function. As a side
-effect it regenerates `clubs.json` by merging the club lists from all handicap sources.
+effect it also regenerates `clubs.json` by merging the club lists from all handicap sources.
+
+That side effect used to fire **at import time**, from a module-level IIFE, so importing the module
+at all scraped WiseGolf and rewrote the file from whatever came back — and anything without
+credentials, a test above all, got nothing back and wrote `[]` over 1,402 lines of committed club
+data without failing or saying so. The club list is now fetched lazily and memoised, the file is
+written by the run, and `run()` is behind the same `argv[1]` guard as `update-handicaps.ts`. The run
+also declines to write an *empty* club list, for the reason `persistHandicapCheckToDisk` declines to
+record a sweep that reached nobody.
+
+**All four scripts are now safe to import.** Each one's entry point sits behind that same `argv[1]`
+guard, and everything that touches the filesystem or the network happens inside the run rather than
+at module scope — the commit-message sidecars that `update-handicaps.ts`,
+`update-player-biographies.ts` and `update-player-club-memberships.ts` reset were the other
+import-time writes, and being gitignored they never showed up in a diff at all.
+`workflow-import-writes-nothing.test.ts` is what keeps it that way, and it guards in two directions
+because neither catches the other's failure: it imports each script and compares every file under
+`src/data/` byte for byte, which catches a side effect whatever shape it is in, and it reads the
+sources and rejects a bare top-level call, which catches the write that needs credentials this
+machine does not have. A guardless `run()` that dies at a login it cannot make leaves the tree clean
+and looks like a pass.
+
+`biographiesToRegenerate` is which players it rewrites, and it is the counterpart of
+`bucketsToRecompute` above: a player whose `biographyLocked` is set is skipped, and returned so the
+run can log who it left alone and why. The locked biographies are still handed to the model as
+phrasing to avoid, because they remain on the page beside whatever the run writes — dropping them
+from the run entirely would let a regenerated biography echo a sentence already published under
+somebody else's name.
 
 It writes nothing at all unless a Hector is upcoming, and `isUpcomingEvent` compares start dates, so
 it stops writing the day after an event begins and does not write again until the next event file is
@@ -939,8 +984,8 @@ their absence degrades; this is what reads them.
 | `TF_IAP_OAUTH_CLIENT_ID` | Secret | both Terraform workflows; also the four update workflows, which pass it to `request-deploy` |
 | `TF_IAP_OAUTH_CLIENT_SECRET` | Secret | `terraform-plan`, `terraform-apply` |
 | `PUBLIC_LEADERBOARD_PROXY_URL` | Variable | `deploy-site`, `check-site` — absent, live leaderboards drop out of the build |
-| `WISEGOLF_USERNAME` | Secret | deploy, PR checks, three update workflows |
-| `WISEGOLF_PASSWORD` | Secret | deploy, PR checks, three update workflows |
+| `WISEGOLF_USERNAME` | Secret | PR checks (the live `wisegolf-api` tests), three update workflows — not `deploy-site`, whose build never calls WiseGolf |
+| `WISEGOLF_PASSWORD` | Secret | PR checks (the live `wisegolf-api` tests), three update workflows — not `deploy-site`, whose build never calls WiseGolf |
 | `HECTOR_APP_API_KEY` | Secret | `update-leaderboards`, `check-site` |
 | `ASTROSITE_API_KEY` | Secret | `update-player-biographies` |
 | `GIT_COMMITTER_EMAIL` | Secret | the four update workflows and `export-admin-data` — the address they commit as |

@@ -1,3 +1,6 @@
+import { resolve } from "path";
+import { fileURLToPath } from "url";
+
 import { type HectorEvent } from "@hector/schemas/src/events.ts";
 import { addDays, isoDateToday } from "@hector/schemas/src/dates.ts";
 import { playersData, eventsData, pathToEventJson, isHectorEvent } from "../code/data.ts";
@@ -165,4 +168,15 @@ async function updateLeaderboardsForAllOngoingTournaments(): Promise<void> {
     console.log(`Updated leaderboards for ${eventsUpdated} out of ${events.length} ongoing Hector events.`);
 }
 
-updateLeaderboardsForAllOngoingTournaments();
+// Get the resolved path to this file and determine the directory from that
+// (__dirname is not available in ES6 modules)
+const __filename = fileURLToPath(import.meta.url);
+
+// Only when this file is the thing being run, as in `update-handicaps.ts`. Nothing
+// imports this module today, but the sweep below writes team pairings into the
+// committed event JSON and pushes a leaderboard commit to GitHub, so the first
+// import that ever wants one of the functions above would have done all of that
+// first — and the tests are the likeliest first importer.
+if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
+    updateLeaderboardsForAllOngoingTournaments();
+}

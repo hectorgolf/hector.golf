@@ -174,8 +174,13 @@ jobs:
             --site "${{ steps.pages.outputs.origin }}" \
             --base "${{ steps.pages.outputs.base_path }}"
         env:
-          WISEGOLF_USERNAME: ${{ secrets.WISEGOLF_USERNAME }}
-          WISEGOLF_PASSWORD: ${{ secrets.WISEGOLF_PASSWORD }}
+          # No WiseGolf credentials: the build does not talk to WiseGolf. `handicaps.ts`
+          # no longer has a function that constructs a session — handicaps are read from
+          # the admin service or the committed backup — so nothing a page imports reaches
+          # `createWisegolfSession`. The remaining callers are the three scrapers under
+          # `src/workflows/`, which `astro build` never imports and which run from the
+          # three update workflows, where the credentials are.
+          #
           # Public URL of the leaderboard proxy. Unset simply leaves the live
           # leaderboard off, and every page renders from the last published snapshot.
           PUBLIC_LEADERBOARD_PROXY_URL: ${{ vars.PUBLIC_LEADERBOARD_PROXY_URL }}

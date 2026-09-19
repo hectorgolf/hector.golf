@@ -177,13 +177,71 @@ export function decide(
     return { entries, changes }
 }
 
+/**
+ * Everything `run` reaches outside its own module.
+ *
+ * GitHub and the clock have been here since the job was written. Firestore and
+ * WiseGolf were not: `run` imported the stores directly, which made the one
+ * function that writes five things the one function with no test. Every
+ * decision it makes had a test — `decide`, `scrape`, `sweepOf` — and the order
+ * it makes them in, which is where the plan's two subtle rules live, had none.
+ *
+ * Flat rather than grouped by system, because the grouping a reader wants is
+ * "what does a run touch", and that is the whole list. The comments below say
+ * which is which.
+ */
 export type JobDependencies = {
+    // GitHub, through the service's own token.
     readFile(path: string): Promise<string | undefined>
     commit(path: string, text: string, message: string): Promise<{ ok: true; commit: string } | { ok: false; detail: string }>
-    /** The two the bucket recompute needs, and nothing else in this file uses. */
+    /** The two more the bucket recompute needs, and nothing else here uses. */
     listDirectory(path: string): Promise<string[]>
     replace(path: string, text: string, message: string): Promise<{ ok: true; commit: string } | { ok: false; detail: string }>
+
+    /**
+     * The run's instant, asked for exactly once.
+     *
+     * The snapshot's `generated`, each observation's `observed` and the sweep's
+     * `at` all describe the same moment, and three calls to the clock seconds
+     * apart would make one run look like three.
+     */
     now(): Date
+
+    // Firestore.
+    observations(): Promise<HandicapHistoryEntry[]>
+    addObservations(entries: readonly HandicapHistoryEntry[]): Promise<void>
+    checks(): Promise<HandicapCheck[]>
+    addChecks(checks: readonly HandicapCheck[]): Promise<void>
+    writeSnapshot(entries: readonly HandicapHistoryEntry[], now: Date): Promise<unknown>
+    players(): Promise<Player[]>
+
+    /**
+     * Whoever can answer a handicap question, already logged in.
+     *
+     * A function rather than a list, because building it logs into WiseGolf with
+     * a secret read from Secret Manager, and a job that is about to fail on an
+     * empty roster should not do either first. `run` calls this after the roster
+     * check for that reason, which is behaviour a test can now hold it to.
+     */
+    sources(): Promise<HandicapReader[]>
+}
+
+/**
+ * The real Firestore and WiseGolf, as `run` sees them.
+ *
+ * `registry.ts` spreads this beside the GitHub and clock seams it builds itself
+ * — those close over `github()`, so they belong there rather than here — and
+ * the tests pass their own. Nothing else constructs a set of dependencies, so
+ * this is the only place the job's outside world is named twice.
+ */
+export const LIVE: Omit<JobDependencies, 'readFile' | 'commit' | 'listDirectory' | 'replace' | 'now'> = {
+    observations: all,
+    addObservations: insert,
+    checks: allChecks,
+    addChecks: insertChecks,
+    writeSnapshot: (entries, now) => writeSnapshot(entries, { now }),
+    players: listPlayers,
+    sources: async () => [await createWisegolfSession(await wisegolfCredentials())],
 }
 
 export type JobResult = {
@@ -221,7 +279,7 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
     // runs a day that was 23,000 document reads against a free tier of 50,000,
     // growing with a log that is never pruned. Reading once costs a quarter of
     // that and stops the allowance being a deadline.
-    const stored = await all()
+    const stored = await dependencies.observations()
 
     // 1. Bring both stores up to date with whatever the old pipeline committed.
     const legacy = await dependencies.readFile(LEGACY_PATH)
@@ -229,7 +287,7 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
     const missing = missingFrom(stored, committed)
 
     if (!dryRun && missing.length > 0) {
-        await insert(missing)
+        await dependencies.addObservations(missing)
         console.log(`Reconciled ${missing.length} observations from ${LEGACY_PATH} into the store`)
     }
 
@@ -243,13 +301,13 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
      * tick for a record of the first one. One scrape, two outputs, the way the
      * workflow this replaces has always done it.
      */
-    const storedChecks = await allChecks()
+    const storedChecks = await dependencies.checks()
     const legacyChecks = await dependencies.readFile(LEGACY_CHECKS_PATH)
     const committedChecks: HandicapCheck[] = legacyChecks === undefined ? [] : JSON.parse(legacyChecks)
     const missingChecks = checksMissingFrom(storedChecks, committedChecks)
 
     if (!dryRun && missingChecks.length > 0) {
-        await insertChecks(missingChecks)
+        await dependencies.addChecks(missingChecks)
         console.log(`Reconciled ${missingChecks.length} sweeps from ${LEGACY_CHECKS_PATH} into the store`)
     }
 
@@ -267,7 +325,7 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
     const history = [...stored, ...missing]
 
     // 2. Read the handicaps.
-    const players = await listPlayers()
+    const players = await dependencies.players()
 
     if (players.length === 0) {
         /*
@@ -292,9 +350,7 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
         }
     }
 
-    const credentials = await wisegolfCredentials()
-    const session = await createWisegolfSession(credentials)
-    const { readings, skipped } = await scrape(players, [session])
+    const { readings, skipped } = await scrape(players, await dependencies.sources())
 
     if (readings.size === 0) {
         // Not a failure, and deliberately not a commit either. A sweep that
@@ -339,8 +395,8 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
     }
 
     // 4. Write them.
-    if (entries.length > 0) await insert(entries)
-    await insertChecks([sweep])
+    if (entries.length > 0) await dependencies.addObservations(entries)
+    await dependencies.addChecks([sweep])
 
     /*
      * The snapshot: every player's latest handicap, in one document.
@@ -362,7 +418,7 @@ export async function run(dependencies: JobDependencies, dryRun: boolean): Promi
     // The run's own instant, not `new Date()`: the snapshot, the observations'
     // `observed` and the sweep's `at` all describe the same moment, and three
     // timestamps seconds apart would make a run look like three.
-    await writeSnapshot([...history, ...entries], { now })
+    await dependencies.writeSnapshot([...history, ...entries], now)
 
     // 5. Render everything and commit if the result differs from what is there.
     //
