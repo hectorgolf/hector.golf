@@ -1440,9 +1440,16 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
   its first 429 at 18:06:01.120 — 58.7 seconds at the then-current 5 req/s, so roughly 294 requests
   before refusal, against a limiter set to exactly 300 a minute. The refusals clustered in one
   second and the next scan finished 30 seconds later having lost four of 140, so the window is short
-  and refills. The client now runs at 4 req/s, about 20% under what was observed. That reduces how
-  often a scan is interrupted; it does not make one reliable, because a single refusal anywhere in
-  140 lookups still refuses that player.
+  and refills. The client now runs at 4 req/s, about 20% under what was observed, and a run at
+  18:20 the same evening completed all four scans — 560 lookups in 151 seconds, an effective 3.7 a
+  second, no 429 at all. A single refusal anywhere in 140 lookups still refuses that player, so this
+  is a scan that usually finishes rather than one that cannot fail.
+
+  What it also established is that the four clubless players are clubless for a reason WiseGolf
+  cannot fix: with every lookup answered, the result was still "no club matched exactly one". They
+  are not waiting on a better scrape. Until somebody sets those clubs by hand, or a new member
+  arrives whom WiseGolf does know, this job has nothing to write — which is worth knowing before
+  building it a writer.
 - **Twenty participant ids in the committed events match no player document.** All eighteen in
   `FINNKAMPEN2022` — that event spells its field `lasse-koskela-hcp183` where the player collection
   keys on `lasse-k` — and two in `HECTOR2017`, `tuomas-lesonen` and `tommy-nordberg`, who have no

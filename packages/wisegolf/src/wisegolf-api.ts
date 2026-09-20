@@ -305,10 +305,15 @@ function logRateLimitHeaders(url: string, status: number, headers: Parameters<ty
  * and the following scan finished 30 seconds later having lost only four — so
  * the window is short and refills rather than banning.
  *
- * Four a second is 240 a minute, about 20% under what was observed. That is a
- * guess with headroom rather than a proven-safe figure: the exact threshold is
- * unknown, because the count above includes one whole scan plus an unknown part
- * of the next.
+ * Four a second is 240 a minute, about 20% under what was observed. It was a
+ * guess with headroom when it was made; the run at 18:20:14 the same evening
+ * confirmed it — 560 lookups for four players in 151 seconds, an effective 3.7 a
+ * second, and not one 429. All four scans completed, so the answer that came
+ * back was a real "no club matched exactly one" rather than a refusal.
+ *
+ * The exact threshold is still unknown and does not need to be. It is somewhere
+ * above 240 a minute and somewhere at or below 300, and the useful number is the
+ * one that finishes a scan.
  *
  * ## Why slower rather than a retry
  *
