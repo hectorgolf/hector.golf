@@ -1398,6 +1398,17 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
   system is restated by hand, so it will not follow a token change in `hector.css`.
 - `astrosite/.env.sample` is missing the `MSCORECARD_EMAIL` / `MSCORECARD_PASSWORD` pair the
   mScorecard CLI needs. `HECTOR_APP_API_KEY` used to be missing too and is now there.
+- **A rate-limited WiseGolf lookup is indistinguishable from a negative one.** `fetchPlayer` in
+  `packages/wisegolf/src/wisegolf-api.ts` returns `undefined` for any non-OK response, and
+  `findWisegolfPlayerClubs` reads that as "not a member of this club". It asks once per club over
+  all 140, sequentially, so a single club-membership question is 140 requests and WiseGolf throttles
+  it — observed on 2026-09-20, HTTP 429, on the admin's club-memberships job. Both that job and
+  `update-player-club-memberships.yml` share the client. It is harmless while the only rule is
+  "assign a club when exactly one matches and refuse otherwise" *and* nothing writes, because a
+  throttled lookup can only lose a match. It stops being harmless when something writes: a player in
+  two clubs with one lookup throttled looks like a player in one club, and the refusal turns into an
+  assignment. Recorded rather than fixed because the fix is an API change to a package the live
+  workflow shares.
 - **Twenty participant ids in the committed events match no player document.** All eighteen in
   `FINNKAMPEN2022` — that event spells its field `lasse-koskela-hcp183` where the player collection
   keys on `lasse-k` — and two in `HECTOR2017`, `tuomas-lesonen` and `tommy-nordberg`, who have no
