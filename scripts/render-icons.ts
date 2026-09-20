@@ -19,7 +19,6 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import {
-	HECTOR_MARK_BOUNDS,
 	HECTOR_MARK_BOX,
 	HECTOR_MARK_ORIGIN,
 	HECTOR_MARK_PATH,
@@ -44,10 +43,16 @@ function tint(token: string): string {
 const ground = tint('--ink-950')
 
 /**
- * The mark on the page ground, scaled about the centre of the box so it keeps the
- * slightly-left seating it has in the header. A tile rather than a bare mark: gold
- * on white is too faint to survive a 16px tab, and the design system is dark-ground
- * only, so the icon brings its own ground with it.
+ * The mark on the page ground. A tile rather than a bare mark: gold on white is too
+ * faint to survive a 16px tab, and the design system is dark-ground only, so the
+ * icon brings its own ground with it.
+ *
+ * It is the whole artboard that shrinks, about its own centre, so the mark keeps the
+ * seating it was drawn with: HECTOR_MARK_ORIGIN puts the ink's centre of mass on the
+ * vertical axis, which leaves its bounding box thirteen units left of centre because
+ * the falcon leans right. Centring that bounding box instead is the obvious thing to
+ * do and it reads visibly right-of-centre — the tile is what makes the difference
+ * show, since there was nothing behind the mark before to measure it against.
  *
  * `radius` is 0 for the Apple touch icon, which iOS masks to its own shape — a tile
  * already rounded would be rounded twice.
@@ -55,12 +60,10 @@ const ground = tint('--ink-950')
 function favicon(colour: string, radius = 0.21 * HECTOR_MARK_BOX): string {
 	const box = HECTOR_MARK_BOX
 	const inset = 0.92
-	const centre = {
-		x: HECTOR_MARK_ORIGIN.x + HECTOR_MARK_BOUNDS.width / 2,
-		y: HECTOR_MARK_ORIGIN.y + HECTOR_MARK_BOUNDS.height / 2,
-	}
 	const tidy = (n: number) => Number(n.toFixed(3))
-	const seat = `translate(${box / 2} ${box / 2}) scale(${inset}) translate(${tidy(-centre.x)} ${tidy(-centre.y)})`
+	const seat =
+		`translate(${box / 2} ${box / 2}) scale(${inset}) ` +
+		`translate(${tidy(HECTOR_MARK_ORIGIN.x - box / 2)} ${tidy(HECTOR_MARK_ORIGIN.y - box / 2)})`
 
 	return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${box} ${box}" role="img" aria-label="Hector">
 	<rect width="${box}" height="${box}" rx="${radius}" fill="${ground}" />

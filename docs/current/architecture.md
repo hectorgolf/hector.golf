@@ -339,7 +339,11 @@ in [`hector-mark-path.ts`](../../packages/ui/components/hector-mark-path.ts) bes
 and [`scripts/render-icons.ts`](../../scripts/render-icons.ts) (`npm run icons`) draws it onto an
 ink-950 tile for both properties: gold for hector.golf, fairway green for admin.hector.golf. The
 tints are read out of `hector.css`, so recolouring is an edit to a token. The green is taken from
-`--fairway-400` rather than `--victor`, which names a competition the admin does not have. Two
+`--fairway-400` rather than `--victor`, which names a competition the admin does not have. What
+shrinks onto the tile is the whole artboard, about its centre, so the mark keeps the optical
+centring it was drawn with: its ink sits on the vertical axis while its bounding box sits thirteen
+units left of it, because the falcon leans right. Centring the bounding box instead reads visibly
+off — which nothing revealed while the mark had no ground behind it. Two
 properties open in adjacent tabs, with titles truncated to a few characters, is the one place a
 reader needs the icon to say which is which. The outputs under `*/public/icons/` are committed;
 nothing in either build runs the script, and rasterising needs `rsvg-convert`.
