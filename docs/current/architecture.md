@@ -1428,7 +1428,10 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
   2026-09-20 the scan refuses to answer rather than reporting a partial result (§7), which is
   correct and makes a complete answer *less* likely than it was. Whether to retry the throttled
   lookups, or to accept that this question is answerable only occasionally, is undecided; the
-  admin's club-memberships job has no writer yet, so nothing depends on it.
+  admin's club-memberships job has no writer yet, so nothing depends on it. The client logs
+  `Retry-After` and every `x-` response header — once on a healthy response, every time on a failed
+  one — so that question can be answered from what the server actually volunteers rather than from
+  assumption.
 - **Twenty participant ids in the committed events match no player document.** All eighteen in
   `FINNKAMPEN2022` — that event spells its field `lasse-koskela-hcp183` where the player collection
   keys on `lasse-k` — and two in `HECTOR2017`, `tuomas-lesonen` and `tommy-nordberg`, who have no

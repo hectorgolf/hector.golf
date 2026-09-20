@@ -238,6 +238,58 @@ const login = memoize(
 
 const roundToTenths = (num: number): number => Math.round(num * 10) / 10;
 
+/**
+ * What WiseGolf says about our rate, when it says anything at all.
+ *
+ * We throttle to 5 req/s on our side and a club-membership scan is still ~140
+ * sequential requests, which drew an HTTP 429 on 2026-09-20. Before deciding
+ * whether to back off, wait, or retry, it is worth knowing whether the server
+ * tells us any of that — a `Retry-After`, a remaining-quota count, a reset time
+ * — or whether we are entirely on our own.
+ *
+ * `retry-after` plus every `x-` header, rather than a list of names to look for:
+ * the point is to find out what is there, and guessing at a vendor's spelling of
+ * "remaining" is how you conclude there is nothing. Some noise
+ * (`x-frame-options` and friends) is the price and it is worth paying once.
+ */
+export function rateLimitHeaders(headers: {
+    entries(): IterableIterator<[string, string]>;
+}): Record<string, string> {
+    const reported: Record<string, string> = {};
+    for (const [name, value] of headers.entries()) {
+        const key = name.toLowerCase();
+        if (key === "retry-after" || key.startsWith("x-")) {
+            reported[key] = value;
+        }
+    }
+    return reported;
+}
+
+/**
+ * Whether a healthy response has already been reported on.
+ *
+ * A scan is 140 requests per player and all but one of them succeed, so logging
+ * every healthy response would bury the failure we are trying to see. One line
+ * per process is enough to learn what the server volunteers while it is happy;
+ * failures are logged every time, because that is the case with something to
+ * say.
+ */
+let reportedHealthyHeaders = false;
+
+function logRateLimitHeaders(url: string, status: number, headers: Parameters<typeof rateLimitHeaders>[0]): void {
+    const healthy = status >= 200 && status < 300;
+    if (healthy && reportedHealthyHeaders) return;
+    if (healthy) reportedHealthyHeaders = true;
+
+    const reported = rateLimitHeaders(headers);
+    const what = healthy ? "on a healthy response" : `with HTTP ${status}`;
+    console.log(
+        Object.keys(reported).length === 0
+            ? `WiseGolf sent no Retry-After and no x- headers ${what} (${url})`
+            : `WiseGolf rate-limit headers ${what}: ${JSON.stringify(reported)} (${url})`,
+    );
+}
+
 const fetchPlayerRateLimiter = pRateLimit({
     interval: 1000,
     rate: 5,
@@ -265,6 +317,8 @@ const fetchPlayer = memoize(
                 allowForbiddenHeaders: true,
             }),
         );
+        logRateLimitHeaders(url, response.status, response.headers);
+
         if (response.ok) {
             try {
                 const data = await response.json();
@@ -303,8 +357,13 @@ const fetchPlayer = memoize(
         } else {
             const statusText =
                 response.statusText && response.statusText !== `${response.status}` ? ` ${response.statusText}` : "";
-            console.warn(`Failed to fetch player at ${url} (HTTP ${response.status + statusText})`);
-            throw new Error(`HTTP ${response.status + statusText} from ${url}`);
+            // Carried into the message rather than only logged beside it, so the
+            // one line a caller records says how long the server wanted us to
+            // wait. It is also the number a retry would need, if we add one.
+            const retryAfter = response.headers.get("retry-after");
+            const wait = retryAfter ? `, retry-after ${retryAfter}` : "";
+            console.warn(`Failed to fetch player at ${url} (HTTP ${response.status + statusText}${wait})`);
+            throw new Error(`HTTP ${response.status + statusText}${wait} from ${url}`);
         }
     },
     // `undefined` now means one thing — this club answered, and the player is not
