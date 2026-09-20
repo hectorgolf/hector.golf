@@ -149,10 +149,13 @@ copy in the player file. That is tidying, not a defect: both are written by the 
   expects an override will read that as their edit being lost.
 - An authored field is just editable.
 - "Regenerate biography" is an explicit action, and the scheduled job never takes an edited
-  biography away from you. The job half of that is built — it skips a player whose
-  `biographyLocked` is set. What is missing is the admin setting the lock when somebody saves an
-  edit, and clearing it on an explicit **Regenerate**; until then the fortnightly rewrite still
-  takes back any edit nobody locked. See [`plans/biography-locking.md`](../plans/biography-locking.md).
+  biography away from you. **Two of the three halves are built.** The job skips a player whose
+  `biographyLocked` is set, and since 2026-09-21 the player editor sets that lock when somebody
+  saves a changed biography — following the text rather than a checkbox, because a lock somebody
+  forgets to tick is indistinguishable from no lock on the day the job next runs. What is still
+  missing is **Regenerate** for one player, which is what would properly clear the lock; until it
+  exists the editor offers a plain unlock, which hands the biography back to the next scheduled run.
+  See [`plans/biography-locking.md`](../plans/biography-locking.md).
 
 ## Where the data lives, and which direction it flows
 
