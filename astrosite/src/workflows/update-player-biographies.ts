@@ -300,8 +300,9 @@ const run = async () => {
 
 // Only when this file is the thing being run, as in `update-handicaps.ts`. The tests
 // import it for `biographiesToRegenerate`, and without this an import empties the
-// commit message file, rescrapes the club list, rewrites `clubs.json` from the answer,
-// and starts generating 45 biographies against a live Cloud Function.
+// commit message file and starts generating 45 biographies against a live Cloud
+// Function. It used to rescrape the club list and rewrite `clubs.json` too; that
+// moved to the admin's `clubs` job on 2026-09-20.
 if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
     run();
 }
