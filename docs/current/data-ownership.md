@@ -266,6 +266,12 @@ store. That is not a hypothetical — it is what the first version of that path 
 emulator. §4 of [`architecture.md`](./architecture.md#player-identity) is the rule;
 `astrosite/test/unit/player-data-paths.test.ts` is the site's copy of the same guard.
 
+That discovery is expected to be temporary. The files are to be renamed to match their ids when the
+admin gets a player editor and stops being the second reader of that directory — decided 2026-09-20,
+recorded in step 1 of
+[`plans/authoring-players-and-events.md`](../plans/authoring-players-and-events.md). Until then the
+human-readable names are the ones that matter, because a human is still who opens them.
+
 The mirror refreshes itself. **Refresh the admin's mirror** runs `npm run seed` whenever one of the
 four scrapes finishes, on `workflow_run` rather than a clock — a cron would be a guess at how long a
 scrape takes, and it would be wrong on the day the scrape is slow, which is the day the data moved

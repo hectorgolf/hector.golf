@@ -110,8 +110,8 @@ the id it holds, so it globs and matches on the id inside each file, the way `pl
 already did on the site's side. The first version composed `players/{id}.json`, which against an
 emulator wrote forty-five new files and removed all forty-five real ones — the empty-set guard does
 not catch that, because the store was not empty. A player created in the admin, which cannot happen
-until step 1 builds an editor, gets the composed name; **what a new player's file should be called
-is an open decision** and the only part of this the editor still has to make.
+until step 1 builds an editor, gets the composed name — and step 1 is where that stops being a
+special case, because it renames the files. See below.
 
 ## Step 1 — players
 
@@ -190,8 +190,41 @@ not free choices, and three of them are easy to get backwards:
   step 2 of that plan answered in the other direction.
 
 `misc` and `club` are plainly authored and want nothing but a text field. Player **images** are files
-on disk, not in Firestore, and are not in scope — the editor should say so rather than offering an
-upload that goes nowhere.
+on disk, not in Firestore, and are not in scope as *content* — the editor should say so rather than
+offering an upload that goes nowhere. Their filenames are in scope; see below.
+
+### And rename the files, in the same step
+
+**Decided 2026-09-20: `players/first-last.json` becomes `players/first-l.json`, matching the id, as
+part of this step and not before it.**
+
+Step 0 left the export discovering a player's file by matching the id inside it, because not one of
+the forty-five is named after the id it holds. That works, it is what `playerDataPath()` already
+does, and the round trip is clean — so the rename buys no capability. What it buys is symmetry:
+events compose `events/{format}/{id}.json` and match, players would too, and the question of what a
+newly-created player's file is called answers itself.
+
+The reason to do it *here* rather than earlier is who is reading the directory. Until this step
+there is no player editor, so the person fixing a club abbreviation opens the file by hand, and
+`lasse-koskela.json` is the better name for that. The day the admin becomes the primary writer,
+human filenames stop earning their keep and the machine-readable ones start.
+
+Three things come with it, and none is hard as long as they are not discovered one at a time:
+
+- **The forty player images** under `players/images/originals/` are named `first-last.jpeg`. Nothing
+  reads them — [`architecture.md`](../current/architecture.md) §13 — but leaving them puts two
+  sibling directories on different conventions, which is the kind of thing that reads as an
+  oversight rather than a decision.
+- **`astrosite/test/unit/player-data-paths.test.ts` exists to forbid exactly this**: its whole
+  argument is that a writer composing a path from an id writes to the wrong file. Once names match
+  ids that argument stops holding, so the test is rewritten or deleted deliberately — not left to
+  fail and be patched.
+- **`dev-fake.ts` picks its WiseGolf stand-in roster** by sorting filenames and taking the first
+  twenty-four, so the rename quietly changes which players drift locally. Harmless, and worth a line
+  in the commit so the next person does not go looking for a cause.
+
+Afterwards the export can compose the path and drop `playerPathsById()`, and `data-ownership.md`'s
+note about discovery goes with it.
 
 ## Step 2 — Hector events
 
