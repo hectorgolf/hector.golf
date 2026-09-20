@@ -1402,7 +1402,8 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
   `HECTOR2017` are visible; the Finnkampen ones are known from the same code, on pages that existed
   between 2026-09-20 and the same day. It matters before either format becomes editable — a
   participant picker cannot offer an id no collection has, so the reconciliation is work the
-  authoring plan's step 1 and step 3 each inherit.
+  authoring plan's step 2 inherits for `HECTOR2017`, and whoever eventually owns Finnkampen inherits
+  for the rest.
 - **A finished Hector's bucket table shows today's handicaps, not the ones its split was drawn on.**
   `events/hector/[slug].astro` renders that column as `getPlayerHandicapById(player.id)`, which is
   the last entry in the history with no date bound at all — so it neither reads the handicaps stored

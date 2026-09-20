@@ -23,14 +23,17 @@ executed by that. What it changes for whoever starts this:*
   no player document — all eighteen of `FINNKAMPEN2022`'s, and two in `HECTOR2017`. A participant
   picker cannot offer an id no collection has. Recorded in
   [`architecture.md`](../current/architecture.md) §13.*
-- *The Finnkampen pages went again the same day, deliberately — see step 1, which now creates them
-  rather than adding a form to them. Hector and players kept theirs.*
+- *The Finnkampen pages went again the same day, deliberately, and that cost this plan its pilot.
+  Step 1 is players now and step 2 is Hector; the reordering and what it costs are under the price
+  table. Hector and players kept their pages.*
 
 ## What to do
 
-Move `events/finnkampen/`, `players/` and `events/hector/` out of the mirrored column and into the
-owned one — [`data-ownership.md`](../current/data-ownership.md) — and give each an editor in the
-admin.
+Move `players/` and `events/hector/` out of the mirrored column and into the owned one —
+[`data-ownership.md`](../current/data-ownership.md) — and give each an editor in the admin.
+
+`events/finnkampen/` is the third mirrored collection and is deliberately not a step; see "Not in
+scope".
 
 ## Why
 
@@ -75,8 +78,15 @@ of fields on its form:
 | `players/` | 46 | `update-player-biographies` (`biography`), `update-player-club-memberships` (`club`) | biography-locking |
 | `events/hector/` | 13 | `update-leaderboards` (`results.teams`) — the handicaps job writes `buckets` to git already | bucket-locking |
 
-Finnkampen having no scheduled writer is the useful accident in that table, and it sets the order
-below.
+That table used to set the order by itself: Finnkampen had no scheduled writer, so it was the pilot
+— two events from 2021 and 2022, nothing at stake, every mechanism step 0 widens exercised once on
+data where being wrong costs a revert of two files. Its pages were removed from the admin on
+2026-09-20 because the format is not fully implemented anywhere, and owning a collection nobody can
+look at is not a pilot but an exercise. It is still in the table because it is still mirrored; it is
+no longer a step. See "Not in scope".
+
+So the order is now a choice between the two that are left, and it is decided by a date rather than
+by the table.
 
 ## Step 0 — generalise the machinery, before anything is owned
 
@@ -114,53 +124,34 @@ one step that can land and sit.
 `admin/test/ownership.test.ts` exists and is where the invariant belongs: the owned and mirrored sets
 are complements, and neither script covers a collection the other does.
 
-## Step 1 — Finnkampen, as the pilot
+## Step 1 — players
 
-Move `EventFormat.Finnkampen` into `OWNED_FORMATS`, export it, and build the generic event editor
-against it.
+First because of the calendar, not because it is the easy one.
 
-Nothing is at stake. Two events, played in 2021 and 2022, no scheduled writer, and no page anybody
-checks daily. That is the whole reason to start here: every mechanism step 0 widened gets exercised
-once — the generic save path, the export covering a second format, the seed dropping a format, a
-non-matchplay event page, a deletion guard that is no longer a format literal — on data where being
-wrong costs a revert of two files.
+Hector events are the better candidate on every other axis: one writer to move against two, thirteen
+records against forty-six, an editor whose read-only half is already built, and — the part that
+matters most — the machinery step 0 widens is *event* machinery, which players do not exercise at
+all. What rules them out is the date in step 2. `HECTOR2026` is played 2026-09-24 to 2026-09-27, and
+this document has said since it was written not to make that flip in the week of a Hector. Waiting
+for the winter before starting anything would stall the two plans behind this one for a season.
 
-Nobody needs to edit Finnkampen. The step is not for Finnkampen's sake, and it should not be
-justified to a reader as though it were.
+So players go first, and the cost of that ordering is worth writing down rather than discovering:
 
-**This step creates the Finnkampen pages; it does not add a form to one.** They existed, read-only,
-for a day — added on 2026-09-20 and removed the same day, on the grounds that the format is not
-fully implemented anywhere and the admin had become the only place two events nobody maintains were
-rendered. That is a reason to remove a read-only view and not a reason against this step: the
-argument above is about what Finnkampen is *worth risking*, which is nothing, and that is unchanged.
-It does mean the step is a little larger than the other two, and that the removal commit is where to
-start reading — `git log -- admin/src/pages/events/finnkampen` has both pages whole.
-
-The editor itself is mostly assembly, and more of it exists than the deletion suggests.
-`EventDetailsFields.astro` covers name, location, the date pair and the description for every format,
-because those live on `BaseEventSchema`, and `EventDetailsView.astro` is the same fields read-only,
-in the same order, for exactly this swap — the Hector page still uses both halves, so neither has
-rotted. `Participants.astro` renders a field for any format and is where the unresolved-id count
-above comes from; the add and remove half is what it does not have. `Roster.astro` is still typed to
-`MatchplayEvent` and reads a handicap snapshot it only needs during signup; that handicap column
-should not follow it into a finished 2021 event, which is why the read-only field table leaves it
-out. What is new is `results` — named teams and their players — and that is the shape Finnkampen and
-Hector share.
-
-Add the family back to `EVENT_FAMILIES` in `sections.ts`, as `editable`, in the same change. A nav
-entry that says Finnkampen is coming, after it has arrived, is the same lie in the other direction —
-and `test/sections.test.ts` fails on one half of it already: a family is `editable` only where
-`OWNED_FORMATS` would accept the write. Two other things key off that list and will start answering
-differently the moment the family returns, which is the point of their existing —
-`adminPathForEvent()` starts linking Finnkampen appearances on a player's page, and `eventMirror()`
-stops explaining why the format cannot be edited once it is in `OWNED_FORMATS`.
-
-The site is a separate question this step does not settle. `siteVisibility()` in
-`admin/src/lib/events/site.ts` will still answer "no route", correctly, because
-`astrosite/src/pages/events/` has no `finnkampen/[slug].astro` — authoring an event in the admin
-does not publish one.
-
-## Step 2 — players
+- **The most dangerous gap in step 0 is now the first one exercised.** `seed.ts` writes players
+  unconditionally, outside the loop that respects `MIRRORED_FORMATS`, and
+  `refuseToOverwriteAuthoredEvents` walks the `events` collection and nothing else. Both were listed
+  above as the worst thing in this plan on the assumption that something cheap had already proved
+  the machinery by the time they mattered. Nothing proves it now, and `refresh-admin-mirror.yml`
+  runs the seed unattended after every scrape.
+- **`export.ts` needs the players copy of its empty-set refusal before this lands, not with it.**
+  Forty-six files and one wrong database id is the failure it exists to stop, and there is no
+  two-file rehearsal in front of it any more.
+- **The generic event save path gets no shakedown flight.** `saveEvent` behind an `OWNED_FORMATS`
+  refusal, the export covering a second format, the seed dropping a format, a deletion guard that is
+  no longer a format literal — none of that is exercised by owning players, so all of it first runs
+  against Hector events in step 2, which is the collection this document least wants to be wrong
+  about. Build it in step 0 as step 0 says, and put its tests there; that is now the only proving it
+  gets.
 
 Two halves, in this order, and the second cannot land without the first.
 
@@ -217,9 +208,10 @@ not free choices, and three of them are easy to get backwards:
 on disk, not in Firestore, and are not in scope — the editor should say so rather than offering an
 upload that goes nowhere.
 
-## Step 3 — Hector events
+## Step 2 — Hector events
 
-The largest step, and the one with a date on it. Do not run it in the week of a Hector.
+The largest step, the one with a date on it, and — now that Finnkampen is not a step — the one
+that first exercises everything step 0 widened. Do not run it in the week of a Hector.
 
 `HECTOR2026` is played 2026-09-24 to 2026-09-27. Its buckets are recomputed on every tick until 08:00
 on the first morning, which is precisely the window in which a mistake in the ownership flip is
@@ -306,3 +298,15 @@ noticed.
   ([`../../README.md`](../../README.md)); nothing here needs it, because the site keeps building from
   committed files that are now generated.
 - **Player images**, which are files on disk and want their own decision.
+- **Finnkampen.** Still mirrored, still authored by editing two committed files, and no longer a
+  step in this plan. It was step 1 until 2026-09-20, as the pilot — no scheduled writer, nothing at
+  stake — and the admin's read-only pages for it were removed that day on the grounds that the
+  format is not fully implemented anywhere: the public site has no route for it either, so the admin
+  had become the only place two events nobody maintains were rendered.
+
+  Owning it is still the cheapest flip in this document, and it stays that way: no writer to move,
+  two files, one entry in `OWNED_FORMATS` and one in `EVENT_FAMILIES`. What it now lacks is a
+  reason. The generic event editor it would have piloted is built by step 2 regardless, so the day
+  somebody actually wants to edit a Finnkampen event, this is an afternoon on top of a finished
+  step 2 rather than a step anybody has to plan around. The removed pages are whole in
+  `git log -- admin/src/pages/events/finnkampen`.
