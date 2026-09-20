@@ -2,7 +2,8 @@ import { createWisegolfSession } from '@hector/wisegolf/src/wisegolf-api.ts'
 import { NullHandicapSource, type GolfClub, type HandicapSource } from '@hector/wisegolf/src/handicap-source-api.ts'
 import type { Player } from '@hector/schemas/src/players.ts'
 
-import { listPlayers } from '../repository/events.ts'
+import { PLAYERS_ARE_OWNED } from '../ownership.ts'
+import { listPlayers, savePlayer } from '../repository/events.ts'
 import { wisegolfCredentials } from '../secrets.ts'
 import type { Change } from './log.ts'
 
@@ -83,16 +84,31 @@ export type ClubAssignment = {
     club: GolfClub
     /** Which sources agreed, for a run log somebody is reading later. */
     sources: string[]
+    /**
+     * The record to write back with the club set.
+     *
+     * Carried on the assignment rather than looked up again by the writer,
+     * because the roster this run decided against is the roster it should write:
+     * re-reading would open a window where a player edited in between is
+     * overwritten with what they looked like before this job started.
+     */
+    record: Player
 }
 
 export type ClubDependencies = {
     players: () => Promise<Player[]>
     sources: () => Promise<HandicapSource[]>
     /**
-     * Where an assignment goes, once that is decided. Absent today, which is
-     * what makes a live run refuse rather than quietly do nothing.
+     * Whether the admin owns players yet, which decides whether a write is
+     * possible at all rather than whether one is wanted.
+     *
+     * A dependency rather than reading `PLAYERS_ARE_OWNED` directly, so both
+     * answers can be tested — the flag is false, and the path that runs the day
+     * somebody flips it is the one with nobody looking at it.
      */
-    assign?: (assignments: readonly ClubAssignment[]) => Promise<{ commit?: string }>
+    playersAreOwned: () => boolean
+    /** Where an assignment goes. Firestore, through `savePlayer`. */
+    assign?: (assignments: readonly ClubAssignment[]) => Promise<void>
 }
 
 export type ClubJobResult = {
@@ -168,7 +184,9 @@ async function resolve(
         }
 
         const club = agreedClub(found)
-        if (club) assignments.push({ player: player.id, name: nameOf(player), club, sources: agreed })
+        if (club) {
+            assignments.push({ player: player.id, name: nameOf(player), club, sources: agreed, record: player })
+        }
     }
 
     return assignments
@@ -212,18 +230,30 @@ export async function run(dependencies: ClubDependencies, dryRun: boolean): Prom
         return { outcome: 'ok', detail: `${looked}; would assign ${found.join(', ')}.`, changes }
     }
 
-    if (!dependencies.assign) {
+    /*
+     * Owned before written, and reported as a skip rather than a failure.
+     *
+     * `savePlayer` refuses a mirrored collection by throwing, which is right for
+     * a caller that should not have asked — but a scheduled job is not a mistake
+     * for running before the flip, and a run log full of red would say it was.
+     * So the job asks first and says the true thing.
+     */
+    if (!dependencies.playersAreOwned()) {
         return {
             outcome: 'skipped',
             detail:
-                `${looked} and found ${assignments.length}, but this job has no writer yet. ` +
-                `Where a club is written is step 1's next decision; see the module header.`,
+                `${looked} and found ${assignments.length}, but players are still mirrored. ` +
+                `A club written now would be reverted by the next seed; see PLAYERS_ARE_OWNED.`,
             changes,
         }
     }
 
-    const { commit } = await dependencies.assign(assignments)
-    return { outcome: 'ok', detail: `${looked}; assigned ${assignments.length}.`, changes, commit }
+    if (!dependencies.assign) {
+        return { outcome: 'skipped', detail: `${looked}, but this job has no writer.`, changes }
+    }
+
+    await dependencies.assign(assignments)
+    return { outcome: 'ok', detail: `${looked}; assigned ${assignments.length}.`, changes }
 }
 
 /**
@@ -236,7 +266,29 @@ export async function run(dependencies: ClubDependencies, dryRun: boolean): Prom
  * missing credential produces is a `NullHandicapSource`, which `usable` above
  * takes back out.
  */
-export const LIVE: Pick<ClubDependencies, 'players' | 'sources'> = {
+export const LIVE: Pick<ClubDependencies, 'players' | 'sources' | 'playersAreOwned' | 'assign'> = {
     players: listPlayers,
     sources: async () => [await createWisegolfSession(await wisegolfCredentials())],
+    playersAreOwned: () => PLAYERS_ARE_OWNED,
+    /**
+     * One `savePlayer` per assignment, in sequence.
+     *
+     * Not a batch, because there is no batch to be had: assignments are counted
+     * in ones — four clubless players today, and the run that found them took
+     * 151 seconds — so the cost of a round trip each is nothing against the
+     * scrape that produced them.
+     *
+     * `WRITTEN_BY` is what `seed.ts` compares against: a player last written by
+     * anything other than `seed` makes `--bootstrap` refuse, which is correct
+     * once players are owned, because Firestore is then the only copy of this
+     * club until somebody exports it.
+     */
+    assign: async (assignments) => {
+        for (const assignment of assignments) {
+            await savePlayer({ ...assignment.record, club: assignment.club.abbreviation }, WRITTEN_BY)
+        }
+    },
 }
+
+/** How this job signs its writes, in `updatedBy`. */
+export const WRITTEN_BY = 'job:club-memberships'

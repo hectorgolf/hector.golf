@@ -180,6 +180,12 @@ editor below wants it for a club picker. It is derived, has no human writer and 
 it — the third arrangement `data-ownership.md` describes, where the file stays committed and the
 collection never joins the exported column.
 
+The club job's writer landed on 2026-09-20 and is waiting on the flag rather than on work.
+`savePlayer` does the writing, `PLAYERS_ARE_OWNED` is the only gate, and a run today reports what it
+would have assigned and says why it did not. The biographies job has no writer and cannot have one
+yet: generating needs the admin to hold `astrosite-api-key`, which is a Secret Manager grant and a
+`terraform apply` rather than code.
+
 ### Then own the collection, and build the editor
 
 The fields and their affordances are already specified, in "What the admin UI owes this". They are
