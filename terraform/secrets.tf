@@ -201,3 +201,28 @@ resource "google_secret_manager_secret_iam_member" "admin_runtime_reads_wisegolf
   role      = "roles/secretmanager.secretAccessor"
   member    = google_service_account.admin_runtime.member
 }
+
+# ---------------------------------------------------------------------------
+# The admin calls one private Cloud Function, and needs the key it checks.
+#
+# `GeneratePlayerBiography` compares the Authorization header against exactly one
+# value — `token !== process.env.ASTROSITE_API_KEY` — so a caller either presents
+# that key or is answered 401. The admin's biographies job is about to be such a
+# caller, which is why this grant exists.
+#
+# ONE KEY, TWO CALLERS. The site's workflows present the same secret. A key of
+# the admin's own would be tidier and is not free: the function would have to
+# accept a set rather than a value, which means editing and redeploying a
+# deployed function. The cost of sharing is that rotating the key rotates it for
+# both at once — they fail together, which is at least a failure mode with one
+# cause rather than two.
+#
+# This is a read of the *value*, and the narrowest role that allows it:
+# secretAccessor reads versions and cannot list, create, disable or destroy them.
+# The function's own runtime identity already holds the same grant, above.
+resource "google_secret_manager_secret_iam_member" "admin_runtime_reads_functions_key" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.functions["astrosite-api-key"].secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = google_service_account.admin_runtime.member
+}

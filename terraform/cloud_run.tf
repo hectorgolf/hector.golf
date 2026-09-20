@@ -102,6 +102,16 @@ resource "google_cloud_run_v2_service" "admin" {
         value = "${google_secret_manager_secret.wisegolf["wisegolf-password"].name}/versions/latest"
       }
 
+      # The name of the secret, not the secret — read at call time by
+      # `secrets.ts`, for the same reason the three above are names: a container
+      # spec that names a secret *version* cannot start when the version is
+      # missing, and a project whose credentials have not been put in yet must
+      # still have a working admin.
+      env {
+        name  = "ASTROSITE_API_KEY_SECRET"
+        value = "${google_secret_manager_secret.functions["astrosite-api-key"].name}/versions/latest"
+      }
+
       resources {
         limits = {
           cpu    = "1"
