@@ -290,9 +290,42 @@ function logRateLimitHeaders(url: string, status: number, headers: Parameters<ty
     );
 }
 
+/**
+ * Four a second, which is a measurement rather than a round number.
+ *
+ * It was five, and five is 300 requests a minute. On 2026-09-20 a club-
+ * membership run logged its first healthy player lookup at 18:05:02.373 and its
+ * first HTTP 429 at 18:06:01.120 — 58.7 seconds of clean traffic, so roughly 294
+ * requests before WiseGolf started refusing. We were not overrunning their
+ * budget by much; we were sitting exactly on it, which is what the sporadic
+ * pattern looked like: one refusal in 140 lookups for one player, four in 140
+ * for the next.
+ *
+ * It also recovered inside the same run — the refusals clustered in one second
+ * and the following scan finished 30 seconds later having lost only four — so
+ * the window is short and refills rather than banning.
+ *
+ * Four a second is 240 a minute, about 20% under what was observed. That is a
+ * guess with headroom rather than a proven-safe figure: the exact threshold is
+ * unknown, because the count above includes one whole scan plus an unknown part
+ * of the next.
+ *
+ * ## Why slower rather than a retry
+ *
+ * There is nothing to retry *against*. WiseGolf sends no `Retry-After` and no
+ * rate headers, on a healthy response or on a 429 — checked on both, which is
+ * what `logRateLimitHeaders` above was added for. Any backoff would be inventing
+ * a wait, and a retry re-spends a budget we have just exhausted. Costing every
+ * request a little is what actually keeps us under the limit.
+ *
+ * The price is wall clock. A 140-club scan goes from about 28 seconds to about
+ * 35, and the four clubless players from roughly two minutes to two and a half.
+ * Cloud Run gives this service 600 seconds, so there is room to go slower still
+ * if 240 a minute turns out to be too fast.
+ */
 const fetchPlayerRateLimiter = pRateLimit({
     interval: 1000,
-    rate: 5,
+    rate: 4,
     concurrency: 1,
 });
 

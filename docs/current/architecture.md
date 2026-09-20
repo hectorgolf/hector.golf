@@ -592,7 +592,8 @@ Notable details:
   fallback. The handicaps job pops sources off a list and falls through on failure, so adding a
   second provider is a matter of implementing the interface.
 - **WiseGolf client** uses `fetch-h2` with browser-mimicking headers, `micro-memoize` (15-minute TTL
-  on the login, longer on club lists), and `p-ratelimit` throttling (5 req/s, concurrency 1).
+  on the login, longer on club lists), and `p-ratelimit` throttling (4 req/s, concurrency 1 —
+  measured, see below).
 - **A lookup that did not answer is not a club that said no.** Club membership is resolved by asking
   each of ~140 clubs in turn, so one question is 140 requests and WiseGolf throttles it — observed
   2026-09-20, HTTP 429. Until then a failed request returned the same `undefined` as a club replying
@@ -1428,10 +1429,20 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
   2026-09-20 the scan refuses to answer rather than reporting a partial result (§7), which is
   correct and makes a complete answer *less* likely than it was. Whether to retry the throttled
   lookups, or to accept that this question is answerable only occasionally, is undecided; the
-  admin's club-memberships job has no writer yet, so nothing depends on it. The client logs
-  `Retry-After` and every `x-` response header — once on a healthy response, every time on a failed
-  one — so that question can be answered from what the server actually volunteers rather than from
-  assumption.
+  admin's club-memberships job has no writer yet, so nothing depends on it.
+
+  **WiseGolf publishes nothing about its limits.** Checked on 2026-09-20 with the header logging in
+  `wisegolf-api.ts`: a healthy response carries one `x-` header, `x-content-type-options: nosniff`,
+  and a 429 carries no `Retry-After` and no `x-` headers at all. So there is no wait to obey and no
+  remaining-quota count to pace against — any backoff would be invented.
+
+  **The limit was measured instead.** That run logged its first healthy lookup at 18:05:02.373 and
+  its first 429 at 18:06:01.120 — 58.7 seconds at the then-current 5 req/s, so roughly 294 requests
+  before refusal, against a limiter set to exactly 300 a minute. The refusals clustered in one
+  second and the next scan finished 30 seconds later having lost four of 140, so the window is short
+  and refills. The client now runs at 4 req/s, about 20% under what was observed. That reduces how
+  often a scan is interrupted; it does not make one reliable, because a single refusal anywhere in
+  140 lookups still refuses that player.
 - **Twenty participant ids in the committed events match no player document.** All eighteen in
   `FINNKAMPEN2022` — that event spells its field `lasse-koskela-hcp183` where the player collection
   keys on `lasse-k` — and two in `HECTOR2017`, `tuomas-lesonen` and `tommy-nordberg`, who have no
