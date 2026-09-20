@@ -12,12 +12,18 @@ admin.
 
 ## Why
 
-Three plans are stopped on the same sentence. [`bucket-locking.md`](./bucket-locking.md) cannot
-offer a lock the next seed reverts; [`biography-locking.md`](./biography-locking.md) cannot set one
-on save for the same reason; [`handicaps-to-firestore.md`](./handicaps-to-firestore.md) cannot
-retire `update-handicaps.yml` while `event.buckets` has nowhere to go. Each is a small piece of UI
-waiting on the same structural change, which is why they are worth doing as one plan rather than
-three.
+Two plans are stopped on the same sentence. [`bucket-locking.md`](./bucket-locking.md) cannot offer
+a lock the next seed reverts, and [`biography-locking.md`](./biography-locking.md) cannot set one on
+save for the same reason. Each is a small piece of UI waiting on the same structural change, which is
+why they are worth doing as one plan rather than two.
+
+A third was listed here and is not any more. `handicaps-to-firestore.md` could not retire
+`update-handicaps.yml` while `event.buckets` had nowhere to go — except that its recompute never
+needed the mirror to become the source. It writes buckets to **git**, which is the same write the
+workflow was already making, so the ownership rule is untouched and the workflow was deleted on
+2026-09-20. That is worth knowing here rather than only in its history: a plan blocked on this one
+is worth re-reading before it is counted, because "the admin cannot write this record" is true of
+Firestore and not of the repository.
 
 Underneath that, today every one of these records is edited by opening a JSON file and committing
 it. That is a reasonable way to run thirteen events and forty-six players and a bad way to run a
@@ -45,7 +51,7 @@ of fields on its form:
 | --- | --- | --- | --- |
 | `events/finnkampen/` | 2 | **none** — hand-edited, no job touches it | nothing |
 | `players/` | 46 | `update-player-biographies` (`biography`), `update-player-club-memberships` (`club`) | biography-locking |
-| `events/hector/` | 13 | `update-handicaps` (`buckets`), `update-leaderboards` (`results.teams`) | bucket-locking, handicaps-to-firestore |
+| `events/hector/` | 13 | `update-leaderboards` (`results.teams`) — the handicaps job writes `buckets` to git already | bucket-locking |
 
 Finnkampen having no scheduled writer is the useful accident in that table, and it sets the order
 below.
@@ -177,13 +183,11 @@ handicap season stops in October. Land this after the event is played, with the 
 
 ### Move the two writers
 
-- **`event.buckets` goes into the admin's handicaps job.** That job already runs four times a day,
-  already reads players out of Firestore, and already has the lease, the run log and the append-only
-  backup guard. Buckets are the last of `update-handicaps.yml`'s four outputs, three of which are
-  settled, so moving them deletes the workflow — which is the whole of
-  [`handicaps-to-firestore.md`](./handicaps-to-firestore.md)'s remaining step, including the two
-  things that plan warns break quietly when the file goes: `refresh-admin-mirror.yml` triggers on
-  `workflow_run` **by display name**, and `data-formatting.test.ts` asserts `handicaps.json` exists.
+- **`event.buckets` is already done, and did not need this plan.** The admin's handicaps job
+  recomputes every open split and commits the event JSON to git, which deleted
+  `update-handicaps.yml` on 2026-09-20. What is left for this step is only to stop *that* writer
+  being a git writer once Hector events are owned in Firestore — a smaller change than the move was,
+  and one with a working implementation to read.
 - **`event.results.teams` moves out of `update-leaderboards.ts`, and nothing else does.** That
   workflow has two outputs and only one of them touches an event document. `leaderboards/*.json` has
   no Firestore copy and no human writer, so it stays exactly where it is and the workflow stays with

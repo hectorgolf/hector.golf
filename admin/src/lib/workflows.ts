@@ -80,13 +80,6 @@ export type DispatchableWorkflow = {
 
 export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
     {
-        slug: 'handicaps',
-        file: 'update-handicaps.yml',
-        label: "Players' official handicaps",
-        blurb: 'Reads every player\'s current handicap from WiseGolf and re-sorts the buckets of any event whose buckets are still open.',
-        cadence: { every: '60s' }, // every 60 seconds, at most
-    },
-    {
         slug: 'leaderboards',
         file: 'update-leaderboards.yml',
         label: 'Tournament leaderboards',
@@ -137,9 +130,13 @@ export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
  * What the tick considers, in the order it considers them.
  *
  * Order is not cosmetic. These all commit to `main`, so they share one GitHub
- * concurrency group and each waits for the one before it. Handicaps is first
- * because the buckets it writes are the thing an event page is most wrong about
- * when it is stale; deploy is last because it publishes whatever the others did.
+ * concurrency group and each waits for the one before it. Deploy is last because
+ * it publishes whatever the others did.
+ *
+ * The handicap scrape used to head this list, and is no longer on it at all: it
+ * runs in this process now, as a job in `jobs/registry.ts`. The tick starts the
+ * workflows first and the jobs second, so the ordering that mattered — buckets
+ * before deploy — is still the ordering that happens.
  *
  * "Considers" rather than "starts": everything here is on the tick, but a
  * workflow with an interval is only dispatched when it is due. See `cadence.ts`.

@@ -10,7 +10,7 @@ import {
 } from '../src/lib/github.ts'
 import { DISPATCHABLE_WORKFLOWS, SCHEDULED_WORKFLOWS, workflowBySlug } from '../src/lib/workflows.ts'
 
-const handicaps = workflowBySlug('handicaps')!
+const leaderboards = workflowBySlug('leaderboards')!
 
 /** A client whose fetch answers once, with whatever the test is about. */
 function clientAnswering(response: Response) {
@@ -33,11 +33,11 @@ describe('dispatching a workflow', () => {
     it('asks GitHub to run the workflow file on main', async () => {
         const { client, fetch } = clientAnswering(accepted())
 
-        expect(await client.dispatch(handicaps)).toEqual({ ok: true })
+        expect(await client.dispatch(leaderboards)).toEqual({ ok: true })
 
         const [url, init] = fetch.mock.calls[0]!
         expect(url).toBe(
-            'https://api.github.com/repos/hectorgolf/hector.golf/actions/workflows/update-handicaps.yml/dispatches'
+            'https://api.github.com/repos/hectorgolf/hector.golf/actions/workflows/update-leaderboards.yml/dispatches'
         )
         expect(init?.method).toBe('POST')
         expect(JSON.parse(String(init?.body))).toEqual({ ref: 'main' })
@@ -45,7 +45,7 @@ describe('dispatching a workflow', () => {
 
     it('sends the headers GitHub requires, including a User-Agent and a pinned API version', async () => {
         const { client, fetch } = clientAnswering(accepted())
-        await client.dispatch(handicaps)
+        await client.dispatch(leaderboards)
 
         const headers = fetch.mock.calls[0]![1]!.headers as Record<string, string>
         expect(headers.authorization).toBe('Bearer ghp_test')
@@ -62,7 +62,7 @@ describe('dispatching a workflow', () => {
         })
         vi.spyOn(console, 'error').mockImplementation(() => {})
 
-        expect(await client.dispatch(handicaps)).toEqual({ ok: false, reason: 'not-configured' })
+        expect(await client.dispatch(leaderboards)).toEqual({ ok: false, reason: 'not-configured' })
         expect(fetch).not.toHaveBeenCalled()
     })
 
@@ -74,8 +74,8 @@ describe('dispatching a workflow', () => {
             fetch: vi.fn<typeof globalThis.fetch>().mockResolvedValue(accepted()),
         })
 
-        await client.dispatch(handicaps)
-        await client.dispatch(handicaps)
+        await client.dispatch(leaderboards)
+        await client.dispatch(leaderboards)
 
         expect(token).toHaveBeenCalledTimes(2)
     })
@@ -103,7 +103,7 @@ describe('classifying a refusal', () => {
             const { client } = clientAnswering(response)
             vi.spyOn(console, 'error').mockImplementation(() => {})
 
-            expect(await client.dispatch(handicaps)).toEqual({ ok: false, reason })
+            expect(await client.dispatch(leaderboards)).toEqual({ ok: false, reason })
         })
     }
 
@@ -116,7 +116,7 @@ describe('classifying a refusal', () => {
         })
         vi.spyOn(console, 'error').mockImplementation(() => {})
 
-        expect(await client.dispatch(handicaps)).toEqual({ ok: false, reason: 'unavailable' })
+        expect(await client.dispatch(leaderboards)).toEqual({ ok: false, reason: 'unavailable' })
     })
 
     it('has a message for every reason, so no failure reaches a person as a bare code', () => {
@@ -143,10 +143,10 @@ describe('reading recent runs', () => {
 
     it('asks for the workflow that was requested, not the repository at large', async () => {
         const { client, fetch } = clientAnswering(runsResponse([]))
-        await client.recentRuns(handicaps, 3)
+        await client.recentRuns(leaderboards, 3)
 
         expect(String(fetch.mock.calls[0]![0])).toBe(
-            'https://api.github.com/repos/hectorgolf/hector.golf/actions/workflows/update-handicaps.yml/runs?per_page=3&page=1'
+            'https://api.github.com/repos/hectorgolf/hector.golf/actions/workflows/update-leaderboards.yml/runs?per_page=3&page=1'
         )
     })
 
@@ -159,10 +159,10 @@ describe('reading recent runs', () => {
          * or the query string eats them.
          */
         const { client, fetch } = clientAnswering(runsResponse([]))
-        await client.recentRuns(handicaps, 100, 1, new Date('2026-09-18T17:52:52.000Z'))
+        await client.recentRuns(leaderboards, 100, 1, new Date('2026-09-18T17:52:52.000Z'))
 
         expect(String(fetch.mock.calls[0]![0])).toBe(
-            'https://api.github.com/repos/hectorgolf/hector.golf/actions/workflows/update-handicaps.yml/runs' +
+            'https://api.github.com/repos/hectorgolf/hector.golf/actions/workflows/update-leaderboards.yml/runs' +
                 '?per_page=100&page=1&created=%3E%3D2026-09-18T17%3A52%3A52.000Z'
         )
     })
@@ -171,10 +171,10 @@ describe('reading recent runs', () => {
         // `lib/workflow-runs.ts` pages back the first time it meets a workflow.
         // Everything else takes the default and gets the newest page.
         const { client, fetch } = clientAnswering(runsResponse([]))
-        await client.recentRuns(handicaps, 100, 4)
+        await client.recentRuns(leaderboards, 100, 4)
 
         expect(String(fetch.mock.calls[0]![0])).toBe(
-            'https://api.github.com/repos/hectorgolf/hector.golf/actions/workflows/update-handicaps.yml/runs?per_page=100&page=4'
+            'https://api.github.com/repos/hectorgolf/hector.golf/actions/workflows/update-leaderboards.yml/runs?per_page=100&page=4'
         )
     })
 
@@ -194,7 +194,7 @@ describe('reading recent runs', () => {
             ])
         )
 
-        const outcome = await client.recentRuns(handicaps)
+        const outcome = await client.recentRuns(leaderboards)
 
         expect(outcome).toEqual({
             ok: true,
@@ -222,14 +222,14 @@ describe('reading recent runs', () => {
         )
         vi.spyOn(console, 'error').mockImplementation(() => {})
 
-        expect(await client.recentRuns(handicaps)).toEqual({ ok: false, reason: 'unknown' })
+        expect(await client.recentRuns(leaderboards)).toEqual({ ok: false, reason: 'unknown' })
     })
 
     it('logs a refusal, so a page that says only "could not read" is not the whole story', async () => {
         const { client } = clientAnswering(refused(401))
         const logged = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-        await client.recentRuns(handicaps)
+        await client.recentRuns(leaderboards)
 
         expect(logged).toHaveBeenCalledWith(
             'GitHub refused a request',
@@ -242,7 +242,7 @@ describe('reading recent runs', () => {
             runsResponse([{ status: 'queued', conclusion: null, created_at: '2026-09-13T07:45:00Z' }])
         )
 
-        const outcome = await client.recentRuns(handicaps)
+        const outcome = await client.recentRuns(leaderboards)
 
         expect(outcome.ok).toBe(true)
         expect(outcome.ok && outcome.runs[0]).toMatchObject({
@@ -272,7 +272,7 @@ describe('the list of workflows this service may start', () => {
     })
 
     it('only resolves slugs it knows, so a made-up URL cannot name a workflow', () => {
-        expect(workflowBySlug('handicaps')?.file).toBe('update-handicaps.yml')
+        expect(workflowBySlug('leaderboards')?.file).toBe('update-leaderboards.yml')
         expect(workflowBySlug('../../deploy')).toBeUndefined()
         expect(workflowBySlug(undefined)).toBeUndefined()
     })
@@ -292,9 +292,10 @@ describe('what the scheduled tick starts', () => {
         expect(SCHEDULED_WORKFLOWS.every((workflow) => workflow.cadence !== 'manual')).toBe(true)
     })
 
-    it('currently covers all four scrapes and the deploy backstop, in the order they queue', () => {
+    it('currently covers the three remaining scrapes and the deploy backstop, in the order they queue', () => {
+        // The handicap scrape is deliberately not here: it runs in this process
+        // as a job, and `SCHEDULED_JOBS` is the list it is on.
         expect(SCHEDULED_WORKFLOWS.map((workflow) => workflow.file)).toEqual([
-            'update-handicaps.yml',
             'update-leaderboards.yml',
             'update-player-biographies.yml',
             'update-player-club-memberships.yml',
@@ -306,17 +307,20 @@ describe('what the scheduled tick starts', () => {
         expect(SCHEDULED_WORKFLOWS.length).toBeGreaterThan(0)
     })
 
-    it('covers every workflow that used to carry a GitHub cron', () => {
+    it('covers every workflow that used to carry a GitHub cron and still exists', () => {
         /*
          * The crons were deleted on 2026-09-16 and this tick became the only
          * clock, so a workflow missing from here is not "running on its own
          * schedule" any more — it is a scrape that has silently stopped, with
          * nothing red anywhere to say so. That is the failure this pins.
+         *
+         * `update-handicaps.yml` carried one too and is not listed, because it
+         * no longer exists: that scrape runs in this process now. The test above
+         * on `.github/workflows` is what would catch it being listed anyway.
          */
         expect(SCHEDULED_WORKFLOWS.map((workflow) => workflow.file).sort()).toEqual(
             [
                 'deploy-site.yml',
-                'update-handicaps.yml',
                 'update-leaderboards.yml',
                 'update-player-biographies.yml',
                 'update-player-club-memberships.yml',
@@ -344,12 +348,12 @@ describe('reading a file', () => {
     it('asks for the path on main and decodes what comes back', async () => {
         const { client, fetch } = clientAnswering(fileResponse('one\ntwo\n'))
 
-        const result = await client.readFile('data/handicaps/observations.ndjson')
+        const result = await client.readFile('data/leaderboards/observations.ndjson')
 
         expect(result).toEqual({ ok: true, file: { present: true, text: 'one\ntwo\n', sha: 'blob-sha' } })
         const [url] = fetch.mock.calls[0]!
         expect(url).toBe(
-            'https://api.github.com/repos/hectorgolf/hector.golf/contents/data/handicaps/observations.ndjson?ref=main'
+            'https://api.github.com/repos/hectorgolf/hector.golf/contents/data/leaderboards/observations.ndjson?ref=main'
         )
     })
 
@@ -468,7 +472,7 @@ describe('listing a directory', () => {
 
 describe('committing a file', () => {
     const request = {
-        path: 'data/handicaps/observations.ndjson',
+        path: 'data/leaderboards/observations.ndjson',
         text: 'one\ntwo\n',
         message: "Update 1 player's handicap",
         sha: 'blob-sha',
@@ -577,7 +581,7 @@ describe("reading the token's expiry", () => {
 
         it('picks the date up from a call made for another reason entirely', async () => {
             const { client } = clientAnswering(header('2027-09-14 20:32:16 UTC'))
-            await client.dispatch(handicaps)
+            await client.dispatch(leaderboards)
 
             const expiry = client.tokenExpiry(new Date('2027-08-15T20:32:16Z'))
             expect(expiry?.at.toISOString()).toBe('2027-09-14T20:32:16.000Z')
@@ -586,7 +590,7 @@ describe("reading the token's expiry", () => {
 
         it('counts whole days, never reporting more time left than there is', async () => {
             const { client } = clientAnswering(header('2027-09-14 20:32:16 UTC'))
-            await client.dispatch(handicaps)
+            await client.dispatch(leaderboards)
 
             // 6 days and 23 hours out. Reporting 7 would put this on the wrong
             // side of EXPIRY_URGENT_DAYS for an hour.
@@ -595,7 +599,7 @@ describe("reading the token's expiry", () => {
 
         it('goes negative once the date has passed rather than clamping at zero', async () => {
             const { client } = clientAnswering(header('2027-09-14 20:32:16 UTC'))
-            await client.dispatch(handicaps)
+            await client.dispatch(leaderboards)
 
             expect(client.tokenExpiry(new Date('2027-09-17T20:32:16Z'))?.daysLeft).toBe(-3)
         })
@@ -608,7 +612,7 @@ describe("reading the token's expiry", () => {
          */
         it('does not age a lapse faster than the clock does', async () => {
             const { client } = clientAnswering(header('2027-09-14 20:32:16 UTC'))
-            await client.dispatch(handicaps)
+            await client.dispatch(leaderboards)
 
             expect(client.tokenExpiry(new Date('2027-09-17T20:33:16Z'))?.daysLeft).toBe(-3)
         })
@@ -627,7 +631,7 @@ describe("reading the token's expiry", () => {
             })
             const { client } = clientAnswering(response)
 
-            expect(await client.dispatch(handicaps)).toEqual({ ok: false, reason: 'unavailable' })
+            expect(await client.dispatch(leaderboards)).toEqual({ ok: false, reason: 'unavailable' })
             expect(client.tokenExpiry(new Date('2027-09-14T20:32:16Z'))?.daysLeft).toBe(0)
         })
 
@@ -655,11 +659,11 @@ describe("reading the token's expiry", () => {
                 fetch,
             })
 
-            await client.dispatch(handicaps)
+            await client.dispatch(leaderboards)
             expect(client.tokenExpiry(new Date('2027-08-15T20:32:16Z'))?.daysLeft).toBe(30)
 
             token = 'ghp_second'
-            await client.dispatch(handicaps)
+            await client.dispatch(leaderboards)
             expect(client.tokenExpiry(new Date('2027-08-15T20:32:16Z'))).toBeUndefined()
         })
 
@@ -675,9 +679,9 @@ describe("reading the token's expiry", () => {
                 fetch,
             })
 
-            await client.dispatch(handicaps)
+            await client.dispatch(leaderboards)
             token = 'ghp_second'
-            await client.dispatch(handicaps)
+            await client.dispatch(leaderboards)
 
             expect(client.tokenExpiry()?.at.toISOString()).toBe('2028-03-01T09:00:00.000Z')
         })
@@ -701,8 +705,8 @@ describe("reading the token's expiry", () => {
                 fetch,
             })
 
-            await client.dispatch(handicaps)
-            await client.dispatch(handicaps)
+            await client.dispatch(leaderboards)
+            await client.dispatch(leaderboards)
 
             expect(client.tokenExpiry(new Date('2027-08-15T20:32:16Z'))?.daysLeft).toBe(30)
         })

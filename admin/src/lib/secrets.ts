@@ -58,7 +58,7 @@ const githubTokenFromEnvironment = process.env.GITHUB_DISPATCH_TOKEN
  * Unset is a supported state. A deployment that has not been given WiseGolf
  * credentials runs the handicaps job against a `NullHandicapSource`, which finds
  * nothing and records a sweep that reached nobody — see `sweepOf` in
- * `update-handicaps.ts` for why that is deliberately not an error.
+ * `jobs/handicaps.ts` for why that is deliberately not an error.
  */
 export const wisegolfUsernameSecret = process.env.WISEGOLF_USERNAME_SECRET
 export const wisegolfPasswordSecret = process.env.WISEGOLF_PASSWORD_SECRET

@@ -517,8 +517,8 @@ is what the jobs the admin service runs *itself* commit their backups with; the 
 still do their own committing, with their own `GITHUB_TOKEN`, but a job running inside the service
 has no such thing.
 
-Contents was added on 2026-09-16, for step 2 of
-[`handicaps-to-firestore.md`](../plans/handicaps-to-firestore.md). Grant it deliberately: this
+Contents was added on 2026-09-16, when the handicaps scrape moved into this service — see
+[`architecture.md`](../current/architecture.md) §8. Grant it deliberately: this
 repository is public, so a token without it still *reads* everything, and a job missing it scrapes,
 reconciles, reports "no changes" and looks healthy right up to the commit that silently never
 happens.
@@ -567,9 +567,9 @@ that `iap_oauth_client_id` is set, since the jobs are left out of the plan entir
 ## Step 12 — The WiseGolf credentials for the handicaps job
 
 The handicaps scrape runs inside the admin service rather than on a GitHub runner — see
-[`plans/handicaps-to-firestore.md`](../plans/handicaps-to-firestore.md) — so it needs the WiseGolf
-login in a place a Cloud Run container can reach. These are the same credentials the four workflows
-already use as GitHub Actions secrets, not a second account.
+[`architecture.md`](../current/architecture.md) §8 — so it needs the WiseGolf login in a place a
+Cloud Run container can reach. These are the same credentials the remaining workflows already use as
+GitHub Actions secrets, not a second account.
 
 Until they are here, the job runs against a disabled source: every tick reports
 `no handicap source answered for any of 45 players`, the `/operations` page shows a failed run, and

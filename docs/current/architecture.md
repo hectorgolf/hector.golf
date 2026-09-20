@@ -232,10 +232,11 @@ They are instants rather than dates, and deliberately so: the gap this explains 
 — the Union's WHS batch runs at about 03:00 and re-runs during office hours when the nightly run
 fails — and a date cannot show it.
 
-They come from `src/data/handicap-checks.json`, a log of sweeps that `update-handicaps.ts` appends to
-on **every** run — `handicaps.json` records what changed, this records that we looked, and a quiet
-day is exactly where the two come apart. Entries are `{ at, checked, skipped }`; `skipped` names the
-players no source answered for, either because they have no club or because every source failed, so
+They come from Firestore's sweep log, backed up at `data/handicaps/checks.ndjson`, which the
+handicaps job appends to on **every** run — the observation log records what changed, this records
+that we looked, and a quiet day is exactly where the two come apart. Entries are
+`{ at, checked, skipped }`; `skipped` names the players no source answered for, either because they
+have no club or because every source failed, so
 "we checked everyone" is never claimed on behalf of the player likeliest to ask.
 
 It is append-only and never pruned, like the observation log beside it. A Hector's buckets and the
@@ -252,9 +253,10 @@ Three consequences worth knowing:
   `skipped`, and committing it would deploy the site over a run that learned nothing; an outage
   belongs in the workflow log. `sweepOf()` is that decision, separated from the writing so it can be
   tested without a filesystem.
-- `update-handicaps.ts` only sweeps when it is the process entry point. It is imported by the tests
-  for `fetchUpdatedPlayerRecords`, and before the guard an import scraped the sources, rewrote the
-  buckets, and — once the sweep log existed — appended to committed data every time the suite ran.
+- The sweep is a job rather than a script, so there is nothing to import by accident. The workflow
+  it replaced needed an entry-point guard for exactly that reason: its tests imported it, and before
+  the guard an import scraped the sources, rewrote the buckets and appended to committed data every
+  time the suite ran.
 
 Events older than the log publish null for both fields, which is every event until the first sweep
 after this shipped.
@@ -406,7 +408,7 @@ All content lives as JSON committed under [`astrosite/src/data/`](../../astrosit
 | `events/finnkampen/*.json` | 2 | Human | `FINNKAMPEN2021`–`2022` |
 | `courses/*.json` | 17 | Human | Tees, ratings, slope, scorecard, per-hole descriptions |
 | `leaderboards/*.json` | 6 | CI only | Per-event Hector and Victor standings |
-| `handicaps.json` | ~1,400 entries | CI only | Still written and committed by `update-handicaps.yml`, and **no longer what the site reads** — see the row below. It stays because three other things that workflow writes have nowhere else to go yet |
+| `handicaps.json` | ~1,400 entries | nothing, since 2026-09-20 | Frozen. `update-handicaps.yml` was its last writer and was deleted once the admin's job had replaced all four of its outputs. It stays committed, and the job still reads it once per run, so that rows written before the move cannot be lost; deleting it is a separate change from deleting its writer |
 | `data/handicaps/observations.ndjson` | ~1,400 lines | the admin service | Append-only `{player, date, handicap, observed?}` log, one JSON object per line, outside `astrosite/` on purpose. A *backup* of Firestore's `handicap-observations`, which is the source since 2026-09-18; the build reads `/api/handicaps/history` and falls back to this file without credentials. A day can hold more than one entry — when the Golf Union re-runs a failed batch, and now also because both pipelines stamp their own reading during the transition; `latestPerDay()` is the daily view every reader goes through — see [handicap-updates.md](./handicap-updates.md) |
 | `clubs.json` | 140 clubs | CI only | Finnish golf clubs `{name, abbreviation, sources[]}` |
 
@@ -503,9 +505,9 @@ files:
   has credentials, and from the committed backup when it does not. The accessors stayed synchronous
   so that moving the source did not become a rewrite of every caller. `getPlayerById()` then applies
   `player.handicap || handicapFromHistory`, so the JSON field acts as a manual override of the
-  scraped history — except that `update-handicaps.ts` also *writes* that field, so the override is
-  overwritten by what it overrides. See [data-ownership.md](./data-ownership.md), which settles who
-  owns which field and why the fix waits for the Firestore migration.
+  scraped history. Nothing automated has written that field since 2026-09-18, and the precedence was
+  reversed to match — `resolveHandicap(fromTheHistory, player.handicap)`, official first. See
+  [data-ownership.md](./data-ownership.md).
 - **Projected buckets** — `populateUpdatedHandicaps()` refreshes the stored bucket handicaps in
   `event.buckets` from the live history, so "Projected Buckets" stay current between scheduled data
   runs. It is gated on `isPastEvent` — any event whose last day has not passed — and **not** on
@@ -567,7 +569,7 @@ Notable details:
 - **`HandicapSource` interface** —
   [`handicap-source-api.ts`](../../packages/wisegolf/src/handicap-source-api.ts) defines
   `getPlayerHandicap`, `resolveClubMembership`, and `getClubs`, plus a `NullHandicapSource`
-  fallback. `update-handicaps.ts` pops sources off a list and falls through on failure, so adding a
+  fallback. The handicaps job pops sources off a list and falls through on failure, so adding a
   second provider is a matter of implementing the interface.
 - **WiseGolf client** uses `fetch-h2` with browser-mimicking headers, `micro-memoize` (15-minute TTL
   on the login, longer on club lists), and `p-ratelimit` throttling (5 req/s, concurrency 1).
@@ -807,7 +809,7 @@ workflows:
 1. Exits 0 immediately unless `git status --short` shows modified files under `src/data/`.
 2. Builds a commit message from `$GITHUB_WORKFLOW`, `$GITHUB_EVENT_NAME`, `$GITHUB_RUN_NUMBER`.
 3. Appends the contents of the sidecar files each workflow script leaves behind
-   (`.update-handicaps-commit`, `.update-player-biographies-commit`), then deletes them.
+   (`.update-player-biographies-commit`), then deletes them.
 4. Stages exactly the changed data files, lists them in the message, then
    `git commit -F … && git pull -r && git push`.
 
@@ -818,53 +820,13 @@ the history.
 
 | Script | Schedule (UTC) | Reads | Writes |
 | --- | --- | --- | --- |
-| `update-handicaps.ts` | Every two hours 03:00–07:00, and 12:00, by Cloud Scheduler. No cron | WiseGolf | `handicaps.json`, `handicap-checks.json`, event `buckets` |
 | `update-leaderboards.ts` | Every two hours 03:00–07:00, and 12:00, by Cloud Scheduler. No cron | Sheets / app.hector.golf | `leaderboards/*.json` (via API), event `results.teams` |
 | `update-player-biographies.ts` | Every 15 days, on the first tick that finds it due, and only while a Hector is upcoming. No cron | GCP function, WiseGolf | `players/*.json` `biography` where `biographyLocked` is unset, `clubs.json` |
 | `update-player-club-memberships.ts` | Every 30 days, on the first tick that finds it due. No cron | WiseGolf | `players/*.json` `club` |
 
-**`update-handicaps.ts`** — the largest at 367 lines. For each player holding a `club`, it fetches
-the current handicap through the source chain and appends changed values to `handicaps.json`
-(replacing a same-day duplicate if the association re-ran a batch). It then re-sorts each upcoming
-event's participants with `bucketingOrder` — by current handicap, tie-broken so that a player whose
-handicap is *falling* ranks ahead of one whose is rising — and splits them into two equal buckets
-written back into the event JSON.
-
-The bucketing rules themselves are not in this file. `bucketingOrder`, `bucketsToRecompute`,
-`splitIntoBuckets` and the `bucketsAreOpen` / `bucketsFreezeAt` / `hasParticipants` predicates live
-in `packages/schemas/src/buckets.ts`, and `getPlayerHandicapFromHistory` beside `latestPerDay` in
-`packages/schemas/src/handicaps.ts`. They moved there so the admin service can import them — it
-cannot import `src/code/data.ts` at all, which globs the filesystem at module scope — and
-`src/code/data.ts` re-exports the predicates so the site's call sites are unchanged.
-
-`bucketingOrder` takes the name renderer as a parameter rather than importing one. Its last tiebreak
-is the player's name, and the site renders that with the last name shortened for privacy, which it
-can only do by reading the whole roster; that closure cannot follow the sort into a schema package.
-See `test/unit/bucketing.test.ts` for why the two renderers cannot disagree on today's data.
-
-`bucketsToRecompute` is which events that last step runs for, and it applies two predicates kept
-apart on purpose: `bucketsAreOpen`, which is about the clock, and `event.bucketsLocked`, which is
-somebody having settled the split early. It returns the locked events as well as the open ones so the
-run can log what it left alone and why — a lock that stops a recompute silently reads as a bug the
-first time somebody wonders why the buckets did not move. An event past its freeze is in neither
-list: there is nothing left for the lock to stop, so nothing is logged about it.
-
-**The admin service works out the same split, and writes nothing.** Since 2026-09-20 the handicaps
-job ends by recomputing every open split from the handicaps it has just read —
-[`admin/src/lib/jobs/buckets.ts`](../../admin/src/lib/jobs/buckets.ts) — and reporting what it would
-change to the run log, while `BUCKETS_ARE_COMMITTED` keeps it from committing any of it. That is the
-shadow period from [`plans/handicaps-to-firestore.md`](../plans/handicaps-to-firestore.md), and the
-comparison is meaningful because the tick dispatches the workflow first and runs the job second, so
-both decide against the same base state. The bar for turning the writes on is one tick where the
-buckets actually move and the two agree about where everybody went.
-
-When it does write, it will write **git**, not Firestore, and it is worth knowing why the obvious
-place is the wrong one: Firestore holds Hector events as a mirror the admin reads, so a scheduled
-writer there would race the export. Git keeps the ownership in [data-ownership.md](./data-ownership.md)
-exactly as it is. The recompute rewrites the raw JSON with only `buckets` replaced rather than
-writing the parsed event back, so a default the schema gains later is not materialised into thirteen
-files that never carried it; `test/unit/data-formatting.test.ts` holds the two writers to identical
-bytes for as long as both exist.
+**The handicap sweep is not on this list any more.** `update-handicaps.ts` and its workflow were
+deleted on 2026-09-20; the scrape runs in the admin service as a job, and what it does is described
+under §8's admin half below.
 
 **`update-leaderboards.ts`** — selects Hector events that hold a `leaderboardSheet` URL and have
 already started (`updateFutureEvents = false`), then dispatches on the URL shape: `app.hector.golf/*`
@@ -911,6 +873,51 @@ committed. The run itself still fires and still goes green — the four between 
 2026-03-10 all did, and all committed nothing, the next rewrite being on 2026-03-21, the day
 `HECTOR2026.json` was added. A green run therefore does not mean a biography was regenerated.
 
+### The handicap sweep, which is a job rather than a workflow
+
+`admin/src/lib/jobs/handicaps.ts` reads every player's handicap from WiseGolf on every tick, writes
+the observations to Firestore, commits the two NDJSON backups, and ends by redrawing the split of
+every Hector whose buckets are still open —
+[`jobs/buckets.ts`](../../admin/src/lib/jobs/buckets.ts). It moved out of GitHub Actions in stages
+between 2026-09-16 and 2026-09-20; the pull requests are the record.
+
+**Buckets are written to git, not to Firestore.** Firestore holds Hector events as a mirror the
+admin reads, so a scheduled writer there would race an unsynchronised export — the conflict
+[data-ownership.md](./data-ownership.md) exists to prevent. Committing the event JSON is the same
+write the old workflow made, from a different process, and leaves the ownership rule alone. That
+distinction is why this job shipped while `plans/bucket-locking.md` is still blocked on the mirror:
+a *lock* is set by a person in the admin, which has only the mirror to write to.
+
+The recompute rewrites the raw JSON with only `buckets` replaced rather than writing the parsed event
+back, so a default `hectorEventSchema` gains later is not materialised into thirteen files that never
+carried it. `test/unit/data-formatting.test.ts` fails first if that ever stops being true.
+
+Two things it does that the workflow did not: a participant with no player record stops that event
+rather than being dropped from the split, because players now come from a mirror where a failed sync
+is reachable and a split quietly missing somebody still looks valid; and a commit landing under
+`astrosite/` suppresses the job's own deploy request, since a push made with this service's token —
+unlike one made with `GITHUB_TOKEN` — already triggers `deploy-site.yml`.
+
+**The bucketing rules live in `@hector/schemas`.** `bucketingOrder`, `bucketsToRecompute`,
+`splitIntoBuckets` and the `bucketsAreOpen` / `bucketsFreezeAt` / `hasParticipants` predicates are in
+`packages/schemas/src/buckets.ts`, and `getPlayerHandicapFromHistory` beside `latestPerDay` in
+`packages/schemas/src/handicaps.ts`. They are there so both the site and the admin can import them —
+the admin cannot import `astrosite/src/code/data.ts` at all, which globs the filesystem at module
+scope — and `data.ts` re-exports the predicates so the site's call sites are unchanged.
+
+`bucketingOrder` sorts by current handicap, tie-broken so that a player whose handicap is *falling*
+ranks ahead of one whose is rising, then by name. It takes the name renderer as a parameter rather
+than importing one: the site renders a name with the last name shortened for privacy, which it can
+only do by reading the whole roster, and that closure cannot follow the sort into a schema package.
+See `test/unit/bucketing.test.ts` for why the two renderers cannot disagree on today's data.
+
+`bucketsToRecompute` decides which events are redrawn, applying two predicates kept apart on purpose:
+`bucketsAreOpen`, which is about the clock, and `event.bucketsLocked`, which is somebody having
+settled the split early. It returns the locked events as well as the open ones so the run can log
+what it left alone and why — a lock that stops a recompute silently reads as a bug the first time
+somebody wonders why the buckets did not move. An event past its freeze is in neither list: there is
+nothing left for the lock to stop, so nothing is logged about it.
+
 **`update-player-club-memberships.ts`** — for players with no `club`, searches every source by name
 and assigns a club **only when exactly one** club matches.
 
@@ -923,7 +930,6 @@ and assigns a club **only when exactly one** club matches.
 | `check-admin.yml` | PRs targeting `main` touching `admin/**`, `packages/**`, the root manifest/lockfile, `.node-version`, `.dockerignore`, or this file | `npm ci` → test → build → `docker build` of `admin/Dockerfile` | `contents: read` |
 | `check-backend.yml` | PRs targeting `main` touching `backend/**` or this file | `npm ci` → `npm test` → `npm run typecheck` in `backend/backend-functions` | `contents: read` |
 | `check-markdown.yml` | PRs targeting `main` touching any `**/*.md`, `.markdownlint-cli2.jsonc`, or this file | root-only `npm ci` → `npm run lint:md` over every `.md` in the repository | `contents: read` |
-| `update-handicaps.yml` | Dispatched by the admin service on every tick; manual | Script + `commit-changes.sh` | `contents: write` |
 | `terraform-plan.yml` | PRs touching `terraform/**` | `fmt` → `init` → `validate` → `plan`, posted as a PR comment | `contents: read`, `id-token: write`, `pull-requests: write` |
 | `terraform-apply.yml` | Push to `main` touching `terraform/**`; manual | `terraform apply`, gated by the `infrastructure` environment | `contents: read`, `id-token: write` |
 | `deploy-admin.yml` | Push to `main` touching `admin/**`, `packages/**`, the root manifest/lockfile, `.node-version`, `.dockerignore`, or this file; manual | Build, push to Artifact Registry, `gcloud run deploy` | `contents: read`, `id-token: write` |
@@ -1247,10 +1253,13 @@ that does ship, in `packages/wisegolf`, refuses to run under `NODE_ENV=productio
 
 ```bash
 cd astrosite
-npm run update-handicaps                  # or update-leaderboards,
-                                          # update-player-biographies,
+npm run update-leaderboards               # or update-player-biographies,
                                           # update-player-club-memberships
 ```
+
+The handicap sweep is not on that list: it runs in the admin service, and the way to run it by hand
+is the "Run here" button on `/operations` — or `npm run dev` in `admin/` against a Firestore
+emulator.
 
 Each writes directly into `src/data/`; review the diff before committing. In CI the same scripts are
 reachable through `workflow_dispatch` on their respective workflows.

@@ -142,9 +142,8 @@ describe('a locked split, as published', () => {
          * worth stating because the literals read as more precise.
          *
          * `bucketing.observed` is a sweep's `at` out of `handicap-checks.json`, and
-         * that file gains an entry on *every* run of `update-handicaps.yml` whether
-         * a handicap moved or not — four scheduled runs a day, plus any pressed by
-         * hand. So the unlocked basis, which cites the newest sweep there is, has a
+         * that file gains an entry on *every* sweep whether a handicap moved or
+         * not — four scheduled runs a day, plus any pressed by hand. So the unlocked basis, which cites the newest sweep there is, has a
          * new value several times a day. Pinning it made this a test that failed on
          * a timer: it was written against the 05:01 sweep and was already wrong by
          * the 08:03 one, on the same morning, without a line of source changing.

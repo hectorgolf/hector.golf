@@ -121,7 +121,7 @@ describe('asking for a deploy after a job run', () => {
 
     it('asks, when a job that publishes found something', async () => {
         const { asked, dispatch } = dispatcher()
-        await publish(job, 'ok', 1, dispatch)
+        await publish(job, 'ok', 1, false, dispatch)
         expect(asked).toEqual(['deploy-site.yml'])
     })
 
@@ -134,20 +134,20 @@ describe('asking for a deploy after a job run', () => {
      */
     it('does not ask when the run changed nothing, even though it may have committed', async () => {
         const { asked, dispatch } = dispatcher()
-        await publish(job, 'ok', 0, dispatch)
+        await publish(job, 'ok', 0, false, dispatch)
         expect(asked).toEqual([])
     })
 
     it('does not ask for a shadow run, which wrote nothing to publish', async () => {
         const { asked, dispatch } = dispatcher()
-        await publish({ ...job, dryRun: true }, 'ok', 3, dispatch)
+        await publish({ ...job, dryRun: true }, 'ok', 3, false, dispatch)
         expect(asked).toEqual([])
     })
 
     it('does not ask when the run failed or was skipped', async () => {
         const { asked, dispatch } = dispatcher()
-        await publish(job, 'failed', 3, dispatch)
-        await publish(job, 'skipped', 3, dispatch)
+        await publish(job, 'failed', 3, false, dispatch)
+        await publish(job, 'skipped', 3, false, dispatch)
         expect(asked).toEqual([])
     })
 
@@ -156,7 +156,7 @@ describe('asking for a deploy after a job run', () => {
         // ones are not all like handicaps, and a job maintaining internal state
         // should not be spending a build on it.
         const { asked, dispatch } = dispatcher()
-        await publish({ ...job, publishes: false }, 'ok', 3, dispatch)
+        await publish({ ...job, publishes: false }, 'ok', 3, false, dispatch)
         expect(asked).toEqual([])
     })
 
@@ -166,11 +166,30 @@ describe('asking for a deploy after a job run', () => {
      * the *run* failed would be worse than the problem: it sends somebody to
      * look at a scrape that worked perfectly.
      */
+    it('does not ask when a commit under astrosite/ has already started a deploy', async () => {
+        // The bucket recompute commits event files, which `deploy-site.yml`
+        // watches — and a commit made with this service's token does trigger
+        // workflows, unlike one made with GITHUB_TOKEN. Asking as well would
+        // build the same commit twice.
+        vi.spyOn(console, 'log').mockImplementation(() => {})
+        const { asked, dispatch } = dispatcher()
+        await publish(job, 'ok', 3, true, dispatch)
+        expect(asked).toEqual([])
+    })
+
+    it('still asks when the only changes were outside astrosite/', async () => {
+        // The observation-log backup lives outside that tree on purpose, so
+        // nothing else will publish a handicap this run found.
+        const { asked, dispatch } = dispatcher()
+        await publish(job, 'ok', 3, false, dispatch)
+        expect(asked.length).toBe(1)
+    })
+
     it('does not throw when GitHub refuses, because the data is already committed', async () => {
         vi.spyOn(console, 'error').mockImplementation(() => {})
         const refuse = async () => ({ ok: false as const, reason: 'unauthorized' as const })
 
-        await expect(publish(job, 'ok', 1, refuse)).resolves.toBeUndefined()
+        await expect(publish(job, 'ok', 1, false, refuse)).resolves.toBeUndefined()
         expect(console.error).toHaveBeenCalled()
     })
 })

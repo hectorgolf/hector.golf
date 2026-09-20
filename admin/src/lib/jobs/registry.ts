@@ -78,6 +78,15 @@ export type JobOutcome = {
     detail?: string
     changes: Change[]
     commit?: string
+    /**
+     * Whether something this run committed will start a deploy by itself.
+     *
+     * True when a commit landed inside `astrosite/`, which `deploy-site.yml`
+     * watches — and which a commit made with this service's token does trigger,
+     * unlike one made with `GITHUB_TOKEN`. `publish()` reads it to avoid asking
+     * for a second build of the same commit.
+     */
+    deployStartsItself?: boolean
 }
 
 /**
@@ -307,12 +316,9 @@ export const JOBS: readonly Job[] = [
         // committed the identical change. It reached that answer without having
         // been told it, which is the whole of what the shadow period was for.
         dryRun: false,
-        // On the tick from the start, because shadow mode is only worth anything
-        // if it runs as often as the thing it is shadowing. The tick also
-        // dispatches `update-handicaps.yml`, so each run produces a pair of
-        // decisions made against the same base state — see the note in
-        // `api/workflows/dispatch.ts` on why that ordering is what makes the
-        // comparison meaningful.
+        // On the tick, which since 2026-09-20 is the only thing that reads a
+        // handicap at all: `update-handicaps.yml` was deleted once this job had
+        // replaced its fourth and last output, the event buckets.
         scheduled: true,
         // The site reads `/api/handicaps/history` as of step 3, so a handicap
         // this job finds has to reach a rebuilt page somehow.

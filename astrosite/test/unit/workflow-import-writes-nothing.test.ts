@@ -49,7 +49,6 @@ const DATA = join(ROOT, 'src/data')
  * has none: it commits through the GitHub API rather than through the tree.
  */
 const SCRIPTS = [
-    ['update-handicaps', '.update-handicaps-commit'],
     ['update-leaderboards', undefined],
     ['update-player-biographies', '.update-player-biographies-commit'],
     ['update-player-club-memberships', '.update-player-club-memberships-commit'],

@@ -23,10 +23,11 @@ import { ROUTES, loadFromAdmin, readBackup } from "./admin-api";
  * what `loadHandicapHistory` wants for a build that had credentials and could
  * not use them.
  *
- * It used to be `import handicapData from "../data/handicaps.json"`. That file
- * is still written by `update-handicaps.yml` and still committed, but it is no
- * longer what the site reads — see `docs/plans/handicaps-to-firestore.md`, step
- * 4, for what has to happen before it can stop being written at all.
+ * It used to be `import handicapData from "../data/handicaps.json"`. Nothing
+ * writes that file any more — `update-handicaps.yml` was the last writer and was
+ * deleted on 2026-09-20 — but it is still committed, and the admin's handicaps
+ * job still reconciles from it so that rows it wrote before the move cannot be
+ * lost. Deleting it is a separate change from deleting its writer.
  */
 const handicapData = await loadFromAdmin<Entry>({
     path: ROUTES.history,

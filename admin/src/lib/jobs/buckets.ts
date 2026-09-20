@@ -11,11 +11,11 @@ import type { Change } from './log.ts'
  *
  * ## Why this is here rather than in Firestore
  *
- * This is the fourth and last output of `update-handicaps.yml`, and the one that
- * kept the workflow alive after the other three moved. Firestore holds Hector
- * events as a mirror the admin reads, so a scheduled writer there would race an
- * unsynchronised export — the conflict `docs/current/data-ownership.md` exists to
- * prevent.
+ * This was the fourth and last output of `update-handicaps.yml`, and the one that
+ * kept that workflow alive after the other three moved here. Firestore holds
+ * Hector events as a mirror the admin reads, so a scheduled writer there would
+ * race an unsynchronised export — the conflict `docs/current/data-ownership.md`
+ * exists to prevent.
  *
  * So this writes git instead, which is the same file the workflow writes, from a
  * different process. Git stays the source for Hector events, the mirror stays
@@ -34,25 +34,6 @@ import type { Change } from './log.ts'
 /** Where the Hector event files live. */
 export const EVENTS_PATH = 'astrosite/src/data/events/hector'
 
-/**
- * Whether the recompute may commit what it worked out.
- *
- * `false` is shadow mode: read, recompute, report — and write nothing. A
- * constant here rather than a parameter, for the same reason `Job.dryRun` is a
- * property of the job rather than of the request: a caller able to ask for real
- * writes is a caller able to end the shadow period by accident, and the value of
- * a shadow period is that it ends on a deliberate commit somebody reviewed.
- *
- * Separate from `dryRun`, which is about the whole job. A dry run never writes
- * buckets whatever this says; this is what keeps buckets in shadow while the
- * handicap half of the same job is live.
- *
- * The bar for flipping it is in the plan: one tick where the buckets actually
- * move and this and `update-handicaps.yml` produce the same split. Agreement on
- * a split that did not change proves nothing.
- */
-export const BUCKETS_ARE_COMMITTED = false
-
 export type BucketDependencies = {
     /** The files in a directory, as repository-relative paths. Throws if it cannot look. */
     listDirectory(path: string): Promise<string[]>
@@ -69,6 +50,14 @@ export type BucketResult = {
     outcome: 'ok' | 'failed'
     detail?: string
     changes: Change[]
+    /**
+     * The event files this run committed.
+     *
+     * Reported because they are the only thing the job writes *inside*
+     * `astrosite/`, and that decides whether it has to ask for a deploy or
+     * whether the push has already started one. See `publish()` in `execute.ts`.
+     */
+    committed: string[]
 }
 
 /** An event as it is committed, kept beside the parsed copy. See `splitFor`. */
@@ -184,6 +173,7 @@ export async function recompute(
 
     const byId = new Map(players.map((player) => [player.id, player]))
     const changes: Change[] = []
+    const committed: string[] = []
     const failures: string[] = []
 
     for (const event of open) {
@@ -220,7 +210,7 @@ export async function recompute(
 
         changes.push(...bucketChanges(event, next))
 
-        if (dryRun || !BUCKETS_ARE_COMMITTED) {
+        if (dryRun) {
             // The whole output of a shadow recompute: what it worked out, in the
             // run log and in Cloud Logging, having written nothing. Serialised
             // onto one line for the same reason the handicap shadow run is —
@@ -235,13 +225,19 @@ export async function recompute(
         }
 
         const written = await dependencies.replace(entry.path, rendered, `Update the buckets for ${event.name}`)
-        if (!written.ok) failures.push(written.detail)
+        if (!written.ok) {
+            failures.push(written.detail)
+            continue
+        }
+        // `unchanged` is a no-op the commit helper reports rather than a write,
+        // and counting it would ask for a deploy that has nothing to publish.
+        if (written.commit !== 'unchanged') committed.push(entry.path)
     }
 
     if (failures.length > 0) {
-        return { outcome: 'failed', detail: failures.join('; '), changes }
+        return { outcome: 'failed', detail: failures.join('; '), changes, committed }
     }
-    return { outcome: 'ok', changes }
+    return { outcome: 'ok', changes, committed }
 }
 
 /**
