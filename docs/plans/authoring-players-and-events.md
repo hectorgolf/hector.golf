@@ -200,18 +200,31 @@ rename below.
 
 ### Then own the collection, and build the editor
 
-The fields and their affordances are already specified, in "What the admin UI owes this". They are
+**The editor landed on 2026-09-21, ahead of the flip and disabled by it.** It edits the four fields
+a person writes — `club`, `handicap`, `misc` and `biography` — and `savePlayer` refuses every one of
+them while `PLAYERS_ARE_OWNED` is false, so the page says so rather than offering boxes that throw.
+`name`, `contact`, `gender`, `privacy` and `aliases` are authored too and stay read-only: nothing
+has asked to change them, and `aliases` is matched against by external scoring systems, which wants
+its own thinking rather than a text box added by symmetry.
+
+The fields and their affordances were already specified, in "What the admin UI owes this". They are
 not free choices, and three of them are easy to get backwards:
 
 - **`handicap` is a stopgap, not an override.** The box is editable and has to say that WiseGolf will
   replace the value as soon as it has one, because someone who reads it as an override will read the
   replacement as their edit being lost. No player is in that state today; a new member with no
   WiseGolf record is one signup away from it.
-- **Saving a biography sets `biographyLocked`.** Not a checkbox beside the text — saving the edit
-  *is* the act of taking the field over, and a lock somebody forgets to tick is indistinguishable
-  from no lock at all on the day the job next runs. An explicit **Regenerate** clears it and re-runs
-  generation for that one player, which is what makes the lock safe to set: without it, locking a
-  biography locks it for good. That is all of `biography-locking.md`, and it lands here.
+- **Saving a biography sets `biographyLocked`.** *Built 2026-09-21.* Not a checkbox beside the
+  text — saving the edit *is* the act of taking the field over, and a lock somebody forgets to tick
+  is indistinguishable from no lock at all on the day the job next runs. The lock follows the text:
+  set when the saved biography differs from the stored one, so a save that only changed the club
+  does not claim a biography nobody touched — which matters, because a lock set by accident is a
+  biography that stops improving and nobody notices.
+
+  **Regenerate** is still missing, and the editor does not pretend otherwise: it offers a plain
+  unlock, which hands the biography back to the next scheduled run rather than regenerating it
+  there and then. That keeps the lock from being one-way, which is the thing that made it unsafe to
+  set, without answering the question below.
 - **Regenerate is one call away, and the open question is what to hand it.** Generation is already
   per player: the job builds one `PlayerBiographyInput` with `playerBiographyInput` and POSTs it, so
   a single-player regeneration is that pair without the loop. What it is not is free of the roster —

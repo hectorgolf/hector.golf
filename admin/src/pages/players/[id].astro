@@ -8,6 +8,7 @@ import ReadOnlyField from '../../components/ReadOnlyField.astro'
 import { formatEventDates } from '@hector/schemas/src/dates.ts'
 
 import { adminPathForEvent } from '../../lib/sections.ts'
+import { PLAYERS_ARE_OWNED } from '../../lib/ownership.ts'
 import { getPlayer, listEvents } from '../../lib/repository/events.ts'
 import { read as readHandicapSnapshot } from '../../lib/handicaps/snapshot.ts'
 import { PLAYER_MIRROR } from '../../lib/mirror.ts'
@@ -43,6 +44,16 @@ const appearances = events
 
 const handicap = resolveHandicap(player, observed?.players[player.id])
 const biography = player.biography ?? []
+
+// The edit page saves and redirects here, so its confirmation arrives as a query
+// parameter rather than as the result of this page's own POST.
+const saved = Astro.url.searchParams.get('saved')
+const flash =
+    saved === 'details'
+        ? 'Player saved.'
+        : saved === 'released'
+          ? 'Biography unlocked. The generator rewrites it on its next run.'
+          : undefined
 ---
 
 <AdminLayout title={fullName(player)}>
@@ -54,8 +65,13 @@ const biography = player.biography ?? []
 			eyebrow="Player"
 			meta={[player.club, `${appearances.length} appearance${appearances.length === 1 ? '' : 's'}`]}
 		/>
-		<span class="pill pill-outline">Read-only</span>
+		<div class="row-actions">
+			{!PLAYERS_ARE_OWNED && <span class="pill pill-outline">Read-only</span>}
+			<a href={`/players/${player.id}/edit`}><button type="button">Edit</button></a>
+		</div>
 	</div>
+
+	{flash && <p class="notice good">{flash}</p>}
 
 	<MirrorNotice mirror={PLAYER_MIRROR} what="This player" />
 
@@ -245,5 +261,11 @@ const biography = player.biography ?? []
 
 	.meta .pill {
 		margin-left: 0.5rem;
+	}
+
+	.row-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
 	}
 </style>
