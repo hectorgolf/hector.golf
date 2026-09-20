@@ -1,5 +1,6 @@
 import { github } from '../github.ts'
 import { guard } from './backup.ts'
+import * as biographies from './biographies.ts'
 import * as clubs from './club-memberships.ts'
 import * as handicaps from './handicaps.ts'
 import type { Change } from './log.ts'
@@ -372,6 +373,25 @@ export const JOBS: readonly Job[] = [
         // writer, since a club is rendered on the player's public page.
         publishes: false,
         run: (dryRun) => clubs.run({ ...clubs.LIVE }, dryRun),
+    },
+    {
+        slug: 'biographies',
+        label: "Players' biographies",
+        blurb:
+            'Works out whose biography the next run would rewrite, and whose a lock is holding. ' +
+            'It does not generate yet.',
+        // Shadow, and narrower than the club job's: this one decides without
+        // generating. `biographies.ts` says why — the decision is the half that
+        // can be wrong silently, and the generation half costs a Gemini call per
+        // player per run for text that would be thrown away.
+        dryRun: true,
+        // Off the tick. It answers a question that changes when somebody sets a
+        // lock or a Hector approaches, neither of which is hourly, and a live
+        // run will eventually be forty-five model calls.
+        scheduled: false,
+        // Nothing to publish while it writes nothing.
+        publishes: false,
+        run: (dryRun) => biographies.run({ ...biographies.LIVE }, dryRun),
     },
 ]
 
