@@ -38,6 +38,26 @@ export type Execution = {
 };
 
 /**
+ * Whether a skipped run is one that never started.
+ *
+ * Three things are called `skipped` and only two of them are the harness's:
+ * a lease collision and a missing credential both stop a run *before* it starts,
+ * and `skipped` above names which. A job that ran and decided not to act — the
+ * `clubs` job inside its 30-day window, the player jobs before the ownership
+ * flip — returns the same word and leaves that field unset, because from the run
+ * log's point of view the distinction is the same one: nothing was written.
+ *
+ * It is not the same distinction to a caller who pressed a button, which is why
+ * this exists rather than a second `outcome === "skipped"` in the endpoint.
+ * Reading the outcome alone told an admin who ran the biographies job that
+ * another run of it was already going, which was the one thing that had not
+ * happened.
+ */
+export function runNeverStarted(result: Pick<Execution, "outcome" | "skipped">): boolean {
+    return result.outcome === "skipped" && result.skipped !== undefined;
+}
+
+/**
  * What a thrown job means: how to record it, and how loudly to say so.
  *
  * Pulled out of the handler because the decision is the interesting part and the

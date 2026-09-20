@@ -385,20 +385,25 @@ export const JOBS: readonly Job[] = [
         slug: 'biographies',
         label: "Players' biographies",
         blurb:
-            'Works out whose biography the next run would rewrite, and whose a lock is holding. ' +
-            'It does not generate yet.',
-        // Shadow, and narrower than the club job's: this one decides without
-        // generating. `biographies.ts` says why — the decision is the half that
-        // can be wrong silently, and the generation half costs a Gemini call per
-        // player per run for text that would be thrown away.
-        dryRun: true,
+            'Regenerates unlocked biographies for the upcoming Hector, and reports whose a lock ' +
+            'is holding. Held by PLAYERS_ARE_OWNED until players are authored here.',
+        // Out of shadow as of 2026-09-20, which is not the same as writing:
+        // generation is held by `PLAYERS_ARE_OWNED`, the same single gate the
+        // club job uses, for the same reason. Two gates on one question means
+        // the flip is two edits in two files and one of them gets forgotten.
+        //
+        // What that buys today is that a run costs nothing rather than forty-five
+        // model calls: it works out who would be rewritten, says why it stopped,
+        // and makes no request to the function at all.
+        dryRun: false,
         // Off the tick. It answers a question that changes when somebody sets a
         // lock or a Hector approaches, neither of which is hourly, and a live
-        // run will eventually be forty-five model calls.
+        // run is forty-five model calls.
         scheduled: false,
-        // Nothing to publish while it writes nothing.
+        // Nothing to publish while it writes nothing. This becomes true with the
+        // flip, since a biography is the better part of a player's public page.
         publishes: false,
-        run: (dryRun) => biographies.run({ ...biographies.LIVE }, dryRun),
+        run: async (dryRun) => biographies.run(await biographies.live(readFile), dryRun),
     },
     {
         slug: 'clubs',

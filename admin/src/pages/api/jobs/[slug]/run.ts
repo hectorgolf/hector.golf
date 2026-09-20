@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro'
 
 import { viewerFromHeaders } from '../../../../lib/identity.ts'
-import { execute } from '../../../../lib/jobs/execute.ts'
+import { execute, runNeverStarted } from '../../../../lib/jobs/execute.ts'
 import { jobBySlug } from '../../../../lib/jobs/registry.ts'
 
 /**
@@ -73,7 +73,19 @@ export const POST: APIRoute = async ({ params, request, redirect }) => {
     const viewer = viewerFromHeaders(request.headers)
     const result = await execute(job, viewer.email ?? 'unidentified caller admitted by IAP')
 
-    if (result.outcome === 'skipped') {
+    /*
+     * Three skips wearing one word, and only two of them are this endpoint's
+     * business. `execute` sets `skipped` when the run never *started*; a job
+     * that ran and decided not to act leaves it unset, and that is not an error
+     * in either direction — `clubs` inside its 30-day window and `biographies`
+     * before the ownership flip both report that way every time, by design.
+     *
+     * Told apart by `skipped` rather than by the outcome, because the outcome
+     * cannot tell them apart. Not doing so told an admin who pressed Run on the
+     * biographies job that another run of it was already going, which was the
+     * one thing that had not happened.
+     */
+    if (runNeverStarted(result)) {
         // Two ways a run can not happen, and they want opposite things said
         // about them. A lease collision is transient — 409, not retry-worthy,
         // because the run that arrived while another was going should be dropped
@@ -97,16 +109,31 @@ export const POST: APIRoute = async ({ params, request, redirect }) => {
               )
     }
 
+    // A run that happened, whether or not it acted. Only `failed` is a failure;
+    // the run log carries the distinction and the detail that goes with it.
+    const failed = result.outcome === 'failed'
+
     if (wantsHtml(request)) {
         // 303 so a reload of the page it lands on does not start a second run.
-        return result.outcome === 'ok'
-            ? redirect(`/operations?ranJob=${job.slug}`, 303)
-            : redirect(`/operations?failedJob=${job.slug}&reason=job-failed`, 303)
+        return failed
+            ? redirect(`/operations?failedJob=${job.slug}&reason=job-failed`, 303)
+            : redirect(`/operations?ranJob=${job.slug}`, 303)
     }
 
     // 200 rather than 202: unlike a dispatch, the work is done by the time this
-    // is written, and the body says what it did.
-    return result.outcome === 'ok'
-        ? json({ ran: job.slug, dryRun: job.dryRun, changes: result.changes, commit: result.commit }, 200)
-        : json({ error: result.detail ?? 'the job failed', job: job.slug }, 502)
+    // is written, and the body says what it did — including when what it did was
+    // decline, which is the only thing a caller of a declining job can read.
+    return failed
+        ? json({ error: result.detail ?? 'the job failed', job: job.slug }, 502)
+        : json(
+              {
+                  ran: job.slug,
+                  dryRun: job.dryRun,
+                  outcome: result.outcome,
+                  detail: result.detail,
+                  changes: result.changes,
+                  commit: result.commit,
+              },
+              200
+          )
 }

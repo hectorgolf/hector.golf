@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { publish, reportOfThrow } from '../src/lib/jobs/execute.ts'
+import { publish, reportOfThrow, runNeverStarted } from '../src/lib/jobs/execute.ts'
 import { isNotConfigured, NotConfigured } from '../src/lib/jobs/registry.ts'
 
 /**
@@ -191,5 +191,27 @@ describe('asking for a deploy after a job run', () => {
 
         await expect(publish(job, 'ok', 1, false, refuse)).resolves.toBeUndefined()
         expect(console.error).toHaveBeenCalled()
+    })
+})
+
+describe('telling a run that never started from a job that declined', () => {
+    /**
+     * Both are recorded as `skipped`, and to the run log that is right: nothing
+     * was written either way. To somebody who just pressed Run it is not, and
+     * reading the outcome alone is what put "another run of it was already
+     * going" in front of an admin whose biographies job had simply declined.
+     */
+    it('is the harness that did not start it, for the two it decides', () => {
+        expect(runNeverStarted({ outcome: 'skipped', skipped: 'lease' })).toBe(true)
+        expect(runNeverStarted({ outcome: 'skipped', skipped: 'not-configured' })).toBe(true)
+    })
+
+    it('is not, when the job itself ran and declined', () => {
+        expect(runNeverStarted({ outcome: 'skipped' })).toBe(false)
+    })
+
+    it('is not, for a run that acted or failed', () => {
+        expect(runNeverStarted({ outcome: 'ok' })).toBe(false)
+        expect(runNeverStarted({ outcome: 'failed' })).toBe(false)
     })
 })

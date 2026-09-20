@@ -169,7 +169,7 @@ refreshed by `npm run seed` — rather than as their source:
 | `events/matchplay/` | the admin UI | source of truth | yes |
 | `events/hector/` | the admin service's handicaps job (`buckets`, to git), `update-leaderboards` | mirror, for reading | no |
 | `events/finnkampen/` | by hand | mirror, for reading | no |
-| `players/` | `update-player-biographies`, `update-player-club-memberships` | mirror, for reading | no |
+| `players/` | `update-player-biographies`, `update-player-club-memberships` — both now also exist as admin jobs, held by `PLAYERS_ARE_OWNED` | mirror, for reading | no |
 | handicap observations | the admin service's job | **source of truth** | no — backed up to `data/handicaps/observations.ndjson`, and read by the site through the API |
 | `courses/` | by hand | not in Firestore | no |
 
