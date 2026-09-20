@@ -463,13 +463,18 @@ imported.
 
 ### Player identity
 
-A player's `id` is not derived from the filename: `players/lasse-koskela.json` has `"id": "lasse-k"`.
-All lookups go through `id`; the filename is incidental. Not one of the forty-five files is named
-after the id it holds, so **anything that writes a player has to find its file rather than compose
-the path** — `playerDataPath()` globs and matches on the id inside each file, and
-`admin/scripts/export.ts` does the same on its side of the fence. Events are the opposite:
-`pathToEventJson` builds `events/{format}/{id}.json` and every file matches.
-`test/unit/player-data-paths.test.ts` pins it. Players may carry `aliases[]` (alternative
+A player's file is named after the `id` it holds — `players/lasse-k.json` has `"id": "lasse-k"` — as
+an event's is: `pathToEventJson` builds `events/{format}/{id}.json` and every file matches. So
+`admin/scripts/export.ts` composes `players/{id}.json`, and `test/unit/player-data-paths.test.ts`
+pins the naming that makes that safe.
+
+It was the other way round until 2026-09-20. The files were named `first-last.json` while the ids
+were `first-l`, so **anything that wrote a player had to find its file rather than compose the
+path**, and composing wrote forty-five new files while deleting forty-five real ones. They were
+renamed when the admin became the primary writer and human-readable names stopped earning their
+keep; the same commit inverted that test from forbidding composition to requiring the naming it
+needs. `playerDataPath()` still globs and matches rather than composing, which nothing forces it to
+change and which cannot invent a path for a player who has no file. Players may carry `aliases[]` (alternative
 spellings used by external scoring systems) and `privacy: 'shorten-last-name'`.
 
 ## 5. Data access — two parallel mechanisms

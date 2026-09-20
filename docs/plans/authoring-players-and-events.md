@@ -226,8 +226,8 @@ offering an upload that goes nowhere. Their filenames are in scope; see below.
 
 ### And rename the files, in the same step
 
-**Decided 2026-09-20: `players/first-last.json` becomes `players/first-l.json`, matching the id, as
-part of this step and not before it.**
+**Done 2026-09-20.** `players/first-last.json` is `players/first-l.json`, matching the id, and the
+forty images beside them moved with them.
 
 Step 0 left the export discovering a player's file by matching the id inside it, because not one of
 the forty-five is named after the id it holds. That works, it is what `playerDataPath()` already
@@ -246,16 +246,22 @@ Three things come with it, and none is hard as long as they are not discovered o
   reads them — [`architecture.md`](../current/architecture.md) §13 — but leaving them puts two
   sibling directories on different conventions, which is the kind of thing that reads as an
   oversight rather than a decision.
-- **`astrosite/test/unit/player-data-paths.test.ts` exists to forbid exactly this**: its whole
-  argument is that a writer composing a path from an id writes to the wrong file. Once names match
-  ids that argument stops holding, so the test is rewritten or deleted deliberately — not left to
-  fail and be patched.
+- **`astrosite/test/unit/player-data-paths.test.ts` existed to forbid exactly this**: its whole
+  argument was that a writer composing a path from an id writes to the wrong file. It was rewritten
+  rather than deleted, and now asserts the opposite — every file is named after the id it holds —
+  because that is what makes the export's composition safe. A file that drifted fails a test instead
+  of deleting somebody.
 - **`dev-fake.ts` picks its WiseGolf stand-in roster** by sorting filenames and taking the first
-  twenty-four, so the rename quietly changes which players drift locally. Harmless, and worth a line
-  in the commit so the next person does not go looking for a cause.
+  twenty-four, so the rename looked like it would change which players drift locally. It does not,
+  and the reason is worth keeping rather than re-deriving: an id is the first name plus the last
+  name's first letter, which is exactly where two shared first names first differ, so truncating
+  cannot reorder them. Checked over all forty-five — the sorted order is identical, and the
+  twenty-four are the same twenty-four.
 
-Afterwards the export can compose the path and drop `playerPathsById()`, and `data-ownership.md`'s
-note about discovery goes with it.
+The export composes the path and `playerPathsById()` is gone; `data-ownership.md`'s note about
+discovery went with it. `playerDataPath()` on the site still globs and matches, deliberately:
+nothing forces it to change, and a lookup that cannot invent a path is the safer of the two to leave
+alone while the editor is still being built.
 
 ## Step 2 — Hector events
 

@@ -75,41 +75,23 @@ async function read<T>(
 const eventPath = (event: Event): string => `events/${event.format}/${event.id}.json`
 
 /**
- * Where each player's committed file is, by id — **discovered, never composed**.
+ * A player's file is composed from their id, as an event's is from format and id.
  *
- * Not one of the forty-five files is named after the id it holds:
- * `anders-forss.json` holds `"id": "anders-f"` and `lasse-koskela.json` holds
- * `"id": "lasse-k"`. Events are the opposite — `pathToEventJson` builds
- * `events/{format}/{id}.json` and every file matches — which is why the events
- * side of this script can compose a path and this side cannot.
+ * It was discovered rather than composed until 2026-09-20, by globbing the
+ * directory and matching on the `id` inside each file, because not one of the
+ * forty-five files was named after the id it held: `anders-forss.json` held
+ * `"id": "anders-f"`. Composing a path then matched nothing on disk, so `sync`
+ * wrote forty-five new files under id-shaped names and removed all forty-five
+ * real ones as absent from the store — which is exactly what happened the first
+ * time this was written.
  *
- * The site already knows this. `playerDataPath()` in `astrosite/src/code/data.ts`
- * globs the directory and matches on the `id` inside each file, and
- * `astrosite/test/unit/player-data-paths.test.ts` exists to pin it: "a player's
- * file is found by matching the `id` *inside* the files, never by building a
- * path out of the id". This is that rule, on the export's side of the fence.
- *
- * Getting it wrong is not a subtle failure. A composed path matches nothing on
- * disk, so `sync` writes forty-five new files under id-shaped names and removes
- * all forty-five real ones as absent from the store — which is what happened the
- * first time this path was written, and is why it is written this way now.
- *
- * A player with no file yet — one created in the admin, which cannot happen
- * until there is an editor — gets the composed name. That is a new file rather
- * than a rename, so it breaks nothing, and it leaves the naming of new players
- * as a decision for whoever builds that editor rather than one made here by
- * accident.
+ * The files are named after their ids now, so the discovery has nothing left to
+ * discover. What keeps that true is `astrosite/test/unit/player-data-paths.test.ts`,
+ * which used to forbid this line and now requires it: every committed player
+ * file is named after the id it holds, or that test fails before this can lose
+ * anything.
  */
-async function playerPathsById(): Promise<Map<string, string>> {
-    const byId = new Map<string, string>()
-
-    for (const rel of await glob(PLAYER_FILES, { cwd: dataDir })) {
-        const parsed = playerSchema.safeParse(JSON.parse(readFileSync(join(dataDir, rel), 'utf-8')))
-        if (parsed.success && parsed.data) byId.set(parsed.data.id, rel)
-    }
-
-    return byId
-}
+const playerPath = (player: Player): string => `players/${player.id}.json`
 
 /**
  * Refuses to publish an empty set over a directory that is not empty.
@@ -193,9 +175,8 @@ if (PLAYERS_ARE_OWNED) {
     const players = await reportingStoreErrors(() => read<Player>('players', playerSchema))
     refuseEmpty('players', players.length, 'every committed player file')
 
-    const existing = await playerPathsById()
-    const files = new Map(players.map((p) => [existing.get(p.id) ?? `players/${p.id}.json`, p]))
-    sync('players', files, [...existing.values()])
+    const files = new Map(players.map((player) => [playerPath(player), player]))
+    sync('players', files, await glob(PLAYER_FILES, { cwd: dataDir }))
 }
 
 console.log('Done.')

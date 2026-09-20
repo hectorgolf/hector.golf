@@ -260,18 +260,18 @@ The last of those was the dangerous one. `--bootstrap` used to walk `events` and
 the day players became owned it would have reverted every authored player with no refusal and no
 output — and it is the script you reach for legitimately when the mirror is stale.
 
-**The export discovers a player's file rather than composing its path**, which is not optional: not
-one of the forty-five files is named after the id it holds, and a composed path matches nothing on
-disk, so the export writes forty-five new files and removes forty-five real ones as absent from the
-store. That is not a hypothetical — it is what the first version of that path did, against an
-emulator. §4 of [`architecture.md`](./architecture.md#player-identity) is the rule;
-`astrosite/test/unit/player-data-paths.test.ts` is the site's copy of the same guard.
+**The export composes a player's file path from their id**, as it does an event's, since the files
+were renamed to match their ids on 2026-09-20.
 
-That discovery is expected to be temporary. The files are to be renamed to match their ids when the
-admin gets a player editor and stops being the second reader of that directory — decided 2026-09-20,
-recorded in step 1 of
-[`plans/authoring-players-and-events.md`](../plans/authoring-players-and-events.md). Until then the
-human-readable names are the ones that matter, because a human is still who opens them.
+It discovered the path before that, and the discovery was not optional: not one of the forty-five
+files was named after the id it held, so a composed path matched nothing on disk and the export
+wrote forty-five new files while removing forty-five real ones as absent from the store. That is not
+a hypothetical — it is what the first version of that path did, against an emulator.
+
+What makes composing safe now is that the naming is *enforced* rather than merely true.
+`astrosite/test/unit/player-data-paths.test.ts` used to assert that no file was named after its id
+and now asserts that all of them are, so a file that drifted would fail a test rather than delete
+somebody. Renaming the files and inverting that test were the same change, deliberately.
 
 The mirror refreshes itself. **Refresh the admin's mirror** runs `npm run seed` whenever one of the
 four scrapes finishes, on `workflow_run` rather than a clock — a cron would be a guess at how long a
