@@ -926,6 +926,15 @@ secret — or gains a version in it — starts generating on the next run rather
 With no key the run reports a skip rather than a failure: a laptop has no key, and neither does a
 deployment on the day the secret is created.
 
+**`/operations` says whether that key can be read**, in one line when it can and with the remedy when
+it cannot — `BiographyKeyHelp.astro`, the quieter sibling of the GitHub token panel. It exists
+because the run log cannot answer the question and will not until the flip: the ownership gate is
+checked first, by design, so a run today never reaches the key and a clean history is
+indistinguishable from a check nobody ran. It really reads the secret, rather than confirming an IAM
+binding, because a check that can pass where the job's own call fails is worse than none. It is not
+red while `PLAYERS_ARE_OWNED` is false — nothing is broken yet — by the rule the run-log pills
+follow.
+
 ### The handicap sweep, which is a job rather than a workflow
 
 `admin/src/lib/jobs/handicaps.ts` reads every player's handicap from WiseGolf on every tick, writes

@@ -1,0 +1,213 @@
+---
+import { backendFunctionsKeySecret, secretLocation, type KeyAvailability } from '../lib/secrets.ts'
+
+/*
+ * Whether the biographies job can reach the function that writes the prose.
+ *
+ * The sibling of `GitHubTokenHelp.astro`, and deliberately not the same shape.
+ * That one appears only when something is broken, which is right for a
+ * credential everything on the page depends on right now: its absence is the
+ * answer, because the page beside it is already empty.
+ *
+ * This one has the opposite problem. Nothing needs the key until
+ * `PLAYERS_ARE_OWNED` is true, so a panel that only appeared on failure would
+ * say nothing at all on the one day somebody wants to know — the day before the
+ * flip, when the question is "will this work when I turn it on" and an empty
+ * page is indistinguishable from a check nobody ran. So it also reports the
+ * good state, quietly and in one line.
+ *
+ * ## Why it is not red today
+ *
+ * The same rule the run-log pills follow, written down beside them: a red banner
+ * over "nothing is broken yet" teaches an admin to disregard red banners. A
+ * missing key while players are still mirrored is a thing to fix before the
+ * flip, not an outage — so it is a plain notice until the flip makes it one.
+ */
+
+interface Props {
+	/** What `backendFunctionsKeyAvailability()` answered. */
+	availability: KeyAvailability
+	/**
+	 * Whether the job would use the key if it had one — `PLAYERS_ARE_OWNED`.
+	 *
+	 * Passed in rather than read here so that the component renders the same way
+	 * in both states without the page having to explain which one it is in. It
+	 * decides the tone and nothing else: the remedy is identical either way.
+	 */
+	needed: boolean
+}
+
+const { availability, needed } = Astro.props
+const location = secretLocation(backendFunctionsKeySecret)
+
+/*
+ * Broken only once something wants it. Before the flip a missing key is a note;
+ * after it, the job stops at the same gate and says so on every run.
+ */
+const urgent = needed && availability !== 'readable'
+
+const command = location
+	? `gcloud secrets versions add ${location.secretId} --project=${location.project} --data-file=-`
+	: 'gcloud secrets versions add astrosite-api-key --project=<project> --data-file=-'
+---
+
+{
+	availability === 'readable' ? (
+		<p class="key-ok">
+			The biography function's key is readable.{' '}
+			{needed ? (
+				<>Biographies are generated in this service.</>
+			) : (
+				<>
+					Nothing generates yet — players are still mirrored — but the key the job will need is
+					in place.
+				</>
+			)}
+		</p>
+	) : (
+		<section class:list={['notice', urgent && 'bad', 'key-help']}>
+			<h2>
+				{availability === 'not-located'
+					? "This service has not been told where the biography key is"
+					: 'The biography key could not be read'}
+			</h2>
+
+			<p>
+				{needed ? (
+					<>
+						The biographies job stops before its first player without it, and reports a skip
+						rather than a failure. Everything else on this page is unaffected.
+					</>
+				) : (
+					<>
+						Nothing is broken: <code>PLAYERS_ARE_OWNED</code> is false, so the job declines
+						before it would ever ask for the key. This is what would stop it on the day that
+						flag is flipped, which is the day it would be least welcome to find out.
+					</>
+				)}
+			</p>
+
+			<p class="what-it-is">
+				The key is the bearer token <code>GeneratePlayerBiography</code> checks, stored as a
+				version of{' '}
+				{location ? <code>{location.secretId}</code> : <code>astrosite-api-key</code>}. It is the
+				same one the site's workflows present — the function compares the header against exactly
+				one value — so rotating it rotates it for both callers at once.
+			</p>
+
+			{availability === 'not-located' ? (
+				<ol class="steps">
+					<li>
+						<p>
+							<strong>Check the deployment carries it.</strong>{' '}
+							<code>ASTROSITE_API_KEY_SECRET</code> is unset in this process. It is set from
+							the secret resource in <code>terraform/cloud_run.tf</code>, so an unset value
+							here means this revision predates that, or the apply did not land.
+						</p>
+						<p class="why">
+							Normal on a laptop, which has no business reaching this project's Secret
+							Manager and supplies <code>ASTROSITE_API_KEY</code> directly instead. A
+							misconfiguration in Cloud Run.
+						</p>
+					</li>
+					<li>
+						<p>
+							<strong>Redeploy.</strong> This one is an environment variable rather than a
+							secret version, so unlike the GitHub token it does not take effect until the
+							revision carrying it is serving.
+						</p>
+					</li>
+				</ol>
+			) : (
+				<ol class="steps">
+					<li>
+						<p>
+							<strong>Check the secret has a version.</strong> Terraform creates the secret
+							but deliberately never its value, so a fresh project has an empty one. Paste
+							the key, then press <kbd>Ctrl</kbd>+<kbd>D</kbd>:
+						</p>
+						<pre><code>{command}</code></pre>
+					</li>
+					<li>
+						<p>
+							<strong>Check this service may read it.</strong> The runtime service account
+							needs <code>roles/secretmanager.secretAccessor</code> on that secret, which{' '}
+							<code>terraform/secrets.tf</code> grants as{' '}
+							<code>admin_runtime_reads_functions_key</code>. Cloud Logging has the client's
+							own error, which names the resource and says which of the two it was.
+						</p>
+					</li>
+					<li>
+						<p>
+							<strong>Reload this page.</strong> The secret is read each time it is used, so
+							a new version or a new grant takes effect without a redeploy.
+						</p>
+					</li>
+				</ol>
+			)}
+		</section>
+	)
+}
+
+<style>
+	.key-ok {
+		margin: 0 0 0.9rem;
+		color: var(--text-dim);
+		font-size: 0.85rem;
+	}
+
+	.key-help {
+		display: flex;
+		flex-direction: column;
+		gap: 0.7rem;
+		margin-bottom: 0.9rem;
+	}
+
+	.key-help h2 {
+		margin: 0;
+		font-size: 1rem;
+	}
+
+	.key-help p {
+		margin: 0;
+	}
+
+	.steps {
+		margin: 0;
+		padding-left: 1.2rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.9rem;
+	}
+
+	.steps li {
+		padding-left: 0.2rem;
+	}
+
+	.steps li > p + p,
+	.steps li > pre + p {
+		margin-top: 0.45rem;
+	}
+
+	.why {
+		color: var(--text-dim);
+		font-size: 0.85rem;
+	}
+
+	pre {
+		margin: 0;
+		padding: 0.6rem 0.75rem;
+		background: var(--bg);
+		border: 1px solid var(--line);
+		overflow-x: auto;
+		font-size: 0.82rem;
+	}
+
+	kbd {
+		font-family: var(--font-score, monospace);
+		font-size: 0.78rem;
+		border: 1px solid var(--line-strong);
+		border-radius: 3px;
+		padding: 0 0.25rem;
+	}
+</style>

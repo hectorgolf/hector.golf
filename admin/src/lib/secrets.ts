@@ -99,8 +99,12 @@ export type SecretLocation = { project: string; secretId: string }
  *
  * `undefined` when the service has not been told where its secret is, which is
  * the normal state on a laptop.
+ *
+ * Takes the resource name rather than reading one, because there are two now:
+ * the GitHub token and the key the biography function checks. The parsing is the
+ * same and the reason it is safe to render is the same.
  */
-export function githubTokenSecretLocation(resourceName = githubTokenSecret): SecretLocation | undefined {
+export function secretLocation(resourceName: string | undefined): SecretLocation | undefined {
     const match = /^projects\/([^/]+)\/secrets\/([^/]+)(?:\/versions\/.+)?$/.exec(resourceName ?? '')
     return match ? { project: match[1]!, secretId: match[2]! } : undefined
 }
@@ -173,6 +177,48 @@ export async function wisegolfCredentials(): Promise<{ username: string; passwor
  */
 export async function backendFunctionsKey(): Promise<string | undefined> {
     return readSecret(backendFunctionsKeySecret, process.env.ASTROSITE_API_KEY, 'the backend functions key')
+}
+
+/**
+ * Whether the biography function's key can be read, and if not, which way it is
+ * missing.
+ *
+ * `readSecret` answers `undefined` for three different situations, which is
+ * right for a caller that only wants the value and wrong for a page that has to
+ * tell somebody what to do about it. The two that matter have different fixes:
+ * `not-located` means this service was never told where the secret is, which is
+ * a deployment that did not carry `ASTROSITE_API_KEY_SECRET` — or a laptop, where
+ * it is normal. `unreadable` means it was told and could not read it, which is
+ * the grant or an empty secret.
+ */
+export type KeyAvailability = 'readable' | 'not-located' | 'unreadable'
+
+/**
+ * The classification, separated from the reading so it can be tested.
+ *
+ * A key with no resource name behind it is still readable, and that ordering is
+ * the point rather than an accident: a laptop supplies `ASTROSITE_API_KEY`
+ * directly and has no business reaching this project's Secret Manager.
+ */
+export function keyAvailability(resourceName: string | undefined, key: string | undefined): KeyAvailability {
+    if (key) return 'readable'
+    return resourceName ? 'unreadable' : 'not-located'
+}
+
+/**
+ * The same question, asked the way the job asks it.
+ *
+ * It really reads the secret rather than checking that the version exists or
+ * that an IAM binding is in place, and that costs one Secret Manager call per
+ * page render — which the note at the top of this file has already budgeted for.
+ * A cheaper check would be a different call from the one the job makes, and a
+ * check that can pass where the real call fails is worse than no check: it is
+ * the reassurance without the thing being reassured about.
+ *
+ * The value is read and dropped. Nothing returns it and nothing renders it.
+ */
+export async function backendFunctionsKeyAvailability(): Promise<KeyAvailability> {
+    return keyAvailability(backendFunctionsKeySecret, await backendFunctionsKey())
 }
 
 /**
