@@ -10,6 +10,7 @@ that needs `src/code/` or `src/schemas/` belongs to the app that owns those, not
 | --- | --- |
 | `styles/hector.css` | The design system. Every token the components reference lives here |
 | `components/*.astro` | Card, PageHeader, Breadcrumb, Highlight, and the competition marks |
+| `components/hector-mark-path.ts` | The falcon's geometry, so `HectorMark` and the favicon renderer draw the same shape |
 
 `hector.css` is loaded once per app, by its layout. The components only carry their own scoped
 styles and read tokens from it, so a component rendered without the stylesheet will lay out but look
