@@ -63,6 +63,25 @@ const githubTokenFromEnvironment = process.env.GITHUB_DISPATCH_TOKEN
 export const wisegolfUsernameSecret = process.env.WISEGOLF_USERNAME_SECRET
 export const wisegolfPasswordSecret = process.env.WISEGOLF_PASSWORD_SECRET
 
+/**
+ * The bearer token the private Cloud Functions check, for the one this service
+ * calls: `GeneratePlayerBiography`.
+ *
+ * The same `astrosite-api-key` the site's workflows present, and shared rather
+ * than duplicated because the function compares the header against exactly one
+ * value — `token !== process.env.ASTROSITE_API_KEY` in
+ * `generate-player-biography/index.ts`. A key of the admin's own would mean
+ * teaching that function to accept a set and redeploying it, which is a change
+ * to a deployed function in service of a tidiness nothing is asking for yet.
+ *
+ * The cost of sharing is worth stating: rotating it rotates it for both callers
+ * at once, so the biographies job and the site's workflows fail together.
+ *
+ * Unset is a supported state, as with WiseGolf. A deployment without it runs the
+ * biographies job as far as deciding who would be rewritten, and stops there.
+ */
+export const backendFunctionsKeySecret = process.env.ASTROSITE_API_KEY_SECRET
+
 export type SecretLocation = { project: string; secretId: string }
 
 /**
@@ -143,6 +162,17 @@ export async function wisegolfCredentials(): Promise<{ username: string; passwor
         return undefined
     }
     return { username, password }
+}
+
+/**
+ * The key for the private Cloud Functions, or `undefined` when there is none.
+ *
+ * `ASTROSITE_API_KEY` is the environment fallback, which is the spelling the
+ * site's workflows and `backend/backend-functions/.env.sample` already use — so
+ * a laptop `.env` needs no second name to remember.
+ */
+export async function backendFunctionsKey(): Promise<string | undefined> {
+    return readSecret(backendFunctionsKeySecret, process.env.ASTROSITE_API_KEY, 'the backend functions key')
 }
 
 /**

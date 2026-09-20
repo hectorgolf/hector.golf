@@ -1023,7 +1023,7 @@ their absence degrades; this is what reads them.
 | `WISEGOLF_USERNAME` | Secret | PR checks (the live `wisegolf-api` tests), three update workflows — not `deploy-site`, whose build never calls WiseGolf |
 | `WISEGOLF_PASSWORD` | Secret | PR checks (the live `wisegolf-api` tests), three update workflows — not `deploy-site`, whose build never calls WiseGolf |
 | `HECTOR_APP_API_KEY` | Secret | `update-leaderboards`, `check-site` |
-| `ASTROSITE_API_KEY` | Secret | `update-player-biographies` |
+| `ASTROSITE_API_KEY` | Secret | `update-player-biographies`, and the admin service via `ASTROSITE_API_KEY_SECRET` |
 | `GIT_COMMITTER_EMAIL` | Secret | the four update workflows and `export-admin-data` — the address they commit as |
 | `GITHUB_TOKEN` | Built-in → `GITHUB_ACCESS_TOKEN` | `update-leaderboards` |
 
@@ -1114,8 +1114,14 @@ on a public endpoint is a grant that should be reviewed in a diff.
 `Authorization: Bearer <token>`, compares it to `ASTROSITE_API_KEY` from its environment, and
 answers `401 Valid API key required` on a mismatch or a missing header. A function that finds the
 secret itself unset answers `500` rather than accepting anything, so a misconfigured deploy fails
-closed. The same value is held by the site's `.env` and by the `ASTROSITE_API_KEY` GitHub secret
-that `update-player-biographies.yml` passes to the workflow script.
+closed. The same value is held by the site's `.env`, by the `ASTROSITE_API_KEY` GitHub secret that
+`update-player-biographies.yml` passes to the workflow script, and since 2026-09-20 by the admin
+service, whose runtime identity has `secretAccessor` on `astrosite-api-key` so the biographies job
+can call the function once it generates.
+
+That is three holders of one key, and the reason it is shared rather than split is the comparison
+above: the function checks against a single value, so a key of the admin's own would mean teaching
+it to accept a set and redeploying it. The cost is that a rotation rotates for everyone at once.
 
 **There is no authorization** — no scopes, no per-caller identity, no rate limiting. The token is a
 single shared secret that grants everything a private function can do, so anyone holding it is
