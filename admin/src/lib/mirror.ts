@@ -60,15 +60,6 @@ const FINNKAMPEN: Mirror = {
     scheduledWriters: [],
 }
 
-/** Players, which have no `OWNED_FORMATS` of their own to be absent from yet. */
-export const PLAYER_MIRROR: Mirror = {
-    authoredAt: 'astrosite/src/data/players/',
-    scheduledWriters: [
-        'update-player-biographies (biography)',
-        'update-player-club-memberships (club)',
-    ],
-}
-
 const EVENT_MIRRORS: Record<EventFormat, Mirror | undefined> = {
     [EventFormat.Hector]: HECTOR,
     [EventFormat.Finnkampen]: FINNKAMPEN,

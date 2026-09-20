@@ -1,10 +1,21 @@
 # Bring Firestore's copy of the scraped data up to date with the committed files.
 #
-# The admin reads players and Hector events out of Firestore, but it does not
-# own them: the scheduled scrapes write those files, and Firestore holds a mirror
-# for the UI to read. Nothing refreshed that mirror, so the admin's roster showed
-# whatever handicaps were current the last time somebody ran the seed by hand —
-# frozen, while the real ones moved four times a day.
+# The admin reads Hector events out of Firestore but does not own them: the
+# scheduled writers produce those files, and Firestore holds a mirror for the UI
+# to read. Nothing refreshed that mirror, so the admin's roster showed whatever
+# handicaps were current the last time somebody ran the seed by hand — frozen,
+# while the real ones moved four times a day.
+#
+# **Players left this on 2026-09-21** and the seed now skips them: they are
+# authored in the admin, Firestore is their source, and re-seeding them from the
+# files would revert whatever somebody just saved. `seed.ts` enforces that on its
+# own side — this file only has to stop naming workflows that no longer exist.
+#
+# One thing that flip is worth remembering for: the mirror was found *stale* on
+# the day, because a hand edit to a player file matched none of the triggers
+# below. It was two clubs corrected in 6ca4e486 that Firestore had never heard
+# about. If another collection is ever moved the same way, refresh the mirror and
+# check an export comes back empty before flipping the flag — not after.
 #
 # It runs when a scrape finishes rather than on a clock of its own. A cron would
 # be a guess about how long the scrape takes, and the guess would be wrong on the
@@ -29,8 +40,6 @@ on:
   workflow_run:
     workflows:
       - "Update tournament leaderboards"
-      - "Update players' biographies"
-      - "Update club memberships"
     types:
       - completed
 

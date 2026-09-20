@@ -1,12 +1,10 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro'
 import PageHeader from '@hector/ui/components/PageHeader.astro'
-import MirrorNotice from '../../components/MirrorNotice.astro'
 
 import type { Player } from '@hector/schemas/src/players.ts'
 import { listPlayers } from '../../lib/repository/events.ts'
 import { read as readHandicapSnapshot } from '../../lib/handicaps/snapshot.ts'
-import { PLAYER_MIRROR } from '../../lib/mirror.ts'
 import { formatHandicap, fullName, resolveHandicap } from '../../lib/players.ts'
 
 /*
@@ -51,8 +49,6 @@ const stopgaps = rows.filter((row) => row.handicap?.source === 'stopgap').length
 
 <AdminLayout title="Players">
 	<PageHeader title="Players" lede="Everybody who has played a Hector event." />
-
-	<MirrorNotice mirror={PLAYER_MIRROR} what="A player" />
 
 	{error && <p class="notice bad">{error}</p>}
 

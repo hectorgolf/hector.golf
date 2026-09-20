@@ -292,13 +292,12 @@ describe('what the scheduled tick starts', () => {
         expect(SCHEDULED_WORKFLOWS.every((workflow) => workflow.cadence !== 'manual')).toBe(true)
     })
 
-    it('currently covers the three remaining scrapes and the deploy backstop, in the order they queue', () => {
-        // The handicap scrape is deliberately not here: it runs in this process
-        // as a job, and `SCHEDULED_JOBS` is the list it is on.
+    it('currently covers the one remaining scrape and the deploy backstop, in the order they queue', () => {
+        // Three scrapes are deliberately not here: handicaps since 2026-09-20,
+        // biographies and club memberships since 2026-09-21. All three run in
+        // this process as jobs, and `SCHEDULED_JOBS` is the list they are on.
         expect(SCHEDULED_WORKFLOWS.map((workflow) => workflow.file)).toEqual([
             'update-leaderboards.yml',
-            'update-player-biographies.yml',
-            'update-player-club-memberships.yml',
             'deploy-site.yml',
         ])
     })
@@ -314,17 +313,15 @@ describe('what the scheduled tick starts', () => {
          * schedule" any more — it is a scrape that has silently stopped, with
          * nothing red anywhere to say so. That is the failure this pins.
          *
-         * `update-handicaps.yml` carried one too and is not listed, because it
-         * no longer exists: that scrape runs in this process now. The test above
-         * on `.github/workflows` is what would catch it being listed anyway.
+         * Three carried one too and are not listed, because they no longer
+         * exist: `update-handicaps.yml`, `update-player-biographies.yml` and
+         * `update-player-club-memberships.yml` all run in this process now. The
+         * test above on `.github/workflows` is what would catch one being listed
+         * anyway — the point of *this* one is the other direction, a file still
+         * on disk that nothing starts.
          */
         expect(SCHEDULED_WORKFLOWS.map((workflow) => workflow.file).sort()).toEqual(
-            [
-                'deploy-site.yml',
-                'update-leaderboards.yml',
-                'update-player-biographies.yml',
-                'update-player-club-memberships.yml',
-            ].sort()
+            ['deploy-site.yml', 'update-leaderboards.yml'].sort()
         )
     })
 })

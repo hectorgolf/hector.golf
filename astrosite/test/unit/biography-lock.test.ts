@@ -1,5 +1,5 @@
 import { expect, describe, it } from 'vitest'
-import { biographiesToRegenerate } from '../../src/workflows/update-player-biographies'
+import { biographiesToRegenerate } from '@hector/schemas/src/biographies.ts'
 import { getAllPlayers } from '../../src/code/players'
 import { schema as playerSchema, type Player } from '@hector/schemas/src/players.ts'
 

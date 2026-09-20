@@ -32,16 +32,15 @@ permissions:
   contents: write
   id-token: write
 
-# One data update at a time, across all of them — this group name is deliberately
-# shared with update-player-biographies.yml and update-player-club-memberships.yml
-# rather than being this workflow's own.
+# One data update at a time. This group name was deliberately shared with
+# update-player-biographies.yml and update-player-club-memberships.yml, which
+# were deleted on 2026-09-21 when the admin took the players over — so this is
+# the last workflow in the group and the name is kept rather than renamed.
 #
-# Every one of them ends in `git pull -r && git push` in commit-changes.sh, so any
-# two that overlap race over the same push and the loser fails. They used to be
-# kept apart by starting at different times, which stopped being true when the
-# Cloud Scheduler tick began starting them within a second of each other — and is
-# now the only thing keeping them apart, since the crons that also used to land
-# anywhere at all have been deleted.
+# Kept, because the group is not only about the workflows in it. This one ends in
+# `git pull -r && git push` in commit-changes.sh, and the admin service commits
+# to the same tree from Cloud Run; a future data workflow that joins the group
+# should find it already here rather than rediscover why two pushes race.
 #
 # The admin service commits to `main` too, for the handicap backups and the event
 # buckets, and is *not* in this group: it cannot be, being outside GitHub. It

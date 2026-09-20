@@ -2,7 +2,6 @@
 import AdminLayout from '../../layouts/AdminLayout.astro'
 import PageHeader from '@hector/ui/components/PageHeader.astro'
 import Breadcrumb from '@hector/ui/components/Breadcrumb.astro'
-import MirrorNotice from '../../components/MirrorNotice.astro'
 import ReadOnlyField from '../../components/ReadOnlyField.astro'
 
 import { formatEventDates } from '@hector/schemas/src/dates.ts'
@@ -11,7 +10,6 @@ import { adminPathForEvent } from '../../lib/sections.ts'
 import { PLAYERS_ARE_OWNED } from '../../lib/ownership.ts'
 import { getPlayer, listEvents } from '../../lib/repository/events.ts'
 import { read as readHandicapSnapshot } from '../../lib/handicaps/snapshot.ts'
-import { PLAYER_MIRROR } from '../../lib/mirror.ts'
 import { formatHandicap, fullName, resolveHandicap } from '../../lib/players.ts'
 
 const { id } = Astro.params
@@ -72,8 +70,6 @@ const flash =
 	</div>
 
 	{flash && <p class="notice good">{flash}</p>}
-
-	<MirrorNotice mirror={PLAYER_MIRROR} what="This player" />
 
 	<section class="stack">
 		<h2>Details</h2>

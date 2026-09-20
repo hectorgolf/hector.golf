@@ -113,7 +113,23 @@ not catch that, because the store was not empty. A player created in the admin, 
 until step 1 builds an editor, gets the composed name — and step 1 is where that stops being a
 special case, because it renames the files. See below.
 
-## Step 1 — players
+## Step 1 — players — **done, 2026-09-21**
+
+`PLAYERS_ARE_OWNED` is true, both workflows are deleted, the files are named after their ids, and
+the admin edits the four fields a person writes. Firestore is the source; `astrosite/src/data/players/`
+is generated from it.
+
+**The one thing that nearly went wrong is worth carrying into step 2.** The pre-flip check — export
+with the flag flipped, `git diff`, expect nothing — was run against an *emulator* first and came
+back clean, which proved only that schema defaults and key order survive the round trip. Run against
+**production** on the day, it reported `players: 45 exported, 2 changed`: two clubs corrected by hand
+in `6ca4e486` that Firestore had never heard about, because `refresh-admin-mirror.yml` fires on the
+scrapes finishing and on pushes under `events/hector/`, and a hand-edited player file is neither.
+Flipping without that check would have published the stale `KJKG` back over the correction, silently,
+as the very first export. Refresh the mirror and re-run the check against production before step 2's
+flip, not after.
+
+The rest of this section is the record of how it was done.
 
 First because of the calendar, not because it is the easy one.
 
@@ -140,9 +156,9 @@ emulator with the flag flipped. One cost is left.
 
 Two halves, in this order, and the second cannot land without the first.
 
-### Move the two writers into the service
+### Move the two writers into the service — done
 
-Both write through `updatePlayerData`, which persists the whole player object — so both are
+Both wrote through `updatePlayerData`, which persisted the whole player object — so both were
 whole-record writers, and both have to stop writing files before the admin can own one.
 
 They move the way the handicap scrape did: into `admin/src/lib/jobs/`, registered in
@@ -198,9 +214,10 @@ change with two jobs behind it. Do not flip it on its own: the moment players ar
 stop being the source and `npm run export` is what puts them back, which is the same change as the
 rename below.
 
-### Then own the collection, and build the editor
+### Then own the collection, and build the editor — done
 
-**The editor landed on 2026-09-21, ahead of the flip and disabled by it.** It edits the four fields
+**The editor landed on 2026-09-21, ahead of the flip and disabled by it until the flip arrived the
+same day.** It edits the four fields
 a person writes — `club`, `handicap`, `misc` and `biography` — and `savePlayer` refuses every one of
 them while `PLAYERS_ARE_OWNED` is false, so the page says so rather than offering boxes that throw.
 `name`, `contact`, `gender`, `privacy` and `aliases` are authored too and stay read-only: nothing
@@ -237,7 +254,7 @@ not free choices, and three of them are easy to get backwards:
 on disk, not in Firestore, and are not in scope as *content* — the editor should say so rather than
 offering an upload that goes nowhere. Their filenames are in scope; see below.
 
-### And rename the files, in the same step
+### And rename the files, in the same step — done
 
 **Done 2026-09-20.** `players/first-last.json` is `players/first-l.json`, matching the id, and the
 forty images beside them moved with them.
@@ -335,6 +352,17 @@ at once: **seed a clean emulator from the committed files, export, and `git diff
 round trip that is not a no-op differs for one of two reasons — schema defaults being materialised,
 or key order — and both want settling as their own commit *before* the flip, so that the first real
 export is not a thirteen-file diff with one real change hidden in it.
+
+**Run it against production too, and run that one last.** The emulator version answers a question
+about the *code*; it is seeded from the same files it is compared against, so it cannot tell you
+anything about the store you are actually about to make authoritative. The production version answers
+the question that matters — does Firestore hold what the files hold — and on 2026-09-21 the two
+answers differed: the emulator said `0 changed` and production said `2 changed`, because a hand edit
+to two player files had never reached the mirror. Same command, with the flag flipped locally and no
+`FIRESTORE_EMULATOR_HOST` set; it only reads Firestore, and writes files you then discard.
+
+If it is not clean, refresh the mirror **before** flipping. After the flip the seed stops writing
+that collection by design, so the window for fixing it with a seed closes the moment the flag does.
 
 **Run on 2026-09-20, and it is clean — for events.** This document used to say the result was
 expected and worth showing; it has now been shown. With every format put into `OWNED_FORMATS`

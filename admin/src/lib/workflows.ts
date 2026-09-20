@@ -87,20 +87,6 @@ export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
         cadence: { every: '60s' }, // every 60 seconds, at most
     },
     {
-        slug: 'biographies',
-        file: 'update-player-biographies.yml',
-        label: "Players' biographies",
-        blurb: 'Regenerates every player biography with Gemini. Rewrites all 45, so an edit made in the admin does not survive it.',
-        cadence: { every: '15d' }, // ~twice a month
-    },
-    {
-        slug: 'club-memberships',
-        file: 'update-player-club-memberships.yml',
-        label: "Players' club memberships",
-        blurb: "Fills in a player's home club from WiseGolf, for players who do not have one yet. Never overwrites a club somebody set.",
-        cadence: { every: '30d' }, // ~once a month
-    },
-    {
         slug: 'deploy',
         file: 'deploy-site.yml',
         label: 'Deploy hector.golf',

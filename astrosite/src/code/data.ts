@@ -31,12 +31,12 @@ const __filename = fileURLToPath(import.meta.url);
 /**
  * The path an event's data file lives at.
  *
- * Deriving the path from the id is only safe because it holds for events: all 18
- * of them are named `{format}/{id}.json`. It does *not* hold for players — every
- * one of the 45 player files has a filename that differs from the record's id
- * (`anders-forss.json` holds `"id": "anders-f"`) — so there is deliberately no
- * player counterpart to this function. Use `playerDataPath()` below, which finds
- * the file by reading it, and `updatePlayerData()` in `players.ts` to write one.
+ * Deriving the path from the id is safe because every file is named after the id
+ * it holds — all 18 events as `{format}/{id}.json`, and, since 2026-09-21, all 45
+ * players as `players/{id}.json`. It did not hold for players until then, which
+ * is why there used to be a `playerDataPath()` that opened the files and matched
+ * on `id` instead. `test/unit/player-data-paths.test.ts` is what keeps the
+ * naming true; nothing in this package writes a player any more.
  */
 export function pathToEventJson(event: Event): string {
     return join(dirname(__filename), `../data/events/${event.format}/${event.id}.json`);
@@ -161,20 +161,3 @@ export const playersData: Player[] = (await glob("src/data/players/**/*.json"))
     })
     .filter(nonUndefined);
 
-/**
- * Find the path to the player's data file.
- *
- * The filenames do not follow from the ids, so the only way to find a player's
- * file is to open the files and match on `id`. Any writer of player data has to
- * go through here — see `updatePlayerData()` in `players.ts`, and the regression
- * test in `test/unit/player-data-paths.test.ts`.
- *
- * @param player The Player object or player ID to find the path for.
- * @returns The path to the player's data file, or `undefined` if the player is not found.
- */
-export async function playerDataPath(player: Player|string): Promise<string | undefined> {
-    return (await glob("src/data/players/**/*.json")).find((filePath) => {
-        const p = PlayerSchema.safeParse(JSON.parse(readFileSync(filePath, "utf-8"))).data;
-        return p?.id === player || p?.id === (player as Player)?.id;
-    });
-}

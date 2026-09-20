@@ -28,17 +28,17 @@ Tracked nowhere but inside a document that otherwise describes how things are, w
 
 The other item that was here — `event.bucketsLocked` and `player.biographyLocked`, specified by
 `data-ownership.md` and implemented by nothing — became two plans, which is where something that has
-not happened belongs. Both have since been built, and neither can be set from the admin yet, so both
-are set by editing the committed file: `event.bucketsLocked` on 2026-09-18
+not happened belongs. Both have since been built: `event.bucketsLocked` on 2026-09-18
 ([`docs/plans/bucket-locking.md`](docs/plans/bucket-locking.md), phases 1-3) and
 `player.biographyLocked` on 2026-09-19
-([`docs/plans/biography-locking.md`](docs/plans/biography-locking.md), steps 1-2).
+([`docs/plans/biography-locking.md`](docs/plans/biography-locking.md), steps 1-2). The bucket one is
+still set by editing the committed file; the biography one is set by the admin.
 
 The biography one was always the live problem of the two: `update-player-biographies` rewrote all 45
 biographies on every run, twice a month, so the field `data-ownership.md` classes as authored was in
-practice CI's, and a hand-edited biography had a fortnight to live. It now leaves a locked player
-alone and logs that it did — but nothing sets the lock except a person editing the JSON file, so an
-edit nobody locked still has a fortnight to live.
+practice CI's, and a hand-edited biography had a fortnight to live. That workflow is gone as of
+2026-09-21 — the generator runs in the admin service now — and saving a biography in the admin sets
+the lock, so an edit is no longer something you have to remember to protect.
 
 **Two of the four next steps the GCP setup was aiming at are still open.** They used to live at the
 end of the setup document, which is why nobody saw them; splitting that document moved them here and

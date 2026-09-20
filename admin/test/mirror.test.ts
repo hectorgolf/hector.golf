@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { EventFormat } from '@hector/schemas/src/events.ts'
 
-import { PLAYER_MIRROR, eventMirror } from '../src/lib/mirror.ts'
+import { eventMirror } from '../src/lib/mirror.ts'
 import { MIRRORED_FORMATS, OWNED_FORMATS } from '../src/lib/ownership.ts'
 
 /**
@@ -51,8 +51,16 @@ describe('why a record is read-only', () => {
         expect(eventMirror(EventFormat.Finnkampen)?.scheduledWriters).toEqual([])
     })
 
-    it('describes players, which have no ownership set of their own yet', () => {
-        expect(PLAYER_MIRROR.authoredAt).toBe('astrosite/src/data/players/')
-        expect(PLAYER_MIRROR.scheduledWriters).toHaveLength(2)
+    /**
+     * Players had a `PLAYER_MIRROR` here until 2026-09-21, because they have no
+     * `OWNED_FORMATS` entry to be absent from — the property above could not
+     * derive their answer, so it was written down. It went with the flip, and
+     * the check that it went is the one below: the module exports mirrors for
+     * event formats and nothing else, so a player page cannot render a notice
+     * apologising for a limitation that has been lifted.
+     */
+    it('has nothing left to say about players, who are authored here now', async () => {
+        const mirror = await import('../src/lib/mirror.ts')
+        expect(Object.keys(mirror)).not.toContain('PLAYER_MIRROR')
     })
 })
