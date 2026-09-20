@@ -449,7 +449,12 @@ imported.
 ### Player identity
 
 A player's `id` is not derived from the filename: `players/lasse-koskela.json` has `"id": "lasse-k"`.
-All lookups go through `id`; the filename is incidental. Players may carry `aliases[]` (alternative
+All lookups go through `id`; the filename is incidental. Not one of the forty-five files is named
+after the id it holds, so **anything that writes a player has to find its file rather than compose
+the path** — `playerDataPath()` globs and matches on the id inside each file, and
+`admin/scripts/export.ts` does the same on its side of the fence. Events are the opposite:
+`pathToEventJson` builds `events/{format}/{id}.json` and every file matches.
+`test/unit/player-data-paths.test.ts` pins it. Players may carry `aliases[]` (alternative
 spellings used by external scoring systems) and `privacy: 'shorten-last-name'`.
 
 ## 5. Data access — two parallel mechanisms

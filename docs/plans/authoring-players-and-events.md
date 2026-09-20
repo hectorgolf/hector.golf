@@ -10,10 +10,8 @@ Players and Hector events have pages in the admin now — a list and a record pa
 purpose. Finnkampen got the same pair and lost it; see "Not in scope". Nothing below is executed by
 any of that. What it changes for whoever starts this:*
 
-- *Part of **step 0** is done. `repository/events.ts` has a generic `getEventOfFormat` and
-  `listEventsOfFormat`, and a `getPlayer`. The write side — `saveEvent` behind an `OWNED_FORMATS`
-  refusal, `savePlayer`, `deletePlayer`, and the three guards in `export.ts` and `seed.ts` — is
-  untouched, and it is the half that carries the risk.*
+- ***Step 0 is done**, reads and writes both. The guards are in and `PLAYERS_ARE_OWNED` is the one
+  edit that flips them; see the step, which is now a pointer rather than a task list.*
 - *Every page says why it cannot be edited, from `lib/mirror.ts`, which derives the answer from
   `OWNED_FORMATS`. Moving a format into that set removes its notice; there is no second list to
   remember.*
@@ -90,44 +88,30 @@ no longer a step. See "Not in scope".
 So the order is now a choice between the two that are left, and it is decided by a date rather than
 by the table.
 
-## Step 0 — generalise the machinery, before anything is owned
+## Step 0 — done, on 2026-09-20
 
-Every mechanism that enforces ownership names matchplay explicitly, because matchplay is all there
-has ever been. Widening them is a change with no behavioural effect on its own, which makes it the
-one step that can land and sit.
+Every mechanism that enforces ownership named matchplay explicitly, because matchplay was all there
+had ever been. They ask `admin/src/lib/ownership.ts` now — `saveEvent` and `deleteEvent` in place of
+the matchplay-shaped pair, a `savePlayer` and `deletePlayer` that refuse while `PLAYERS_ARE_OWNED`
+is false, the export's empty-set refusal covering players, and a `--bootstrap` guard that walks both
+collections rather than only `events`. Nothing changed behaviour, which is what made it landable on
+its own. What each one refuses is described in
+[`data-ownership.md`](../current/data-ownership.md#the-two-scripts-are-complements); what it cost is
+in the pull request.
 
-- **`repository/events.ts` is matchplay-shaped on the write side.** The reads were generalised on
-  2026-09-20 — `getEventOfFormat` and `listEventsOfFormat` take the format, and `getMatchplayEvent`
-  and `listMatchplayEvents` are one-line callers of them. `saveMatchplayEvent` and
-  `deleteMatchplayEvent` still hardcode it. They want a `saveEvent` that validates through
-  `genericEventSchema` and **refuses a format not in `OWNED_FORMATS`**. The refusal is the important
-  half rather than the generalisation: it is the ownership rule expressed as code instead of as a
-  document, and it is what stops a page written for one format from writing a mirrored one. The
-  existing guard in `deleteMatchplayEvent` is the model — it reads the document first so that the
-  wrong id is a no-op.
-- **There is no player writer at all.** `listPlayers` and `getPlayer` read; nothing saves. A
-  `savePlayer` behind the same ownership check, and a `deletePlayer`, are new.
-- **`export.ts` refuses to export an empty owned set, for events only.** That guard exists because an
-  empty read deletes every committed file of the formats it covers — "a very fast way to lose them to
-  a misconfigured database id". Players need their own copy of it, or the same typo removes
-  forty-five player files instead.
-- **`seed.ts`'s bootstrap guard reads the `events` collection and nothing else.**
-  `refuseToOverwriteAuthoredEvents` walks `events`, parses each document and refuses if an owned one
-  was last written by someone other than `seed`. The day players are owned, `--bootstrap` reverts
-  every authored player with no refusal and no output. This is the most dangerous single gap in the
-  plan, because the failure is silent and the script that causes it is the one you reach for
-  legitimately — the seed's own header already names that trap for the matchplay case.
-- **`seed.ts` writes players unconditionally.** The format loop respects `MIRRORED_FORMATS`, so an
-  event format moving out of the mirror needs no change here. The players line does not: it sits
-  outside that loop and is gated on nothing. `refresh-admin-mirror.yml` runs the seed unattended,
-  so left as it is, the day players are owned every authored player is reverted without anybody
-  having typed a command. That workflow now has two triggers rather than one — `workflow_run` for
-  the three remaining scrapes, and `on: push` for the admin service's own commits, which is how
-  bucket writes reach the mirror since `update-handicaps.yml` was deleted. Both fire several times a
-  day; the exact count is not the point and has already changed once.
+Two things came out of doing it that the steps below inherit.
 
-`admin/test/ownership.test.ts` exists and is where the invariant belongs: the owned and mirrored sets
-are complements, and neither script covers a collection the other does.
+**Flipping `PLAYERS_ARE_OWNED` is now one edit**, and it is the only edit those five mechanisms
+need. It is emphatically not the whole flip — the two scheduled writers still have to move first,
+which is most of step 1 — but the day they have, nothing else has to be found.
+
+**The export cannot compose a player's file path.** Not one of the forty-five files is named after
+the id it holds, so it globs and matches on the id inside each file, the way `playerDataPath()`
+already did on the site's side. The first version composed `players/{id}.json`, which against an
+emulator wrote forty-five new files and removed all forty-five real ones — the empty-set guard does
+not catch that, because the store was not empty. A player created in the admin, which cannot happen
+until step 1 builds an editor, gets the composed name; **what a new player's file should be called
+is an open decision** and the only part of this the editor still has to make.
 
 ## Step 1 — players
 
@@ -142,21 +126,17 @@ for the winter before starting anything would stall the two plans behind this on
 
 So players go first, and the cost of that ordering is worth writing down rather than discovering:
 
-- **The most dangerous gap in step 0 is now the first one exercised.** `seed.ts` writes players
-  unconditionally, outside the loop that respects `MIRRORED_FORMATS`, and
-  `refuseToOverwriteAuthoredEvents` walks the `events` collection and nothing else. Both were listed
-  above as the worst thing in this plan on the assumption that something cheap had already proved
-  the machinery by the time they mattered. Nothing proves it now, and `refresh-admin-mirror.yml`
-  runs the seed unattended after every scrape.
-- **`export.ts` needs the players copy of its empty-set refusal before this lands, not with it.**
-  Forty-six files and one wrong database id is the failure it exists to stop, and there is no
-  two-file rehearsal in front of it any more.
+Two of the three costs this ordering had are gone, because step 0 paid them in advance rather than
+leaving them to the flip: the seed's players line is gated and its `--bootstrap` guard covers both
+collections, and the export's empty-set refusal covers players. Both were verified against an
+emulator with the flag flipped. One cost is left.
+
 - **The generic event save path gets no shakedown flight.** `saveEvent` behind an `OWNED_FORMATS`
   refusal, the export covering a second format, the seed dropping a format, a deletion guard that is
   no longer a format literal — none of that is exercised by owning players, so all of it first runs
   against Hector events in step 2, which is the collection this document least wants to be wrong
-  about. Build it in step 0 as step 0 says, and put its tests there; that is now the only proving it
-  gets.
+  about. `admin/test/repository-events.test.ts` is the only thing exercising it until then, which is
+  why it covers the refusal from both sides rather than only the happy path.
 
 Two halves, in this order, and the second cannot land without the first.
 
@@ -263,7 +243,9 @@ Per collection, in the same commit:
 1. Its last scheduled writer no longer writes the committed file.
 2. It is in `OWNED_FORMATS` (or the players equivalent), so the export covers it and the seed skips
    it.
-3. The guards from step 0 cover it — the empty-set refusal and the bootstrap refusal both.
+3. The guards from step 0 cover it — the empty-set refusal and the bootstrap refusal both. They
+   do, for players and for every format, since 2026-09-20; this is a thing to confirm rather than to
+   build.
 
 And one acceptance test worth naming, because it is cheap and it catches the whole class of problem
 at once: **seed a clean emulator from the committed files, export, and `git diff --exit-code`.** A
@@ -279,13 +261,14 @@ changed` and `finnkampen: 2 exported, 0 changed`, and `git diff --exit-code` ove
 makes explicit are already explicit in all eighteen files, and key order survives the round trip.
 That is one fewer thing for step 2 to find out the hard way.
 
-**Players are not covered by that, and could not be.** `export.ts` has no players path at all: it
-reads the `events` collection, filters it by `OWNED_FORMATS` and globs `events/{format}/*.json`.
-Writing that path is part of step 1, and the round trip is worth running again as soon as it exists
-— before the flip, not with it. A player document carries optional fields no event has, several of
-which no committed file sets: `gender`, `privacy`, `aliases`, `image`, `misc` and
-`biographyLocked`. The last of those is the undefaulted optional `data-ownership.md` argues about at
-length, and it is exactly the shape of thing a round trip materialises.
+**Players are clean too, as of 2026-09-20.** They were not covered when this was first run, because
+`export.ts` had no players path at all; step 0 added one, gated on `PLAYERS_ARE_OWNED`, for exactly
+this reason — without it the first person to own players would have been discovering schema defaults
+and key order in the same change that moves two scheduled jobs. With the flag flipped the export
+reported `players: 45 exported, 0 changed, 0 removed` and the diff was empty, so none of the
+optional fields no committed file sets — `gender`, `privacy`, `aliases`, `image`, `misc`,
+`biographyLocked` — is materialised on the way through. `biographyLocked` is the undefaulted
+optional `data-ownership.md` argues about at length, and it stays absent.
 
 Run it against the emulator, which needs no code change:
 `FIRESTORE_EMULATOR_HOST=localhost:8432 npm run seed -- --bootstrap`, then `npm run export`.

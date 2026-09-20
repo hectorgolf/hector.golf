@@ -13,16 +13,17 @@
  * stale handicaps and the fix is to run this. Before `--bootstrap` existed as a
  * separate thing, that repair also ate your tournament.
  *
- * `--bootstrap` additionally imports the owned formats, for standing up a new
- * project where Firestore has nothing yet. It refuses if anything it would
- * overwrite was last written by someone other than this script.
+ * `--bootstrap` additionally imports everything the admin authors — the owned
+ * formats, and players once `PLAYERS_ARE_OWNED` — for standing up a new project
+ * where Firestore has nothing yet. It refuses if anything it would overwrite was
+ * last written by someone other than this script.
  *
  * Validates every record through the same schema the admin writes with, so a
  * file that would not survive a round trip fails here rather than at render
  * time.
  *
  *   npm run seed                 # refresh the mirror
- *   npm run seed -- --bootstrap  # also import matchplay, for a new project
+ *   npm run seed -- --bootstrap  # also import what the admin authors
  *   FIRESTORE_EMULATOR_HOST=localhost:8432 npm run seed -- --bootstrap
  */
 import { readFileSync } from 'node:fs'
@@ -34,7 +35,13 @@ import { glob } from 'glob'
 import { genericEventSchema } from '@hector/schemas/src/events.ts'
 import { schema as playerSchema } from '@hector/schemas/src/players.ts'
 
-import { ALL_FORMATS, MIRRORED_FORMATS, OWNED_FORMATS } from '../src/lib/ownership.ts'
+import {
+    ALL_FORMATS,
+    MIRRORED_FORMATS,
+    OWNED_FORMATS,
+    PLAYERS_ARE_OWNED,
+    PLAYER_FILES,
+} from '../src/lib/ownership.ts'
 import { firestore, reportingStoreErrors, target } from './store.ts'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -93,8 +100,17 @@ const formats = bootstrap ? ALL_FORMATS : MIRRORED_FORMATS
  * A document whose last writer was not this script came from the admin UI, and
  * Firestore is the only place it exists. Overwriting it with the committed file
  * would not be an import, it would be a revert.
+ *
+ * It used to walk `events` and nothing else, which was correct while events were
+ * the only thing the admin could author and became the most dangerous gap in
+ * `docs/plans/authoring-players-and-events.md` the moment that stopped being
+ * true: `--bootstrap` would have reverted every authored player with no refusal
+ * and no output, and this is the script you reach for legitimately. It now asks
+ * the same question of both collections, and of players only while the admin
+ * owns them — a mirrored collection has no authored document to protect, and
+ * refusing over one would break the import this flag exists for.
  */
-async function refuseToOverwriteAuthoredEvents(): Promise<void> {
+async function authoredEvents(): Promise<string[]> {
     const snapshot = await firestore.collection('events').get()
     const authored: string[] = []
 
@@ -103,28 +119,64 @@ async function refuseToOverwriteAuthoredEvents(): Promise<void> {
         if (!stored.doc || stored.updatedBy === 'seed') continue
         const parsed = genericEventSchema.safeParse(JSON.parse(stored.doc))
         if (parsed.success && parsed.data && OWNED_FORMATS.has(parsed.data.format)) {
-            authored.push(`${doc.id} (last written by ${stored.updatedBy ?? 'unknown'})`)
+            authored.push(`events/${doc.id} (last written by ${stored.updatedBy ?? 'unknown'})`)
         }
     }
 
-    if (authored.length > 0) {
-        throw new Error(
-            `Refusing to --bootstrap over events the admin has edited:\n` +
-                authored.map((a) => `  ${a}`).join('\n') +
-                `\n\nFirestore is the only copy of those. Export them first ` +
-                `(npm run export), or drop them by hand if you really mean to.`
-        )
-    }
+    return authored
 }
 
+async function authoredPlayers(): Promise<string[]> {
+    if (!PLAYERS_ARE_OWNED) return []
+    const snapshot = await firestore.collection('players').get()
+
+    return snapshot.docs
+        .map((doc) => ({ doc, stored: doc.data() as { doc?: string; updatedBy?: string } }))
+        .filter(({ stored }) => stored.doc && stored.updatedBy !== 'seed')
+        .map(({ doc, stored }) => `players/${doc.id} (last written by ${stored.updatedBy ?? 'unknown'})`)
+}
+
+async function refuseToOverwriteAuthored(): Promise<void> {
+    const authored = [...(await authoredEvents()), ...(await authoredPlayers())]
+    if (authored.length === 0) return
+
+    throw new Error(
+        `Refusing to --bootstrap over records the admin has edited:\n` +
+            authored.map((a) => `  ${a}`).join('\n') +
+            `\n\nFirestore is the only copy of those. Export them first ` +
+            `(npm run export), or drop them by hand if you really mean to.`
+    )
+}
+
+/** What the admin authors, named the way the line below wants to read it. */
+const authoredHere = [...OWNED_FORMATS, ...(PLAYERS_ARE_OWNED ? ['players'] : [])]
+
 console.log(`Seeding ${target}…`)
-console.log(bootstrap ? '  --bootstrap: importing owned formats too' : `  mirror only; ${[...OWNED_FORMATS].join(', ')} is authored in the admin`)
+console.log(
+    bootstrap
+        ? '  --bootstrap: importing what the admin authors too'
+        : `  mirror only; ${authoredHere.join(', ')} ${authoredHere.length === 1 ? 'is' : 'are'} authored in the admin`
+)
 
 await reportingStoreErrors(async () => {
-    if (bootstrap) await refuseToOverwriteAuthoredEvents()
+    if (bootstrap) await refuseToOverwriteAuthored()
     for (const format of formats) {
         await seed(format, 'events', `events/${format}/*.json`, genericEventSchema)
     }
-    await seed('players', 'players', 'players/*.json', playerSchema)
+    /*
+     * The players line used to sit outside every gate, which was the other half
+     * of the plan's most dangerous gap: the format loop respects
+     * `MIRRORED_FORMATS`, so an event format moving out of the mirror needed no
+     * change here, and the players line needed one badly. Unattended — this runs
+     * after every scrape and after every admin commit — it would have reverted
+     * an authored player within hours, silently.
+     *
+     * `--bootstrap` still writes them, because that is the import path for a new
+     * project where Firestore holds nothing and the refusal above is what makes
+     * it safe.
+     */
+    if (!PLAYERS_ARE_OWNED || bootstrap) {
+        await seed('players', 'players', PLAYER_FILES, playerSchema)
+    }
 })
 console.log('Done.')

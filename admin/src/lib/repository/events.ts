@@ -1,13 +1,13 @@
 import {
     EventFormat,
     genericEventSchema,
-    matchplayEventSchema,
     type Event,
     type MatchplayEvent,
 } from '@hector/schemas/src/events.ts'
 import { schema as playerSchema, type Player } from '@hector/schemas/src/players.ts'
 
 import { firestore } from '../firestore.ts'
+import { OWNED_FORMATS, PLAYERS_ARE_OWNED } from '../ownership.ts'
 
 /**
  * Reading and writing Hector's data.
@@ -114,11 +114,48 @@ export function getMatchplayEvent(id: string): Promise<MatchplayEvent | undefine
 }
 
 /**
- * Validates before writing. The admin UI is the one writer that could put a
- * malformed event into the store, so it is the one place worth refusing to.
+ * Thrown when a write is aimed at a collection the admin only mirrors.
+ *
+ * A distinct type because the two callers want different things from it: a page
+ * shows the message, and a test wants to assert the refusal happened rather than
+ * that some string matched.
  */
-export async function saveMatchplayEvent(event: MatchplayEvent, updatedBy: string): Promise<void> {
-    const validated = matchplayEventSchema.parse(event)
+export class NotOwnedError extends Error {
+    constructor(what: string) {
+        super(
+            `${what} is mirrored, not authored here. Writing it would be reverted by the next ` +
+                `\`npm run seed\`. See docs/current/data-ownership.md.`
+        )
+        this.name = 'NotOwnedError'
+    }
+}
+
+/**
+ * Writes an event of any format the admin owns, and refuses the rest.
+ *
+ * **The refusal is the point, rather than the generalisation.** This replaced a
+ * `saveMatchplayEvent` that took a `MatchplayEvent` and was therefore safe by
+ * its type alone; widening it to every format gives that safety up, and this
+ * guard is what buys it back — as a rule the store enforces rather than one a
+ * document states. What it stops is a page written for one format being pointed
+ * at a mirrored one, which is not a hypothetical: every read on this module is
+ * now generic, so a page for Hector events is three lines of copying away and
+ * the next thing it wants is a save.
+ *
+ * Firestore would accept that write happily. `npm run seed` would revert it
+ * within hours, silently, and the person who made the edit would have no way to
+ * tell that from never having pressed the button.
+ *
+ * Validating through `genericEventSchema` rather than one format's schema is the
+ * smaller half, and it is the discriminated union doing the work: it picks the
+ * option by `format`, so a Hector event is still checked against the Hector
+ * rules. The admin UI is the one writer that could put a malformed event into
+ * the store, so it is the one place worth refusing to.
+ */
+export async function saveEvent(event: Event, updatedBy: string): Promise<void> {
+    if (!OWNED_FORMATS.has(event.format)) throw new NotOwnedError(`The ${event.format} format`)
+
+    const validated = genericEventSchema.parse(event)
     const record: StoredDocument = {
         doc: JSON.stringify(validated),
         updatedAt: new Date().toISOString(),
@@ -128,30 +165,39 @@ export async function saveMatchplayEvent(event: MatchplayEvent, updatedBy: strin
 }
 
 /**
- * Removes a tournament, and refuses to remove anything else.
+ * Removes an event the admin owns, and refuses to remove anything else.
  *
- * The guard is the point. The admin owns matchplay and only matchplay — every
- * other format in this collection is a mirror a scheduled job writes, so
+ * The guard is the point, and it used to be a format literal: the admin owned
+ * matchplay and only matchplay, so reading the document first and checking it
+ * was one made the wrong id a no-op. It now asks `OWNED_FORMATS` the same
+ * question, which is the same guard with the list taken out of it.
+ *
+ * Every mirrored format in this collection is written by a scheduled job, so
  * deleting one here would either be undone on the next tick or, worse, survive
- * until the next export published the hole to the public site. Reading the
- * document first costs one round trip and makes the wrong id a no-op instead.
+ * until the next export published the hole to the public site.
  *
  * There is no undo in Firestore. There is one in git: the event's committed JSON
- * under `astrosite/src/data/events/matchplay/` is removed by the next export, as
- * a reviewable commit, so a deletion made in error is recovered by reverting it
+ * under `astrosite/src/data/events/` is removed by the next export, as a
+ * reviewable commit, so a deletion made in error is recovered by reverting it
  * and seeding. The log line below is the other half of that trail — it is the
  * only provenance a deletion can leave, `updatedBy` having gone with the record.
  *
- * Returns false when the id is not a matchplay event, whether because it is a
- * Hector event or because it is nothing at all; the caller has the same thing to
- * say about either.
+ * **Returns false rather than throwing, where `saveEvent` throws.** That is
+ * deliberate and not an oversight. A save that quietly did nothing is the worst
+ * outcome available — the person believes their edit landed — so it is loud. A
+ * delete has nothing to lose by being quiet: false already means "not there",
+ * the caller says the same thing about an id that is mirrored as about one that
+ * does not exist, and the alternative is every call site catching to distinguish
+ * two cases it treats identically.
  */
-export async function deleteMatchplayEvent(id: string, deletedBy: string): Promise<boolean> {
-    const event = await getMatchplayEvent(id)
-    if (!event) return false
+export async function deleteEvent(id: string, deletedBy: string): Promise<boolean> {
+    const doc = await firestore().collection(EVENTS).doc(id).get()
+    if (!doc.exists) return false
+    const event = parse<Event>(genericEventSchema, doc.data(), id)
+    if (!event || !OWNED_FORMATS.has(event.format)) return false
 
     await firestore().collection(EVENTS).doc(id).delete()
-    console.log(`Deleted matchplay event ${id} ("${event.name}") on behalf of ${deletedBy}`)
+    console.log(`Deleted ${event.format} event ${id} ("${event.name}") on behalf of ${deletedBy}`)
     return true
 }
 
@@ -179,4 +225,59 @@ export async function getPlayer(id: string): Promise<Player | undefined> {
     const doc = await firestore().collection(PLAYERS).doc(id).get()
     if (!doc.exists) return undefined
     return parse<Player>(playerSchema, doc.data(), id)
+}
+
+/**
+ * Writes a player, once the admin owns them.
+ *
+ * New: nothing has ever saved a player from here. It exists before its caller
+ * does because it is the ownership rule for a collection two scheduled jobs
+ * still write — `update-player-biographies` and `update-player-club-memberships`
+ * both persist the whole record through `updatePlayerData` — and that rule is
+ * cheaper to get right now, with nothing depending on it, than in the middle of
+ * building an editor.
+ *
+ * `PLAYERS_ARE_OWNED` is false today, so this throws for every input. That is
+ * the correct behaviour rather than a placeholder: until those two jobs write
+ * Firestore instead of files, a player written here is reverted by the next
+ * seed. The day the flag flips, this starts working and nothing else about it
+ * changes.
+ */
+export async function savePlayer(player: Player, updatedBy: string): Promise<void> {
+    if (!PLAYERS_ARE_OWNED) throw new NotOwnedError('The players collection')
+
+    const validated = playerSchema.parse(player)
+    const record: StoredDocument = {
+        doc: JSON.stringify(validated),
+        updatedAt: new Date().toISOString(),
+        updatedBy,
+    }
+    await firestore().collection(PLAYERS).doc(validated.id).set(record)
+}
+
+/**
+ * Removes a player, once the admin owns them, and refuses otherwise.
+ *
+ * False for a player who is not there and for a collection the admin does not
+ * own, on the same reasoning as `deleteEvent`.
+ *
+ * Worth knowing before this ever gets a button: a player id is referenced by
+ * `participants` on every event they played, and nothing in this store enforces
+ * that. Deleting one leaves those references dangling, which the admin renders
+ * as the raw id — `architecture.md` §13 counts twenty ids already in that state
+ * for other reasons. Whether a delete should refuse a player with appearances,
+ * or warn, is a question for the editor rather than for this function, which is
+ * why this one only answers the ownership half.
+ */
+export async function deletePlayer(id: string, deletedBy: string): Promise<boolean> {
+    if (!PLAYERS_ARE_OWNED) return false
+
+    const doc = await firestore().collection(PLAYERS).doc(id).get()
+    if (!doc.exists) return false
+    const player = parse<Player>(playerSchema, doc.data(), id)
+    if (!player) return false
+
+    await firestore().collection(PLAYERS).doc(id).delete()
+    console.log(`Deleted player ${id} ("${player.name.first} ${player.name.last}") on behalf of ${deletedBy}`)
+    return true
 }
