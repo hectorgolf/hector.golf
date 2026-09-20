@@ -146,7 +146,10 @@ Both write through `updatePlayerData`, which persists the whole player object �
 whole-record writers, and both have to stop writing files before the admin can own one.
 
 They move the way the handicap scrape did: into `admin/src/lib/jobs/`, registered in
-`registry.ts`, run by the same Cloud Scheduler tick. That harness was built for exactly this.
+`registry.ts`. Both are in, in shadow, as of 2026-09-20 — `club-memberships` decides *and* scrapes,
+`biographies` decides only, and neither writes. Neither is on the tick: the club scan is 140
+requests per player and the biographies run will eventually be forty-five model calls, so both are
+started by hand. That harness was built for exactly this.
 Its header says so — entries move from `workflows.ts` to `JOBS` one dataset at a time, and a dataset
 appears in both lists during the migration, which is what `dryRun` is for. Use the shadow period;
 the handicaps job is the precedent for how long it needs to be, and for why "a week of boring diffs"
@@ -160,7 +163,11 @@ Neither job needs anything the service has not already got:
   only when the field is empty — is the authored rule, arrived at independently, and it does not
   change.
 - **Biographies** call the `GeneratePlayerBiography` Cloud Function over HTTP, which a Cloud Run
-  service can do as readily as a runner. [`biography-locking.md`](./biography-locking.md) records
+  service can do as readily as a runner. The shadow job deliberately does not: the decision is the
+  half that can be wrong silently, and generating forty-five biographies to throw away is the half
+  that costs a model call each. It also does not solve `refreshClubsJson()`, which is this
+  workflow's *second* output and has to find a home before the workflow can be deleted — the same
+  shape as `update-handicaps.yml`'s four. [`biography-locking.md`](./biography-locking.md) records
   that this job's import-time blocker is already gone: `golfClubs` was a module-level IIFE that
   scraped WiseGolf and rewrote `clubs.json` on import, it is now fetched lazily, and `run()` only
   fires when the script is executed. So the admin can import what it needs.
