@@ -8,7 +8,7 @@ import EventDescription from '@hector/ui/components/EventDescription.astro'
 
 import { matchplayStatus, type MatchplayEvent } from '@hector/schemas/src/events.ts'
 import { formatEventDates } from '@hector/schemas/src/dates.ts'
-import { getMatchplayEvent, listPlayers, saveMatchplayEvent } from '../../../lib/repository/events.ts'
+import { getMatchplayEvent, listPlayers, saveEvent } from '../../../lib/repository/events.ts'
 import { viewerFromHeaders } from '../../../lib/identity.ts'
 import { nameById } from '../../../lib/players.ts'
 import {
@@ -44,12 +44,12 @@ if (Astro.request.method === 'POST') {
 			const playerId = String(form.get('playerId'))
 			if (!event.participants.includes(playerId)) {
 				event = { ...event, participants: [...event.participants, playerId] }
-				await saveMatchplayEvent(event, by)
+				await saveEvent(event, by)
 			}
 		} else if (action === 'remove-player') {
 			const playerId = String(form.get('playerId'))
 			event = { ...event, participants: event.participants.filter((p) => p !== playerId) }
-			await saveMatchplayEvent(event, by)
+			await saveEvent(event, by)
 		} else if (action === 'draw') {
 			const bracket = drawBracket(orderForDraw(event.participants))
 			event = {
@@ -57,7 +57,7 @@ if (Astro.request.method === 'POST') {
 				status: 'started',
 				results: { winners: {}, bracket },
 			}
-			await saveMatchplayEvent(event, by)
+			await saveEvent(event, by)
 			flash = 'Bracket drawn. The tournament is now started.'
 		} else if (action === 'record') {
 			const bracket = recordResult(event.results?.bracket ?? [], {
@@ -71,13 +71,13 @@ if (Astro.request.method === 'POST') {
 				status: champion ? 'complete' : 'started',
 				results: { winners: champion ? { matchplay: champion } : {}, bracket },
 			}
-			await saveMatchplayEvent(event, by)
+			await saveEvent(event, by)
 			flash = champion ? 'Result recorded. That was the final.' : 'Result recorded.'
 		} else if (action === 'reopen-signup') {
 			// Deliberate and reversible: a draw made too early should not be a
 			// one-way door. The bracket is discarded, the field is not.
 			event = { ...event, status: 'signup', results: undefined }
-			await saveMatchplayEvent(event, by)
+			await saveEvent(event, by)
 			flash = 'Back in signup. The bracket was discarded; the field was kept.'
 		}
 	} catch (e) {

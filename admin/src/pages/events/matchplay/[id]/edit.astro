@@ -6,9 +6,9 @@ import EventDetailsFields from '../../../../components/EventDetailsFields.astro'
 
 import { matchplayEventSchema } from '@hector/schemas/src/events.ts'
 import {
-	deleteMatchplayEvent,
+	deleteEvent,
 	getMatchplayEvent,
-	saveMatchplayEvent,
+	saveEvent,
 } from '../../../../lib/repository/events.ts'
 import { detailsFromForm } from '../../../../lib/matchplay/details.ts'
 import { viewerFromHeaders } from '../../../../lib/identity.ts'
@@ -46,7 +46,7 @@ if (Astro.request.method === 'POST') {
 		if (fields.confirmId?.trim().toUpperCase() !== event.id) {
 			error = `Type ${event.id} to confirm. Nothing was deleted.`
 		} else {
-			await deleteMatchplayEvent(event.id, viewer.email ?? 'unknown')
+			await deleteEvent(event.id, viewer.email ?? 'unknown')
 			return Astro.redirect(`/events/matchplay?deleted=${encodeURIComponent(event.name)}`)
 		}
 	} else {
@@ -60,7 +60,7 @@ if (Astro.request.method === 'POST') {
 		if (!parsed.success) {
 			error = parsed.error.issues.map((i) => `${i.path.join('.') || 'form'}: ${i.message}`).join('; ')
 		} else {
-			await saveMatchplayEvent(parsed.data, viewer.email ?? 'unknown')
+			await saveEvent(parsed.data, viewer.email ?? 'unknown')
 			return Astro.redirect(`/events/matchplay/${event.id}?saved=details`)
 		}
 	}

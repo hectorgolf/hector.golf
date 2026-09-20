@@ -236,7 +236,41 @@ costs no writes and `updatedAt` keeps meaning "when this last changed" rather th
 last ran".
 
 `admin/src/lib/ownership.ts` holds the one list both read, with the mirrored set derived from the
-owned set rather than restated, so a format cannot be added to one and forgotten in the other.
+owned set rather than restated, so a format cannot be added to one and forgotten in the other. It
+also holds `PLAYERS_ARE_OWNED`, which is the same decision for the one collection that is not an
+event format — a boolean rather than a set, because there is one player collection and no sub-kinds
+to own separately.
+
+#### What enforces the rule, as of 2026-09-20
+
+Until then every one of these mechanisms named matchplay explicitly, because matchplay was all there
+had ever been. They now ask `ownership.ts` instead. Nothing changed behaviour: the answers are the
+same while the sets are, which is what made this landable on its own.
+
+| | Refuses |
+| --- | --- |
+| `saveEvent` | A format not in `OWNED_FORMATS`. Throws, because a save that quietly did nothing is the worst outcome available — the person believes their edit landed |
+| `deleteEvent` | The same, returning false. A caller says the same thing about a mirrored id as about one that is not there |
+| `savePlayer`, `deletePlayer` | Everything, while `PLAYERS_ARE_OWNED` is false. New, and with no caller until there is a player editor |
+| `export.ts` | Publishing an empty set over a directory that is not empty, for players as well as events — an empty read is otherwise indistinguishable from "delete them all" |
+| `seed.ts` | Overwriting players at all once they are owned, and `--bootstrap` over any authored record, players included |
+
+The last of those was the dangerous one. `--bootstrap` used to walk `events` and nothing else, so
+the day players became owned it would have reverted every authored player with no refusal and no
+output — and it is the script you reach for legitimately when the mirror is stale.
+
+**The export discovers a player's file rather than composing its path**, which is not optional: not
+one of the forty-five files is named after the id it holds, and a composed path matches nothing on
+disk, so the export writes forty-five new files and removes forty-five real ones as absent from the
+store. That is not a hypothetical — it is what the first version of that path did, against an
+emulator. §4 of [`architecture.md`](./architecture.md#player-identity) is the rule;
+`astrosite/test/unit/player-data-paths.test.ts` is the site's copy of the same guard.
+
+That discovery is expected to be temporary. The files are to be renamed to match their ids when the
+admin gets a player editor and stops being the second reader of that directory — decided 2026-09-20,
+recorded in step 1 of
+[`plans/authoring-players-and-events.md`](../plans/authoring-players-and-events.md). Until then the
+human-readable names are the ones that matter, because a human is still who opens them.
 
 The mirror refreshes itself. **Refresh the admin's mirror** runs `npm run seed` whenever one of the
 four scrapes finishes, on `workflow_run` rather than a clock — a cron would be a guess at how long a
@@ -248,9 +282,9 @@ That is also why the seed must not touch matchplay. It now runs unattended, four
 wrote the owned formats it would revert an unexported tournament without anybody having typed a
 command.
 
-For a new project where Firestore holds nothing, `npm run seed -- --bootstrap` imports the owned
-formats as well. It refuses if any event it would overwrite was last written by someone other than
-the seed, because Firestore is the only copy of those.
+For a new project where Firestore holds nothing, `npm run seed -- --bootstrap` imports what the
+admin authors as well. It refuses if any record it would overwrite was last written by someone other
+than the seed, because Firestore is the only copy of those.
 
 ### Publishing an edit
 

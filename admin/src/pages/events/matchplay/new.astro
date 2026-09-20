@@ -4,7 +4,7 @@ import PageHeader from '@hector/ui/components/PageHeader.astro'
 import Breadcrumb from '@hector/ui/components/Breadcrumb.astro'
 import EventDetailsFields from '../../../components/EventDetailsFields.astro'
 import { matchplayEventSchema } from '@hector/schemas/src/events.ts'
-import { eventExists, saveMatchplayEvent } from '../../../lib/repository/events.ts'
+import { eventExists, saveEvent } from '../../../lib/repository/events.ts'
 import { detailsFromForm } from '../../../lib/matchplay/details.ts'
 import { viewerFromHeaders } from '../../../lib/identity.ts'
 
@@ -31,7 +31,7 @@ if (Astro.request.method === 'POST') {
 		error = `A tournament with id ${parsed.data.id} already exists.`
 	} else {
 		const viewer = viewerFromHeaders(Astro.request.headers)
-		await saveMatchplayEvent(parsed.data, viewer.email ?? 'unknown')
+		await saveEvent(parsed.data, viewer.email ?? 'unknown')
 		return Astro.redirect(`/events/matchplay/${parsed.data.id}`)
 	}
 }
