@@ -5,9 +5,10 @@ events and Finnkampen events are mirrors it reads, refreshed from the committed 
 `npm run seed`. This is the one piece of work [`docs/README.md`](../README.md) says unblocks the two
 plans behind it.*
 
-*What did land, on 2026-09-20, is the reading half: all three collections now have pages in the
-admin — a list and a record page each — and they are read-only on purpose. Nothing below is
-executed by that. What it changes for whoever starts this:*
+*What landed on 2026-09-20 was the reading half, and part of it was taken away again the same day.
+Players and Hector events have pages in the admin now — a list and a record page each, read-only on
+purpose. Finnkampen got the same pair and lost it; see "Not in scope". Nothing below is executed by
+any of that. What it changes for whoever starts this:*
 
 - *Part of **step 0** is done. `repository/events.ts` has a generic `getEventOfFormat` and
   `listEventsOfFormat`, and a `getPlayer`. The write side — `saveEvent` behind an `OWNED_FORMATS`
@@ -19,13 +20,14 @@ executed by that. What it changes for whoever starts this:*
 - *The read-only fields are the form's fields with the inputs taken out, sharing `admin.css`'s label
   rule. Making one editable is replacing a `<p>` with an `<input>` and putting a `<form>` round the
   section.*
-- *It surfaced one thing steps 1 and 3 inherit: twenty participant ids in the committed events match
-  no player document — all eighteen of `FINNKAMPEN2022`'s, and two in `HECTOR2017`. A participant
-  picker cannot offer an id no collection has. Recorded in
-  [`architecture.md`](../current/architecture.md) §13.*
-- *The Finnkampen pages went again the same day, deliberately, and that cost this plan its pilot.
-  Step 1 is players now and step 2 is Hector; the reordering and what it costs are under the price
-  table. Hector and players kept their pages.*
+- *Step 1 is players and step 2 is Hector, which is not the order this plan was written in. Losing
+  Finnkampen cost it its pilot; the reordering, and what it costs, are under the price table.*
+- *Two findings came out of building those pages, and both are recorded where they belong rather
+  than only here. Twenty participant ids in the committed events match no player document — all
+  eighteen of `FINNKAMPEN2022`'s and two in `HECTOR2017` — and step 2 inherits the Hector pair
+  ([`architecture.md`](../current/architecture.md) §13). And the seed/export round trip turns out to
+  be clean for every event file, which "Before each flip" now records as measured rather than
+  expected.*
 
 ## What to do
 
@@ -51,7 +53,7 @@ is worth re-reading before it is counted, because "the admin cannot write this r
 Firestore and not of the repository.
 
 Underneath that, today every one of these records is edited by opening a JSON file and committing
-it. That is a reasonable way to run thirteen events and forty-six players and a bad way to run a
+it. That is a reasonable way to run thirteen events and forty-five players and a bad way to run a
 tournament week, when the person who needs to add a late replacement is at a golf course.
 
 ## The work is ownership, not forms
@@ -75,7 +77,7 @@ of fields on its form:
 | Collection | Records | Scheduled writers to move | Unblocks |
 | --- | --- | --- | --- |
 | `events/finnkampen/` | 2 | **none** — hand-edited, no job touches it | nothing |
-| `players/` | 46 | `update-player-biographies` (`biography`), `update-player-club-memberships` (`club`) | biography-locking |
+| `players/` | 45 | `update-player-biographies` (`biography`), `update-player-club-memberships` (`club`) | biography-locking |
 | `events/hector/` | 13 | `update-leaderboards` (`results.teams`) — the handicaps job writes `buckets` to git already | bucket-locking |
 
 That table used to set the order by itself: Finnkampen had no scheduled writer, so it was the pilot
@@ -108,7 +110,7 @@ one step that can land and sit.
 - **`export.ts` refuses to export an empty owned set, for events only.** That guard exists because an
   empty read deletes every committed file of the formats it covers — "a very fast way to lose them to
   a misconfigured database id". Players need their own copy of it, or the same typo removes
-  forty-six player files instead.
+  forty-five player files instead.
 - **`seed.ts`'s bootstrap guard reads the `events` collection and nothing else.**
   `refuseToOverwriteAuthoredEvents` walks `events`, parses each document and refuses if an owned one
   was last written by someone other than `seed`. The day players are owned, `--bootstrap` reverts
@@ -117,9 +119,12 @@ one step that can land and sit.
   legitimately — the seed's own header already names that trap for the matchplay case.
 - **`seed.ts` writes players unconditionally.** The format loop respects `MIRRORED_FORMATS`, so an
   event format moving out of the mirror needs no change here. The players line does not: it sits
-  outside that loop and is gated on nothing. `refresh-admin-mirror.yml` runs the seed unattended
-  after every scrape, so left as it is, the day players are owned they are reverted about twelve
-  times a day.
+  outside that loop and is gated on nothing. `refresh-admin-mirror.yml` runs the seed unattended,
+  so left as it is, the day players are owned every authored player is reverted without anybody
+  having typed a command. That workflow now has two triggers rather than one — `workflow_run` for
+  the three remaining scrapes, and `on: push` for the admin service's own commits, which is how
+  bucket writes reach the mirror since `update-handicaps.yml` was deleted. Both fire several times a
+  day; the exact count is not the point and has already changed once.
 
 `admin/test/ownership.test.ts` exists and is where the invariant belongs: the owned and mirrored sets
 are complements, and neither script covers a collection the other does.
@@ -129,7 +134,7 @@ are complements, and neither script covers a collection the other does.
 First because of the calendar, not because it is the easy one.
 
 Hector events are the better candidate on every other axis: one writer to move against two, thirteen
-records against forty-six, an editor whose read-only half is already built, and — the part that
+records against forty-five, an editor whose read-only half is already built, and — the part that
 matters most — the machinery step 0 widens is *event* machinery, which players do not exercise at
 all. What rules them out is the date in step 2. `HECTOR2026` is played 2026-09-24 to 2026-09-27, and
 this document has said since it was written not to make that flip in the week of a Hector. Waiting
@@ -264,12 +269,23 @@ And one acceptance test worth naming, because it is cheap and it catches the who
 at once: **seed a clean emulator from the committed files, export, and `git diff --exit-code`.** A
 round trip that is not a no-op differs for one of two reasons — schema defaults being materialised,
 or key order — and both want settling as their own commit *before* the flip, so that the first real
-export is not a fifteen-file diff with one real change hidden in it.
+export is not a thirteen-file diff with one real change hidden in it.
 
-It is expected to be close to clean already. All thirteen Hector files carry `ignore` and
-`maxStrokesOverPar`, and both Finnkampen files carry `ignore`, so the defaults `data-ownership.md`
-warns the first export makes explicit are explicit in these files today. Expected, not assumed —
-this is a thing to show.
+**Run on 2026-09-20, and it is clean — for events.** This document used to say the result was
+expected and worth showing; it has now been shown. With every format put into `OWNED_FORMATS`
+temporarily, the export reported `hector: 13 exported, 0 changed`, `matchplay: 3 exported, 0
+changed` and `finnkampen: 2 exported, 0 changed`, and `git diff --exit-code` over
+`astrosite/src/data/events/` passed. So the defaults `data-ownership.md` warns the first export
+makes explicit are already explicit in all eighteen files, and key order survives the round trip.
+That is one fewer thing for step 2 to find out the hard way.
+
+**Players are not covered by that, and could not be.** `export.ts` has no players path at all: it
+reads the `events` collection, filters it by `OWNED_FORMATS` and globs `events/{format}/*.json`.
+Writing that path is part of step 1, and the round trip is worth running again as soon as it exists
+— before the flip, not with it. A player document carries optional fields no event has, several of
+which no committed file sets: `gender`, `privacy`, `aliases`, `image`, `misc` and
+`biographyLocked`. The last of those is the undefaulted optional `data-ownership.md` argues about at
+length, and it is exactly the shape of thing a round trip materialises.
 
 Run it against the emulator, which needs no code change:
 `FIRESTORE_EMULATOR_HOST=localhost:8432 npm run seed -- --bootstrap`, then `npm run export`.
@@ -279,19 +295,20 @@ Run it against the emulator, which needs no code change:
 **One press of Export publishes more.** The export is manual on purpose — "an export publishes
 whatever is in the store at that moment", and a schedule would eventually publish a bracket drawn
 but not yet corrected. That reasoning holds, but the button currently publishes three tournaments
-and would publish sixty-two records. Whether the operations page should say how many documents have
-been authored since the last export is a real question and a small one; it is not a blocker.
+and would publish sixty-one — the three, plus forty-five players and thirteen Hector events.
+Whether the operations page should say how many documents have been authored since the last export
+is a real question and a small one; it is not a blocker.
 
 **Authorization is still a type.** `identity.ts` declares `Permission` with `events:write` and
 `players:write` and exports `can()`; nothing calls it and nothing grants a permission. Everyone IAP
 admits can do everything. That is a defensible position for one developer and one allowlist, and it
-is the position today — but the surface behind it grows from three tournaments to forty-six players
+is the position today — but the surface behind it grows from three tournaments to forty-five players
 and thirteen Hector events, so it should be a decision somebody makes rather than a thing nobody
 noticed.
 
 ## Not in scope
 
-- **Courses.** Marked unavailable in `sections.ts`, and a genuinely different problem: they are not
+- **Courses.** `planned` in `sections.ts`, and a genuinely different problem: they are not
   in Firestore at all and no job writes them, so the work is an import plus an editor with no
   ownership conflict anywhere in it. Cheaper than either step above, and independent of all of it.
 - **Splitting the data loader** so the site can read Firestore. In the backlog
