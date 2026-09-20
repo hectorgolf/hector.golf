@@ -17,8 +17,12 @@ import { describe, expect, it } from 'vitest'
  *
  * That silence is why this is an assertion rather than a habit, and it was never
  * particular to the biography script. All four scripts called their `run()` at
- * module scope; three of them also rewrite committed JSON, and the fourth pushes
+ * module scope; three of them also rewrote committed JSON, and the fourth pushes
  * a commit to GitHub. Any of them would have done that on the first import.
+ *
+ * Three of the four are gone now — their outputs moved into the admin service —
+ * and the script that scraped WiseGolf on import is one of them. The rule
+ * outlives them, which is why this file does too.
  *
  * Two guards, because neither catches the other's failure:
  *
@@ -48,11 +52,15 @@ const DATA = join(ROOT, 'src/data')
  * message a real run had left for `commit-changes.sh`. `update-leaderboards.ts`
  * has none: it commits through the GitHub API rather than through the tree.
  */
-const SCRIPTS = [
-    ['update-leaderboards', undefined],
-    ['update-player-biographies', '.update-player-biographies-commit'],
-    ['update-player-club-memberships', '.update-player-club-memberships-commit'],
-] as const
+/*
+ * One left, and the guard is kept rather than retired with the other three.
+ * `update-handicaps.ts` went on 2026-09-20 and the two player scripts on
+ * 2026-09-21, as the admin service took their outputs over. This still describes
+ * what a script under `src/workflows/` is allowed to do on import, and the next
+ * one somebody writes should find the rule already here — it is cheaper than
+ * rediscovering it the way it was discovered the first time.
+ */
+const SCRIPTS = [['update-leaderboards', undefined]] as const
 
 /** Every file under a directory, recursively. */
 function files(directory: string): string[] {
@@ -103,12 +111,6 @@ describe('importing a workflow script', () => {
 
         expect(dataTree()).toEqual(treeBefore)
         expect(sidecar(commitMessage)).toBe(sidecarBefore)
-    })
-
-    it('still hands over the function the tests import it for', async () => {
-        // Import safety is worth nothing if it was bought by exporting nothing.
-        const module = await import('../../src/workflows/update-player-biographies')
-        expect(typeof module.biographiesToRegenerate).toBe('function')
     })
 })
 

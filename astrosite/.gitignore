@@ -28,9 +28,3 @@ pnpm-debug.log*
 
 # A "temp file" used for logging changed handicaps in the Git commit message
 .update-handicaps-commit
-
-# A "temp file" used for logging changed player biographies in the Git commit message
-.update-player-biographies-commit
-
-# A "temp file" used for logging changed player club memberships in the Git commit message
-.update-player-club-memberships-commit

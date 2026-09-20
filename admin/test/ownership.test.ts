@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -53,8 +53,26 @@ describe('the players collection, which has a flag rather than a list', () => {
     const read = (path: string) =>
         readFileSync(join(dirname(fileURLToPath(import.meta.url)), path), 'utf-8')
 
-    it('is mirrored today, so nothing has moved yet', () => {
-        expect(PLAYERS_ARE_OWNED).toBe(false)
+    /**
+     * Flipped on 2026-09-21, and asserted rather than left implicit because the
+     * gates below only mean something in one direction: while this was false
+     * they stopped a premature flip, and now they are what keeps the seed from
+     * reverting an authored player. A silent flip back would disarm the second
+     * meaning without touching a line of the code that enforces it.
+     */
+    it('is authored here, both workflows having moved into this service', () => {
+        expect(PLAYERS_ARE_OWNED).toBe(true)
+    })
+
+    /**
+     * The other half of the flip, and the half that is not in this package: a
+     * collection moves on the day the admin can author it *and* its scheduled
+     * writer has moved. Both writers wrote committed files from GitHub Actions
+     * until this day; the files that did it are gone.
+     */
+    it('has no workflow left that writes a player file', () => {
+        const workflows = join(dirname(fileURLToPath(import.meta.url)), '../../.github/workflows')
+        expect(readdirSync(workflows).filter((file) => file.startsWith('update-player-'))).toEqual([])
     })
 
     it('is seeded and exported through the same glob, so neither can drift', () => {

@@ -417,7 +417,7 @@ All content lives as JSON committed under [`astrosite/src/data/`](../../astrosit
 
 | Path | Count | Written by | Contents |
 | --- | --- | --- | --- |
-| `players/*.json` | 45 | Human + CI | Identity, contact, club, current handicap, `misc` hints, AI-generated `biography[]` |
+| `players/*.json` | 45 | **Generated** from Firestore since 2026-09-21 | Identity, contact, club, current handicap, `misc` hints, AI-generated `biography[]`. Authored in the admin; edit these files and the next export reverts you |
 | `events/hector/*.json` | 13 | Human + CI | `HECTOR2014`–`HECTOR2026` |
 | `events/matchplay/*.json` | 3 | Human | `HECTORMATCHPLAY2024`–`2026` |
 | `events/finnkampen/*.json` | 2 | Human | `FINNKAMPEN2021`–`2022` |
@@ -843,8 +843,9 @@ workflows:
 
 1. Exits 0 immediately unless `git status --short` shows modified files under `src/data/`.
 2. Builds a commit message from `$GITHUB_WORKFLOW`, `$GITHUB_EVENT_NAME`, `$GITHUB_RUN_NUMBER`.
-3. Appends the contents of the sidecar files each workflow script leaves behind
-   (`.update-player-biographies-commit`), then deletes them.
+3. Appends the contents of the sidecar file a workflow script leaves behind
+   (`.update-handicaps-commit`), then deletes it. The biography and club-membership
+   sidecars went with their scripts on 2026-09-21.
 4. Stages exactly the changed data files, lists them in the message, then
    `git commit -F … && git pull -r && git push`.
 
@@ -856,42 +857,25 @@ the history.
 | Script | Schedule (UTC) | Reads | Writes |
 | --- | --- | --- | --- |
 | `update-leaderboards.ts` | Every two hours 03:00–07:00, and 12:00, by Cloud Scheduler. No cron | Sheets / app.hector.golf | `leaderboards/*.json` (via API), event `results.teams` |
-| `update-player-biographies.ts` | Every 15 days, on the first tick that finds it due, and only while a Hector is upcoming. No cron | GCP function | `players/*.json` `biography` where `biographyLocked` is unset |
-| `update-player-club-memberships.ts` | Every 30 days, on the first tick that finds it due. No cron | WiseGolf | `players/*.json` `club` |
 
-**The handicap sweep is not on this list any more.** `update-handicaps.ts` and its workflow were
-deleted on 2026-09-20; the scrape runs in the admin service as a job, and what it does is described
-under §8's admin half below.
+**Three scrapes have left this list.** `update-handicaps.ts` and its workflow went on 2026-09-20;
+`update-player-biographies.ts` and `update-player-club-memberships.ts` went on 2026-09-21, when the
+admin took the player collection over. All three run in the admin service as jobs, and what they do
+is described under §8's admin half below. One script is left.
 
 **`update-leaderboards.ts`** — selects Hector events that hold a `leaderboardSheet` URL and have
 already started (`updateFutureEvents = false`), then dispatches on the URL shape: `app.hector.golf/*`
 against the app API, `docs.google.com/spreadsheets/*` against Sheets. It also back-fills
 `results.teams` into the event JSON from leaderboard pairings when the event has none recorded yet.
 
-**`update-player-biographies.ts`** — POSTs a `PlayerBiographyInput` per player to the
-`GeneratePlayerBiography` Cloud Function. The input is assembled by `playerBiographyInput` in
-`packages/schemas/src/biographies.ts` (name, gender, home club resolved from its abbreviation, past
-appearances, Hector/Victor wins, `misc` details, the next event and whether they are playing it, a
-`retired` flag when more than seven Hectors have passed since their last appearance, and **the
-biographies already generated in this run** so the model avoids repeating phrasing). It moved there
-on 2026-09-20 so the admin's `biographies` job could ask the function the same question in the same
-words — see the jobs section below, and `admin/test/biography-input.test.ts` for the ordering bug the
-move surfaced.
-
-It used to regenerate `clubs.json` as a side effect too, and that side effect used to fire **at
-import time**, from a module-level IIFE: importing the module at all scraped WiseGolf and rewrote the
-file from whatever came back — and anything without credentials, a test above all, got nothing back
-and wrote `[]` over 1,402 lines of committed club data without failing or saying so. The refresh is
-the admin's `clubs` job as of 2026-09-20 and this script no longer touches the file, which leaves the
-workflow with one output. `run()` is behind the same `argv[1]` guard as `update-handicaps.ts`.
-
-**All four scripts are now safe to import.** Each one's entry point sits behind that same `argv[1]`
-guard, and everything that touches the filesystem or the network happens inside the run rather than
-at module scope — the commit-message sidecars that `update-handicaps.ts`,
+**The one remaining script is safe to import, and so were the three that left.** Its entry point
+sits behind an `argv[1]` guard, and everything that touches the filesystem or the network happens
+inside the run rather than at module scope — the commit-message sidecars that `update-handicaps.ts`,
 `update-player-biographies.ts` and `update-player-club-memberships.ts` reset were the other
-import-time writes, and being gitignored they never showed up in a diff at all.
+import-time writes, and being gitignored they never showed up in a diff at all. The rule outlives
+the scripts it was written for, which is why the test does too.
 `workflow-import-writes-nothing.test.ts` is what keeps it that way, and it guards in two directions
-because neither catches the other's failure: it imports each script and compares every file under
+because neither catches the other's failure: it imports the script and compares every file under
 `src/data/` byte for byte, which catches a side effect whatever shape it is in, and it reads the
 sources and rejects a bare top-level call, which catches the write that needs credentials this
 machine does not have. A guardless `run()` that dies at a login it cannot make leaves the tree clean
@@ -985,8 +969,10 @@ what it left alone and why — a lock that stops a recompute silently reads as a
 somebody wonders why the buckets did not move. An event past its freeze is in neither list: there is
 nothing left for the lock to stop, so nothing is logged about it.
 
-**`update-player-club-memberships.ts`** — for players with no `club`, searches every source by name
-and assigns a club **only when exactly one** club matches.
+**The `club-memberships` job** — for players with no `club`, searches every source by name and
+assigns a club **only when exactly one** club matches. It was `update-player-club-memberships.ts`
+until 2026-09-21 and is `admin/src/lib/jobs/club-memberships.ts` now, writing Firestore rather than
+the committed file.
 
 ## 9. CI/CD
 
@@ -1002,10 +988,8 @@ and assigns a club **only when exactly one** club matches.
 | `deploy-admin.yml` | Push to `main` touching `admin/**`, `packages/**`, the root manifest/lockfile, `.node-version`, `.dockerignore`, or this file; manual | Build, push to Artifact Registry, `gcloud run deploy` | `contents: read`, `id-token: write` |
 | `deploy-functions.yml` | Push to `main` touching `backend/backend-functions/**`; manual | `gcloud functions deploy` for each of the four functions, in parallel, with `--service-account` and `--set-secrets` | `contents: read`, `id-token: write` |
 | `update-leaderboards.yml` | Dispatched by the admin service on every tick; manual | Script + `commit-changes.sh` | `contents: write` |
-| `update-player-biographies.yml` | Dispatched by the admin service when it last ran 15+ days ago; manual | Script + `commit-changes.sh` | `contents: write` |
-| `update-player-club-memberships.yml` | Dispatched by the admin service when it last ran 30+ days ago; manual | Script + `commit-changes.sh` | `contents: write` |
 | `export-admin-data.yml` | Manual only — an export publishes an edit, so there is no cron | Guard on `GH_WIF_PROVIDER`/`GH_DEPLOYER_SA` → `npm ci` → WIF auth → `npm run export` in `admin/` → `git add -A astrosite/src/data/events/matchplay` and push | `contents: write`, `id-token: write` |
-| `refresh-admin-mirror.yml` | `workflow_run` completion of the four update workflows, successful runs only; manual | Same guard → `npm ci` → WIF auth → `npm run seed` in `admin/` | `contents: read`, `id-token: write` |
+| `refresh-admin-mirror.yml` | `workflow_run` completion of `update-leaderboards.yml`, successful runs only; pushes under `events/hector/`; manual | Same guard → `npm ci` → WIF auth → `npm run seed` in `admin/` | `contents: read`, `id-token: write` |
 
 **Deployment target is GitHub Pages**, with the custom domain supplied by
 [`public/CNAME`](../../astrosite/public/CNAME) (`hector.golf`; `www` 301s to it). The build step passes
@@ -1060,7 +1044,7 @@ their absence degrades; this is what reads them.
 | `WISEGOLF_USERNAME` | Secret | PR checks (the live `wisegolf-api` tests), three update workflows — not `deploy-site`, whose build never calls WiseGolf |
 | `WISEGOLF_PASSWORD` | Secret | PR checks (the live `wisegolf-api` tests), three update workflows — not `deploy-site`, whose build never calls WiseGolf |
 | `HECTOR_APP_API_KEY` | Secret | `update-leaderboards`, `check-site` |
-| `ASTROSITE_API_KEY` | Secret | `update-player-biographies`, and the admin service via `ASTROSITE_API_KEY_SECRET` |
+| `ASTROSITE_API_KEY` | Secret | The admin service, via `ASTROSITE_API_KEY_SECRET`. Was also `update-player-biographies` until that workflow was deleted on 2026-09-21 |
 | `GIT_COMMITTER_EMAIL` | Secret | the four update workflows and `export-admin-data` — the address they commit as |
 | `GITHUB_TOKEN` | Built-in → `GITHUB_ACCESS_TOKEN` | `update-leaderboards` |
 
@@ -1101,7 +1085,7 @@ function demands one.
 | Function | Reach | Called by | Purpose |
 | --- | --- | --- | --- |
 | `TournamentLeaderboard` | **Public** | The live leaderboard in a visitor's browser, polling every 30s | Proxies `app.hector.golf/api/tournament`, adding the `x-api-key` the upstream requires |
-| `GeneratePlayerBiography` | **Private** | `update-player-biographies.ts`, run by `update-player-biographies.yml` on the 10th and 25th of each month | Writes a player's profile prose from their tournament history |
+| `GeneratePlayerBiography` | **Private** | The admin service's `biographies` job, run by hand while a Hector is upcoming | Writes a player's profile prose from their tournament history |
 | `GeneratePlayerAvatar` | **Private** | Nothing automated. `generate-avatars.sh`, by hand | *[Experiment](../experiments/player-avatar-generation.md)* — a cartoon headshot from a photograph |
 | `ExtractScorecardInformation` | **Private** | Nothing | *[Experiment](../experiments/scorecard-extraction.md)* — a scorecard screenshot read into typed scores |
 
@@ -1124,8 +1108,9 @@ becoming somebody else's free API rather than keeping anything secret. Failures 
 never cached, so the next poll retries. The site reaches it through `PUBLIC_LEADERBOARD_PROXY_URL`;
 unset, the live leaderboard is absent from the build entirely.
 
-**`GeneratePlayerBiography`, the private one in use.** `update-player-biographies.ts` assembles a
-`PlayerBiographyInput` per player and POSTs it (§8); the function calls `gemini-3.5-flash-lite` in
+**`GeneratePlayerBiography`, the private one in use.** The admin's `biographies` job assembles a
+`PlayerBiographyInput` per player with `playerBiographyInput` from `@hector/schemas` and POSTs it
+(§8); the function calls `gemini-3.5-flash-lite` in
 JSON mode and returns `{biography: string[], error?}`. The substance is the prompt in
 [`src/lib/prompts/biography/genai.ts`](../../backend/backend-functions/src/lib/prompts/biography/genai.ts):
 a response schema plus a system instruction defining the persona (formal golf journalist, first
@@ -1151,10 +1136,11 @@ on a public endpoint is a grant that should be reviewed in a diff.
 `Authorization: Bearer <token>`, compares it to `ASTROSITE_API_KEY` from its environment, and
 answers `401 Valid API key required` on a mismatch or a missing header. A function that finds the
 secret itself unset answers `500` rather than accepting anything, so a misconfigured deploy fails
-closed. The same value is held by the site's `.env`, by the `ASTROSITE_API_KEY` GitHub secret that
-`update-player-biographies.yml` passes to the workflow script, and since 2026-09-20 by the admin
-service, whose runtime identity has `secretAccessor` on `astrosite-api-key` so the biographies job
-can call the function once it generates.
+closed. The same value is held by the admin service, whose runtime identity has `secretAccessor` on
+`astrosite-api-key` so the biographies job can call the function — a grant made on 2026-09-20, and
+`/operations` reports whether it works rather than leaving it to be discovered. The site's `.env`
+and the `ASTROSITE_API_KEY` GitHub secret held it too, for `update-player-biographies.yml`, which
+was deleted on 2026-09-21.
 
 That is three holders of one key, and the reason it is shared rather than split is the comparison
 above: the function checks against a single value, so a key of the admin's own would mean teaching
@@ -1326,8 +1312,8 @@ that does ship, in `packages/wisegolf`, refuses to run under `NODE_ENV=productio
 
 ```bash
 cd astrosite
-npm run update-leaderboards               # or update-player-biographies,
-                                          # update-player-club-memberships
+npm run update-leaderboards               # the only one left; the other three
+                                          # run in the admin service
 ```
 
 The handicap sweep is not on that list: it runs in the admin service, and the way to run it by hand

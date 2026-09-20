@@ -68,22 +68,6 @@ if [ -f "$UPDATES_FILE" ]; then
 fi
 
 #
-# Append any biography updates to the commit message based on the contents of `.update-player-biographies-commit`
-#
-UPDATES_FILE="./.update-player-biographies-commit"
-if [ -f "$UPDATES_FILE" ]; then
-    echo "" >> "$COMMIT_MESSAGE_FILE"
-    if [ -s "$UPDATES_FILE" ]; then  # "-s" tests that the file exists and isn't empty
-        echo "Biography updates found in $UPDATES_FILE – copying to commit message and deleting $(basename $UPDATES_FILE)"
-        cat "$UPDATES_FILE" >> "$COMMIT_MESSAGE_FILE"
-        rm "$UPDATES_FILE"
-    elif [ -f "$UPDATES_FILE" ]; then  # Only report biography updates if the file exists (empty or not)
-        echo "Biography updates not found in $UPDATES_FILE"
-        echo "Biography updates not found in $UPDATES_FILE" >> $COMMIT_MESSAGE_FILE
-    fi
-fi
-
-#
 # Add the list of changed data files to the commit message and stage them for commit.
 #
 echo "" >> "$COMMIT_MESSAGE_FILE"

@@ -1,28 +1,13 @@
 import { readFileSync } from "fs";
 import { basename } from "path";
 import { glob } from "glob";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { schema as PlayerSchema, type Player } from "@hector/schemas/src/players.ts";
 
 /**
- * `updatePlayerData` is the only writer of player data, and it must land on the
- * file the player was read from. Mocking the write keeps that assertion honest
- * without letting the test touch the committed data — and without needing the
- * WiseGolf credentials the workflows that call it require.
- */
-vi.mock("../../src/code/json.ts", async (importOriginal) => {
-    const actual = await importOriginal<typeof import("../../src/code/json.ts")>();
-    return { ...actual, writeJsonFile: vi.fn() };
-});
-
-import { writeJsonFile } from "../../src/code/json.ts";
-import { playerDataPath } from "../../src/code/data.ts";
-import { updatePlayerData } from "../../src/code/players.ts";
-
-/**
- * Pins the naming every writer of player data depends on: a player's file is
- * named after the `id` it holds, and the two ways of finding it agree.
+ * Pins the naming the admin's export depends on: a player's file is named after
+ * the `id` it holds.
  *
  * **This suite used to argue the opposite, and the inversion is the point.**
  * Until 2026-09-20 not one of the files was named after its id —
@@ -40,11 +25,12 @@ import { updatePlayerData } from "../../src/code/players.ts";
  * what makes that safe is the case below: if a file ever stops being named after
  * its id, this fails before the export can lose it.
  *
- * The rest is unchanged and still worth having. `updatePlayerData` landing on
- * the file the player was read from is the same assertion whether the path is
- * composed or discovered — and `playerDataPath` still globs and matches rather
- * than composing, deliberately, since nothing forces it to and a lookup that
- * cannot invent a path is the safer of the two to leave alone.
+ * **This package no longer writes a player at all.** `updatePlayerData` and
+ * `playerDataPath` went with the two workflows on 2026-09-21, so the assertions
+ * about a writer landing on the file it read from went with them — there is no
+ * writer here to land anywhere. The naming is now asserted for a reader in
+ * another package, which is a thinner reason to keep a test and still the right
+ * one: nothing else checks it, and the thing it prevents is a silent deletion.
  */
 const playerFiles = (await glob("src/data/players/**/*.json")).sort();
 
@@ -75,38 +61,5 @@ describe("player data files", () => {
          */
         const misnamed = playerFiles.filter((file) => basename(file, ".json") !== readPlayer(file).id);
         expect(misnamed).toEqual([]);
-    });
-});
-
-describe("playerDataPath", () => {
-    it.each(playerFiles)("resolves %s back to itself", async (file) => {
-        const player = readPlayer(file);
-        expect(await playerDataPath(player)).toEqual(file);
-        expect(await playerDataPath(player.id)).toEqual(file);
-    });
-
-    it("returns undefined for a player it has no file for", async () => {
-        expect(await playerDataPath("no-such-player")).toBeUndefined();
-    });
-});
-
-describe("updatePlayerData", () => {
-    beforeEach(() => {
-        vi.mocked(writeJsonFile).mockClear();
-    });
-
-    it.each(playerFiles)("writes a player read from %s back to that same file", async (file) => {
-        const player = { ...readPlayer(file), club: "TEST" };
-
-        await updatePlayerData(player);
-
-        expect(vi.mocked(writeJsonFile).mock.calls).toEqual([[file, player]]);
-    });
-
-    it("refuses to write a player that has no file, rather than inventing one", async () => {
-        const stranger = { ...readPlayer(playerFiles[0]), id: "no-such-player" };
-
-        await expect(updatePlayerData(stranger)).rejects.toBeTruthy();
-        expect(writeJsonFile).not.toHaveBeenCalled();
     });
 });

@@ -2,8 +2,9 @@
 # builds from, and let the existing deploy workflow take it from there.
 #
 # This is the step that makes the admin usable without a laptop. Firestore is
-# where a matchplay tournament is edited; `astrosite/src/data/events/matchplay/`
-# is generated from it; and deploy-site.yml already rebuilds the site on any push to
+# where a matchplay tournament or a player is edited;
+# `astrosite/src/data/events/matchplay/` and `astrosite/src/data/players/` are
+# generated from it; and deploy-site.yml already rebuilds the site on any push to
 # main touching `astrosite/**`. Running this is therefore the whole publish.
 #
 # Manual rather than scheduled, deliberately. An export is the act of publishing
@@ -14,8 +15,13 @@
 # after every write.
 #
 # What it exports is decided in admin/scripts/export.ts, not here: matchplay
-# events only, because that is all the admin can author. See
-# docs/current/data-ownership.md for why publishing the rest would revert the scrape.
+# events and, since 2026-09-21, players. See docs/current/data-ownership.md for
+# why publishing the rest would revert the scrape.
+#
+# The staging below has to keep up with that list, and it is the one place where
+# it does not follow automatically — `export.ts` deciding to publish a collection
+# means nothing if this step does not stage it. A path missing here is an export
+# that runs, reports what it wrote, and pushes none of it.
 name: Export admin data
 
 on:
@@ -90,9 +96,14 @@ jobs:
           # -A rather than a list of modified files: a new tournament is an added
           # file and a deleted one is a removal, and both are ordinary results of
           # an export. astrosite/scripts/commit-changes.sh stages only modified
-          # files, which is fine for the scrapes — they never create or delete —
+          # files, which is fine for the scrape — it never creates or deletes —
           # and would silently drop the most common thing done here.
-          git add -A astrosite/src/data/events/matchplay
+          #
+          # Both collections export.ts publishes, named rather than globbed to
+          # `astrosite/src/data`: the scrape's own outputs live in that tree too,
+          # and a wider pattern here would commit a half-finished scrape under an
+          # export's commit message.
+          git add -A astrosite/src/data/events/matchplay astrosite/src/data/players
 
           if git diff --cached --quiet; then
             echo "Nothing to publish: the committed files already match the store."
