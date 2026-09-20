@@ -851,7 +851,7 @@ the history.
 | Script | Schedule (UTC) | Reads | Writes |
 | --- | --- | --- | --- |
 | `update-leaderboards.ts` | Every two hours 03:00–07:00, and 12:00, by Cloud Scheduler. No cron | Sheets / app.hector.golf | `leaderboards/*.json` (via API), event `results.teams` |
-| `update-player-biographies.ts` | Every 15 days, on the first tick that finds it due, and only while a Hector is upcoming. No cron | GCP function, WiseGolf | `players/*.json` `biography` where `biographyLocked` is unset, `clubs.json` |
+| `update-player-biographies.ts` | Every 15 days, on the first tick that finds it due, and only while a Hector is upcoming. No cron | GCP function | `players/*.json` `biography` where `biographyLocked` is unset |
 | `update-player-club-memberships.ts` | Every 30 days, on the first tick that finds it due. No cron | WiseGolf | `players/*.json` `club` |
 
 **The handicap sweep is not on this list any more.** `update-handicaps.ts` and its workflow were
@@ -863,20 +863,22 @@ already started (`updateFutureEvents = false`), then dispatches on the URL shape
 against the app API, `docs.google.com/spreadsheets/*` against Sheets. It also back-fills
 `results.teams` into the event JSON from leaderboard pairings when the event has none recorded yet.
 
-**`update-player-biographies.ts`** — assembles a `PlayerBiographyInput` per player (name, gender,
-home club resolved through `clubs.json`, past appearances, Hector/Victor wins, `misc` details, the
-next event and whether they are playing it, a `retired` flag when more than seven events have passed
-since their last appearance, and **the biographies already generated in this run** so the model
-avoids repeating phrasing) and POSTs it to the `GeneratePlayerBiography` Cloud Function. As a side
-effect it also regenerates `clubs.json` by merging the club lists from all handicap sources.
+**`update-player-biographies.ts`** — POSTs a `PlayerBiographyInput` per player to the
+`GeneratePlayerBiography` Cloud Function. The input is assembled by `playerBiographyInput` in
+`packages/schemas/src/biographies.ts` (name, gender, home club resolved from its abbreviation, past
+appearances, Hector/Victor wins, `misc` details, the next event and whether they are playing it, a
+`retired` flag when more than seven Hectors have passed since their last appearance, and **the
+biographies already generated in this run** so the model avoids repeating phrasing). It moved there
+on 2026-09-20 so the admin's `biographies` job could ask the function the same question in the same
+words — see the jobs section below, and `admin/test/biography-input.test.ts` for the ordering bug the
+move surfaced.
 
-That side effect used to fire **at import time**, from a module-level IIFE, so importing the module
-at all scraped WiseGolf and rewrote the file from whatever came back — and anything without
-credentials, a test above all, got nothing back and wrote `[]` over 1,402 lines of committed club
-data without failing or saying so. The club list is now fetched lazily and memoised, the file is
-written by the run, and `run()` is behind the same `argv[1]` guard as `update-handicaps.ts`. The run
-also declines to write an *empty* club list, for the reason `persistHandicapCheckToDisk` declines to
-record a sweep that reached nobody.
+It used to regenerate `clubs.json` as a side effect too, and that side effect used to fire **at
+import time**, from a module-level IIFE: importing the module at all scraped WiseGolf and rewrote the
+file from whatever came back — and anything without credentials, a test above all, got nothing back
+and wrote `[]` over 1,402 lines of committed club data without failing or saying so. The refresh is
+the admin's `clubs` job as of 2026-09-20 and this script no longer touches the file, which leaves the
+workflow with one output. `run()` is behind the same `argv[1]` guard as `update-handicaps.ts`.
 
 **All four scripts are now safe to import.** Each one's entry point sits behind that same `argv[1]`
 guard, and everything that touches the filesystem or the network happens inside the run rather than
@@ -902,6 +904,27 @@ it stops writing the day after an event begins and does not write again until th
 committed. The run itself still fires and still goes green — the four between 2026-01-25 and
 2026-03-10 all did, and all committed nothing, the next rewrite being on 2026-03-21, the day
 `HECTOR2026.json` was added. A green run therefore does not mean a biography was regenerated.
+
+### The player jobs, which are waiting on a flag rather than on work
+
+`admin/src/lib/jobs/club-memberships.ts` and `admin/src/lib/jobs/biographies.ts` are the service's
+copies of the two workflows above, and both are complete: the club job scrapes and assigns, the
+biographies job works out whose text is unlocked, asks the Cloud Function for each one, and saves.
+Neither writes anything today, and the reason is not that either is unfinished — it is
+`PLAYERS_ARE_OWNED` in `admin/src/lib/ownership.ts`, which is false until players are authored here
+rather than mirrored. A run before the flip reports what it would have done and says why it did not.
+
+One gate rather than two. Both jobs could equally have been left `dryRun: true` in `registry.ts`, and
+were not, because the flip would then be two edits in two files about one question and one of them
+gets forgotten. The biographies job checks the flag *before* the first model call for the same
+reason it exists: a run before the flip should cost nothing, not forty-five generations that are
+thrown away.
+
+The generator needs `astrosite-api-key`, which the Cloud Run runtime was granted on 2026-09-20
+(`terraform/secrets.tf`). It is read per run rather than at startup, so a deployment that gains the
+secret — or gains a version in it — starts generating on the next run rather than the next deploy.
+With no key the run reports a skip rather than a failure: a laptop has no key, and neither does a
+deployment on the day the secret is created.
 
 ### The handicap sweep, which is a job rather than a workflow
 

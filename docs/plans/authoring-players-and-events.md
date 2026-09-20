@@ -146,10 +146,11 @@ Both write through `updatePlayerData`, which persists the whole player object �
 whole-record writers, and both have to stop writing files before the admin can own one.
 
 They move the way the handicap scrape did: into `admin/src/lib/jobs/`, registered in
-`registry.ts`. Both are in, in shadow, as of 2026-09-20 — `club-memberships` decides *and* scrapes,
-`biographies` decides only, and neither writes. Neither is on the tick: the club scan is 140
-requests per player and the biographies run will eventually be forty-five model calls, so both are
-started by hand. That harness was built for exactly this.
+`registry.ts`. **Both are done as of 2026-09-20** — each one decides, does its own work, and has a
+Firestore writer — and neither writes a thing, because `PLAYERS_ARE_OWNED` is false. What is left of
+this half is the flag, and the flag belongs to the half below. Neither is on the tick: the club scan
+is 140 requests per player and a biographies run is forty-five model calls, so both are started by
+hand. That harness was built for exactly this.
 Its header says so — entries move from `workflows.ts` to `JOBS` one dataset at a time, and a dataset
 appears in both lists during the migration, which is what `dryRun` is for. Use the shadow period;
 the handicaps job is the precedent for how long it needs to be, and for why "a week of boring diffs"
@@ -163,28 +164,39 @@ Neither job needs anything the service has not already got:
   only when the field is empty — is the authored rule, arrived at independently, and it does not
   change.
 - **Biographies** call the `GeneratePlayerBiography` Cloud Function over HTTP, which a Cloud Run
-  service can do as readily as a runner. The shadow job deliberately does not: the decision is the
-  half that can be wrong silently, and generating forty-five biographies to throw away is the half
-  that costs a model call each. It also does not solve `refreshClubsJson()`, which is this
-  workflow's *second* output and has to find a home before the workflow can be deleted — the same
-  shape as `update-handicaps.yml`'s four. [`biography-locking.md`](./biography-locking.md) records
-  that this job's import-time blocker is already gone: `golfClubs` was a module-level IIFE that
-  scraped WiseGolf and rewrote `clubs.json` on import, it is now fetched lazily, and `run()` only
-  fires when the script is executed. So the admin can import what it needs.
+  service does as readily as a runner, and it does — per player, with the input built by
+  `playerBiographyInput` in `@hector/schemas` so the site's workflow and the job ask the same
+  question in the same words. Sharing it surfaced a bug worth recording: the workflow sorted events
+  in `glob` order and read the *first* appearance as the last, so `retired` meant "debuted in 2022 or
+  later" and disagreed with the dates for 15 of the 45 players, in a field that reaches the prompt as
+  "Considered as retired from Hector events". `admin/test/biography-input.test.ts` pins it.
+  The job checks the ownership flag *before* the first call rather than after, so a run before the
+  flip costs nothing instead of forty-five generations thrown away.
+  [`biography-locking.md`](./biography-locking.md) records the import-time blocker this had to clear
+  first: `golfClubs` was a module-level IIFE that scraped WiseGolf and rewrote `clubs.json` on
+  import. It is moot now — the job reads the committed file rather than importing anything of the
+  workflow's — but it is why the club list had to find a home before this could.
 
 `clubs.json` was answered on 2026-09-20 and the answer was no. It is refreshed by a `clubs` job in
 the admin, at most every 30 days, and committed to git — so `update-player-biographies.yml` is down
-to one output and can be retired when the biographies move. The file is kept rather than deleted
+to one output, and that output is now generated here too. It is deleted when the flag flips, not
+before: until then it is the only thing writing a biography at all. The file is kept rather than deleted
 although no code reads it: it is the only list of valid club abbreviations here, and the player
 editor below wants it for a club picker. It is derived, has no human writer and nothing authors
 it — the third arrangement `data-ownership.md` describes, where the file stays committed and the
 collection never joins the exported column.
 
-The club job's writer landed on 2026-09-20 and is waiting on the flag rather than on work.
-`savePlayer` does the writing, `PLAYERS_ARE_OWNED` is the only gate, and a run today reports what it
-would have assigned and says why it did not. The biographies job has no writer and cannot have one
-yet: generating needs the admin to hold `astrosite-api-key`, which is a Secret Manager grant and a
-`terraform apply` rather than code.
+Both writers landed on 2026-09-20 and both are waiting on the flag rather than on work.
+`savePlayer` does the writing, `PLAYERS_ARE_OWNED` is the only gate in either, and a run today
+reports what it would have done and says why it did not. The biographies job's blocker — the admin
+holding `astrosite-api-key` — was a Secret Manager grant rather than code, and it was made the same
+day; the key is read per run, so the job starts generating on the run after the flip rather than
+on a redeploy.
+
+Flipping the flag is therefore the whole of what is left before the editor, and it is a one-line
+change with two jobs behind it. Do not flip it on its own: the moment players are owned, the files
+stop being the source and `npm run export` is what puts them back, which is the same change as the
+rename below.
 
 ### Then own the collection, and build the editor
 
@@ -200,10 +212,13 @@ not free choices, and three of them are easy to get backwards:
   from no lock at all on the day the job next runs. An explicit **Regenerate** clears it and re-runs
   generation for that one player, which is what makes the lock safe to set: without it, locking a
   biography locks it for good. That is all of `biography-locking.md`, and it lands here.
-- **Regenerate needs single-player generation, which does not exist yet.** `generateBiography` is
-  reachable only from a whole-roster run, and the roster is also what supplies the "do not reuse this
-  phrasing" context. A single-player regeneration has to decide what to hand it — the same question
-  step 2 of that plan answered in the other direction.
+- **Regenerate is one call away, and the open question is what to hand it.** Generation is already
+  per player: the job builds one `PlayerBiographyInput` with `playerBiographyInput` and POSTs it, so
+  a single-player regeneration is that pair without the loop. What it is not is free of the roster —
+  `otherGeneratedBiographies` is the "do not reuse this phrasing" context, and in a whole-roster run
+  it accumulates as the run goes. A single regeneration has to decide what to put there; every other
+  biography currently published is the obvious answer and is not the only one. Same question step 2
+  of that plan answered in the other direction.
 
 `misc` and `club` are plainly authored and want nothing but a text field. Player **images** are files
 on disk, not in Firestore, and are not in scope as *content* — the editor should say so rather than

@@ -2,15 +2,19 @@ import { writeFileSync, existsSync, rmSync } from "fs";
 import { join, dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 
-import { hectorEvents, hasParticipants, isUpcomingEvent, isPastEvent } from "../code/data.ts";
+import { hectorEvents, hasParticipants, isUpcomingEvent } from "../code/data.ts";
 import { getAllPlayers, getPlayerName, updatePlayerData } from "../code/players.ts";
 import { type Player } from "@hector/schemas/src/players.ts";
-import { biographiesToRegenerate } from "@hector/schemas/src/biographies.ts";
-import { type EventTiming, type HectorEvent } from "@hector/schemas/src/events.ts";
+import {
+    biographiesToRegenerate,
+    playerBiographyInput,
+    type PlayerBiographyInput,
+} from "@hector/schemas/src/biographies.ts";
+import { type HectorEvent } from "@hector/schemas/src/events.ts";
 
 import { createWisegolfSession } from "@hector/wisegolf/src/wisegolf-api.ts";
 import { type GolfClub, type HandicapSource } from "@hector/wisegolf/src/handicap-source-api.ts";
-import { parseIsoDate } from "@hector/schemas/src/dates.ts";
+import { isoDateToday } from "@hector/schemas/src/dates.ts";
 import { formatForPrinting } from "../code/strings.ts";
 
 const ENV = import.meta.env || process.env || {};
@@ -110,102 +114,24 @@ const resetCommitMessage = () => {
     writeFileSync(pathToCommitMessage, "");
 };
 
-type EventNameAndYear = {
-    name: string;
-    year: number;
-};
-
-type NextEvent = EventNameAndYear & {
-    participates: boolean;
-};
-
-type PlayerBiographyInput = {
-    name: string;
-    gender: "male" | "female";
-    homeClub: string;
-    miscellaneousDetails: string[];
-    previousAppearances: EventNameAndYear[];
-    hectorWins: EventNameAndYear[];
-    victorWins: EventNameAndYear[];
-    allPastEvents: EventNameAndYear[];
-    nextEvent: NextEvent | undefined;
-    retired: boolean;
-    otherGeneratedBiographies: string[];
-};
-
-function EventNameAndYearFrom(event: { name: string; timing: EventTiming }): EventNameAndYear {
-    return {
-        name: event.name,
-        year: parseIsoDate(event.timing.end).getFullYear(),
-    };
-}
-
-function describeEvent(event: { name: string; timing: EventTiming }): string {
-    return `${event.name} (${parseIsoDate(event.timing.start).getFullYear()})`;
-}
-
-function describePlayer(player: Player): string {
-    return getPlayerName(player);
-}
-
-function playerParticipatedInEvent(player: Player, event: HectorEvent): boolean {
-    return (
-        event.participants.includes(player.id) ||
-        event.results?.winners?.hector?.includes(player.id) ||
-        event.results?.winners?.victor?.includes(player.id) ||
-        false
-    );
-}
-
+/**
+ * Delegates to `@hector/schemas`, which sorts the events by date.
+ *
+ * This used to build the input here, from `hectorEvents` in `glob` order, and
+ * read `pastAppearances[0]` as the player's last appearance — which that order
+ * made their first. See `playerBiographyInput` for what that did to `retired`
+ * and for why the sort is not optional.
+ */
 async function extractPlayerBiographyInput(
     player: Player,
     otherGeneratedBiographies: string[],
 ): Promise<PlayerBiographyInput> {
-    const allPastEvents = hectorEvents.filter(isPastEvent);
-    const pastAppearances = allPastEvents.filter((e) => playerParticipatedInEvent(player, e));
-    const lastAppearance = pastAppearances[0];
-    const eventsSinceLastAppearance = lastAppearance ? hectorEvents.indexOf(lastAppearance) : hectorEvents.length;
-
-    if (DEBUG_GENAI_BIOGRAPHY) {
-        console.log(`${describePlayer(player)}: ${eventsSinceLastAppearance} events since last appearance in Hector.`);
-
-        console.log(`${allPastEvents.length} past events in total:`);
-        for (const event of allPastEvents) {
-            console.log(`- ${describeEvent(event)}`);
-        }
-        console.log(`${pastAppearances.length} past appearances for ${describePlayer(player)}:`);
-        for (const event of pastAppearances) {
-            console.log(`- ${describeEvent(event)}`);
-        }
-        console.log(
-            `Last appearances for ${describePlayer(player)} was ${lastAppearance ? describeEvent(lastAppearance) : "(none)"}`,
-        );
-    }
-
-    // const lastAppearanceYear = parseIsoDate(lastAppearance.timing.end).getFullYear();
-    const nextHectorEvent = hectorEvents.filter(isUpcomingEvent).filter(hasParticipants)[0];
-    return {
-        name: player.name.first,
-        gender: player.gender || "male",
+    return playerBiographyInput(player, {
+        hectorEvents,
+        today: isoDateToday(),
         homeClub: await getClubName(player.club),
-        previousAppearances: pastAppearances.map(EventNameAndYearFrom),
-        hectorWins: hectorEvents
-            .filter((e) => e.results?.winners?.hector?.includes(player.id))
-            .map(EventNameAndYearFrom),
-        victorWins: hectorEvents
-            .filter((e) => e.results?.winners?.victor?.includes(player.id))
-            .map(EventNameAndYearFrom),
-        miscellaneousDetails: player.misc || [],
-        allPastEvents: hectorEvents.filter(isPastEvent).map(EventNameAndYearFrom),
-        nextEvent: nextHectorEvent
-            ? {
-                  ...EventNameAndYearFrom(nextHectorEvent),
-                  participates: nextHectorEvent?.participants.includes(player.id),
-              }
-            : undefined,
-        retired: eventsSinceLastAppearance > 7,
         otherGeneratedBiographies,
-    };
+    });
 }
 
 async function generateBiography(input: PlayerBiographyInput): Promise<string[]> {
