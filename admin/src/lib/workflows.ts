@@ -87,6 +87,31 @@ export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
         cadence: { every: '60s' }, // every 60 seconds, at most
     },
     {
+        slug: 'export',
+        file: 'export-admin-data.yml',
+        label: 'Publish admin edits',
+        blurb:
+            'Writes what this service authors — matchplay tournaments and players — back to the ' +
+            'committed data files, as a commit. Press Deploy afterwards; the commit does not start ' +
+            'one by itself.',
+        /*
+         * `'manual'` and not negotiable: an export is the act of publishing an
+         * edit, and a tick that did it would publish half-finished ones — a
+         * bracket drawn but not yet corrected, a result typed into the wrong
+         * match. `export-admin-data.yml` says the same thing in its own header,
+         * and this is the mechanism that would have to disagree for it to stop
+         * being true.
+         *
+         * A button here rather than only on github.com, which is where it lived
+         * until 2026-09-21. That was defensible while matchplay was the only
+         * thing the admin authored and the person exporting had just finished a
+         * bracket; it stopped being once players moved, because the admin now
+         * authors records whose edits are a sentence long and whose publish step
+         * meant leaving for another site.
+         */
+        cadence: 'manual',
+    },
+    {
         slug: 'deploy',
         file: 'deploy-site.yml',
         label: 'Deploy hector.golf',

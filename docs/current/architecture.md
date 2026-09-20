@@ -988,7 +988,7 @@ the committed file.
 | `deploy-admin.yml` | Push to `main` touching `admin/**`, `packages/**`, the root manifest/lockfile, `.node-version`, `.dockerignore`, or this file; manual | Build, push to Artifact Registry, `gcloud run deploy` | `contents: read`, `id-token: write` |
 | `deploy-functions.yml` | Push to `main` touching `backend/backend-functions/**`; manual | `gcloud functions deploy` for each of the four functions, in parallel, with `--service-account` and `--set-secrets` | `contents: read`, `id-token: write` |
 | `update-leaderboards.yml` | Dispatched by the admin service on every tick; manual | Script + `commit-changes.sh` | `contents: write` |
-| `export-admin-data.yml` | Manual only — an export publishes an edit, so there is no cron | Guard on `GH_WIF_PROVIDER`/`GH_DEPLOYER_SA` → `npm ci` → WIF auth → `npm run export` in `admin/` → `git add -A astrosite/src/data/events/matchplay` and push | `contents: write`, `id-token: write` |
+| `export-admin-data.yml` | Manual only — an export publishes an edit, so there is no cron. Dispatchable from `/operations` as **Publish admin edits** since 2026-09-21, which is still a button and not a schedule | Guard on `GH_WIF_PROVIDER`/`GH_DEPLOYER_SA` → `npm ci` → WIF auth → `npm run export` in `admin/` → `git add -A` over matchplay and players, and push. **Does not deploy the site**: it pushes with `GITHUB_TOKEN`, so `deploy-site.yml` never sees it | `contents: write`, `id-token: write` |
 | `refresh-admin-mirror.yml` | `workflow_run` completion of `update-leaderboards.yml`, successful runs only; pushes under `events/hector/`; manual | Same guard → `npm ci` → WIF auth → `npm run seed` in `admin/` | `contents: read`, `id-token: write` |
 
 **Deployment target is GitHub Pages**, with the custom domain supplied by
@@ -1025,7 +1025,7 @@ their absence degrades; this is what reads them.
 
 | Name | Kind | Used by |
 | --- | --- | --- |
-| `GH_WIF_PROVIDER` | Variable | every job that touches GCP — both Terraform workflows, `deploy-admin`, `deploy-functions`, the four update workflows, `export-admin-data`, `refresh-admin-mirror` |
+| `GH_WIF_PROVIDER` | Variable | every job that touches GCP — both Terraform workflows, `deploy-admin`, `deploy-functions`, `update-leaderboards`, `export-admin-data`, `refresh-admin-mirror` |
 | `GCP_PROJECT_ID` | Variable | the same set minus the two Terraform workflows, which get the project from their backend config |
 | `GCP_REGION` | Variable | `deploy-admin`, `deploy-functions` |
 | `GH_DEPLOYER_SA` | Variable | `deploy-admin`, `export-admin-data`, `refresh-admin-mirror` — the identity they federate to |
@@ -1045,7 +1045,7 @@ their absence degrades; this is what reads them.
 | `WISEGOLF_PASSWORD` | Secret | PR checks (the live `wisegolf-api` tests), three update workflows — not `deploy-site`, whose build never calls WiseGolf |
 | `HECTOR_APP_API_KEY` | Secret | `update-leaderboards`, `check-site` |
 | `ASTROSITE_API_KEY` | Secret | The admin service, via `ASTROSITE_API_KEY_SECRET`. Was also `update-player-biographies` until that workflow was deleted on 2026-09-21 |
-| `GIT_COMMITTER_EMAIL` | Secret | the four update workflows and `export-admin-data` — the address they commit as |
+| `GIT_COMMITTER_EMAIL` | Secret | `update-leaderboards` and `export-admin-data` — the address they commit as |
 | `GITHUB_TOKEN` | Built-in → `GITHUB_ACCESS_TOKEN` | `update-leaderboards` |
 
 The four update workflows reach beyond their own scrape because each ends in the `request-deploy`
