@@ -2,10 +2,17 @@
 # builds from, and let the existing deploy workflow take it from there.
 #
 # This is the step that makes the admin usable without a laptop. Firestore is
-# where a matchplay tournament or a player is edited;
+# where a matchplay tournament or a player is edited, and
 # `astrosite/src/data/events/matchplay/` and `astrosite/src/data/players/` are
-# generated from it; and deploy-site.yml already rebuilds the site on any push to
-# main touching `astrosite/**`. Running this is therefore the whole publish.
+# generated from it.
+#
+# **It does not deploy the site, and used to claim it did.** The push below is
+# made with the GITHUB_TOKEN that actions/checkout leaves behind, and a push made
+# with GITHUB_TOKEN does not trigger workflows — deploy-site.yml says so in its
+# own header, which is why a scrape asks the admin service to dispatch a deploy
+# instead of relying on its commit to do it. This workflow has no such token and
+# cannot make that request, so publishing is two presses: this, then Deploy.
+# Both are on /operations.
 #
 # Manual rather than scheduled, deliberately. An export is the act of publishing
 # an edit, and a schedule would publish half-finished ones — a bracket drawn but
@@ -132,6 +139,9 @@ jobs:
           {
             echo "### Exported"
             echo
-            echo "Pushing to \`main\` under \`astrosite/\` triggers the site deploy, so the"
-            echo "public site picks this up without another button."
+            echo "The public site does **not** rebuild by itself from this."
+            echo
+            echo "This pushed with \`GITHUB_TOKEN\`, and a push made with that token does not"
+            echo "trigger workflows — so \`deploy-site.yml\` has not seen it. Press **Deploy"
+            echo "hector.golf** on the admin's Operations page, or run the workflow from here."
           } >> "$GITHUB_STEP_SUMMARY"
