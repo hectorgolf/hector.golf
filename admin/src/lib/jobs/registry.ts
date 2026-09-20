@@ -347,15 +347,27 @@ export const JOBS: readonly Job[] = [
         // reach the same answer about the same name, from the same WiseGolf, on
         // a run neither was told about.
         dryRun: true,
-        // On the tick with everything else. The workflow keeps its own 30-day
-        // cadence throughout; a dataset in both lists is the expected state of a
-        // migration, which is the whole reason there are two lists.
+        // Off the tick, and run by hand during the shadow period.
         //
-        // Asking WiseGolf about four names every tick is more often than once a
-        // month, and that is the point while it is reading rather than writing —
-        // a month is too long to wait for evidence, and the scrape is four
-        // lookups.
-        scheduled: true,
+        // This said `true` for one deploy, on the reasoning that "the scrape is
+        // four lookups" and four a tick was a cheap way to gather evidence. That
+        // number was wrong by two orders of magnitude, and the first production
+        // run said so: `findWisegolfPlayerClubs` asks about a player once per
+        // club, sequentially, over all 140 clubs WiseGolf returns. Four players
+        // is 560 requests, it took two minutes, and WiseGolf answered one of them
+        // with HTTP 429.
+        //
+        // At four ticks a day that is some 2,240 requests to answer a question
+        // about four people whose answer changes about once a year — and being
+        // throttled makes the answer *worse*, not just slower; see the module
+        // header. The workflow's monthly cadence was not timidity.
+        //
+        // Manual runs are enough for a shadow period: the one on 2026-09-20
+        // reported `no club matched exactly one` and proved the whole path. A
+        // gentler automatic cadence would mean giving jobs a `cadence` the way
+        // `workflows.ts` has one, which is worth its own change rather than a
+        // hurried flag.
+        scheduled: false,
         // Nothing to publish while it writes nothing. This becomes true with the
         // writer, since a club is rendered on the player's public page.
         publishes: false,

@@ -33,6 +33,26 @@ import type { Change } from './log.ts'
  * seed reverts it. A live run without an `assign` is therefore `skipped` and
  * says so, rather than succeeding at nothing.
  *
+ * ## A throttled lookup currently reads as a negative one
+ *
+ * **This has to be fixed before the writer lands.** `findWisegolfPlayerClubs`
+ * asks about a player once per club over all 140 of them, and `fetchPlayer`
+ * returns `undefined` for any non-OK response — so "not a member of this club"
+ * and "that request was rate-limited" are the same value. The first production
+ * run, on 2026-09-20, drew an HTTP 429 doing exactly this.
+ *
+ * While the job only reports, the cost is a run that finds less than it should.
+ * Once it writes, the harm changes shape: a player genuinely in two clubs, with
+ * one of those lookups throttled, presents as a player in exactly one club — and
+ * the ambiguity refusal below becomes an assignment. The rule would still be in
+ * the code and would no longer be true.
+ *
+ * The client cannot express this today: `resolveClubMembership` returns
+ * `GolfClub[]` with no channel for "some of these answers are missing". Giving
+ * it one is a change to `packages/wisegolf`, which the live workflow shares, so
+ * it is its own commit rather than a flag here. Until then the honest reading of
+ * a run that found nothing is "found nothing, or was throttled".
+ *
  * ## The rule it implements does not change
  *
  * Assign a club only to a player who has none, and only when exactly one club
