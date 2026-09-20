@@ -338,17 +338,23 @@ export const JOBS: readonly Job[] = [
         blurb:
             "Finds a home club for a player who has none, from WiseGolf. Reports what it would " +
             'assign; it does not write yet.',
-        // Shadow, and it cannot be anything else: the job has no writer, and
-        // which store it should write is step 1's next decision rather than an
-        // omission. `club-memberships.ts` says why, and a live run refuses
-        // loudly rather than succeeding at nothing.
+        // Not shadow any more, and that is not the same as writing. The job has
+        // a Firestore writer as of 2026-09-20, and `PLAYERS_ARE_OWNED` is what
+        // decides whether it may use it — so a run today still assigns nothing
+        // and says why.
         //
-        // What the shadow period is for here is narrower than it was for
-        // handicaps, because the rule is simpler and the working set is four
-        // players. It is to see this job and `update-player-club-memberships.yml`
-        // reach the same answer about the same name, from the same WiseGolf, on
-        // a run neither was told about.
-        dryRun: true,
+        // `dryRun: true` would be a second gate on the same question, and two
+        // gates mean the flip is two edits in two files, one of which somebody
+        // eventually forgets. One gate, in `ownership.ts`, where the rest of the
+        // ownership rules already are.
+        //
+        // What the shadow period bought here was narrower than it was for
+        // handicaps, and it has been collected: a run on 2026-09-20 completed
+        // every lookup and reached the same answer the monthly workflow reaches,
+        // which is that none of the four can be resolved. There is no positive
+        // pairing to wait for, because there is nothing either of them would
+        // assign.
+        dryRun: false,
         // Off the tick, and run by hand during the shadow period.
         //
         // This said `true` for one deploy, on the reasoning that "the scrape is

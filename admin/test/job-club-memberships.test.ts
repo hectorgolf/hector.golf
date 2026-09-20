@@ -39,12 +39,20 @@ const source = (name: string, answers: Record<string, GolfClub[]>, throwFor?: st
         },
     }) as unknown as HandicapSource
 
-const deps = (players: Player[], sources: HandicapSource[], assign?: ClubDeps['assign']) => ({
+type ClubDeps = Parameters<typeof run>[0]
+
+/** Owned by default, so a test has to opt into the mirrored state on purpose. */
+const deps = (
+    players: Player[],
+    sources: HandicapSource[],
+    assign?: ClubDeps['assign'],
+    playersAreOwned = true
+): ClubDeps => ({
     players: async () => players,
     sources: async () => sources,
+    playersAreOwned: () => playersAreOwned,
     assign,
 })
-type ClubDeps = Parameters<typeof run>[0]
 
 describe('which club a player is assigned', () => {
     it('takes the one club a source is sure about', async () => {
@@ -171,30 +179,63 @@ describe('the two ways this run declines to answer', () => {
      * out loud — the failure this prevents is a scheduled job reporting `ok`
      * every tick while writing nothing at all.
      */
-    it('skips a live run while it has no writer, rather than succeeding at nothing', async () => {
+    /**
+     * The state this job is actually in. `savePlayer` would refuse by throwing,
+     * which is right for a caller that should not have asked — but a scheduled
+     * job is not a mistake for running before the flip, and a run log full of
+     * red would say it was.
+     */
+    it('skips a live run while players are still mirrored, rather than failing', async () => {
+        const written: ClubAssignment[][] = []
         const result = await run(
-            deps([player('eero-s')], [source('WiseGolf', { 'eero-s': [club('TaG')] })]),
+            deps(
+                [player('eero-s')],
+                [source('WiseGolf', { 'eero-s': [club('TaG')] })],
+                async (a) => void written.push([...a]),
+                false
+            ),
             false
         )
 
         expect(result.outcome).toBe('skipped')
-        expect(result.detail).toContain('no writer yet')
+        expect(result.detail).toContain('still mirrored')
+        expect(written).toEqual([])
         // Still reports what it found, so the run log is not poorer for it.
         expect(result.changes).toEqual([{ subject: 'eero-s', from: undefined, to: 'TaG' }])
     })
 
-    it('writes through the writer once there is one', async () => {
+    it('writes once players are owned', async () => {
         const written: ClubAssignment[][] = []
         const result = await run(
-            deps([player('eero-s')], [source('WiseGolf', { 'eero-s': [club('TaG')] })], async (a) => {
-                written.push([...a])
-                return { commit: 'abc123' }
-            }),
+            deps([player('eero-s')], [source('WiseGolf', { 'eero-s': [club('TaG')] })], async (a) =>
+                void written.push([...a])
+            ),
             false
         )
 
         expect(result.outcome).toBe('ok')
-        expect(result.commit).toBe('abc123')
+        expect(result.detail).toContain('assigned 1')
         expect(written[0]?.[0]?.club.abbreviation).toBe('TaG')
+    })
+
+    /**
+     * The record the writer saves is the one this run decided against, not a
+     * fresh read: re-reading would open a window where a player edited in
+     * between is overwritten with what they looked like before the job started.
+     */
+    it('hands the writer the record it decided against, with the club still unset', async () => {
+        const written: ClubAssignment[][] = []
+        await run(
+            deps(
+                [player('eero-s', { misc: ['Plays left-handed'] })],
+                [source('WiseGolf', { 'eero-s': [club('TaG')] })],
+                async (a) => void written.push([...a])
+            ),
+            false
+        )
+
+        const assignment = written[0]![0]!
+        expect(assignment.record.misc).toEqual(['Plays left-handed'])
+        expect(assignment.record.club).toBeUndefined()
     })
 })
