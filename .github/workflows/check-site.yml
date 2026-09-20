@@ -18,8 +18,13 @@ on:
     branches: ["main"]
     paths:
       - 'astrosite/**'
-      - 'packages/schemas/**'
-      - 'packages/ui/**'
+      # Every package, rather than the three named individually: both apps
+      # depend on all of them, and an enumeration is a list that can fall behind.
+      # It did — `packages/wisegolf` was missing until 2026-09-20, so a change to
+      # the WiseGolf client ran neither app's tests. That client is the least
+      # locally-testable code here (it needs credentials) and the site's suite
+      # holds the only tests that exercise it against the live API.
+      - 'packages/**'
       - 'package.json'
       - 'package-lock.json'
       - '.node-version'
