@@ -578,6 +578,15 @@ Notable details:
   second provider is a matter of implementing the interface.
 - **WiseGolf client** uses `fetch-h2` with browser-mimicking headers, `micro-memoize` (15-minute TTL
   on the login, longer on club lists), and `p-ratelimit` throttling (5 req/s, concurrency 1).
+- **A lookup that did not answer is not a club that said no.** Club membership is resolved by asking
+  each of ~140 clubs in turn, so one question is 140 requests and WiseGolf throttles it — observed
+  2026-09-20, HTTP 429. Until then a failed request returned the same `undefined` as a club replying
+  "not a member", so an incomplete scan produced a confident answer; with a writer attached that
+  turns "assign only when exactly one club matches" into "assign the one we managed to reach". A
+  scan that could not ask every club now throws `IncompleteLookupError` and both callers treat it as
+  "no club for this player this run". The memoized entries that can now reject carry
+  `async: true`, without which micro-memoize keeps a rejection for the full TTL and one throttled
+  moment would answer for the rest of the hour.
 - **Missing credentials produce a null source, not a crash.** `credentials()` in
   [`wisegolf-api.ts`](../../packages/wisegolf/src/wisegolf-api.ts) resolves `WISEGOLF_USERNAME` /
   `WISEGOLF_PASSWORD` *per call*, not at import time, so importing the module — for a type, or in a
@@ -1398,17 +1407,13 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
   system is restated by hand, so it will not follow a token change in `hector.css`.
 - `astrosite/.env.sample` is missing the `MSCORECARD_EMAIL` / `MSCORECARD_PASSWORD` pair the
   mScorecard CLI needs. `HECTOR_APP_API_KEY` used to be missing too and is now there.
-- **A rate-limited WiseGolf lookup is indistinguishable from a negative one.** `fetchPlayer` in
-  `packages/wisegolf/src/wisegolf-api.ts` returns `undefined` for any non-OK response, and
-  `findWisegolfPlayerClubs` reads that as "not a member of this club". It asks once per club over
-  all 140, sequentially, so a single club-membership question is 140 requests and WiseGolf throttles
-  it — observed on 2026-09-20, HTTP 429, on the admin's club-memberships job. Both that job and
-  `update-player-club-memberships.yml` share the client. It is harmless while the only rule is
-  "assign a club when exactly one matches and refuse otherwise" *and* nothing writes, because a
-  throttled lookup can only lose a match. It stops being harmless when something writes: a player in
-  two clubs with one lookup throttled looks like a player in one club, and the refusal turns into an
-  assignment. Recorded rather than fixed because the fix is an API change to a package the live
-  workflow shares.
+- **A club-membership scan is 140 sequential requests, and gets throttled.** That is the shape of
+  the WiseGolf API rather than a defect — there is no "which clubs is this player in" endpoint — but
+  it means one question about one player reliably draws an HTTP 429 somewhere in the middle. Since
+  2026-09-20 the scan refuses to answer rather than reporting a partial result (§7), which is
+  correct and makes a complete answer *less* likely than it was. Whether to retry the throttled
+  lookups, or to accept that this question is answerable only occasionally, is undecided; the
+  admin's club-memberships job has no writer yet, so nothing depends on it.
 - **Twenty participant ids in the committed events match no player document.** All eighteen in
   `FINNKAMPEN2022` — that event spells its field `lasse-koskela-hcp183` where the player collection
   keys on `lasse-k` — and two in `HECTOR2017`, `tuomas-lesonen` and `tommy-nordberg`, who have no
