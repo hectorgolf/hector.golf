@@ -1,5 +1,6 @@
 import { github } from '../github.ts'
 import { guard } from './backup.ts'
+import * as clubs from './club-memberships.ts'
 import * as handicaps from './handicaps.ts'
 import type { Change } from './log.ts'
 
@@ -328,6 +329,37 @@ export const JOBS: readonly Job[] = [
                 { readFile, listDirectory, commit, replace, now: () => new Date(), ...handicaps.LIVE },
                 dryRun
             ),
+    },
+    {
+        slug: 'club-memberships',
+        label: "Players' club memberships",
+        blurb:
+            "Finds a home club for a player who has none, from WiseGolf. Reports what it would " +
+            'assign; it does not write yet.',
+        // Shadow, and it cannot be anything else: the job has no writer, and
+        // which store it should write is step 1's next decision rather than an
+        // omission. `club-memberships.ts` says why, and a live run refuses
+        // loudly rather than succeeding at nothing.
+        //
+        // What the shadow period is for here is narrower than it was for
+        // handicaps, because the rule is simpler and the working set is four
+        // players. It is to see this job and `update-player-club-memberships.yml`
+        // reach the same answer about the same name, from the same WiseGolf, on
+        // a run neither was told about.
+        dryRun: true,
+        // On the tick with everything else. The workflow keeps its own 30-day
+        // cadence throughout; a dataset in both lists is the expected state of a
+        // migration, which is the whole reason there are two lists.
+        //
+        // Asking WiseGolf about four names every tick is more often than once a
+        // month, and that is the point while it is reading rather than writing —
+        // a month is too long to wait for evidence, and the scrape is four
+        // lookups.
+        scheduled: true,
+        // Nothing to publish while it writes nothing. This becomes true with the
+        // writer, since a club is rendered on the player's public page.
+        publishes: false,
+        run: (dryRun) => clubs.run({ ...clubs.LIVE }, dryRun),
     },
 ]
 

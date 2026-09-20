@@ -234,6 +234,35 @@ async function stopEmulator(emulator: Emulator): Promise<void> {
 }
 
 /**
+ * Every player's latest committed handicap, from the observation log.
+ *
+ * The log is the backup of Firestore's `handicap-observations`, written
+ * oldest-first, so assigning each entry in turn leaves the newest standing.
+ *
+ * It is read here because the player files stopped carrying a handicap on
+ * 2026-09-18, when that field became a stopgap for players WiseGolf has never
+ * heard of and `updatePlayerData` started dropping any value the history
+ * already knew. The roster below filtered on exactly that field, so from that
+ * day it selected nobody — and an empty roster is not a quiet degradation:
+ * `standInFromRoster` refuses one, so **every WiseGolf-backed job threw on a
+ * laptop**, the live handicaps job included. `npm run dev:fake` advertises
+ * itself as the thing that makes `/operations` usable rather than merely
+ * visible, and for one field's sake it had stopped being that.
+ */
+function committedHandicaps(): Map<string, number> {
+    const log = join(here, '../../data/handicaps/observations.ndjson')
+    const latest = new Map<string, number>()
+
+    for (const line of readFileSync(log, 'utf-8').split('\n')) {
+        if (!line.trim()) continue
+        const entry = JSON.parse(line) as { player: string; handicap: number }
+        latest.set(entry.player, entry.handicap)
+    }
+
+    return latest
+}
+
+/**
  * The roster the WiseGolf stand-in drifts, written where it can be pointed at.
  *
  * Built from the committed player files rather than invented, so the handicaps
@@ -244,17 +273,18 @@ async function stopEmulator(emulator: Emulator): Promise<void> {
 function writeStandInRoster(): { path: string; players: number } {
     const dataDir = join(here, '../../astrosite/src/data/players')
     const files = glob.sync('*.json', { cwd: dataDir, absolute: true }).sort()
+    const handicaps = committedHandicaps()
 
     const roster = files
         .map((file): Record<string, any> => JSON.parse(readFileSync(file, 'utf-8')))
         .filter((player) => player?.name?.first && player?.name?.last && player?.club)
-        .filter((player) => typeof player.handicap === 'number')
+        .filter((player) => handicaps.has(player.id))
         .slice(0, STAND_IN_ROSTER_SIZE)
         .map((player) => ({
             firstName: player.name.first,
             lastName: player.name.last,
             club: player.club,
-            handicap: player.handicap,
+            handicap: handicaps.get(player.id)!,
         }))
 
     const path = join(mkdtempSync(join(tmpdir(), 'hector-standin-')), 'roster.json')
