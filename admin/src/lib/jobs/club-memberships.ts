@@ -20,10 +20,23 @@ import type { Change } from './log.ts'
  *
  * This lands in shadow, the way the handicap scrape did. It reads players out of
  * Firestore, asks WiseGolf the same question the workflow asks, and reports what
- * it *would* assign — so a tick's output can be compared against what
+ * it *would* assign — so a run's output can be compared against what
  * `update-player-club-memberships.yml` commits, and the two can be seen to agree
  * before either is switched off. The workflow keeps running throughout; that
  * overlap is what `registry.ts` means by a dataset appearing in both lists.
+ *
+ * **That comparison cannot produce a positive pairing, and waiting will not make
+ * it.** The handicaps job's shadow period ended on one: it named a change
+ * thirty-one seconds before the workflow committed the identical one. There is
+ * no equivalent available here, because the only candidates are the four players
+ * who have no club — and the run on 2026-09-20, the first to complete every
+ * lookup without being throttled, established that WiseGolf cannot resolve any
+ * of them. The workflow has been reaching the same conclusion monthly, which is
+ * why they are still clubless.
+ *
+ * So the agreement on offer is the weak kind: both find nothing, for the same
+ * reason, from the same data. What is left untested is the write path, and no
+ * amount of further shadowing tests that.
  *
  * There is no writer here because *which store it writes* is a decision with a
  * plan attached rather than an implementation detail, and it is the next
