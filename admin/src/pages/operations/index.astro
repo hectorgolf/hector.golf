@@ -1,6 +1,7 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import PageHeader from "@hector/ui/components/PageHeader.astro";
+import BiographyKeyHelp from "../../components/BiographyKeyHelp.astro";
 import GitHubTokenHelp from "../../components/GitHubTokenHelp.astro";
 import RunLog from "../../components/RunLog.astro";
 
@@ -8,6 +9,8 @@ import { EXPIRY_WARN_DAYS, FAILURE_MESSAGES, github, type GitHubFailure } from "
 import { ageInWords } from "../../lib/runs.ts";
 import { DISPATCHABLE_WORKFLOWS, workflowBySlug } from "../../lib/workflows.ts";
 import { JOBS, jobBySlug } from "../../lib/jobs/registry.ts";
+import { PLAYERS_ARE_OWNED } from "../../lib/ownership.ts";
+import { backendFunctionsKeyAvailability } from "../../lib/secrets.ts";
 import { recentAll as recentJobRuns } from "../../lib/jobs/log.ts";
 import { FORWARD_PAGES, recentAll as recentWorkflowRuns, sync } from "../../lib/workflow-runs.ts";
 import { collect, RECENT, TONE_PILL, typeOf } from "../../lib/runlog.ts";
@@ -171,6 +174,17 @@ const ranJob = jobBySlug(Astro.url.searchParams.get("ranJob") ?? undefined);
  * rather than deleted, so it comes and goes on its own.
  */
 const anyShadowed = JOBS.some((job) => job.dryRun);
+
+/*
+ * Whether the biographies job could reach its Cloud Function, asked on every
+ * render rather than only after a run that needed it.
+ *
+ * The run log cannot answer this yet and will not until the flip: the ownership
+ * gate comes first, deliberately, so a run today never reaches the key and a
+ * clean history says nothing about whether the grant works. See
+ * `BiographyKeyHelp.astro` for why this reports the good state too.
+ */
+const biographyKey = await backendFunctionsKeyAvailability();
 ---
 
 <AdminLayout title="Operations">
@@ -381,6 +395,8 @@ const anyShadowed = JOBS.some((job) => job.dryRun);
 			}
 			See <code>docs/plans/handicaps-to-firestore.md</code>.
 		</p>
+
+		<BiographyKeyHelp availability={biographyKey} needed={PLAYERS_ARE_OWNED} />
 
 		<div class="workflows">
 			{

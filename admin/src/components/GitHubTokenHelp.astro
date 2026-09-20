@@ -1,6 +1,6 @@
 ---
 import { EXPIRY_URGENT_DAYS, EXPIRY_WARN_DAYS, repository } from '../lib/github.ts'
-import { githubTokenSecretLocation } from '../lib/secrets.ts'
+import { githubTokenSecret, secretLocation } from '../lib/secrets.ts'
 
 /*
  * What to do when the GitHub token is missing or refused.
@@ -13,7 +13,7 @@ import { githubTokenSecretLocation } from '../lib/secrets.ts'
  * found the right page.
  *
  * It prints the real project and secret id rather than placeholders — see
- * `githubTokenSecretLocation` for why that is safe to render.
+ * `secretLocation` for why that is safe to render.
  */
 
 interface Props {
@@ -33,7 +33,7 @@ interface Props {
 }
 
 const { mode, daysLeft } = Astro.props
-const location = githubTokenSecretLocation()
+const location = secretLocation(githubTokenSecret)
 
 /*
  * Whether this is news or a problem.
