@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest'
 import { EventFormat } from '@hector/schemas/src/events.ts'
 
 import { OWNED_FORMATS } from '../src/lib/ownership.ts'
-import { EVENT_FAMILIES, SECTIONS, hasPage, sectionForPath } from '../src/lib/sections.ts'
+import { EVENT_FAMILIES, SECTIONS, adminPathForEvent, hasPage, sectionForPath } from '../src/lib/sections.ts'
 
 /**
  * The navigation makes two claims and this checks both, because both are the
@@ -60,14 +60,22 @@ describe('what the navigation promises', () => {
 })
 
 /**
- * The families are the event formats, and `lib/mirror.ts` relies on that: it
- * decides which family is read-only by asking `OWNED_FORMATS` about the slug. A
+ * Every family's slug is a format, and `lib/mirror.ts` relies on it: it decides
+ * whether a family is read-only by asking `OWNED_FORMATS` about that slug. A
  * family whose slug is not a format would get no notice at all and look
  * editable, which is the one failure the notice exists to prevent.
+ *
+ * A subset, not a bijection — which it was until the Finnkampen pages were
+ * removed on 2026-09-20. `adminPathForEvent` is what the rest of the admin uses
+ * to cope with the difference, so its two answers are worth pinning here.
  */
 describe('the event families and the formats', () => {
-    it('name every format exactly once, so none is unreachable', () => {
-        expect(EVENT_FAMILIES.map((f) => f.slug).sort()).toEqual(Object.values(EventFormat).sort())
+    it('name only real formats, and none of them twice', () => {
+        const slugs = EVENT_FAMILIES.map((f) => f.slug)
+        expect(new Set(slugs).size).toBe(slugs.length)
+        for (const slug of slugs) {
+            expect(Object.values(EventFormat) as string[]).toContain(slug)
+        }
     })
 
     it('call a family editable only where the store would accept a write', () => {
@@ -75,5 +83,22 @@ describe('the event families and the formats', () => {
             const owned = OWNED_FORMATS.has(family.slug as EventFormat)
             expect(family.readiness === 'editable', `${family.slug} is ${family.readiness}`).toBe(owned)
         }
+    })
+
+    it('give a path for a format this admin routes', () => {
+        expect(adminPathForEvent({ format: EventFormat.Hector, id: 'HECTOR2025' })).toBe(
+            '/events/hector/HECTOR2025'
+        )
+    })
+
+    /**
+     * The store still holds Finnkampen events and `listEvents()` still returns
+     * them, so a page listing events across formats can be handed one. Answering
+     * a path would send somebody to a 404.
+     */
+    it('give none for a format it does not, rather than a link that 404s', () => {
+        expect(
+            adminPathForEvent({ format: EventFormat.Finnkampen, id: 'FINNKAMPEN2022' })
+        ).toBeUndefined()
     })
 })

@@ -13,9 +13,15 @@ const PILL: Partial<Record<(typeof EVENT_FAMILIES)[number]['readiness'], string>
 /**
  * Counts come from the store rather than being hard-coded, so a format that
  * reads zero is telling the truth about the database rather than about whether
- * anyone has built its page yet. They are shown for formats whose pages do not
- * exist too — knowing thirteen Hector events are already in the store is the
- * useful part, and it is what says the import worked.
+ * anyone has built its page yet. They are shown for a family with no page too,
+ * which is what said the import had worked before any of these pages existed.
+ *
+ * This page covers `EVENT_FAMILIES` and not `EventFormat`, so a format with no
+ * family is not counted here and is not visible anywhere in the admin. Two
+ * Finnkampen events are in that position since 2026-09-20 — `countEventsByFormat`
+ * still returns them under a key nothing reads. Deliberate, and recorded in
+ * `architecture.md` §13; if they ever need to be seen again, an entry in
+ * `sections.ts` is the whole of it.
  *
  * An empty object means the store could not be reached; a missing key means it
  * could and there is nothing of that format in it.

@@ -45,6 +45,16 @@ const HECTOR: Mirror = {
     scheduledWriters: ['update-leaderboards (results.teams)'],
 }
 
+/**
+ * Kept although nothing renders it: the admin's Finnkampen pages were removed on
+ * 2026-09-20, so no page asks for this today.
+ *
+ * It stays because `eventMirror` returning undefined is how a format says *the
+ * admin owns me*, and answering that about a mirrored format would be a lie with
+ * consequences — a page added later would render no notice and invite the edit
+ * the next seed reverts. `mirror.test.ts` holds the invariant: every format in
+ * `MIRRORED_FORMATS` has an explanation, page or no page.
+ */
 const FINNKAMPEN: Mirror = {
     authoredAt: 'astrosite/src/data/events/finnkampen/',
     scheduledWriters: [],

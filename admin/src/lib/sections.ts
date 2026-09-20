@@ -98,6 +98,15 @@ export function sectionForPath(pathname: string): Section | undefined {
  * correspondence to decide which of these is read-only from `OWNED_FORMATS`
  * rather than from the literal below. This list is what the nav says; that set
  * is what the store will accept.
+ *
+ * Not every format is here. Finnkampen was, read-only, and was removed on
+ * 2026-09-20 because the format is not fully implemented anywhere — the public
+ * site has no route for it either, so the admin was the only place two events
+ * nobody maintains were rendered. The store still holds them and
+ * `listEvents()` still returns them; what is gone is the page. Step 1 of
+ * `docs/plans/authoring-players-and-events.md` still nominates Finnkampen as
+ * the pilot for the event editor, and that step now creates its pages rather
+ * than adding a form to one.
  */
 export type EventFamily = {
     slug: string
@@ -119,10 +128,19 @@ export const EVENT_FAMILIES: EventFamily[] = [
         blurb: 'The main series: rounds, game formats, buckets and the courses each round is played on.',
         readiness: 'read-only',
     },
-    {
-        slug: 'finnkampen',
-        label: 'Finnkampen',
-        blurb: 'Finland against Sweden: teams, rounds and results.',
-        readiness: 'read-only',
-    },
 ]
+
+/**
+ * Where this admin's page for an event is, or undefined when it has none.
+ *
+ * Derived from the list above rather than from `EventFormat`, because the two
+ * stopped being the same thing when the Finnkampen pages were removed on
+ * 2026-09-20: the store still holds those events and `listEvents()` still
+ * returns them, so anything rendering a list of *events* can meet a format this
+ * admin will not route. A link to a page that is not there is worse than a name
+ * with no link, so callers get the option rather than a string.
+ */
+export function adminPathForEvent(event: { format: string; id: string }): string | undefined {
+    const family = EVENT_FAMILIES.find((f) => f.slug === event.format)
+    return family && hasPage(family) ? `/events/${family.slug}/${event.id}` : undefined
+}

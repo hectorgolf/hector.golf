@@ -172,9 +172,9 @@ refreshed by `npm run seed` — rather than as their source:
 | handicap observations | the admin service's job | **source of truth** | no — backed up to `data/handicaps/observations.ndjson`, and read by the site through the API |
 | `courses/` | by hand | not in Firestore | no |
 
-**The admin renders the mirror, read-only.** Since 2026-09-20 there are pages for Hector events,
-Finnkampen events and players — lists and a record page each — alongside the matchplay editor. They
-show what Firestore holds and offer no way to change it, and each one carries a notice saying where
+**The admin renders the mirror, read-only.** Since 2026-09-20 there are pages for Hector events and
+players — a list and a record page each — alongside the matchplay editor. They show what Firestore
+holds and offer no way to change it, and each one carries a notice saying where
 the record is edited instead and which scheduled writers would have to move before the admin could
 own it. That notice is derived rather than written per page: `admin/src/lib/mirror.ts` asks
 `OWNED_FORMATS`, so the change that moves a format into the owned column is the change that removes
