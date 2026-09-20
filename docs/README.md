@@ -58,6 +58,19 @@ The lesson is worth keeping even though the file is not. A blocker is worth re-r
 inherited: this one had been restated in three plans and a `current/` document, and was true of one
 implementation rather than of the problem.
 
+**And one plan here was never executed at all.**
+[`everything-to-firestore.md`](plans/everything-to-firestore.md) proposed moving all 89 data files
+into Firestore at once and deleting them from git. It was not taken — the incremental route was, and
+is most of what the other plans here are — and it is kept because it was *built* before it was
+rejected. The comparison at the end of it is worth something for exactly that reason: it is a
+measured alternative rather than an imagined one.
+
+It lived on its own branch until 2026-09-21, which made it invisible to anybody who did not already
+know the branch existed. The document is here now and the implementation is in
+[PR #145](https://github.com/hectorgolf/hector.golf/pull/145), whose refs GitHub keeps after a
+branch is deleted. Neither a plan nor a lesson should depend on somebody remembering not to tidy a
+branch up.
+
 `functions-migration.md` and `sheets-credential-wif.md` were the awkward sort, because what they
 were waiting for was a date rather than a decision — both on the same calendar, a credential
 deleted a week after its replacement went live. Both are gone as of 2026-09-19, the last credential
