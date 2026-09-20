@@ -1,0 +1,83 @@
+---
+/**
+ * Why this page has no save button.
+ *
+ * Every read-only page in the admin carries one of these, at the top, before the
+ * data. Not as an apology — as the answer to the question the page provokes. A
+ * record rendered in an admin UI looks editable, and the failure this prevents
+ * is not "somebody cannot find the button": it is somebody finding a way to
+ * write to the mirror anyway and losing the edit to the next `npm run seed`,
+ * within hours, with nothing anywhere saying it happened.
+ *
+ * So it says three things and stops: where the record is edited today, what
+ * would have to move before it can be edited here, and where that is planned.
+ * The first is the one somebody needs right now.
+ *
+ * It disappears on its own. `eventMirror()` reads `OWNED_FORMATS`, so the change
+ * that makes a format authorable is the change that removes its notice — there
+ * is no second place to remember.
+ */
+import type { Mirror } from '../lib/mirror.ts'
+
+interface Props {
+	mirror: Mirror
+	/** What is being mirrored, as this page's sentence would name it: "This event". */
+	what: string
+}
+
+const { mirror, what } = Astro.props
+---
+
+<aside class="notice mirror">
+	<p>
+		<strong>{what} cannot be edited here.</strong> Firestore holds a copy for the admin to read,
+		refreshed from <code>{mirror.authoredAt}</code> by <code>npm run seed</code> after every
+		scrape — so an edit written here would be reverted within hours, and silently. Edit the
+		committed file and let the seed carry it over.
+	</p>
+	{
+		mirror.scheduledWriters.length > 0 ? (
+			<p class="price">
+				Before the admin can own this, {mirror.scheduledWriters.length === 1 ? 'one scheduled writer has' : `${mirror.scheduledWriters.length} scheduled writers have`}{' '}
+				to move into this service:{' '}
+				{mirror.scheduledWriters.map((writer, index) => (
+					<>
+						{index > 0 && ', '}
+						<code>{writer}</code>
+					</>
+				))}
+				.
+			</p>
+		) : (
+			<p class="price">
+				Nothing writes these on a schedule, which is what makes them the cheapest collection
+				to hand over first.
+			</p>
+		)
+	}
+	<p class="where">
+		Planned in <code>docs/plans/authoring-players-and-events.md</code>; the rule is in{' '}
+		<code>docs/current/data-ownership.md</code>.
+	</p>
+</aside>
+
+<style>
+	.mirror p {
+		margin: 0;
+	}
+
+	.mirror p + p {
+		margin-top: 0.5rem;
+	}
+
+	.mirror .price,
+	.mirror .where {
+		color: var(--text-dim);
+		font-size: 0.85rem;
+	}
+
+	.mirror code {
+		font-family: var(--font-num);
+		font-size: 0.85em;
+	}
+</style>

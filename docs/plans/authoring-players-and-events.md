@@ -1,8 +1,28 @@
 # Authoring players and events in the admin
 
-*Nothing here is built. The admin authors matchplay events and nothing else; players, Hector events
-and Finnkampen events are mirrors it reads, refreshed from the committed files by `npm run seed`.
-This is the one piece of work [`docs/README.md`](../README.md) says unblocks three plans.*
+*No ownership has moved. The admin still authors matchplay events and nothing else; players, Hector
+events and Finnkampen events are mirrors it reads, refreshed from the committed files by
+`npm run seed`. This is the one piece of work [`docs/README.md`](../README.md) says unblocks the two
+plans behind it.*
+
+*What did land, on 2026-09-20, is the reading half: all three collections now have pages in the
+admin — a list and a record page each — and they are read-only on purpose. Nothing below is
+executed by that. What it changes for whoever starts this:*
+
+- *Part of **step 0** is done. `repository/events.ts` has a generic `getEventOfFormat` and
+  `listEventsOfFormat`, and a `getPlayer`. The write side — `saveEvent` behind an `OWNED_FORMATS`
+  refusal, `savePlayer`, `deletePlayer`, and the three guards in `export.ts` and `seed.ts` — is
+  untouched, and it is the half that carries the risk.*
+- *Every page says why it cannot be edited, from `lib/mirror.ts`, which derives the answer from
+  `OWNED_FORMATS`. Moving a format into that set removes its notice; there is no second list to
+  remember.*
+- *The read-only fields are the form's fields with the inputs taken out, sharing `admin.css`'s label
+  rule. Making one editable is replacing a `<p>` with an `<input>` and putting a `<form>` round the
+  section.*
+- *It surfaced one thing steps 1 and 3 inherit: twenty participant ids in the committed events match
+  no player document — all eighteen of `FINNKAMPEN2022`'s, and two in `HECTOR2017`. A participant
+  picker cannot offer an id no collection has. Recorded in
+  [`architecture.md`](../current/architecture.md) §13.*
 
 ## What to do
 
@@ -62,15 +82,17 @@ Every mechanism that enforces ownership names matchplay explicitly, because matc
 has ever been. Widening them is a change with no behavioural effect on its own, which makes it the
 one step that can land and sit.
 
-- **`repository/events.ts` is matchplay-shaped.** `saveMatchplayEvent`, `getMatchplayEvent` and
-  `deleteMatchplayEvent` each hardcode the format. They want a `saveEvent` that validates through
+- **`repository/events.ts` is matchplay-shaped on the write side.** The reads were generalised on
+  2026-09-20 — `getEventOfFormat` and `listEventsOfFormat` take the format, and `getMatchplayEvent`
+  and `listMatchplayEvents` are one-line callers of them. `saveMatchplayEvent` and
+  `deleteMatchplayEvent` still hardcode it. They want a `saveEvent` that validates through
   `genericEventSchema` and **refuses a format not in `OWNED_FORMATS`**. The refusal is the important
   half rather than the generalisation: it is the ownership rule expressed as code instead of as a
   document, and it is what stops a page written for one format from writing a mirrored one. The
   existing guard in `deleteMatchplayEvent` is the model — it reads the document first so that the
   wrong id is a no-op.
-- **There is no player writer at all.** `listPlayers` reads; nothing saves. A `savePlayer` behind the
-  same ownership check, and a `deletePlayer`, are new.
+- **There is no player writer at all.** `listPlayers` and `getPlayer` read; nothing saves. A
+  `savePlayer` behind the same ownership check, and a `deletePlayer`, are new.
 - **`export.ts` refuses to export an empty owned set, for events only.** That guard exists because an
   empty read deletes every committed file of the formats it covers — "a very fast way to lose them to
   a misconfigured database id". Players need their own copy of it, or the same typo removes
@@ -104,15 +126,20 @@ wrong costs a revert of two files.
 Nobody needs to edit Finnkampen. The step is not for Finnkampen's sake, and it should not be
 justified to a reader as though it were.
 
-The editor itself is mostly assembly. `EventDetailsFields.astro` already covers name, location, the
-date pair and the description for every format, because those live on `BaseEventSchema`.
-`Roster.astro` is typed to `MatchplayEvent` and reads a handicap snapshot it only needs during
-signup; the field-management half of it generalises, the handicap column should not follow it into a
-finished 2021 event. What is new is `results` — named teams and their players — and that is the
-shape Finnkampen and Hector share.
+The editor itself is mostly assembly, and more of it exists than it did. `EventDetailsFields.astro`
+covers name, location, the date pair and the description for every format, because those live on
+`BaseEventSchema`, and `EventDetailsView.astro` is the same fields read-only, in the same order, for
+exactly this swap. `Participants.astro` renders a field for any format and is where the
+unresolved-id count above comes from — the add and remove half is what it does not have.
+`Roster.astro` is still typed to `MatchplayEvent` and reads a handicap snapshot it only needs during
+signup; that handicap column should not follow it into a finished 2021 event, which is why the
+read-only field table leaves it out. What is new is `results` — named teams and their players — and
+that is the shape Finnkampen and Hector share; the Finnkampen page renders it today.
 
-Mark the family `available` in `sections.ts` in the same change. A nav entry that says Finnkampen is
-coming, after it has arrived, is the same lie in the other direction.
+Move the family from `read-only` to `editable` in `sections.ts` in the same change. A nav entry that
+says Finnkampen is coming, after it has arrived, is the same lie in the other direction — and
+`test/sections.test.ts` now fails on one half of it: a family is `editable` only where
+`OWNED_FORMATS` would accept the write.
 
 ## Step 2 — players
 

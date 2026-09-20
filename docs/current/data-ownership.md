@@ -165,15 +165,24 @@ refreshed by `npm run seed` — rather than as their source:
 | Data | Authored by | In Firestore | Exported |
 | --- | --- | --- | --- |
 | `events/matchplay/` | the admin UI | source of truth | yes |
-| `events/hector/` | `update-handicaps`, `update-leaderboards` | mirror, for reading | no |
+| `events/hector/` | the admin service's handicaps job (`buckets`, to git), `update-leaderboards` | mirror, for reading | no |
 | `events/finnkampen/` | by hand | mirror, for reading | no |
-| `players/` | `update-handicaps`, `update-player-biographies`, `update-player-club-memberships` | mirror, for reading | no |
+| `players/` | `update-player-biographies`, `update-player-club-memberships` | mirror, for reading | no |
 | handicap observations | the admin service's job | **source of truth** | no — backed up to `data/handicaps/observations.ndjson`, and read by the site through the API |
 | `courses/` | by hand | not in Firestore | no |
 
+**The admin renders the mirror, read-only.** Since 2026-09-20 there are pages for Hector events,
+Finnkampen events and players — lists and a record page each — alongside the matchplay editor. They
+show what Firestore holds and offer no way to change it, and each one carries a notice saying where
+the record is edited instead and which scheduled writers would have to move before the admin could
+own it. That notice is derived rather than written per page: `admin/src/lib/mirror.ts` asks
+`OWNED_FORMATS`, so the change that moves a format into the owned column is the change that removes
+its notice. The read-only fields are laid out as the form fields that will replace them, which is
+the other half of the same idea — see `admin/src/components/ReadOnlyField.astro`.
+
 Exporting a mirror would publish stale data over a fresh scrape and revert it silently — and because
 the scrape commits its own work, the loss would look like the losing side of a merge nobody
-performed. `update-handicaps` runs four times a day, so that window is hours, not months.
+performed. The handicaps job runs four times a day, so that window is hours, not months.
 
 A collection moves into the exported column on the day the admin can author it **and** its scheduled
 writer has been moved to Firestore. Those two things have to happen together: either one alone
@@ -206,9 +215,10 @@ now the output. Three things follow:
 
 `astrosite/src/data/courses/` is further out still: hand-maintained, not in Firestore at all, and not
 seeded. `handicaps.json` used to be described here the same way; it has since moved to Firestore and
-is the one dataset that has, so the row above covers it instead. The file itself is still written by
-`update-handicaps.yml` and still committed, because three other things that workflow produces have
-nowhere else to go yet — see step 4 of the plan.
+is the one dataset that has, so the row above covers it instead. The file itself is still committed
+and nothing writes it any more: `update-handicaps.yml` was the last writer and was deleted on
+2026-09-20. What still reads it is the handicaps job, as `LEGACY_PATH`, and
+`data-formatting.test.ts`, which asserts it exists.
 
 ### The two scripts are complements
 

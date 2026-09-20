@@ -1,0 +1,103 @@
+---
+/**
+ * An event's field, as ids resolved against the player collection.
+ *
+ * Shared by the Hector and Finnkampen pages rather than living in either,
+ * because the field is a `BaseEventSchema` property and reads the same whatever
+ * format is played over it. `Roster.astro` is the matchplay equivalent and is
+ * deliberately not this: it adds and removes players, and it shows a handicap
+ * column that only means something while a tournament is in signup.
+ *
+ * ## Unresolved ids are shown rather than hidden
+ *
+ * Both Finnkampen events name their field with ids like
+ * `lasse-koskela-hcp183`, which no player document has — the player collection
+ * keys on `lasse-k`. Those events predate the current ids, nothing has ever
+ * needed to resolve them, and the site skips Finnkampen entirely
+ * (`architecture.md` §13: there is no `/events/finnkampen/` route).
+ *
+ * So the count at the top is not decoration. It is the thing anybody building a
+ * participant picker for these events needs to know before they start, and a
+ * table that quietly printed the raw id in the name column would have hidden it.
+ */
+import { displayName } from '../lib/players.ts'
+
+interface Props {
+	ids: readonly string[]
+	names: Map<string, string>
+	/** Heading for the section, since "Field" and "Teams" are both this table. */
+	title?: string
+}
+
+const { ids, names, title = 'Field' } = Astro.props
+
+const rows = ids.map((id) => ({ id, name: names.get(id), known: names.has(id) }))
+const unresolved = rows.filter((row) => !row.known).length
+---
+
+<section class="stack">
+	<div class="row-between">
+		<h2>{title}</h2>
+		<span class="meta">{ids.length} {ids.length === 1 ? 'player' : 'players'}</span>
+	</div>
+
+	{ids.length === 0 && <p class="notice">No field recorded.</p>}
+
+	{
+		unresolved > 0 && (
+			<p class="notice">
+				{unresolved} of these {unresolved === 1 ? 'id is' : 'ids are'} not in the player
+				collection, and {unresolved === 1 ? 'is' : 'are'} shown as {unresolved === 1 ? 'it was' : 'they were'} stored. An
+				editor for this event would have to reconcile them before it could offer a picker.
+			</p>
+		)
+	}
+
+	{
+		ids.length > 0 && (
+			<div class="tablewrap">
+				<table class="datagrid">
+					<thead>
+						<tr>
+							<th>Player</th>
+							<th>Id</th>
+						</tr>
+					</thead>
+					<tbody>
+						{rows.map((row) => (
+							<tr>
+								<td>
+									{row.known ? (
+										<a href={`/players/${row.id}`}>{displayName(names, row.id)}</a>
+									) : (
+										<span class="unknown">Not in the player collection</span>
+									)}
+								</td>
+								<td class="id">{row.id}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		)
+	}
+</section>
+
+<style>
+	h2 {
+		margin: 0;
+		font-family: var(--font-serif);
+		font-size: 1.2rem;
+	}
+
+	.unknown {
+		color: var(--text-faint);
+		font-style: italic;
+	}
+
+	.id {
+		font-family: var(--font-num);
+		font-size: 0.85em;
+		color: var(--text-dim);
+	}
+</style>

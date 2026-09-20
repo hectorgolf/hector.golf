@@ -309,5 +309,9 @@ export function matchplayStatus(event: MatchplayEvent): MatchplayStatus {
 }
 export type HectorEvent = z.infer<typeof hectorEventSchema>;
 export type HectorResults = z.infer<typeof hectorResultsSchema>;
+/** One round of a Hector: a course, a tee and the formats played on it. */
+export type HectorRound = z.infer<typeof hectorRoundSchema>;
+/** One competition played over a round, e.g. "Better Ball Stableford NET". */
+export type HectorGameFormat = z.infer<typeof gameFormatSchema>;
 export type FinnkampenEvent = z.infer<typeof finnkampenEventSchema>;
 export type FinnkampenResults = z.infer<typeof finnkampenResultsSchema>;

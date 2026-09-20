@@ -21,7 +21,7 @@ will mislead you.
 
 | | | executed? |
 | --- | --- | --- |
-| [`authoring-players-and-events.md`](plans/authoring-players-and-events.md) | Moving players, Hector events and Finnkampen events from the mirrored column to the owned one, and giving each an editor — the one piece of work the other two are waiting on | **No.** The admin authors matchplay and nothing else |
+| [`authoring-players-and-events.md`](plans/authoring-players-and-events.md) | Moving players, Hector events and Finnkampen events from the mirrored column to the owned one, and giving each an editor — the one piece of work the other two are waiting on | **Barely,** on 2026-09-20. All three now have read-only pages in the admin, and half of step 0 came with them: the repository's reads take a format. No ownership has moved, so the admin still authors matchplay and nothing else |
 | [`biography-locking.md`](plans/biography-locking.md) | `player.biographyLocked`, so the twice-monthly regeneration stops overwriting edited biographies | **No.** The field is in no schema, page or script |
 | [`bucket-locking.md`](plans/bucket-locking.md) | `event.bucketsLocked`, so an announced split can be settled before the first morning | **Mostly,** on 2026-09-18. The field exists, the handicaps job honours it and the payload publishes it; it is set by editing the event file. What is left is setting it from the admin, blocked on Hector events being authorable there at all |
 
