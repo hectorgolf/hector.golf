@@ -1,18 +1,45 @@
 # Publish what the admin UI authored into the committed data files the site
-# builds from, and let the existing deploy workflow take it from there.
+# builds from. Deploying them is a separate press, deliberately; see below.
 #
 # This is the step that makes the admin usable without a laptop. Firestore is
 # where a matchplay tournament or a player is edited, and
 # `astrosite/src/data/events/matchplay/` and `astrosite/src/data/players/` are
 # generated from it.
 #
-# **It does not deploy the site, and used to claim it did.** The push below is
-# made with the GITHUB_TOKEN that actions/checkout leaves behind, and a push made
-# with GITHUB_TOKEN does not trigger workflows — deploy-site.yml says so in its
-# own header, which is why a scrape asks the admin service to dispatch a deploy
-# instead of relying on its commit to do it. This workflow has no such token and
-# cannot make that request, so publishing is two presses: this, then Deploy.
-# Both are on /operations.
+# **It does not deploy the site, and that is a decision rather than a
+# limitation.** Publishing is two presses: this, then Deploy hector.golf. Both
+# are on /operations.
+#
+# How it currently fails to deploy is mechanical: the push below is made with the
+# GITHUB_TOKEN that actions/checkout leaves behind, and a push made with
+# GITHUB_TOKEN does not trigger workflows. deploy-site.yml says so in its own
+# header, which is why a scrape asks the admin service to dispatch a deploy
+# rather than relying on its commit to do it. This workflow cannot make that
+# request, because the admin is behind IAP.
+#
+# That much reads as a gap to close, and closing it is easy — deploy-site.yml
+# would take a `workflow_run` trigger on this workflow completing, the way
+# refresh-admin-mirror.yml already does, with no credential involved. **Don't.**
+# Reviewed and kept on 2026-09-21, for a reason that is about the operation
+# rather than the plumbing:
+#
+# An export is a *bulk* write. It republishes every record the admin owns — 48 of
+# them today — from whatever Firestore happens to hold. The second press is the
+# only point at which a person looks at what is about to become the public site,
+# and it is the only thing standing between a wrong store and hector.golf.
+#
+# That is not hypothetical. On the morning players were flipped to being authored
+# here, production Firestore was two hand-corrections stale: 6ca4e486 had fixed
+# two players' club from KJKG to Koto in the committed files and the mirror had
+# never heard about it. An export at that moment would have written the stale
+# value back, and an auto-deploying one would have published it. What made that
+# recoverable was having somewhere to stop and look.
+#
+# If the two presses ever do grate, `workflow_run` is the cheap version and is
+# preferable to giving this workflow a personal access token: this one exits 0
+# whether it pushed or found nothing, so it would deploy on no-op runs too, which
+# is a better price than a standing repository-wide credential nothing warns you
+# about the expiry of.
 #
 # Manual rather than scheduled, deliberately. An export is the act of publishing
 # an edit, and a schedule would publish half-finished ones — a bracket drawn but
