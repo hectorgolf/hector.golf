@@ -41,7 +41,8 @@ owns what.
 | `player.misc` | Authored | Human | The prompt hints. CI reads, never writes |
 | `player.club` | Authored | Human | Already correct: CI fills only when empty |
 | `event.results.teams` | Authored | Human | CI back-fills only when absent |
-| `leaderboards/*`, `clubs.json` | Derived | CI | No human writes them |
+| `leaderboards/*` | Derived | CI | No human writes them |
+| `clubs.json` | Derived | the admin service | Refreshed from WiseGolf at most every 30 days by the `clubs` job, which commits it to git rather than Firestore — the third arrangement below. Carries `fetchedAt` so a reader can tell how old the list is. Moved out of `update-player-biographies.yml` on 2026-09-20 |
 
 ## Two fields are enforced by a lock
 

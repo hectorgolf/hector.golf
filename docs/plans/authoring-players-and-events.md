@@ -172,10 +172,13 @@ Neither job needs anything the service has not already got:
   scraped WiseGolf and rewrote `clubs.json` on import, it is now fetched lazily, and `run()` only
   fires when the script is executed. So the admin can import what it needs.
 
-Whether `clubs.json` follows the players into Firestore is a separate question and the answer is
-probably no. It is derived, has no human writer and nothing authors it — the third arrangement
-`data-ownership.md` describes, where the file stays committed and the collection never joins the
-exported column.
+`clubs.json` was answered on 2026-09-20 and the answer was no. It is refreshed by a `clubs` job in
+the admin, at most every 30 days, and committed to git — so `update-player-biographies.yml` is down
+to one output and can be retired when the biographies move. The file is kept rather than deleted
+although no code reads it: it is the only list of valid club abbreviations here, and the player
+editor below wants it for a club picker. It is derived, has no human writer and nothing authors
+it — the third arrangement `data-ownership.md` describes, where the file stays committed and the
+collection never joins the exported column.
 
 ### Then own the collection, and build the editor
 

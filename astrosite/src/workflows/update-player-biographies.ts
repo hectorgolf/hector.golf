@@ -11,7 +11,6 @@ import { type EventTiming, type HectorEvent } from "@hector/schemas/src/events.t
 import { createWisegolfSession } from "@hector/wisegolf/src/wisegolf-api.ts";
 import { type GolfClub, type HandicapSource } from "@hector/wisegolf/src/handicap-source-api.ts";
 import { parseIsoDate } from "@hector/schemas/src/dates.ts";
-import { writeJsonFile } from "../code/json.ts";
 import { formatForPrinting } from "../code/strings.ts";
 
 const ENV = import.meta.env || process.env || {};
@@ -22,7 +21,6 @@ const DEBUG_GENAI_BIOGRAPHY = !!ENV.DEBUG_GENAI_BIOGRAPHY;
 // (__dirname is not available in ES6 modules)
 const __filename = fileURLToPath(import.meta.url);
 const pathToCommitMessage = join(dirname(__filename), "../../.update-player-biographies-commit");
-const pathToClubsJson = join(dirname(__filename), "../data/clubs.json");
 
 function createHandicapSources(): Promise<HandicapSource[]> {
     return Promise.all([createWisegolfSession()]);
@@ -84,30 +82,17 @@ async function getClubName(clubAbbreviation: string | undefined): Promise<string
     return club?.name || "unknown";
 }
 
-/**
- * Rewrite `clubs.json` from the sources.
+/*
+ * `refreshClubsJson` lived here and now lives in the admin, as the `clubs` job in
+ * `admin/src/lib/jobs/clubs.ts`. It was never about biographies — the club list
+ * was refreshed here because a run reads it anyway — and leaving it made this
+ * workflow a two-output job that could not be retired when the biographies move.
  *
- * Still a side effect of this job rather than a job of its own — the club list is
- * refreshed because a biography run needs it read anyway, and
- * `docs/current/architecture.md` describes it that way — but now something the run
- * does, rather than something importing the file does.
- *
- * It declines to write an empty list, for the reason `persistHandicapCheckToDisk`
- * in `update-handicaps.ts` declines to record a sweep that reached nobody: no
- * source answering is an outage, not a world with no golf clubs in it, and this
- * file is the only copy. Moving the write out of import time stops a test from
- * emptying it; this stops a failed run from doing the same thing, which is the same
- * accident with a different trigger.
+ * The admin's version refreshes at most once every 30 days and records when it
+ * asked, inside the file. Both writing here as well would have been a shape war:
+ * that one writes `{ fetchedAt, clubs }`, this one wrote a bare array, and each
+ * would have seen the other's output as needing a refresh.
  */
-const refreshClubsJson = async () => {
-    const clubs = await golfClubs();
-    if (clubs.length === 0) {
-        console.error(`No handicap source listed any clubs. Leaving ${resolve(pathToClubsJson)} as it is.`);
-        return;
-    }
-    writeJsonFile(pathToClubsJson, clubs);
-    console.log(`Wrote ${clubs.length} clubs to ${resolve(pathToClubsJson)}`);
-};
 
 /**
  * Start the run's commit message from empty.
@@ -306,10 +291,6 @@ function eventToUpdateBiographiesFor(): HectorEvent | undefined {
 const run = async () => {
     console.log("Updating player biographies...");
     resetCommitMessage();
-    // Unconditional, and before the check below, because that is where it has always
-    // been in effect: the old IIFE refreshed the club list on every run, including the
-    // ones that found no upcoming Hector and generated nothing.
-    await refreshClubsJson();
     const event = eventToUpdateBiographiesFor();
     if (event) {
         await updateBiographiesForEvent(event);

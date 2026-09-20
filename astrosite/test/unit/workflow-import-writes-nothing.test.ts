@@ -82,7 +82,15 @@ describe('importing a workflow script', () => {
         expect(Object.keys(tree).length).toBeGreaterThan(50)
         expect(tree['src/data/clubs.json']).toBeDefined()
 
-        const clubs = JSON.parse(readFileSync(join(DATA, 'clubs.json'), 'utf-8'))
+        // Two shapes, because the file is mid-migration. It was a bare array
+        // while this workflow wrote it; the admin's `clubs` job took that over on
+        // 2026-09-20 and writes `{ fetchedAt, clubs }` so the list can say how
+        // old it is. The first run of that job rewrites the committed file, and
+        // until it does this repository still holds the array. What the
+        // assertion is for is unchanged either way: that the canary is a real
+        // file with real data in it, so the comparisons below are not vacuous.
+        const parsed = JSON.parse(readFileSync(join(DATA, 'clubs.json'), 'utf-8'))
+        const clubs = Array.isArray(parsed) ? parsed : parsed.clubs
         expect(Array.isArray(clubs)).toBe(true)
         expect(clubs.length).toBeGreaterThan(100)
     })

@@ -2,6 +2,7 @@ import { github } from '../github.ts'
 import { guard } from './backup.ts'
 import * as biographies from './biographies.ts'
 import * as clubs from './club-memberships.ts'
+import * as clubList from './clubs.ts'
 import * as handicaps from './handicaps.ts'
 import type { Change } from './log.ts'
 
@@ -392,6 +393,34 @@ export const JOBS: readonly Job[] = [
         // Nothing to publish while it writes nothing.
         publishes: false,
         run: (dryRun) => biographies.run({ ...biographies.LIVE }, dryRun),
+    },
+    {
+        slug: 'clubs',
+        label: 'Golf club list',
+        blurb:
+            'Refreshes the committed list of golf clubs from WiseGolf, at most once every 30 days. ' +
+            'The only list of valid club abbreviations there is.',
+        // Live from the start, unlike the two player jobs, and for a reason that
+        // holds rather than because it feels braver: this replaces a write the
+        // biographies workflow already makes, to the same file, with the same
+        // data, from the same source. There is no second writer to shadow
+        // against — a dry run would only report a club count somebody can read
+        // off the file.
+        dryRun: false,
+        // On the tick. That sounds like a lot for a 30-day refresh and is not: a
+        // run inside the window reads one file from GitHub and stops, and the
+        // alternative is a list that goes stale until somebody remembers it.
+        scheduled: true,
+        // `clubs.json` is under `astrosite/`, which `deploy-site.yml` watches, so
+        // a commit here rebuilds the site by itself. Nothing on the public site
+        // reads the file today; saying `false` would be asserting that stays
+        // true, and the club picker this file is kept for is a step away.
+        publishes: true,
+        run: (dryRun) =>
+            clubList.run(
+                { ...clubList.LIVE, readFile, commit: (text, message) => replace(clubList.CLUBS_PATH, text, message) },
+                dryRun
+            ),
     },
 ]
 
