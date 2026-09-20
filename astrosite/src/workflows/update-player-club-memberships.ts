@@ -80,11 +80,26 @@ const updatePlayerRecords = async (players: Player[], handicapSources: Array<Han
             const promises: Array<Promise<GolfClub[]>> = [];
             for (const source of handicapSources) {
                 const foundInClubs = source.resolveClubMembership(playerObject.name.first, playerObject.name.last);
-                foundInClubs.then((clubs) =>
-                    console.log(
-                        `${getPlayerName(playerObject)} found at ${clubs.length} clubs via ${source.name}: ${JSON.stringify(clubs.sort())}`,
-                    ),
-                );
+                // This log is a *branch* of the promise, not a link in the chain
+                // below, so it needs a catch of its own. The rejection itself is
+                // handled by the `Promise.all` — but a branch left unhandled
+                // terminates the process under Node's default
+                // `--unhandled-rejections=throw`, which would turn a refusal into
+                // a dead run.
+                //
+                // It can reject since 2026-09-20: a club-membership scan that
+                // could not ask every club now says so rather than reporting the
+                // clubs it managed to reach. See `IncompleteLookupError`.
+                foundInClubs
+                    .then((clubs) =>
+                        console.log(
+                            `${getPlayerName(playerObject)} found at ${clubs.length} clubs via ${source.name}: ${JSON.stringify(clubs.sort())}`,
+                        ),
+                    )
+                    .catch(() => {
+                        // Reported by the catch on the chain below, which is the
+                        // one that decides what happens to this player.
+                    });
                 promises.push(foundInClubs);
             }
             return await Promise.all(promises)

@@ -33,9 +33,9 @@ import type { Change } from './log.ts'
  * seed reverts it. A live run without an `assign` is therefore `skipped` and
  * says so, rather than succeeding at nothing.
  *
- * ## A throttled lookup currently reads as a negative one
+ * ## A throttled lookup used to read as a negative one
  *
- * **This has to be fixed before the writer lands.** `findWisegolfPlayerClubs`
+ * `findWisegolfPlayerClubs`
  * asks about a player once per club over all 140 of them, and `fetchPlayer`
  * returns `undefined` for any non-OK response — so "not a member of this club"
  * and "that request was rate-limited" are the same value. The first production
@@ -47,11 +47,11 @@ import type { Change } from './log.ts'
  * the ambiguity refusal below becomes an assignment. The rule would still be in
  * the code and would no longer be true.
  *
- * The client cannot express this today: `resolveClubMembership` returns
- * `GolfClub[]` with no channel for "some of these answers are missing". Giving
- * it one is a change to `packages/wisegolf`, which the live workflow shares, so
- * it is its own commit rather than a flag here. Until then the honest reading of
- * a run that found nothing is "found nothing, or was throttled".
+ * Fixed in the client on 2026-09-20: a scan that could not ask every club throws
+ * `IncompleteLookupError` rather than reporting the clubs it managed to reach.
+ * The per-source catch below turns that into "no club for this player this run",
+ * which is the outcome that was wanted all along — so a run that reports nothing
+ * now means nothing was found, and a run that could not tell says so in the log.
  *
  * ## The rule it implements does not change
  *

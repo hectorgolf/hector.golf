@@ -4,7 +4,7 @@ import { ms } from "itty-time";
 import { pRateLimit } from "p-ratelimit";
 import { redact } from "./strings";
 
-import { NullHandicapSource, type GolfClub, type HandicapSource } from "./handicap-source-api";
+import { NullHandicapSource, clubsOrRefuse, type GolfClub, type HandicapSource } from "./handicap-source-api";
 import { standInFromRoster } from "./stand-in.ts";
 
 export type WisegolfSession = HandicapSource;
@@ -192,15 +192,27 @@ const findWisegolfPlayerClubs = memoize(
     async (firstName: string, lastName: string, token: string): Promise<GolfClub[]> => {
         const clubs = await fetchClubs(token);
         const clubAbbreviations: GolfClub[] = [];
+        let failed = 0;
+
         for (let club of clubs) {
-            const player = await fetchPlayer(token, club.number, firstName, lastName);
-            if (player) {
-                clubAbbreviations.push(convertWisegolfClubToGolfClub(club));
+            try {
+                const player = await fetchPlayer(token, club.number, firstName, lastName);
+                if (player) {
+                    clubAbbreviations.push(convertWisegolfClubToGolfClub(club));
+                }
+            } catch {
+                // Counted rather than rethrown here, so the log shows every club
+                // that could not be asked rather than only the first.
+                failed += 1;
             }
         }
-        return Promise.resolve(clubAbbreviations);
+
+        return clubsOrRefuse(`${firstName} ${lastName}`, clubAbbreviations, clubs.length, failed);
     },
-    { expires: ms("1 hour") },
+    // `async: true` for the same reason as `fetchPlayer`: a refusal is about one
+    // run's luck with the rate limiter, and caching it for an hour would make a
+    // moment of throttling the answer for the rest of the morning.
+    { expires: ms("1 hour"), async: true },
 );
 
 const login = memoize(
@@ -286,29 +298,51 @@ const fetchPlayer = memoize(
                     }`,
                     err,
                 );
-                return undefined;
+                throw err;
             }
         } else {
             const statusText =
                 response.statusText && response.statusText !== `${response.status}` ? ` ${response.statusText}` : "";
             console.warn(`Failed to fetch player at ${url} (HTTP ${response.status + statusText})`);
-            return undefined;
+            throw new Error(`HTTP ${response.status + statusText} from ${url}`);
         }
     },
-    { expires: ms("10 minutes") },
+    // `undefined` now means one thing — this club answered, and the player is not
+    // a member. A request that did not answer throws, because the two used to be
+    // the same value and a caller counting memberships cannot tell them apart.
+    // Each caller below decides what to do with the throw.
+    //
+    // `async: true` so a rejection is evicted rather than cached: without it
+    // micro-memoize keeps the rejected promise for the full ten minutes, and one
+    // throttled lookup would answer for every later call about that player.
+    { expires: ms("10 minutes"), async: true },
 );
 
+/**
+ * Deliberately unchanged in behaviour, now that `fetchPlayer` can throw.
+ *
+ * A handicap and a club membership want opposite things from a failed lookup.
+ * Here the caller has already been told which club the player belongs to and is
+ * asking one question of one club, so a failure costs a reading: the handicaps
+ * job records nothing for that player this run and tries again on the next tick,
+ * which is what it did before and is the right amount of drama for a number that
+ * is re-read four times a day.
+ *
+ * `findWisegolfPlayerClubs` is the one that cannot swallow it, because it is
+ * counting answers across 140 clubs and a missing one changes the count.
+ */
 const fetchHandicap = async (
     token: string,
     clubNumber: string,
     firstName: string,
     lastName: string,
 ): Promise<number | undefined> => {
-    const player = await fetchPlayer(token, clubNumber, firstName, lastName);
-    if (player) {
-        return player.handicap;
+    try {
+        return (await fetchPlayer(token, clubNumber, firstName, lastName))?.handicap;
+    } catch {
+        // Already logged where it happened, with the URL.
+        return undefined;
     }
-    return undefined;
 };
 
 const resolveClubNumber = memoize(
