@@ -6,6 +6,8 @@ import MirrorNotice from '../../components/MirrorNotice.astro'
 import ReadOnlyField from '../../components/ReadOnlyField.astro'
 
 import { formatEventDates } from '@hector/schemas/src/dates.ts'
+
+import { adminPathForEvent } from '../../lib/sections.ts'
 import { getPlayer, listEvents } from '../../lib/repository/events.ts'
 import { read as readHandicapSnapshot } from '../../lib/handicaps/snapshot.ts'
 import { PLAYER_MIRROR } from '../../lib/mirror.ts'
@@ -29,7 +31,15 @@ if (!player) return new Response('Player not found', { status: 404 })
  * page that would have to say so.
  */
 const [events, observed] = await Promise.all([listEvents(), readHandicapSnapshot()])
-const appearances = events.filter((event) => event.participants.includes(player.id))
+/*
+ * Linked only where this admin has a page for the format. `listEvents()` returns
+ * every event in the store, which since 2026-09-20 is more formats than the
+ * admin routes — Finnkampen is in the store and has no page here. An appearance
+ * in one still belongs in this table; a link to a 404 does not.
+ */
+const appearances = events
+    .filter((event) => event.participants.includes(player.id))
+    .map((event) => ({ event, path: adminPathForEvent(event) }))
 
 const handicap = resolveHandicap(player, observed?.players[player.id])
 const biography = player.biography ?? []
@@ -169,7 +179,8 @@ const biography = player.biography ?? []
 			appearances.length === 0 ? (
 				<p class="notice">
 					Not in any event's field. The Finnkampen events name their players with ids the
-					player collection does not have, so an appearance there does not show here.
+					player collection does not have, so an appearance in one of those would not show
+					here either.
 				</p>
 			) : (
 				<div class="tablewrap">
@@ -182,9 +193,9 @@ const biography = player.biography ?? []
 							</tr>
 						</thead>
 						<tbody>
-							{appearances.map((event) => (
+							{appearances.map(({ event, path }) => (
 								<tr>
-									<td><a href={`/events/${event.format}/${event.id}`}>{event.name}</a></td>
+									<td>{path ? <a href={path}>{event.name}</a> : event.name}</td>
 									<td>{event.format}</td>
 									<td class="num">{formatEventDates(event)}</td>
 								</tr>

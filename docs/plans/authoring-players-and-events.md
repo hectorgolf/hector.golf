@@ -23,6 +23,8 @@ executed by that. What it changes for whoever starts this:*
   no player document — all eighteen of `FINNKAMPEN2022`'s, and two in `HECTOR2017`. A participant
   picker cannot offer an id no collection has. Recorded in
   [`architecture.md`](../current/architecture.md) §13.*
+- *The Finnkampen pages went again the same day, deliberately — see step 1, which now creates them
+  rather than adding a form to them. Hector and players kept theirs.*
 
 ## What to do
 
@@ -126,20 +128,37 @@ wrong costs a revert of two files.
 Nobody needs to edit Finnkampen. The step is not for Finnkampen's sake, and it should not be
 justified to a reader as though it were.
 
-The editor itself is mostly assembly, and more of it exists than it did. `EventDetailsFields.astro`
-covers name, location, the date pair and the description for every format, because those live on
-`BaseEventSchema`, and `EventDetailsView.astro` is the same fields read-only, in the same order, for
-exactly this swap. `Participants.astro` renders a field for any format and is where the
-unresolved-id count above comes from — the add and remove half is what it does not have.
-`Roster.astro` is still typed to `MatchplayEvent` and reads a handicap snapshot it only needs during
-signup; that handicap column should not follow it into a finished 2021 event, which is why the
-read-only field table leaves it out. What is new is `results` — named teams and their players — and
-that is the shape Finnkampen and Hector share; the Finnkampen page renders it today.
+**This step creates the Finnkampen pages; it does not add a form to one.** They existed, read-only,
+for a day — added on 2026-09-20 and removed the same day, on the grounds that the format is not
+fully implemented anywhere and the admin had become the only place two events nobody maintains were
+rendered. That is a reason to remove a read-only view and not a reason against this step: the
+argument above is about what Finnkampen is *worth risking*, which is nothing, and that is unchanged.
+It does mean the step is a little larger than the other two, and that the removal commit is where to
+start reading — `git log -- admin/src/pages/events/finnkampen` has both pages whole.
 
-Move the family from `read-only` to `editable` in `sections.ts` in the same change. A nav entry that
-says Finnkampen is coming, after it has arrived, is the same lie in the other direction — and
-`test/sections.test.ts` now fails on one half of it: a family is `editable` only where
-`OWNED_FORMATS` would accept the write.
+The editor itself is mostly assembly, and more of it exists than the deletion suggests.
+`EventDetailsFields.astro` covers name, location, the date pair and the description for every format,
+because those live on `BaseEventSchema`, and `EventDetailsView.astro` is the same fields read-only,
+in the same order, for exactly this swap — the Hector page still uses both halves, so neither has
+rotted. `Participants.astro` renders a field for any format and is where the unresolved-id count
+above comes from; the add and remove half is what it does not have. `Roster.astro` is still typed to
+`MatchplayEvent` and reads a handicap snapshot it only needs during signup; that handicap column
+should not follow it into a finished 2021 event, which is why the read-only field table leaves it
+out. What is new is `results` — named teams and their players — and that is the shape Finnkampen and
+Hector share.
+
+Add the family back to `EVENT_FAMILIES` in `sections.ts`, as `editable`, in the same change. A nav
+entry that says Finnkampen is coming, after it has arrived, is the same lie in the other direction —
+and `test/sections.test.ts` fails on one half of it already: a family is `editable` only where
+`OWNED_FORMATS` would accept the write. Two other things key off that list and will start answering
+differently the moment the family returns, which is the point of their existing —
+`adminPathForEvent()` starts linking Finnkampen appearances on a player's page, and `eventMirror()`
+stops explaining why the format cannot be edited once it is in `OWNED_FORMATS`.
+
+The site is a separate question this step does not settle. `siteVisibility()` in
+`admin/src/lib/events/site.ts` will still answer "no route", correctly, because
+`astrosite/src/pages/events/` has no `finnkampen/[slug].astro` — authoring an event in the admin
+does not publish one.
 
 ## Step 2 — players
 

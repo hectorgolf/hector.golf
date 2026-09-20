@@ -10,15 +10,15 @@
  *
  * ## Unresolved ids are shown rather than hidden
  *
- * Both Finnkampen events name their field with ids like
- * `lasse-koskela-hcp183`, which no player document has — the player collection
- * keys on `lasse-k`. Those events predate the current ids, nothing has ever
- * needed to resolve them, and the site skips Finnkampen entirely
- * (`architecture.md` §13: there is no `/events/finnkampen/` route).
+ * `HECTOR2017` names two players — `tuomas-lesonen` and `tommy-nordberg` — who
+ * have no player document at all, and both Finnkampen events name their whole
+ * field with ids like `lasse-koskela-hcp183`, where the collection keys on
+ * `lasse-k`. Nothing has ever needed to resolve either set: the site drops what
+ * it cannot match, and neither it nor this admin has a Finnkampen page.
  *
  * So the count at the top is not decoration. It is the thing anybody building a
- * participant picker for these events needs to know before they start, and a
- * table that quietly printed the raw id in the name column would have hidden it.
+ * participant picker needs to know before they start, and a table that quietly
+ * printed the raw id in the name column would have hidden it.
  */
 import { displayName } from '../lib/players.ts'
 

@@ -28,6 +28,7 @@ import EventDescription from '@hector/ui/components/EventDescription.astro'
 import type { Event } from '@hector/schemas/src/events.ts'
 import { formatEventDates } from '@hector/schemas/src/dates.ts'
 
+import { siteVisibility } from '../lib/events/site.ts'
 import ReadOnlyField from './ReadOnlyField.astro'
 
 interface Props {
@@ -35,6 +36,20 @@ interface Props {
 }
 
 const { event } = Astro.props
+
+/*
+ * "Shown on the site" answers with a way to go and look, when there is one.
+ * `lib/events/site.ts` decides, and the case it exists for is the one this field
+ * would otherwise get wrong: `ignore` being clear does not mean a page was
+ * built, because Finnkampen has no route on the site to build one into.
+ */
+const visibility = siteVisibility(event)
+// Plain text: a hint renders as it is written, so backticks would show as
+// backticks. The other hints on these pages spell field names bare too.
+const NOT_SHOWN = {
+	ignored: 'The ignore flag is set, so the build skips this event.',
+	'no-route': `The site has no /events/${event.format}/ route, so no page is built for this format whatever ignore says.`,
+} as const
 ---
 
 <section class="stack">
@@ -63,7 +78,9 @@ const { event } = Astro.props
 		<ReadOnlyField label="Id" value={event.id} hint="The document key and the filename." />
 		<ReadOnlyField
 			label="Shown on the site"
-			value={event.ignore ? 'No — ignore is set' : 'Yes'}
+			value={visibility.shown ? 'Yes' : 'No'}
+			href={visibility.shown ? visibility.url : undefined}
+			hint={visibility.shown ? undefined : NOT_SHOWN[visibility.reason]}
 		/>
 		<ReadOnlyField label="Hero image" value={event.hero_image} />
 	</div>

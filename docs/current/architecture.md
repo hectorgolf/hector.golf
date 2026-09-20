@@ -23,7 +23,7 @@ Five moving parts:
 | Part | Location | Role |
 | --- | --- | --- |
 | Astro site | `astrosite/` | Static site generator, domain logic, committed JSON data, and the workflow scripts |
-| Admin service | `admin/` | Astro SSR on Cloud Run behind IAP: the `/operations` page, the dispatch endpoints Cloud Scheduler calls, the jobs this service runs itself, the matchplay editor, and read-only views of the data it mirrors — Hector events, Finnkampen events and players |
+| Admin service | `admin/` | Astro SSR on Cloud Run behind IAP: the `/operations` page, the dispatch endpoints Cloud Scheduler calls, the jobs this service runs itself, the matchplay editor, and read-only views of the data it mirrors — Hector events and players |
 | Shared packages | `packages/` | `@hector/schemas`, `@hector/ui`, `@hector/wisegolf` — the three things the site and the admin both use |
 | Cloud Functions | `backend/backend-functions/` | Four independent HTTP-triggered GCP functions: one public leaderboard proxy, one private biography writer, two dormant experiments |
 | CI/CD | `.github/workflows/` | Fifteen workflows: three deploys, four PR checks, four scheduled data updates, two Terraform, two admin data workflows |
@@ -1396,12 +1396,13 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
 - **Twenty participant ids in the committed events match no player document.** All eighteen in
   `FINNKAMPEN2022` — that event spells its field `lasse-koskela-hcp183` where the player collection
   keys on `lasse-k` — and two in `HECTOR2017`, `tuomas-lesonen` and `tommy-nordberg`, who have no
-  file at all. `FINNKAMPEN2021` is clean. Nothing renders these today: the site has no Finnkampen
+  file at all. `FINNKAMPEN2021` is clean. Nothing on the site renders these: it has no Finnkampen
   route, and its Hector pages resolve a field through the roster and drop what does not match. The
-  admin's read-only event pages show them as stored and count them, which is how the number above is
-  known. It matters before either format becomes editable — a participant picker cannot offer an id
-  no collection has, so the reconciliation is work the authoring plan's step 1 and step 3 each
-  inherit.
+  admin's Hector pages show an unresolved id as stored and count them, which is how the two in
+  `HECTOR2017` are visible; the Finnkampen ones are known from the same code, on pages that existed
+  between 2026-09-20 and the same day. It matters before either format becomes editable — a
+  participant picker cannot offer an id no collection has, so the reconciliation is work the
+  authoring plan's step 1 and step 3 each inherit.
 - **A finished Hector's bucket table shows today's handicaps, not the ones its split was drawn on.**
   `events/hector/[slug].astro` renders that column as `getPlayerHandicapById(player.id)`, which is
   the last entry in the history with no date bound at all — so it neither reads the handicaps stored
@@ -1419,8 +1420,13 @@ Recorded as observed; none of these are load-bearing assumptions of the design.
   `hector.css` now carries a block of rules retheming the widget to the Hector palette — but nothing
   loads the script, so none of it runs. `Layout.astro` never references it. Notable given the site
   ships Google Tag Manager.
-- Finnkampen events exist in both the data and the schema, but there is **no `/events/finnkampen/`
-  route**. `EventList.astro` warns and skips them, and `linkToEvent()` produces dead URLs for them.
+- Finnkampen events exist in both the data and the schema, in Firestore's mirror, and nowhere a
+  person can look at one. There is **no `/events/finnkampen/` route** on the site — `EventList.astro`
+  warns and skips them, and `linkToEvent()` produces dead URLs — and the admin's pages for the format
+  were removed on 2026-09-20, the day after they were added, on the grounds that the format is not
+  fully implemented anywhere. `listEvents()` still returns the two events, so anything in the admin
+  that lists events across formats has to cope: `adminPathForEvent()` in `admin/src/lib/sections.ts`
+  is that, and `siteVisibility()` is its counterpart for the public URL.
 - The `/golfreport` cover links point at `md5(alt)` paths for which no route exists — every one 404s.
 - `backend/backend-functions/src/cli/cli.ts` cannot run as `npm run cli`: the script hardcodes
   `samples/1.png`, and no `samples/` directory exists, so it exits on its own `existsSync` check. It

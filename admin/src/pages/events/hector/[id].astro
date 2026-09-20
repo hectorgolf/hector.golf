@@ -78,17 +78,11 @@ const teams = event.results?.teams ?? []
 				hint="What a hole can cost at most. A round may override it."
 			/>
 			<ReadOnlyField label="Courses" value={event.courses?.join(', ')} hint="Course ids; courses are not in Firestore." />
-			<ReadOnlyField label="Leaderboard sheet">
-				{
-					event.leaderboardSheet ? (
-						<a href={event.leaderboardSheet} rel="noreferrer noopener" target="_blank">
-							Google Sheet
-						</a>
-					) : (
-						<span class="none">—</span>
-					)
-				}
-			</ReadOnlyField>
+			<ReadOnlyField
+				label="Leaderboard sheet"
+				value={event.leaderboardSheet ? 'Google Sheet' : undefined}
+				href={event.leaderboardSheet}
+			/>
 		</div>
 	</section>
 
@@ -250,10 +244,6 @@ const teams = event.results?.teams ?? []
 		margin: 0;
 		font-size: 0.8rem;
 		color: var(--text-dim);
-	}
-
-	.none {
-		color: var(--text-faint);
 	}
 
 	.rounds,
