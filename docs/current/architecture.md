@@ -101,6 +101,7 @@ waiting for a deploy.
 │   ├── schemas/                # Zod schemas; the source of truth for all types
 │   ├── ui/                     # .astro components shipped as source, compiled by each consumer
 │   └── wisegolf/               # The WiseGolf client, and the drifting stand-in beside it
+├── scripts/render-icons.ts     # Renders both properties' favicons from the shared mark
 ├── backend/backend-functions/  # GCP Cloud Functions gen2 (leaderboard proxy, biography writer, 2 experiments)
 ├── terraform/                  # The hector-golf GCP project (see docs/current/gcp-setup.md)
 ├── .github/workflows/          # Fifteen workflows
@@ -332,6 +333,16 @@ is the single place that pairs a competition with both its shape and its tint �
 cannot come out gold on one page and ember on another. `WinBadge` replaced the three near-identical
 `players/icons/*WinIcon.astro` components, which had drifted into rendering every trophy in the same
 gold.
+
+**The favicons are the same mark, rendered.** A favicon has to be a file, so the falcon's path lives
+in [`hector-mark-path.ts`](../../packages/ui/components/hector-mark-path.ts) beside `HectorMark`,
+and [`scripts/render-icons.ts`](../../scripts/render-icons.ts) (`npm run icons`) draws it onto an
+ink-950 tile for both properties: gold for hector.golf, fairway green for admin.hector.golf. The
+tints are read out of `hector.css`, so recolouring is an edit to a token. The green is taken from
+`--fairway-400` rather than `--victor`, which names a competition the admin does not have. Two
+properties open in adjacent tabs, with titles truncated to a few characters, is the one place a
+reader needs the icon to say which is which. The outputs under `*/public/icons/` are committed;
+nothing in either build runs the script, and rasterising needs `rsvg-convert`.
 
 [`PageHeader`](../../packages/ui/components/PageHeader.astro) is the standard masthead — gold eyebrow,
 serif display title, mono metadata strip, optional lede. Every page uses it, directly or through

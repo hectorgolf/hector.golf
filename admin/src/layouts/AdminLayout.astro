@@ -23,6 +23,13 @@ const viewer = viewerFromHeaders(Astro.request.headers)
 		<title>{title} · Hector Admin</title>
 		<!-- Nothing here is public, so keep it out of indexes regardless of IAP. -->
 		<meta name="robots" content="noindex, nofollow" />
+		<!--
+			Green, where the site is gold. The two are usually open in adjacent tabs and
+			the titles truncate to a few characters, so the icon is what says which one
+			is being edited. Both are rendered by scripts/render-icons.ts.
+		-->
+		<link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
+		<link rel="icon" href="/icons/icon-32.ico" sizes="32x32" />
 	</head>
 	<body>
 		<header class="topbar">
