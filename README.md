@@ -28,13 +28,17 @@ Tracked nowhere but inside a document that otherwise describes how things are, w
 
 The other item that was here — `event.bucketsLocked` and `player.biographyLocked`, specified by
 `data-ownership.md` and implemented by nothing — became two plans, which is where something that has
-not happened belongs. `event.bucketsLocked` has since been built
-([`docs/plans/bucket-locking.md`](docs/plans/bucket-locking.md), phases 1-3 on 2026-09-18; the
-admin cannot set it yet, so it is set by editing the event file). That leaves the biography one
-[`docs/plans/biography-locking.md`](docs/plans/biography-locking.md), which was always the live
-problem of the two: `update-player-biographies` rewrites all 45 biographies on every run, twice a
-month, so the field `data-ownership.md` classes as authored is in practice CI's, and a hand-edited
-biography has a fortnight to live.
+not happened belongs. Both have since been built, and neither can be set from the admin yet, so both
+are set by editing the committed file: `event.bucketsLocked` on 2026-09-18
+([`docs/plans/bucket-locking.md`](docs/plans/bucket-locking.md), phases 1-3) and
+`player.biographyLocked` on 2026-09-19
+([`docs/plans/biography-locking.md`](docs/plans/biography-locking.md), steps 1-2).
+
+The biography one was always the live problem of the two: `update-player-biographies` rewrote all 45
+biographies on every run, twice a month, so the field `data-ownership.md` classes as authored was in
+practice CI's, and a hand-edited biography had a fortnight to live. It now leaves a locked player
+alone and logs that it did — but nothing sets the lock except a person editing the JSON file, so an
+edit nobody locked still has a fortnight to live.
 
 **Two of the four next steps the GCP setup was aiming at are still open.** They used to live at the
 end of the setup document, which is why nobody saw them; splitting that document moved them here and
