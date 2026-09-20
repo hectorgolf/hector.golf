@@ -35,8 +35,13 @@ import type { Change } from './log.ts'
  * because it is the only list of valid club abbreviations anywhere here, and the
  * player editor step 1 builds will want exactly that for a club picker. Until
  * then it is a reference for whoever is hand-editing `player.club`, which is
- * still how a club gets set. It is not quite authoritative even for that: 23 of
- * the 24 club values players use appear in it, and `KJKG` does not.
+ * still how a club gets set.
+ *
+ * Nothing enforces that a club somebody types is in this list, and until
+ * 2026-09-20 one was not: two players carried `KJKG`, which WiseGolf does not
+ * list, and `6ca4e486` corrected them to `Koto`. All twenty-four values in use
+ * match today. Worth knowing when the picker is built — reading this file will
+ * make new clubs consistent, and says nothing about the ones already set.
  */
 
 /** Where the committed club list lives, relative to the repository root. */
