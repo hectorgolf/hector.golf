@@ -364,11 +364,42 @@ renders. The end-to-end check that would have caught it is the one that adds a r
 moving one. Both exist now, and the loop no longer has a count in it to get wrong: a row is
 whatever arrives under `item-N-`.
 
-**The bucket leg** is still the untested one. The bucket does not exist until `terraform apply`
-runs, so uploading, the export's download and pruning have been run against a stub that speaks
-enough of the Cloud Storage JSON API to accept a file and hand it back — not against Cloud Storage.
+**The bucket leg is verified now**, on 2026-09-21: an image uploaded in the editor, stored in
+`gs://hector-golf-assets/courses/diamondcc-park/`, fetched by the export, committed to
+`astrosite/public/images/courses/diamondcc-park/uploaded/`, and served by the site. It took three
+more fixes to get there, and all three were the same kind of thing.
 
-The first thing to do after the apply is upload one image to one course and export it.
+### The three that only the real run could find
+
+Each of these was invisible until the step before it started working, which is the honest summary of
+why none of them were caught by a test.
+
+**The page the save lands on never rendered images.** The course page filtered `description_long`
+down to paragraphs — since long before uploads, and harmlessly, because every image in a description
+was a committed file you would go and look at on the public site. The first uploaded one made it a
+bug: choose a picture, press Save, land on the one page that does not show it. Fixed in #248, which
+also made "where is this image" one function for both pages rather than two copies of a rule whose
+failure mode is a broken square.
+
+**The export workflow was never told the bucket's name.** `export.ts` has fetched uploaded images
+since #243; `export-admin-data.yml` had no `ASSET_BUCKET`. The code path was reachable only after
+somebody actually uploaded something, so the first real upload was also the first run that could
+fail — and it failed with a stack trace out of `getAsset`, after two collections had already
+exported, naming neither the variable nor the reason. #250 set it, derived from `GCP_PROJECT_ID`
+rather than as a variable of its own, and made the export refuse up front with a sentence instead.
+
+**"Publish admin edits" did not publish.** It exported, committed to `main`, and stopped; the site
+kept serving the previous build. A push made with `GITHUB_TOKEN` does not trigger workflows, so
+`deploy-site.yml`'s `on: push` has never fired for these commits — which `deploy-site.yml` says
+about itself, and which `.github/actions/request-deploy` already solved for the scrape workflows.
+The export simply never used it. #252 added the step. The edit that exposed this reached the site
+twelve minutes late, carried there by an unrelated merge that happened to include the export commit
+in its tree.
+
+### What is not verified
+
+Pruning, against the real bucket: an image dropped from a description should disappear from
+`uploaded/` on the next export. Only the keeping half has run in production.
 
 ## Before the flip
 
