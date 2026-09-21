@@ -323,6 +323,31 @@ how to render. With the script off the two empty rows are the offer instead, one
 page last rendered — that is the shape of the bug below, and once the browser can add rows there is
 no count that could be right.
 
+### The hero image
+
+`hero_image` is the picture the course card on `/courses` and the top of the course page lead with,
+and the editor could not change it. It was a string, which is fine for a file somebody committed and
+no use for one somebody uploads — an upload is an object in a bucket until the export fetches it,
+and there is no path to write down yet. So it became what a description's image already is: one
+`ImageSchema`, `url` once committed and `object` while it is only in the bucket, with the export
+publishing and keeping both.
+
+Two things about that are worth knowing before touching it.
+
+**The stored records carry the old string.** Courses are owned by Firestore, so nothing rewrites
+those 17 documents on a schedule, and a schema that refused them would have taken every course page
+down on deploy. `hero_image` accepts a bare string and normalises it — one dated `z.preprocess`,
+doing real work until each record is rewritten by its first save.
+
+**Removing is a checkbox, and the key is deleted rather than emptied.** A browser will not let
+somebody clear a file input, and "no hero" is a state the schema allows; but
+`{ ...stored, hero_image: undefined }` is a course with the key present and empty, which the schema
+refuses. A save that removed the hero would have failed validation instead of removing the hero.
+
+`images.hero` is a different field, set on 10 courses and rendered nowhere, as is `images.aerial` on
+2. Only `images.course_layout` is used. Nothing here touches them; they are dead weight somebody
+could delete.
+
 **And the upload happens on save, not at its own endpoint.** The form is `multipart/form-data`, so a
 chosen file arrives with the save that references it: no upload endpoint, no client script, and no
 window in which an object exists that no form knows about. The cost is that a rejected save loses
@@ -364,11 +389,54 @@ renders. The end-to-end check that would have caught it is the one that adds a r
 moving one. Both exist now, and the loop no longer has a count in it to get wrong: a row is
 whatever arrives under `item-N-`.
 
-**The bucket leg** is still the untested one. The bucket does not exist until `terraform apply`
-runs, so uploading, the export's download and pruning have been run against a stub that speaks
-enough of the Cloud Storage JSON API to accept a file and hand it back — not against Cloud Storage.
+**The bucket leg is verified now**, on 2026-09-21: an image uploaded in the editor, stored in
+`gs://hector-golf-assets/courses/diamondcc-park/`, fetched by the export, committed to
+`astrosite/public/images/courses/diamondcc-park/uploaded/`, and served by the site. It took three
+more fixes to get there, and all three were the same kind of thing.
 
-The first thing to do after the apply is upload one image to one course and export it.
+### The three that only the real run could find
+
+Each of these was invisible until the step before it started working, which is the honest summary of
+why none of them were caught by a test.
+
+**The page the save lands on never rendered images.** The course page filtered `description_long`
+down to paragraphs — since long before uploads, and harmlessly, because every image in a description
+was a committed file you would go and look at on the public site. The first uploaded one made it a
+bug: choose a picture, press Save, land on the one page that does not show it. Fixed in #248, which
+also made "where is this image" one function for both pages rather than two copies of a rule whose
+failure mode is a broken square.
+
+**The export workflow was never told the bucket's name.** `export.ts` has fetched uploaded images
+since #243; `export-admin-data.yml` had no `ASSET_BUCKET`. The code path was reachable only after
+somebody actually uploaded something, so the first real upload was also the first run that could
+fail — and it failed with a stack trace out of `getAsset`, after two collections had already
+exported, naming neither the variable nor the reason. #250 set it, derived from `GCP_PROJECT_ID`
+rather than as a variable of its own, and made the export refuse up front with a sentence instead.
+
+**"Publish admin edits" did not publish.** It exported, committed to `main`, and stopped; the site
+kept serving the previous build. A push made with `GITHUB_TOKEN` does not trigger workflows, so
+`deploy-site.yml`'s `on: push` has never fired for these commits — which `deploy-site.yml` says
+about itself, and which `.github/actions/request-deploy` already solved for the scrape workflows.
+The export simply never used it. #252 added the step. The edit that exposed this reached the site
+twelve minutes late, carried there by an unrelated merge that happened to include the export commit
+in its tree.
+
+### Pruning, too
+
+Verified the same evening, by replacing a hero rather than by dropping a description image — which
+is the better test of the two. The export deletes everything in `uploaded/` that nothing references,
+so a hero absent from `referencedObjects` would be a hero deleted on the next export, quietly and
+only for the courses whose hero happens to be an upload. Both halves ran in one export:
+
+```text
+course images: 1 written, 1 removed
+  A astrosite/public/images/courses/diamondcc-park/uploaded/3136f241fff3dc72.jpg
+  D astrosite/public/images/courses/diamondcc-park/uploaded/a2269b3bae867f7f.jpg
+  M astrosite/src/data/courses/diamondcc-park.json
+```
+
+and the deploy request that follows it answered `HTTP 202`, with a `workflow_dispatch` run of
+`deploy-site.yml` a second later. Nothing in this pipeline is unexercised now.
 
 ## Before the flip
 
