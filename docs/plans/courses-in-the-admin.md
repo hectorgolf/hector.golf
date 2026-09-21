@@ -1,10 +1,10 @@
 # Courses in the admin
 
-*Written 2026-09-21, and being executed as it is written. The first step shipped with this document;
-what is marked **done** below is done, and the rest is the proposal.*
+*Written 2026-09-21, and executed as it was written. Steps 1-3 shipped with this document; step 4 is
+still a proposal.*
 
-Seventeen golf courses live in `astrosite/src/data/courses/`, are edited by hand, and are the last
-section of the admin that says `planned`. This moves them into Firestore, renders them, and
+Seventeen golf courses live in `astrosite/src/data/courses/` and are edited by hand. They were the
+last section of the admin that said `planned`. This moves them into Firestore, renders them, and
 eventually lets somebody change a tee's name without opening a text editor.
 
 ## Why this one, and why now
@@ -203,6 +203,9 @@ emulator is seeded from the files it is then compared against and can only tell 
 Run against production on 2026-09-21 it found two players whose clubs had been corrected by hand and
 never mirrored; flipping without it would have published the stale values back.
 
-Courses are more exposed to this than players were, not less: they are edited by hand today, they
-have no scheduled writer to keep the mirror warm, and `refresh-admin-mirror.yml` does not fire on a
-push that touches them.
+Courses were more exposed to this than players were, for a reason worth keeping in view: they are
+edited by hand, and no scheduled writer keeps their mirror warm. `refresh-admin-mirror.yml` now
+fires on a push touching `astrosite/src/data/courses/**`, which closes the specific hole the players
+flip fell into — a hand edit that reaches git and never reaches Firestore.
+
+That makes the mirror self-maintaining rather than the check unnecessary. Run it anyway.

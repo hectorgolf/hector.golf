@@ -50,6 +50,17 @@ on:
     branches: ["main"]
     paths:
       - 'astrosite/src/data/events/hector/**'
+      # Courses joined the mirror on 2026-09-21 and are edited by hand, which no
+      # other trigger here catches: the workflow_run above fires when a scrape
+      # finishes and nothing scrapes a course. Without this line a corrected tee
+      # rating would sit in git while the admin showed the old one until somebody
+      # remembered to dispatch this.
+      #
+      # That is not hypothetical. The players flip the day before found the
+      # mirror two hand-corrections stale for exactly this reason — 6ca4e486 had
+      # fixed two clubs in the files and Firestore had never heard about it — and
+      # an export at that moment would have published the stale values back.
+      - 'astrosite/src/data/courses/**'
 
   workflow_dispatch:
 
