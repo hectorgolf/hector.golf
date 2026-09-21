@@ -138,6 +138,7 @@ jobs:
           ASSET_BUCKET: ${{ vars.GCP_PROJECT_ID }}-assets
 
       - name: Commit what changed
+        id: commit
         if: steps.guard.outputs.configured == 'true'
         run: |
           git config user.name "export-admin-data.yml"
@@ -162,8 +163,13 @@ jobs:
           git add -A astrosite/src/data/events/matchplay astrosite/src/data/players astrosite/src/data/courses \
             astrosite/public/images/courses
 
+          # Reported rather than just returned, because the step after this one
+          # asks for a deploy and must not ask when there is nothing new to
+          # deploy. Same contract `astrosite/scripts/commit-changes.sh` gives
+          # the scrape workflows.
           if git diff --cached --quiet; then
             echo "Nothing to publish: the committed files already match the store."
+            echo "committed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -182,6 +188,23 @@ jobs:
           git commit -F /tmp/export-commit-message
           git pull -r
           git push
+          echo "committed=true" >> "$GITHUB_OUTPUT"
+
+      # Without this, "Publish admin edits" committed and stopped there: the
+      # site kept serving the previous build until something else happened to
+      # deploy it. A push made with GITHUB_TOKEN does not trigger workflows, so
+      # deploy-site.yml's `on: push` has never fired for these commits — the
+      # same hole the scrape workflows have, and this is the same patch, the
+      # one already written for them. Publishing now means published.
+      - name: Request a deploy
+        if: steps.guard.outputs.configured == 'true'
+        uses: ./.github/actions/request-deploy
+        with:
+          committed: ${{ steps.commit.outputs.committed }}
+          wif_provider: ${{ vars.GH_WIF_PROVIDER }}
+          service_account: hector-scheduler@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+          admin_domain: ${{ vars.TF_ADMIN_DOMAIN }}
+          iap_client_id: ${{ secrets.TF_IAP_OAUTH_CLIENT_ID }}
 
       - name: Summarise
         if: steps.guard.outputs.configured == 'true'
