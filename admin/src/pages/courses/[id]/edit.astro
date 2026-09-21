@@ -13,6 +13,7 @@ import {
 	courseFromForm,
 	formOf,
 	isBlank,
+	formIndices,
 	rowIndices,
 	withBlankRows,
 	type CourseForm,
@@ -141,7 +142,11 @@ if (Astro.request.method === 'POST') {
             url: String(form.get(`source-${index}-url`) ?? ''),
             unused: row.unused,
         })),
-        tees: submitted.tees.map((_, index) => teeRow(form, index)),
+        // Every tee row that arrived, not the number this page rendered. A tee
+        // added in the browser has an index past that count, and a tee removed
+        // there sends nothing at all — `teesFrom` then drops it and
+        // `applyTeeEdits` takes its scorecard column with it.
+        tees: formIndices(form, 'tee').map((index) => teeRow(form, index)),
     }
 
     const parsed = courseSchema.safeParse(courseFromForm(course, submitted))
@@ -493,10 +498,16 @@ const rows = submitted.description
 			<h2>Tees</h2>
 			<p class="hint">
 				Renaming a tee moves the scorecard with it — the per-hole lengths are keyed by name, and
-				the <code>id</code> beside each row is what lets the two be matched up afterwards. A tee
-				cannot be removed here: that would drop its column from the scorecard, and a form where
-				clearing a name deletes measurements deletes them by accident. The empty row at the end
-				adds one.
+				the <code>id</code> beside each row is what lets the two be matched up afterwards.
+				<br />
+				<strong>Removing a tee deletes its per-hole lengths</strong> from the scorecard, which
+				is the one thing in this editor that throws away measurements nobody can retype. The
+				row stays on screen until you save, and <strong>Undo</strong> puts it back. Clearing a
+				name is still not how you remove a tee — it leaves a nameless row and nothing else,
+				which is deliberate.
+				<span class="when-plain-tees">
+					{' '}The empty row at the end adds one.
+				</span>
 			</p>
 
 			<div class="tablewrap">
@@ -513,11 +524,12 @@ const rows = submitted.description
 							<th>Rating ♀</th>
 							<th>Slope ♂</th>
 							<th>Slope ♀</th>
+							<th class="actions"><span class="sr-only">Actions</span></th>
 						</tr>
 					</thead>
-					<tbody>
+					<tbody data-tees>
 						{submitted.tees.map((tee, index) => (
-							<tr>
+							<tr data-tee class:list={{ blank: !tee.id && tee.name === '' }}>
 								<td>
 									<input type="hidden" name={`tee-${index}-id`} value={tee.id ?? ''} />
 									<input
@@ -566,11 +578,30 @@ const rows = submitted.description
 								<td>
 									<input name={`tee-${index}-slopeLadies`} type="text" value={tee.slopeLadies} disabled={!COURSES_ARE_OWNED} class="num" />
 								</td>
+								{/*
+								 * Both buttons on every row, one visible at a time, and
+								 * both hidden until `lib/tee-rows.ts` marks the section.
+								 * Rendered rather than built for the reason everything
+								 * else here is: a button made in script carries none of
+								 * Astro's scoping attributes and comes out unstyled.
+								 */}
+								<td class="actions">
+									<button type="button" class="remove-tee danger" data-remove>
+										Remove
+									</button>
+									<button type="button" class="undo-tee secondary" data-undo>
+										Undo
+									</button>
+								</td>
 							</tr>
 						))}
 					</tbody>
 				</table>
 			</div>
+
+			<p class="adders tee-adders">
+				<button type="button" data-add-tee disabled={!COURSES_ARE_OWNED}>+ Add tee</button>
+			</p>
 		</section>
 
 		<div class="actions">
@@ -837,6 +868,82 @@ const rows = submitted.description
 		color: var(--text-dim);
 	}
 
+	/*
+	 * The tee table's own controls, on the same rule as the description's: one
+	 * way in at a time. With no script the empty row adds a tee and nothing
+	 * removes one, which is where this table has always been; with the script
+	 * the buttons appear and the empty row goes.
+	 */
+	.remove-tee,
+	.undo-tee,
+	.tee-adders {
+		display: none;
+	}
+
+	section.tees-enhanced .remove-tee,
+	section.tees-enhanced .tee-adders {
+		display: inline-block;
+	}
+
+	section.tees-enhanced .tee-adders {
+		display: flex;
+	}
+
+	section.tees-enhanced tr.removed .remove-tee {
+		display: none;
+	}
+
+	section.tees-enhanced tr.removed .undo-tee {
+		display: inline-block;
+	}
+
+	section.tees-enhanced tr.blank {
+		display: none;
+	}
+
+	section.tees-enhanced .when-plain-tees {
+		display: none;
+	}
+
+	.remove-tee,
+	.undo-tee {
+		padding: 0.05rem 0.5rem;
+		font-size: 0.78rem;
+		line-height: 1.5;
+		white-space: nowrap;
+	}
+
+	/*
+	 * Pinned to the right edge of the scroll, because the table is wider than
+	 * the page and this column was past the end of it: eleven columns of
+	 * numbers, and the one control somebody needs was reachable only by
+	 * scrolling sideways first. `.tablewrap` is what scrolls, so sticking to it
+	 * keeps the buttons beside whichever row is under the pointer.
+	 */
+	.tees .actions {
+		position: sticky;
+		right: 0;
+		background: var(--surface);
+		border-left: 1px solid var(--line);
+		text-align: right;
+		/*
+		 * A pinned column sits over whatever is scrolled under it, so it needs
+		 * to look like it is on top — without the shadow the covered column
+		 * reads as a column with nothing in it.
+		 */
+		box-shadow: -10px 0 10px -10px rgb(0 0 0 / 0.8);
+	}
+
+	/*
+	 * A removed tee stays legible rather than collapsing to a line, because what
+	 * is about to be thrown away is the scorecard column named in this row. The
+	 * decision is reversible until Save and should be readable while it is.
+	 */
+	tr.removed input {
+		opacity: 0.4;
+		text-decoration: line-through;
+	}
+
 	.tees .colour {
 		width: 6rem;
 	}
@@ -852,6 +959,8 @@ const rows = submitted.description
 
 <script>
 	import { enhance } from '../../../lib/description-list.ts'
+	import { enhance as enhanceTees } from '../../../lib/tee-rows.ts'
 
 	enhance(document)
+	enhanceTees(document)
 </script>
