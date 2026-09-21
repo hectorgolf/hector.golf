@@ -1,5 +1,7 @@
 import { applyTeeEdits, type Course, type CourseTee } from '@hector/schemas/src/courses.ts'
 
+import { datasourceRows, datasourcesFrom, type DatasourceRow } from './datasources.ts'
+
 /**
  * What a person writes on a golf course, read off a submitted form.
  *
@@ -12,7 +14,7 @@ import { applyTeeEdits, type Course, type CourseTee } from '@hector/schemas/src/
  *   head. A form for them would be a transcription exercise with no proofreader.
  * - **Hole descriptions.** Prose, eighteen at a time and in two languages for
  *   the Tahko courses. Worth an editor; worth its own one.
- * - **Images and `datasources`.** Paths and provenance. Nothing has asked.
+ * - **Images.** Paths. Nothing has asked.
  * - **`id`.** The document key, the filename and the course's address on the
  *   public site.
  *
@@ -33,6 +35,8 @@ export type CourseForm = {
     hero: HeroForm
     /** The long description, in the order the boxes are in. */
     description: DescriptionRow[]
+    /** Where the numbers came from: a URL box per name. */
+    datasources: DatasourceRow[]
     tees: TeeForm[]
 }
 
@@ -159,6 +163,7 @@ export function formOf(course: Course): CourseForm {
          * two rows somebody had just typed into.
          */
         description: withBlankRows(descriptionOf(course)),
+        datasources: datasourceRows(course),
         tees: [...(course.course?.tees ?? []).map(teeOf), { ...BLANK_TEE }],
     }
 }
@@ -331,9 +336,9 @@ export function heroFrom(hero: HeroForm): Course['hero_image'] {
  * The whole course a form describes, built on the stored one.
  *
  * The starting point is `stored` rather than an empty object, which is what
- * carries the scorecard, the hole descriptions, the images and the datasources
- * through untouched. An editor that rebuilt the record from its own fields would
- * delete every one of them — and silently, because Zod strips what it is not
+ * carries the scorecard, the hole descriptions and the images through
+ * untouched. An editor that rebuilt the record from its own fields would delete
+ * every one of them — and silently, because Zod strips what it is not
  * told about rather than complaining. `course-schema-coverage.test.ts` exists
  * about that failure one level down.
  */
@@ -349,6 +354,7 @@ export function courseFromForm(stored: Course, form: CourseForm): Course {
         },
         description_short: form.descriptionShort.trim(),
         description_long: descriptionFrom(form.description),
+        datasources: datasourcesFrom(form.datasources),
     }
 
     // Assigned rather than spread, because `hero_image` is optional and

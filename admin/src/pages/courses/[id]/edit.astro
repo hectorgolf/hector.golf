@@ -20,6 +20,7 @@ import {
 	type TeeForm,
 } from '../../../lib/courses/details.ts'
 import { previewSrc } from '../../../lib/courses/preview.ts'
+import { type DatasourceRow } from '../../../lib/courses/datasources.ts'
 import { ACCEPTED_TYPES, assetBucket, storeUpload } from '../../../lib/courses/uploads.ts'
 
 /*
@@ -33,8 +34,8 @@ import { ACCEPTED_TYPES, assetBucket, storeUpload } from '../../../lib/courses/u
  *
  * ## What it does not edit, and why that is safe
  *
- * The scorecard, the hole descriptions, the images and the datasources are all
- * absent from this form and all survive a save, because `courseFromForm` starts
+ * The scorecard, the hole descriptions and the images are all absent from this
+ * form and all survive a save, because `courseFromForm` starts
  * from the stored course and overwrites only what the form carried. That is the
  * property to preserve if a field is ever added here: Zod strips what it is not
  * told about, so an editor that rebuilt the record from its own fields would
@@ -130,6 +131,16 @@ if (Astro.request.method === 'POST') {
             remove: form.get('hero-remove') !== null,
         },
         description: rows,
+        /*
+         * By the row's own index, and every row the page rendered — including
+         * the empty ones. An empty URL is how a source is taken away, so a row
+         * left out here would be a source that cannot be removed.
+         */
+        datasources: submitted.datasources.map((row, index) => ({
+            name: String(form.get(`source-${index}-name`) ?? row.name),
+            url: String(form.get(`source-${index}-url`) ?? ''),
+            unused: row.unused,
+        })),
         tees: submitted.tees.map((_, index) => teeRow(form, index)),
     }
 
@@ -168,7 +179,7 @@ const rows = submitted.description
 	<PageHeader
 		title="Edit course"
 		eyebrow="Course"
-		lede="Identity, contact, the prose and the tees. The scorecard, the hole descriptions, the images and the datasources are not edited here and are carried through a save untouched."
+		lede="Identity, contact, the prose, the tees and where the numbers came from. The scorecard, the hole descriptions and the images are not edited here and are carried through a save untouched."
 	/>
 
 	{error && <p class="notice bad">{error}</p>}
@@ -449,6 +460,36 @@ const rows = submitted.description
 		</section>
 
 		<section class="stack">
+			<h2>Where the numbers came from</h2>
+			<p class="hint">
+				A URL per kind of source. Fill one in and the course has that source; clear it and the
+				course does not — that is all "remove" is here, because a source with nowhere to point
+				is not something the record can hold. The names are a fixed list rather than something
+				to type, so that two courses cannot end up with two spellings of the same thing.
+			</p>
+
+			<div class="sources">
+				{
+					submitted.datasources.map((source: DatasourceRow, index: number) => (
+						<div class:list={['source', { unused: source.url.trim() === '' }]}>
+							<input type="hidden" name={`source-${index}-name`} value={source.name} />
+							<label class="field">
+								<span class="label">{source.name}</span>
+								<input
+									name={`source-${index}-url`}
+									type="url"
+									value={source.url}
+									disabled={!COURSES_ARE_OWNED}
+									placeholder="https://…"
+								/>
+							</label>
+						</div>
+					))
+				}
+			</div>
+		</section>
+
+		<section class="stack">
 			<h2>Tees</h2>
 			<p class="hint">
 				Renaming a tee moves the scorecard with it — the per-hole lengths are keyed by name, and
@@ -722,6 +763,18 @@ const rows = submitted.description
 
 	.item.removed .removed-note {
 		display: flex;
+	}
+
+	.sources {
+		display: grid;
+		gap: 0.75rem 1.5rem;
+		grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+		max-width: 60rem;
+	}
+
+	/* A name this course does not use yet reads as an offer, not as a gap. */
+	.source.unused .label {
+		color: var(--text-dim);
 	}
 
 	.adders {
