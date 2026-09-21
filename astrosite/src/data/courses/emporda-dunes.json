@@ -1,176 +1,479 @@
 {
-    "id": "emporda-dunes",
-    "name": "Empordà Dunes",
-    "homepage": "https://www.empordagolf.com/en/golf/dunes",
-    "contact": {
-        "address": "Ctra. de Palafrugell a Torroella de Montgrí, 17257 Gualta, Girona, Spain",
-        "phone": "tel:+34972760450",
-        "email": "golf@empordagolf.com"
+  "id": "emporda-dunes",
+  "name": "Empordà Dunes",
+  "homepage": "https://www.empordagolf.com/en/golf/dunes",
+  "contact": {
+    "address": "Ctra. de Palafrugell a Torroella de Montgrí, 17257 Gualta, Girona, Spain",
+    "phone": "tel:+34972760450",
+    "email": "golf@empordagolf.com"
+  },
+  "hero_image": "/images/courses/emporda-dunes/hero.jpg",
+  "description_short": "Empordà Dunes is a bold and wind-swept challenge. Where others saw unremarkable marshland, architect Robert von Hagge saw an opportunity to craft a course of pure imagination. Empordà Dunes is a masterful blend of rolling inland dunes, unpredictable coastal winds, and modern water hazards, capturing the soul of traditional Scottish links while adding its own unique character.",
+  "description_long": [
+    {
+      "type": "paragraph",
+      "content": "Empordà Dunes is a bold and wind-swept challenge. Where others saw unremarkable marshland, architect Robert von Hagge saw an opportunity to craft a course of pure imagination. Empordà Dunes is a masterful blend of rolling inland dunes, unpredictable coastal winds, and modern water hazards, capturing the soul of traditional Scottish links while adding its own unique character."
     },
-    "hero_image": "/images/courses/emporda-dunes/hero.jpg",
-    "description_short": "Empordà Dunes is a bold and wind-swept challenge. Where others saw unremarkable marshland, architect Robert von Hagge saw an opportunity to craft a course of pure imagination. Empordà Dunes is a masterful blend of rolling inland dunes, unpredictable coastal winds, and modern water hazards, capturing the soul of traditional Scottish links while adding its own unique character.",
-    "description_long": [
-        { "type": "paragraph", "content": "Empordà Dunes is a bold and wind-swept challenge. Where others saw unremarkable marshland, architect Robert von Hagge saw an opportunity to craft a course of pure imagination. Empordà Dunes is a masterful blend of rolling inland dunes, unpredictable coastal winds, and modern water hazards, capturing the soul of traditional Scottish links while adding its own unique character." },
-        { "type": "image", "url": "/images/courses/emporda-dunes/hero2.jpg" },
-        { "type": "paragraph", "content": "Stretching 6300 meters, this dynamic course rewards players who combine precision, strategy, and creativity. The ever-changing wind conditions make club selection a constant challenge, while the open layout demands a keen eye for positioning. With its thrilling mix of natural beauty and strategic design, Empordà Dunes delivers an exhilarating test for golfers of all levels." },
-        { "type": "image", "url": "/images/courses/emporda-dunes/hero3.jpg" },
-        { "type": "paragraph", "content": "Empordà Golf's two world-class courses, designed by Robert von Hagge and Rick Baril, offer a unique experience in every round. This European Tour hosting resort combines the joy of playing golf with the pleasure of walking surrounded by nature." }
-    ],
-    "images": {
-        "hero": "/images/courses/emporda-dunes/hero.jpg",
-        "course_layout": "/images/courses/emporda-dunes/layout.png"
+    {
+      "type": "image",
+      "url": "/images/courses/emporda-dunes/hero2.jpg"
     },
-    "course": {
-        "tees": [
-            {
-                "name": "White",
-                "color": "#ffffff",
-                "length": 6304,
-                "par": 71,
-                "rating": {
-                    "men": 74.2,
-                    "ladies": null
-                },
-                "slope": {
-                    "men": 139,
-                    "ladies": null
-                }
-            },
-            {
-                "name": "Yellow",
-                "color": "#ffff00",
-                "length": 5971,
-                "par": 71,
-                "rating": {
-                    "men": 72.1,
-                    "ladies": 78.6
-                },
-                "slope": {
-                    "men": 135,
-                    "ladies": 142
-                }
-            },
-            {
-                "name": "Orange",
-                "color": "#ffa500",
-                "length": 5583,
-                "par": 71,
-                "rating": {
-                    "men": 69.9,
-                    "ladies": 75.8
-                },
-                "slope": {
-                    "men": 132,
-                    "ladies": 137
-                }
-            },
-            {
-                "name": "Blue",
-                "color": "#0000ff",
-                "length": 5311,
-                "par": 71,
-                "rating": {
-                    "men": 67.8,
-                    "ladies": 73.5
-                },
-                "slope": {
-                    "men": 129,
-                    "ladies": 132
-                }
-            },
-            {
-                "name": "Red",
-                "color": "#ff0000",
-                "length": 5060,
-                "par": 71,
-                "rating": {
-                    "men": 66.5,
-                    "ladies": 71.5
-                },
-                "slope": {
-                    "men": 117,
-                    "ladies": 126
-                }
-            },
-            {
-                "name": "Pink",
-                "color": "#ffcccc",
-                "length": 4639,
-                "par": 71,
-                "rating": {
-                    "men": null,
-                    "ladies": 69.0
-                },
-                "slope": {
-                    "men": null,
-                    "ladies": 120
-                }
-            }
-        ],
-        "scorecard": {
-            "men": [
-                { "hole":  1, "par": 4, "hcp":  9, "lengths": { "White": 380, "Yellow": 355, "Orange": 325, "Blue": 308, "Red": 302, "Pink": 280 }},
-                { "hole":  2, "par": 4, "hcp":  5, "lengths": { "White": 372, "Yellow": 345, "Orange": 317, "Blue": 295, "Red": 278, "Pink": 246 }},
-                { "hole":  3, "par": 3, "hcp": 17, "lengths": { "White": 158, "Yellow": 143, "Orange": 136, "Blue": 122, "Red": 117, "Pink":  90 }},
-                { "hole":  4, "par": 4, "hcp": 13, "lengths": { "White": 328, "Yellow": 323, "Orange": 305, "Blue": 281, "Red": 275, "Pink": 249 }},
-                { "hole":  5, "par": 4, "hcp":  7, "lengths": { "White": 359, "Yellow": 354, "Orange": 327, "Blue": 321, "Red": 305, "Pink": 287 }},
-                { "hole":  6, "par": 3, "hcp": 15, "lengths": { "White": 168, "Yellow": 159, "Orange": 143, "Blue": 125, "Red": 122, "Pink":  78 }},
-                { "hole":  7, "par": 4, "hcp": 11, "lengths": { "White": 391, "Yellow": 361, "Orange": 334, "Blue": 328, "Red": 319, "Pink": 286 }},
-                { "hole":  8, "par": 5, "hcp":  1, "lengths": { "White": 546, "Yellow": 531, "Orange": 503, "Blue": 480, "Red": 463, "Pink": 421 }},
-                { "hole":  9, "par": 4, "hcp":  3, "lengths": { "White": 380, "Yellow": 348, "Orange": 316, "Blue": 305, "Red": 285, "Pink": 263 }},
-                { "hole": 10, "par": 4, "hcp": 16, "lengths": { "White": 330, "Yellow": 319, "Orange": 298, "Blue": 281, "Red": 275, "Pink": 257 }},
-                { "hole": 11, "par": 3, "hcp": 14, "lengths": { "White": 164, "Yellow": 146, "Orange": 138, "Blue": 114, "Red": 105, "Pink":  95 }},
-                { "hole": 12, "par": 5, "hcp":  8, "lengths": { "White": 535, "Yellow": 483, "Orange": 455, "Blue": 446, "Red": 436, "Pink": 429 }},
-                { "hole": 13, "par": 4, "hcp": 10, "lengths": { "White": 364, "Yellow": 358, "Orange": 332, "Blue": 323, "Red": 296, "Pink": 267 }},
-                { "hole": 14, "par": 4, "hcp":  4, "lengths": { "White": 391, "Yellow": 367, "Orange": 358, "Blue": 340, "Red": 315, "Pink": 304 }},
-                { "hole": 15, "par": 3, "hcp": 18, "lengths": { "White": 148, "Yellow": 141, "Orange": 131, "Blue": 126, "Red": 110, "Pink":  93 }},
-                { "hole": 16, "par": 4, "hcp":  6, "lengths": { "White": 387, "Yellow": 364, "Orange": 333, "Blue": 300, "Red": 280, "Pink": 259 }},
-                { "hole": 17, "par": 4, "hcp":  2, "lengths": { "White": 398, "Yellow": 390, "Orange": 379, "Blue": 371, "Red": 354, "Pink": 334 }},
-                { "hole": 18, "par": 5, "hcp": 12, "lengths": { "White": 505, "Yellow": 484, "Orange": 453, "Blue": 445, "Red": 423, "Pink": 401 }}
-            ],
-            "ladies": null
-        },
-        "descriptions": [
-            { "hole":  1, "layout": "/images/courses/emporda-dunes/holes/1.png", "description": "" },
-            { "hole":  2, "layout": "/images/courses/emporda-dunes/holes/2.png", "description": "" },
-            { "hole":  3, "layout": "/images/courses/emporda-dunes/holes/3.png", "description": "" },
-            { "hole":  4, "layout": "/images/courses/emporda-dunes/holes/4.png", "description": "" },
-            { "hole":  5, "layout": "/images/courses/emporda-dunes/holes/5.png", "description": "" },
-            { "hole":  6, "layout": "/images/courses/emporda-dunes/holes/6.png", "description": "" },
-            { "hole":  7, "layout": "/images/courses/emporda-dunes/holes/7.png", "description": "" },
-            { "hole":  8, "layout": "/images/courses/emporda-dunes/holes/8.png", "description": "" },
-            { "hole":  9, "layout": "/images/courses/emporda-dunes/holes/9.png", "description": "" },
-            { "hole": 10, "layout": "/images/courses/emporda-dunes/holes/10.png", "description": "" },
-            { "hole": 11, "layout": "/images/courses/emporda-dunes/holes/11.png", "description": "" },
-            { "hole": 12, "layout": "/images/courses/emporda-dunes/holes/12.png", "description": "" },
-            { "hole": 13, "layout": "/images/courses/emporda-dunes/holes/13.png", "description": "" },
-            { "hole": 14, "layout": "/images/courses/emporda-dunes/holes/14.png", "description": "" },
-            { "hole": 15, "layout": "/images/courses/emporda-dunes/holes/15.png", "description": "" },
-            { "hole": 16, "layout": "/images/courses/emporda-dunes/holes/16.png", "description": "" },
-            { "hole": 17, "layout": "/images/courses/emporda-dunes/holes/17.png", "description": "" },
-            { "hole": 18, "layout": "/images/courses/emporda-dunes/holes/18.png", "description": "" }
-        ]
+    {
+      "type": "paragraph",
+      "content": "Stretching 6300 meters, this dynamic course rewards players who combine precision, strategy, and creativity. The ever-changing wind conditions make club selection a constant challenge, while the open layout demands a keen eye for positioning. With its thrilling mix of natural beauty and strategic design, Empordà Dunes delivers an exhilarating test for golfers of all levels."
     },
-    "datasources": [
-        {
-            "name": "website",
-            "url": "https://www.empordagolf.com/lang/en"
+    {
+      "type": "image",
+      "url": "/images/courses/emporda-dunes/hero3.jpg"
+    },
+    {
+      "type": "paragraph",
+      "content": "Empordà Golf's two world-class courses, designed by Robert von Hagge and Rick Baril, offer a unique experience in every round. This European Tour hosting resort combines the joy of playing golf with the pleasure of walking surrounded by nature."
+    }
+  ],
+  "images": {
+    "hero": "/images/courses/emporda-dunes/hero.jpg",
+    "course_layout": "/images/courses/emporda-dunes/layout.png"
+  },
+  "course": {
+    "tees": [
+      {
+        "name": "White",
+        "color": "#ffffff",
+        "length": 6304,
+        "par": 71,
+        "rating": {
+          "men": 74.2,
+          "ladies": null
         },
-        {
-            "name": "mscorecard",
-            "url": "https://www.mscorecard.com/mscorecard/showcourse.php?cid=1205009311600"
-        },
-        {
-            "name": "official scorecard",
-            "url": "https://www.empordagolf.com/storage/golf/links/pdf/4/links.pdf"
-        },
-        {
-            "name": "slope table",
-            "url": "https://www.empordagolf.com/storage/golf/links/pdf/2/links.pdf"
-        },
-        {
-            "name": "local rules",
-            "url": "https://www.empordagolf.com/storage/golf/links/pdf/5/links.pdf"
+        "slope": {
+          "men": 139,
+          "ladies": null
         }
+      },
+      {
+        "name": "Yellow",
+        "color": "#ffff00",
+        "length": 5971,
+        "par": 71,
+        "rating": {
+          "men": 72.1,
+          "ladies": 78.6
+        },
+        "slope": {
+          "men": 135,
+          "ladies": 142
+        }
+      },
+      {
+        "name": "Orange",
+        "color": "#ffa500",
+        "length": 5583,
+        "par": 71,
+        "rating": {
+          "men": 69.9,
+          "ladies": 75.8
+        },
+        "slope": {
+          "men": 132,
+          "ladies": 137
+        }
+      },
+      {
+        "name": "Blue",
+        "color": "#0000ff",
+        "length": 5311,
+        "par": 71,
+        "rating": {
+          "men": 67.8,
+          "ladies": 73.5
+        },
+        "slope": {
+          "men": 129,
+          "ladies": 132
+        }
+      },
+      {
+        "name": "Red",
+        "color": "#ff0000",
+        "length": 5060,
+        "par": 71,
+        "rating": {
+          "men": 66.5,
+          "ladies": 71.5
+        },
+        "slope": {
+          "men": 117,
+          "ladies": 126
+        }
+      },
+      {
+        "name": "Pink",
+        "color": "#ffcccc",
+        "length": 4639,
+        "par": 71,
+        "rating": {
+          "men": null,
+          "ladies": 69
+        },
+        "slope": {
+          "men": null,
+          "ladies": 120
+        }
+      }
+    ],
+    "scorecard": {
+      "men": [
+        {
+          "hole": 1,
+          "par": 4,
+          "hcp": 9,
+          "lengths": {
+            "White": 380,
+            "Yellow": 355,
+            "Orange": 325,
+            "Blue": 308,
+            "Red": 302,
+            "Pink": 280
+          }
+        },
+        {
+          "hole": 2,
+          "par": 4,
+          "hcp": 5,
+          "lengths": {
+            "White": 372,
+            "Yellow": 345,
+            "Orange": 317,
+            "Blue": 295,
+            "Red": 278,
+            "Pink": 246
+          }
+        },
+        {
+          "hole": 3,
+          "par": 3,
+          "hcp": 17,
+          "lengths": {
+            "White": 158,
+            "Yellow": 143,
+            "Orange": 136,
+            "Blue": 122,
+            "Red": 117,
+            "Pink": 90
+          }
+        },
+        {
+          "hole": 4,
+          "par": 4,
+          "hcp": 13,
+          "lengths": {
+            "White": 328,
+            "Yellow": 323,
+            "Orange": 305,
+            "Blue": 281,
+            "Red": 275,
+            "Pink": 249
+          }
+        },
+        {
+          "hole": 5,
+          "par": 4,
+          "hcp": 7,
+          "lengths": {
+            "White": 359,
+            "Yellow": 354,
+            "Orange": 327,
+            "Blue": 321,
+            "Red": 305,
+            "Pink": 287
+          }
+        },
+        {
+          "hole": 6,
+          "par": 3,
+          "hcp": 15,
+          "lengths": {
+            "White": 168,
+            "Yellow": 159,
+            "Orange": 143,
+            "Blue": 125,
+            "Red": 122,
+            "Pink": 78
+          }
+        },
+        {
+          "hole": 7,
+          "par": 4,
+          "hcp": 11,
+          "lengths": {
+            "White": 391,
+            "Yellow": 361,
+            "Orange": 334,
+            "Blue": 328,
+            "Red": 319,
+            "Pink": 286
+          }
+        },
+        {
+          "hole": 8,
+          "par": 5,
+          "hcp": 1,
+          "lengths": {
+            "White": 546,
+            "Yellow": 531,
+            "Orange": 503,
+            "Blue": 480,
+            "Red": 463,
+            "Pink": 421
+          }
+        },
+        {
+          "hole": 9,
+          "par": 4,
+          "hcp": 3,
+          "lengths": {
+            "White": 380,
+            "Yellow": 348,
+            "Orange": 316,
+            "Blue": 305,
+            "Red": 285,
+            "Pink": 263
+          }
+        },
+        {
+          "hole": 10,
+          "par": 4,
+          "hcp": 16,
+          "lengths": {
+            "White": 330,
+            "Yellow": 319,
+            "Orange": 298,
+            "Blue": 281,
+            "Red": 275,
+            "Pink": 257
+          }
+        },
+        {
+          "hole": 11,
+          "par": 3,
+          "hcp": 14,
+          "lengths": {
+            "White": 164,
+            "Yellow": 146,
+            "Orange": 138,
+            "Blue": 114,
+            "Red": 105,
+            "Pink": 95
+          }
+        },
+        {
+          "hole": 12,
+          "par": 5,
+          "hcp": 8,
+          "lengths": {
+            "White": 535,
+            "Yellow": 483,
+            "Orange": 455,
+            "Blue": 446,
+            "Red": 436,
+            "Pink": 429
+          }
+        },
+        {
+          "hole": 13,
+          "par": 4,
+          "hcp": 10,
+          "lengths": {
+            "White": 364,
+            "Yellow": 358,
+            "Orange": 332,
+            "Blue": 323,
+            "Red": 296,
+            "Pink": 267
+          }
+        },
+        {
+          "hole": 14,
+          "par": 4,
+          "hcp": 4,
+          "lengths": {
+            "White": 391,
+            "Yellow": 367,
+            "Orange": 358,
+            "Blue": 340,
+            "Red": 315,
+            "Pink": 304
+          }
+        },
+        {
+          "hole": 15,
+          "par": 3,
+          "hcp": 18,
+          "lengths": {
+            "White": 148,
+            "Yellow": 141,
+            "Orange": 131,
+            "Blue": 126,
+            "Red": 110,
+            "Pink": 93
+          }
+        },
+        {
+          "hole": 16,
+          "par": 4,
+          "hcp": 6,
+          "lengths": {
+            "White": 387,
+            "Yellow": 364,
+            "Orange": 333,
+            "Blue": 300,
+            "Red": 280,
+            "Pink": 259
+          }
+        },
+        {
+          "hole": 17,
+          "par": 4,
+          "hcp": 2,
+          "lengths": {
+            "White": 398,
+            "Yellow": 390,
+            "Orange": 379,
+            "Blue": 371,
+            "Red": 354,
+            "Pink": 334
+          }
+        },
+        {
+          "hole": 18,
+          "par": 5,
+          "hcp": 12,
+          "lengths": {
+            "White": 505,
+            "Yellow": 484,
+            "Orange": 453,
+            "Blue": 445,
+            "Red": 423,
+            "Pink": 401
+          }
+        }
+      ],
+      "ladies": null
+    },
+    "descriptions": [
+      {
+        "hole": 1,
+        "layout": "/images/courses/emporda-dunes/holes/1.png",
+        "description": ""
+      },
+      {
+        "hole": 2,
+        "layout": "/images/courses/emporda-dunes/holes/2.png",
+        "description": ""
+      },
+      {
+        "hole": 3,
+        "layout": "/images/courses/emporda-dunes/holes/3.png",
+        "description": ""
+      },
+      {
+        "hole": 4,
+        "layout": "/images/courses/emporda-dunes/holes/4.png",
+        "description": ""
+      },
+      {
+        "hole": 5,
+        "layout": "/images/courses/emporda-dunes/holes/5.png",
+        "description": ""
+      },
+      {
+        "hole": 6,
+        "layout": "/images/courses/emporda-dunes/holes/6.png",
+        "description": ""
+      },
+      {
+        "hole": 7,
+        "layout": "/images/courses/emporda-dunes/holes/7.png",
+        "description": ""
+      },
+      {
+        "hole": 8,
+        "layout": "/images/courses/emporda-dunes/holes/8.png",
+        "description": ""
+      },
+      {
+        "hole": 9,
+        "layout": "/images/courses/emporda-dunes/holes/9.png",
+        "description": ""
+      },
+      {
+        "hole": 10,
+        "layout": "/images/courses/emporda-dunes/holes/10.png",
+        "description": ""
+      },
+      {
+        "hole": 11,
+        "layout": "/images/courses/emporda-dunes/holes/11.png",
+        "description": ""
+      },
+      {
+        "hole": 12,
+        "layout": "/images/courses/emporda-dunes/holes/12.png",
+        "description": ""
+      },
+      {
+        "hole": 13,
+        "layout": "/images/courses/emporda-dunes/holes/13.png",
+        "description": ""
+      },
+      {
+        "hole": 14,
+        "layout": "/images/courses/emporda-dunes/holes/14.png",
+        "description": ""
+      },
+      {
+        "hole": 15,
+        "layout": "/images/courses/emporda-dunes/holes/15.png",
+        "description": ""
+      },
+      {
+        "hole": 16,
+        "layout": "/images/courses/emporda-dunes/holes/16.png",
+        "description": ""
+      },
+      {
+        "hole": 17,
+        "layout": "/images/courses/emporda-dunes/holes/17.png",
+        "description": ""
+      },
+      {
+        "hole": 18,
+        "layout": "/images/courses/emporda-dunes/holes/18.png",
+        "description": ""
+      }
     ]
+  },
+  "datasources": [
+    {
+      "name": "website",
+      "url": "https://www.empordagolf.com/lang/en"
+    },
+    {
+      "name": "mscorecard",
+      "url": "https://www.mscorecard.com/mscorecard/showcourse.php?cid=1205009311600"
+    },
+    {
+      "name": "official scorecard",
+      "url": "https://www.empordagolf.com/storage/golf/links/pdf/4/links.pdf"
+    },
+    {
+      "name": "slope table",
+      "url": "https://www.empordagolf.com/storage/golf/links/pdf/2/links.pdf"
+    },
+    {
+      "name": "local rules",
+      "url": "https://www.empordagolf.com/storage/golf/links/pdf/5/links.pdf"
+    }
+  ]
 }
