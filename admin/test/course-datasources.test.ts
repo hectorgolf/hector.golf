@@ -52,6 +52,53 @@ describe('the datasource rows a course shows', () => {
     })
 })
 
+/*
+ * `slope table` was retired from the vocabulary on 2026-09-22 in favour of
+ * `official slope table`: the same thing spelled twice, two courses using one
+ * and one the other, none using both, all three pointing at a PDF on the club's
+ * own site.
+ *
+ * Retiring a name is only safe because a course carrying it keeps it. The two
+ * that still do are renamed by moving a URL from one box to the next in the
+ * editor, which is the point of having an editor — not by a migration, and not
+ * by editing the committed files, which Firestore owns and the export would
+ * overwrite.
+ */
+describe('a name that has been retired from the list', () => {
+    const emporda = (): Course => ({
+        ...courseFile('emporda-dunes'),
+        datasources: [
+            { name: 'website', url: 'https://www.empordagolf.com/' },
+            { name: 'slope table', url: 'https://www.empordagolf.com/storage/golf/links/pdf/2/links.pdf' },
+        ],
+    })
+
+    it('is not offered to a course that does not have it', () => {
+        expect(KNOWN_DATASOURCES).not.toContain('slope table')
+        expect(datasourceRows(courseFile('diamondcc-park')).map((row) => row.name)).not.toContain('slope table')
+    })
+
+    it('is kept, shown and saved for a course that does', () => {
+        const rows = datasourceRows(emporda())
+
+        expect(rows.find((row) => row.name === 'slope table')?.url).toBe(
+            'https://www.empordagolf.com/storage/golf/links/pdf/2/links.pdf'
+        )
+        expect(datasourcesFrom(rows)).toEqual(emporda().datasources)
+    })
+
+    /** And the new name is offered beside it, which is how the rename gets done. */
+    it('is offered alongside the name that replaced it', () => {
+        const rows = datasourceRows(emporda())
+
+        expect(rows.find((row) => row.name === 'official slope table')).toEqual({
+            name: 'official slope table',
+            url: '',
+            unused: true,
+        })
+    })
+})
+
 describe('what the datasource rows save', () => {
     const rows = [
         { name: 'website', url: 'https://example.com', unused: false },

@@ -41,17 +41,22 @@ import type { Course } from '@hector/schemas/src/courses.ts'
  * course carrying one that is not here still shows it and still saves it. Add
  * to this when a new kind of source turns up more than once.
  *
- * `slope table` and `official slope table` look like the same thing spelled two
- * ways — one course uses each. Both are here because both are in the data;
- * merging them is a data decision, not an editor one.
+ * `slope table` was the same thing as `official slope table` spelled a second
+ * way — two courses used one, one used the other, none used both, and all three
+ * pointed at a PDF on the club's own site. Only the second name is offered now,
+ * because `official` is what distinguishes a club's own document from somebody
+ * else's here, exactly as `official scorecard` does against `mscorecard`.
+ *
+ * A course still carrying the old name keeps it and still shows it, by the rule
+ * below about names that are not on this list. That is what makes renaming the
+ * two of them a job for the editor rather than a migration.
  */
 export const KNOWN_DATASOURCES = [
     'website',
     'mscorecard',
     'official scorecard',
-    'slope table',
-    'local rules',
     'official slope table',
+    'local rules',
     'top100golfcourses',
 ] as const
 
