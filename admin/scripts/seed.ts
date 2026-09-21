@@ -32,11 +32,13 @@ import { fileURLToPath } from 'node:url'
 
 import { glob } from 'glob'
 
+import { schema as courseSchema, withTeeIds } from '@hector/schemas/src/courses.ts'
 import { genericEventSchema } from '@hector/schemas/src/events.ts'
 import { schema as playerSchema } from '@hector/schemas/src/players.ts'
 
 import {
     ALL_FORMATS,
+    COURSE_FILES,
     MIRRORED_FORMATS,
     OWNED_FORMATS,
     PLAYERS_ARE_OWNED,
@@ -52,7 +54,19 @@ async function seed(
     label: string,
     collection: string,
     pattern: string,
-    schema: { safeParse: (v: unknown) => { success: boolean; data?: { id: string }; error?: unknown } }
+    schema: { safeParse: (v: unknown) => { success: boolean; data?: { id: string }; error?: unknown } },
+    /*
+     * A last chance to add what the file does not carry, applied after the
+     * schema and before the write. Courses are the only caller: their tees get
+     * an `id` here, because a tee's identity cannot be its name once a name can
+     * be edited — see `docs/plans/courses-in-the-admin.md`.
+     *
+     * Deliberately not a place to *change* anything the file says. Whatever this
+     * returns is what the admin reads, and a transform that rewrote a value
+     * would make the store disagree with the file it was seeded from, which is
+     * the one property a mirror has.
+     */
+    enrich?: (record: any) => any
 ): Promise<void> {
     const files = await glob(pattern, { cwd: dataDir, absolute: true })
     let written = 0
@@ -67,7 +81,8 @@ async function seed(
             continue
         }
 
-        const doc = JSON.stringify(parsed.data)
+        const record = enrich ? enrich(parsed.data) : parsed.data
+        const doc = JSON.stringify(record)
         const ref = firestore.collection(collection).doc(parsed.data.id)
 
         // Read before writing, so a document that has not changed is left alone.
@@ -178,5 +193,17 @@ await reportingStoreErrors(async () => {
     if (!PLAYERS_ARE_OWNED || bootstrap) {
         await seed('players', 'players', PLAYER_FILES, playerSchema)
     }
+    /*
+     * Courses, on no gate at all — they are a mirror and nothing else writes
+     * them.
+     *
+     * No scheduled writer has ever touched `astrosite/src/data/courses/`: no
+     * workflow, no npm script, and the interactive `mscorecard` CLI writes a raw
+     * API response to a path its operator types. So there is no writer to race
+     * and no flip to stage, which is what makes this the cheapest collection in
+     * the repository to move. When the editor lands this line grows the same
+     * gate the players line has, and not before.
+     */
+    await seed('courses', 'courses', COURSE_FILES, courseSchema, withTeeIds)
 })
 console.log('Done.')

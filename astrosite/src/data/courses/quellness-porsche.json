@@ -46,7 +46,7 @@
     "course": {
         "tees": [
             {
-                "name": "white",
+                "name": "White",
                 "color": "#ffffff",
                 "length": 6037,
                 "par": 71,
@@ -60,7 +60,7 @@
                 }
             },
             {
-                "name": "yellow",
+                "name": "Yellow",
                 "color": "#ffff00",
                 "length": 5690,
                 "par": 71,
@@ -74,7 +74,7 @@
                 }
             },
             {
-                "name": "blue",
+                "name": "Blue",
                 "color": "#0000ff",
                 "length": 5216,
                 "par": 71,
@@ -88,7 +88,7 @@
                 }
             },
             {
-                "name": "red",
+                "name": "Red",
                 "color": "#ff0000",
                 "length": 4920,
                 "par": 71,
@@ -104,24 +104,24 @@
         ],
         "scorecard": {
             "men": [
-                { "hole":  1, "par": 4, "hcp":  7, "lengths": { "white": 342, "yellow": 327, "blue": 304, "red": 289 }},
-                { "hole":  2, "par": 5, "hcp":  9, "lengths": { "white": 461, "yellow": 435, "blue": 406, "red": 383 }},
-                { "hole":  3, "par": 4, "hcp":  5, "lengths": { "white": 336, "yellow": 321, "blue": 308, "red": 284 }},
-                { "hole":  4, "par": 4, "hcp":  3, "lengths": { "white": 423, "yellow": 395, "blue": 360, "red": 348 }},
-                { "hole":  5, "par": 3, "hcp": 11, "lengths": { "white": 199, "yellow": 177, "blue": 160, "red": 151 }},
-                { "hole":  6, "par": 4, "hcp":  1, "lengths": { "white": 399, "yellow": 385, "blue": 366, "red": 348 }},
-                { "hole":  7, "par": 3, "hcp": 15, "lengths": { "white": 156, "yellow": 145, "blue": 145, "red": 130 }},
-                { "hole":  8, "par": 5, "hcp": 13, "lengths": { "white": 464, "yellow": 445, "blue": 383, "red": 383 }},
-                { "hole":  9, "par": 3, "hcp": 17, "lengths": { "white": 152, "yellow": 135, "blue": 135, "red": 115 }},
-                { "hole": 10, "par": 4, "hcp": 14, "lengths": { "white": 348, "yellow": 330, "blue": 294, "red": 272 }},
-                { "hole": 11, "par": 5, "hcp":  8, "lengths": { "white": 459, "yellow": 444, "blue": 396, "red": 372 }},
-                { "hole": 12, "par": 4, "hcp": 18, "lengths": { "white": 315, "yellow": 304, "blue": 264, "red": 239 }},
-                { "hole": 13, "par": 3, "hcp": 12, "lengths": { "white": 158, "yellow": 140, "blue": 127, "red": 113 }},
-                { "hole": 14, "par": 4, "hcp":  6, "lengths": { "white": 373, "yellow": 343, "blue": 318, "red": 306 }},
-                { "hole": 15, "par": 5, "hcp": 10, "lengths": { "white": 497, "yellow": 462, "blue": 420, "red": 391 }},
-                { "hole": 16, "par": 4, "hcp":  4, "lengths": { "white": 355, "yellow": 340, "blue": 314, "red": 295 }},
-                { "hole": 17, "par": 3, "hcp": 16, "lengths": { "white": 171, "yellow": 154, "blue": 154, "red": 139 }},
-                { "hole": 18, "par": 4, "hcp":  2, "lengths": { "white": 429, "yellow": 408, "blue": 362, "red": 362 }}
+                { "hole":  1, "par": 4, "hcp":  7, "lengths": { "White": 342, "Yellow": 327, "Blue": 304, "Red": 289 }},
+                { "hole":  2, "par": 5, "hcp":  9, "lengths": { "White": 461, "Yellow": 435, "Blue": 406, "Red": 383 }},
+                { "hole":  3, "par": 4, "hcp":  5, "lengths": { "White": 336, "Yellow": 321, "Blue": 308, "Red": 284 }},
+                { "hole":  4, "par": 4, "hcp":  3, "lengths": { "White": 423, "Yellow": 395, "Blue": 360, "Red": 348 }},
+                { "hole":  5, "par": 3, "hcp": 11, "lengths": { "White": 199, "Yellow": 177, "Blue": 160, "Red": 151 }},
+                { "hole":  6, "par": 4, "hcp":  1, "lengths": { "White": 399, "Yellow": 385, "Blue": 366, "Red": 348 }},
+                { "hole":  7, "par": 3, "hcp": 15, "lengths": { "White": 156, "Yellow": 145, "Blue": 145, "Red": 130 }},
+                { "hole":  8, "par": 5, "hcp": 13, "lengths": { "White": 464, "Yellow": 445, "Blue": 383, "Red": 383 }},
+                { "hole":  9, "par": 3, "hcp": 17, "lengths": { "White": 152, "Yellow": 135, "Blue": 135, "Red": 115 }},
+                { "hole": 10, "par": 4, "hcp": 14, "lengths": { "White": 348, "Yellow": 330, "Blue": 294, "Red": 272 }},
+                { "hole": 11, "par": 5, "hcp":  8, "lengths": { "White": 459, "Yellow": 444, "Blue": 396, "Red": 372 }},
+                { "hole": 12, "par": 4, "hcp": 18, "lengths": { "White": 315, "Yellow": 304, "Blue": 264, "Red": 239 }},
+                { "hole": 13, "par": 3, "hcp": 12, "lengths": { "White": 158, "Yellow": 140, "Blue": 127, "Red": 113 }},
+                { "hole": 14, "par": 4, "hcp":  6, "lengths": { "White": 373, "Yellow": 343, "Blue": 318, "Red": 306 }},
+                { "hole": 15, "par": 5, "hcp": 10, "lengths": { "White": 497, "Yellow": 462, "Blue": 420, "Red": 391 }},
+                { "hole": 16, "par": 4, "hcp":  4, "lengths": { "White": 355, "Yellow": 340, "Blue": 314, "Red": 295 }},
+                { "hole": 17, "par": 3, "hcp": 16, "lengths": { "White": 171, "Yellow": 154, "Blue": 154, "Red": 139 }},
+                { "hole": 18, "par": 4, "hcp":  2, "lengths": { "White": 429, "Yellow": 408, "Blue": 362, "Red": 362 }}
             ],
             "ladies": null
         },

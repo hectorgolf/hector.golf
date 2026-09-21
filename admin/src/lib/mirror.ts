@@ -28,6 +28,16 @@ export type Mirror = {
      * nothing writes on a schedule.
      */
     scheduledWriters: readonly string[]
+    /**
+     * The plan that says how this collection stops being a mirror.
+     *
+     * Defaulted rather than required because it was one document for a long
+     * time. Courses are the first collection with a plan of their own, and a
+     * notice pointing at the wrong one is worse than a notice pointing at none:
+     * it sends somebody to a document that does not mention what they are
+     * looking at.
+     */
+    plan?: string
 }
 
 /**
@@ -58,6 +68,25 @@ const HECTOR: Mirror = {
 const FINNKAMPEN: Mirror = {
     authoredAt: 'astrosite/src/data/events/finnkampen/',
     scheduledWriters: [],
+}
+
+/**
+ * Courses, which are a mirror for a different reason than the others were.
+ *
+ * Every other mirror in this file exists because a *scheduled writer* owns the
+ * committed file and would race the admin. Courses have no scheduled writer at
+ * all — nothing in `.github/workflows/` touches them and no npm script writes
+ * them — so what keeps them read-only is simply that the editor has not been
+ * built yet.
+ *
+ * That makes this the one mirror with no conflict to resolve, and the reason
+ * `docs/plans/courses-in-the-admin.md` calls it the cheapest collection left to
+ * move. `scheduledWriters` is empty and says so, the way Finnkampen's does.
+ */
+export const COURSE_MIRROR: Mirror = {
+    authoredAt: 'astrosite/src/data/courses/',
+    scheduledWriters: [],
+    plan: 'docs/plans/courses-in-the-admin.md',
 }
 
 const EVENT_MIRRORS: Record<EventFormat, Mirror | undefined> = {

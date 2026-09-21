@@ -83,3 +83,18 @@ export const PLAYERS_ARE_OWNED = true
  * sits beside them and holds forty photographs nothing reads.
  */
 export const PLAYER_FILES = 'players/*.json'
+
+/**
+ * Where the committed course files are, relative to `astrosite/src/data/`.
+ *
+ * Here beside the others rather than in the seed that uses it, because the
+ * export will want the same glob the day courses are authored here — and a
+ * pattern that drifted between the two would be a silently half-covered
+ * collection, which is the whole reason `PLAYER_FILES` is a constant.
+ *
+ * There is no `COURSES_ARE_OWNED` beside it yet, deliberately. Courses are a
+ * mirror: the seed writes them, nothing else does, and owning a collection with
+ * no editor would take away the only way to change a course and offer nothing
+ * in its place. See `docs/plans/courses-in-the-admin.md`.
+ */
+export const COURSE_FILES = 'courses/*.json'
