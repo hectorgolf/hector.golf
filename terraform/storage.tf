@@ -65,7 +65,32 @@ resource "google_storage_bucket" "assets" {
     enabled = false
   }
 
-  depends_on = [google_project_service.enabled["storage.googleapis.com"]]
+  # Both, and the second one is not obvious until it bites.
+  #
+  # Terraform creates the role binding in iam.tf and this bucket in parallel
+  # unless told otherwise, and on the first apply — 2026-09-21 — the bucket lost
+  # that race by one second:
+  #
+  #     google_project_iam_member.terraform_ci["roles/storage.admin"]: Creating...
+  #     google_storage_bucket.assets: Creating...
+  #     terraform_ci[...]: Creation complete after 7s
+  #     Error 403: terraform-ci@... does not have storage.buckets.create access
+  #
+  # The identity applying this is granted the role *by* this configuration, so
+  # the grant has to exist before the thing it permits. `depends_on` on the whole
+  # `terraform_ci` binding rather than one key of it: the map is created as a
+  # unit, and naming a key here would be a second place to edit the day the role
+  # list changes.
+  #
+  # Ordering is necessary and may not be sufficient on a fresh project — an IAM
+  # grant is not visible to the next request immediately, which
+  # docs/playbooks/gcp-bootstrapping.md says about several other grants. If a
+  # first apply still fails with 403 here, the second one succeeds, and that is
+  # the propagation rather than this line being wrong.
+  depends_on = [
+    google_project_service.enabled["storage.googleapis.com"],
+    google_project_iam_member.terraform_ci,
+  ]
 }
 
 # ---------------------------------------------------------------------------
