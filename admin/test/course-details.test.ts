@@ -11,6 +11,7 @@ import {
     courseFromForm,
     descriptionFrom,
     formOf,
+    heroFrom,
     teesFrom,
     rowIndices,
     withBlankRows,
@@ -202,6 +203,17 @@ describe('what a save leaves alone', () => {
         expect(result.images).toEqual(course.images)
         expect(result.datasources).toEqual(course.datasources)
         expect(result.id).toBe(course.id)
+    })
+
+    /*
+     * The hero *is* carried by the form now, so this is not the "untouched"
+     * property the rest of this block asserts — it is the narrower one that
+     * matters as much: a save where nobody went near the hero leaves it exactly
+     * where it was. A field the form carries is a field a save can erase.
+     */
+    it('keeps the hero image when nobody touched it', () => {
+        const { course, result } = saved()
+        expect(result.hero_image).toEqual(course.hero_image)
     })
 
     /**
@@ -528,3 +540,54 @@ describe('adding an item at a chosen position', () => {
     })
 })
 
+
+describe('the hero image', () => {
+    const committed = { url: '/images/courses/konopiste-radecky/hero.jpg' }
+
+    it('stays as it is when the form carries it back unchanged', () => {
+        expect(heroFrom({ ...committed, remove: false })).toEqual(committed)
+    })
+
+    /*
+     * An upload replaces, and the old `url` goes with it. Keeping both would
+     * leave the record saying the hero is in two places, and the export would
+     * write the object to a path of its own — so the stale url would be a
+     * second answer that happens to still resolve, which is the worst kind.
+     */
+    it('is replaced by an upload, and the old path goes', () => {
+        const hero = heroFrom({ ...committed, object: 'courses/konopiste-radecky/abc123.jpg', remove: false })
+
+        expect(hero).toEqual({ object: 'courses/konopiste-radecky/abc123.jpg' })
+        expect(hero).not.toHaveProperty('url')
+    })
+
+    it('can be taken away, which is the one thing an empty file input cannot say', () => {
+        expect(heroFrom({ ...committed, remove: true })).toBeUndefined()
+    })
+
+    it('is undefined for a course that never had one', () => {
+        expect(heroFrom({ remove: false })).toBeUndefined()
+    })
+
+    /*
+     * `delete` rather than `hero_image: undefined`. The key would otherwise be
+     * present and empty, which the schema refuses — and a save that removed the
+     * hero would fail validation rather than remove the hero.
+     */
+    it('leaves no empty key behind when it is removed', () => {
+        const course = konopiste()
+        const result = courseFromForm(course, { ...formOf(course), hero: { remove: true } })
+
+        expect('hero_image' in result).toBe(false)
+        expect(courseSchema.safeParse(result).success).toBe(true)
+    })
+
+    /** And the round trip: what `formOf` reads, `courseFromForm` writes back. */
+    it('survives a form it was only read into and out of', () => {
+        const course = konopiste()
+        const result = courseFromForm(course, formOf(course))
+
+        expect(result.hero_image).toEqual(course.hero_image)
+        expect(courseSchema.safeParse(result).success).toBe(true)
+    })
+})

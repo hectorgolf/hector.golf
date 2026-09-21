@@ -101,6 +101,22 @@ if (Astro.request.method === 'POST') {
         })
     }
 
+    /*
+     * The hero, through the same upload as a description row: one bucket, one
+     * prefix, one thing that can go wrong. A chosen file replaces whatever is
+     * there; an unticked box with no file leaves it exactly as it was.
+     */
+    const heroUpload = form.get('hero-file')
+    const heroFile = heroUpload instanceof File && heroUpload.size > 0 ? heroUpload : undefined
+    let heroObject = String(form.get('hero-object') ?? '') || undefined
+    if (heroFile) {
+        try {
+            heroObject = await storeUpload(course.id, heroFile)
+        } catch (failure) {
+            uploadError = failure instanceof Error ? failure.message : String(failure)
+        }
+    }
+
     submitted = {
         name: String(form.get('name') ?? ''),
         homepage: String(form.get('homepage') ?? ''),
@@ -108,6 +124,11 @@ if (Astro.request.method === 'POST') {
         phone: String(form.get('phone') ?? ''),
         email: String(form.get('email') ?? ''),
         descriptionShort: String(form.get('descriptionShort') ?? ''),
+        hero: {
+            url: String(form.get('hero-url') ?? '') || undefined,
+            object: heroObject,
+            remove: form.get('hero-remove') !== null,
+        },
         description: rows,
         tees: submitted.tees.map((_, index) => teeRow(form, index)),
     }
@@ -193,6 +214,58 @@ const rows = submitted.description
 				<div class="field">
 					<label for="email">Email</label>
 					<input id="email" name="email" type="text" value={submitted.email} disabled={!COURSES_ARE_OWNED} />
+				</div>
+			</div>
+		</section>
+
+		<section class="stack">
+			<h2>Hero image</h2>
+			<p class="hint">
+				The picture the course card on <code>/courses</code> and the top of the course page lead
+				with. Uploading one replaces what is there; the old file is left where it is rather than
+				deleted, because something else may still point at it.
+			</p>
+
+			<div class="item image hero">
+				<input type="hidden" name="hero-url" value={submitted.hero.url ?? ''} />
+				<input type="hidden" name="hero-object" value={submitted.hero.object ?? ''} />
+
+				{submitted.hero.object ? (
+					<figure>
+						<img src={previewSrc(submitted.hero)} alt="" loading="lazy" />
+						<figcaption>
+							Uploaded, not yet published. Becomes{' '}
+							<code>{uploadedImagePath(course.id, submitted.hero.object)}</code> at the next
+							export.
+						</figcaption>
+					</figure>
+				) : submitted.hero.url ? (
+					<figure>
+						<img src={previewSrc(submitted.hero)} alt="" loading="lazy" />
+						<figcaption>
+							Already published · <code>{submitted.hero.url}</code>
+						</figcaption>
+					</figure>
+				) : (
+					<p class="asset empty">This course has no hero image.</p>
+				)}
+
+				<div class="controls">
+					<label class="file">
+						<span>{submitted.hero.url || submitted.hero.object ? 'Replace with' : 'Upload one'}</span>
+						<input
+							name="hero-file"
+							type="file"
+							accept={ACCEPTED_TYPES}
+							disabled={!COURSES_ARE_OWNED || !assetBucket}
+						/>
+					</label>
+					{(submitted.hero.url || submitted.hero.object) && (
+						<label class="remove">
+							<input name="hero-remove" type="checkbox" disabled={!COURSES_ARE_OWNED} />
+							<span>Remove</span>
+						</label>
+					)}
 				</div>
 			</div>
 		</section>
@@ -511,6 +584,12 @@ const rows = submitted.description
 
 	.item.image {
 		border-left-color: var(--line-strong);
+	}
+
+	/* Not a row in a list: nothing to order it against, so nothing to hang a rule on. */
+	.item.hero {
+		padding-left: 0;
+		border-left: none;
 	}
 
 	.controls {
