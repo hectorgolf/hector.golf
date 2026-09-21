@@ -49,13 +49,20 @@
 # after every write.
 #
 # What it exports is decided in admin/scripts/export.ts, not here: matchplay
-# events and, since 2026-09-21, players. See docs/current/data-ownership.md for
+# events and, since 2026-09-21, players. Courses are staged too, ahead of being
+# exported at all — the block in export.ts is behind COURSES_ARE_OWNED, so today
+# this stages a directory nothing writes. See docs/current/data-ownership.md for
 # why publishing the rest would revert the scrape.
 #
 # The staging below has to keep up with that list, and it is the one place where
 # it does not follow automatically — `export.ts` deciding to publish a collection
 # means nothing if this step does not stage it. A path missing here is an export
 # that runs, reports what it wrote, and pushes none of it.
+#
+# That is not a hypothetical: it is what this file did to players on 2026-09-21,
+# and it was caught by reading the workflow rather than by anything failing.
+# Courses are therefore staged *before* they are exported, so the two can never
+# be out of step in the direction that loses work.
 name: Export admin data
 
 on:
@@ -137,7 +144,7 @@ jobs:
           # `astrosite/src/data`: the scrape's own outputs live in that tree too,
           # and a wider pattern here would commit a half-finished scrape under an
           # export's commit message.
-          git add -A astrosite/src/data/events/matchplay astrosite/src/data/players
+          git add -A astrosite/src/data/events/matchplay astrosite/src/data/players astrosite/src/data/courses
 
           if git diff --cached --quiet; then
             echo "Nothing to publish: the committed files already match the store."

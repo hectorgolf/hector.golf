@@ -1,0 +1,344 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro'
+import PageHeader from '@hector/ui/components/PageHeader.astro'
+import Breadcrumb from '@hector/ui/components/Breadcrumb.astro'
+
+import { schema as courseSchema } from '@hector/schemas/src/courses.ts'
+
+import { viewerFromHeaders } from '../../../lib/identity.ts'
+import { COURSES_ARE_OWNED } from '../../../lib/ownership.ts'
+import { getCourse, saveCourse } from '../../../lib/repository/events.ts'
+import { BLANK_TEE, courseFromForm, formOf, type CourseForm, type TeeForm } from '../../../lib/courses/details.ts'
+
+/*
+ * Editing the part of a course a person writes.
+ *
+ * Same shape as the player editor: one page that posts to itself, validates
+ * through the schema, redirects on success. `saveCourse` refuses while
+ * `COURSES_ARE_OWNED` is false, and this page reads the same flag to decide what
+ * to render rather than offering controls that would throw — one gate, checked
+ * twice for different purposes.
+ *
+ * ## What it does not edit, and why that is safe
+ *
+ * The scorecard, the hole descriptions, the images and the datasources are all
+ * absent from this form and all survive a save, because `courseFromForm` starts
+ * from the stored course and overwrites only what the form carried. That is the
+ * property to preserve if a field is ever added here: Zod strips what it is not
+ * told about, so an editor that rebuilt the record from its own fields would
+ * delete the rest without failing.
+ */
+
+const { id } = Astro.params
+if (!id) return Astro.redirect('/courses')
+
+const course = await getCourse(id)
+if (!course) return new Response('Course not found', { status: 404 })
+
+let error: string | undefined
+let submitted: CourseForm = formOf(course)
+
+const teeRow = (form: FormData, index: number): TeeForm => ({
+    id: String(form.get(`tee-${index}-id`) ?? '') || undefined,
+    name: String(form.get(`tee-${index}-name`) ?? ''),
+    nameLocal: String(form.get(`tee-${index}-nameLocal`) ?? ''),
+    color: String(form.get(`tee-${index}-color`) ?? ''),
+    length: String(form.get(`tee-${index}-length`) ?? ''),
+    par: String(form.get(`tee-${index}-par`) ?? ''),
+    parLadies: String(form.get(`tee-${index}-parLadies`) ?? ''),
+    ratingMen: String(form.get(`tee-${index}-ratingMen`) ?? ''),
+    ratingLadies: String(form.get(`tee-${index}-ratingLadies`) ?? ''),
+    slopeMen: String(form.get(`tee-${index}-slopeMen`) ?? ''),
+    slopeLadies: String(form.get(`tee-${index}-slopeLadies`) ?? ''),
+})
+
+if (Astro.request.method === 'POST') {
+    const form = await Astro.request.formData()
+    const viewer = viewerFromHeaders(Astro.request.headers)
+
+    const paragraphs: Record<number, string> = {}
+    course.description_long.forEach((part, index) => {
+        if (part.type === 'paragraph') paragraphs[index] = String(form.get(`paragraph-${index}`) ?? '')
+    })
+
+    submitted = {
+        name: String(form.get('name') ?? ''),
+        homepage: String(form.get('homepage') ?? ''),
+        address: String(form.get('address') ?? ''),
+        phone: String(form.get('phone') ?? ''),
+        email: String(form.get('email') ?? ''),
+        descriptionShort: String(form.get('descriptionShort') ?? ''),
+        paragraphs,
+        tees: submitted.tees.map((_, index) => teeRow(form, index)),
+    }
+
+    const parsed = courseSchema.safeParse(courseFromForm(course, submitted))
+
+    if (!parsed.success) {
+        error = parsed.error.issues.map((issue) => `${issue.path.join('.') || 'form'}: ${issue.message}`).join('; ')
+    } else {
+        try {
+            await saveCourse(parsed.data, viewer.email ?? 'unknown')
+            return Astro.redirect(`/courses/${course.id}?saved=details`)
+        } catch (failure) {
+            error = failure instanceof Error ? failure.message : String(failure)
+        }
+    }
+
+    // A rejected save keeps what was typed, plus a fresh blank row so a tee can
+    // still be added on the retry.
+    if (submitted.tees.at(-1)?.name.trim() !== '') submitted = { ...submitted, tees: [...submitted.tees, { ...BLANK_TEE }] }
+}
+
+const longParts = course.description_long
+
+/** Array index to human paragraph number, so the images do not create gaps. */
+const paragraphNumber = new Map<number, number>()
+longParts.forEach((part, index) => {
+	if (part.type === 'paragraph') paragraphNumber.set(index, paragraphNumber.size + 1)
+})
+---
+
+<AdminLayout title={`Edit ${course.name}`}>
+	<Breadcrumb title={course.name} href={`/courses/${course.id}`} />
+
+	<PageHeader
+		title="Edit course"
+		eyebrow="Course"
+		lede="Identity, contact, the prose and the tees. The scorecard, the hole descriptions, the images and the datasources are not edited here and are carried through a save untouched."
+	/>
+
+	{error && <p class="notice bad">{error}</p>}
+
+	{
+		!COURSES_ARE_OWNED && (
+			<p class="notice">
+				<strong>Courses are still mirrored, so nothing here can be saved yet.</strong> The seed
+				rewrites every course from <code>astrosite/src/data/courses/</code> on every run, so a
+				course written here would be reverted within hours. The boxes below are filled in and
+				disabled. They start working when <code>COURSES_ARE_OWNED</code> does, without another
+				change to this page.
+			</p>
+		)
+	}
+
+	<form method="POST" class="stack">
+		<section class="stack">
+			<h2>Identity</h2>
+			<div class="field">
+				<label for="name">Name</label>
+				<input id="name" name="name" type="text" value={submitted.name} disabled={!COURSES_ARE_OWNED} required />
+			</div>
+			<div class="field">
+				<label for="homepage">Homepage</label>
+				<input id="homepage" name="homepage" type="url" value={submitted.homepage} disabled={!COURSES_ARE_OWNED} />
+			</div>
+			<div class="field">
+				<label for="address">Address</label>
+				<input id="address" name="address" type="text" value={submitted.address} disabled={!COURSES_ARE_OWNED} />
+			</div>
+			<div class="pair">
+				<div class="field">
+					<label for="phone">Phone</label>
+					<input id="phone" name="phone" type="text" value={submitted.phone} disabled={!COURSES_ARE_OWNED} />
+				</div>
+				<div class="field">
+					<label for="email">Email</label>
+					<input id="email" name="email" type="text" value={submitted.email} disabled={!COURSES_ARE_OWNED} />
+				</div>
+			</div>
+		</section>
+
+		<section class="stack">
+			<h2>Description</h2>
+			<div class="field">
+				<label for="descriptionShort">Short</label>
+				<textarea id="descriptionShort" name="descriptionShort" rows="3" disabled={!COURSES_ARE_OWNED}>{submitted.descriptionShort}</textarea>
+			</div>
+
+			<p class="hint">
+				The long description is prose and images in a fixed order. The images are shown where they
+				sit and are not editable here; a paragraph can be rewritten but one cannot be added or
+				removed, because that would mean deciding where the images go.
+			</p>
+
+			{
+				longParts.map((part, index) =>
+					part.type === 'paragraph' ? (
+						<div class="field">
+							{/*
+							 * Numbered as paragraphs rather than by array index, which is
+							 * what the field name uses: the images occupy indices too, so
+							 * labelling by index skips numbers and reads as a bug.
+							 */}
+							<label for={`paragraph-${index}`}>Paragraph {paragraphNumber.get(index)}</label>
+							{/*
+							 * The value sits flush against the tags. A textarea renders its
+							 * content literally, so indenting it here would put that
+							 * indentation in the box and in front of whatever gets typed.
+							 */}
+							<textarea id={`paragraph-${index}`} name={`paragraph-${index}`} rows="4" disabled={!COURSES_ARE_OWNED}>{submitted.paragraphs[index] ?? ''}</textarea>
+						</div>
+					) : (
+						<p class="placeholder">
+							Image <code>{part.url ?? '—'}</code>
+						</p>
+					)
+				)
+			}
+		</section>
+
+		<section class="stack">
+			<h2>Tees</h2>
+			<p class="hint">
+				Renaming a tee moves the scorecard with it — the per-hole lengths are keyed by name, and
+				the <code>id</code> beside each row is what lets the two be matched up afterwards. A tee
+				cannot be removed here: that would drop its column from the scorecard, and a form where
+				clearing a name deletes measurements deletes them by accident. The empty row at the end
+				adds one.
+			</p>
+
+			<div class="tablewrap">
+				<table class="datagrid tees">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Local</th>
+							<th>Colour</th>
+							<th>Length</th>
+							<th>Par</th>
+							<th>Par ♀</th>
+							<th>Rating ♂</th>
+							<th>Rating ♀</th>
+							<th>Slope ♂</th>
+							<th>Slope ♀</th>
+						</tr>
+					</thead>
+					<tbody>
+						{submitted.tees.map((tee, index) => (
+							<tr>
+								<td>
+									<input type="hidden" name={`tee-${index}-id`} value={tee.id ?? ''} />
+									<input
+										name={`tee-${index}-name`}
+										type="text"
+										value={tee.name}
+										disabled={!COURSES_ARE_OWNED}
+										placeholder={tee.id ? undefined : 'Add a tee'}
+									/>
+								</td>
+								<td>
+									<input
+										name={`tee-${index}-nameLocal`}
+										type="text"
+										value={tee.nameLocal}
+										disabled={!COURSES_ARE_OWNED}
+									/>
+								</td>
+								<td>
+									<input
+										name={`tee-${index}-color`}
+										type="text"
+										value={tee.color}
+										disabled={!COURSES_ARE_OWNED}
+										class="colour"
+									/>
+								</td>
+								<td>
+									<input name={`tee-${index}-length`} type="text" value={tee.length} disabled={!COURSES_ARE_OWNED} class="num" />
+								</td>
+								<td>
+									<input name={`tee-${index}-par`} type="text" value={tee.par} disabled={!COURSES_ARE_OWNED} class="num" />
+								</td>
+								<td>
+									<input name={`tee-${index}-parLadies`} type="text" value={tee.parLadies} disabled={!COURSES_ARE_OWNED} class="num" />
+								</td>
+								<td>
+									<input name={`tee-${index}-ratingMen`} type="text" value={tee.ratingMen} disabled={!COURSES_ARE_OWNED} class="num" />
+								</td>
+								<td>
+									<input name={`tee-${index}-ratingLadies`} type="text" value={tee.ratingLadies} disabled={!COURSES_ARE_OWNED} class="num" />
+								</td>
+								<td>
+									<input name={`tee-${index}-slopeMen`} type="text" value={tee.slopeMen} disabled={!COURSES_ARE_OWNED} class="num" />
+								</td>
+								<td>
+									<input name={`tee-${index}-slopeLadies`} type="text" value={tee.slopeLadies} disabled={!COURSES_ARE_OWNED} class="num" />
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<div class="actions">
+			<button type="submit" disabled={!COURSES_ARE_OWNED}>Save changes</button>
+			<a href={`/courses/${course.id}`}><button type="button" class="secondary">Cancel</button></a>
+		</div>
+	</form>
+</AdminLayout>
+
+<style>
+	/*
+	 * Wider than the player editor's form, because of the tees table: ten columns
+	 * of numbers that a reader compares across rows. `.tablewrap` scrolls it when
+	 * the window is narrow, and the prose fields above keep a readable measure of
+	 * their own.
+	 */
+	form {
+		max-width: 76rem;
+	}
+
+	.field,
+	.pair {
+		max-width: 46rem;
+	}
+
+	h2 {
+		margin: 0;
+		font-family: var(--font-serif);
+		font-size: 1.2rem;
+	}
+
+	.hint,
+	.placeholder {
+		margin: 0;
+		font-size: 0.8rem;
+		color: var(--text-dim);
+	}
+
+	.placeholder {
+		padding: 0.4rem 0.6rem;
+		border: 1px dashed var(--line);
+		border-radius: 4px;
+	}
+
+	textarea {
+		font: inherit;
+		line-height: 1.5;
+		resize: vertical;
+	}
+
+	.tees input {
+		width: 100%;
+		min-width: 4rem;
+	}
+
+	.tees .num {
+		width: 4rem;
+		text-align: right;
+	}
+
+	.tees .colour {
+		width: 6rem;
+	}
+
+	input:disabled,
+	textarea:disabled,
+	button:disabled {
+		color: var(--text-dim);
+		background: var(--surface);
+		cursor: not-allowed;
+	}
+</style>

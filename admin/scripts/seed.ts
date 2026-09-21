@@ -38,6 +38,7 @@ import { schema as playerSchema } from '@hector/schemas/src/players.ts'
 
 import {
     ALL_FORMATS,
+    COURSES_ARE_OWNED,
     COURSE_FILES,
     MIRRORED_FORMATS,
     OWNED_FORMATS,
@@ -151,8 +152,28 @@ async function authoredPlayers(): Promise<string[]> {
         .map(({ doc, stored }) => `players/${doc.id} (last written by ${stored.updatedBy ?? 'unknown'})`)
 }
 
+/**
+ * The same question of courses, and it has to be asked separately because they
+ * are neither an event format nor players.
+ *
+ * Generalising these three into one walk is tempting and would be wrong for the
+ * reason the events one is not a `for` loop over collection names: each knows
+ * which of its documents the admin may author, and for events that is a subset
+ * decided by `OWNED_FORMATS`. Three short functions that each say one true thing
+ * beat one that takes a predicate.
+ */
+async function authoredCourses(): Promise<string[]> {
+    if (!COURSES_ARE_OWNED) return []
+    const snapshot = await firestore.collection('courses').get()
+
+    return snapshot.docs
+        .map((doc) => ({ doc, stored: doc.data() as { doc?: string; updatedBy?: string } }))
+        .filter(({ stored }) => stored.doc && stored.updatedBy !== 'seed')
+        .map(({ doc, stored }) => `courses/${doc.id} (last written by ${stored.updatedBy ?? 'unknown'})`)
+}
+
 async function refuseToOverwriteAuthored(): Promise<void> {
-    const authored = [...(await authoredEvents()), ...(await authoredPlayers())]
+    const authored = [...(await authoredEvents()), ...(await authoredPlayers()), ...(await authoredCourses())]
     if (authored.length === 0) return
 
     throw new Error(
@@ -164,7 +185,11 @@ async function refuseToOverwriteAuthored(): Promise<void> {
 }
 
 /** What the admin authors, named the way the line below wants to read it. */
-const authoredHere = [...OWNED_FORMATS, ...(PLAYERS_ARE_OWNED ? ['players'] : [])]
+const authoredHere = [
+    ...OWNED_FORMATS,
+    ...(PLAYERS_ARE_OWNED ? ['players'] : []),
+    ...(COURSES_ARE_OWNED ? ['courses'] : []),
+]
 
 console.log(`Seeding ${target}…`)
 console.log(
@@ -194,16 +219,21 @@ await reportingStoreErrors(async () => {
         await seed('players', 'players', PLAYER_FILES, playerSchema)
     }
     /*
-     * Courses, on no gate at all — they are a mirror and nothing else writes
-     * them.
+     * Courses, on the same gate the players line has — since 2026-09-21, when
+     * they got an editor.
      *
-     * No scheduled writer has ever touched `astrosite/src/data/courses/`: no
-     * workflow, no npm script, and the interactive `mscorecard` CLI writes a raw
-     * API response to a path its operator types. So there is no writer to race
-     * and no flip to stage, which is what makes this the cheapest collection in
-     * the repository to move. When the editor lands this line grows the same
-     * gate the players line has, and not before.
+     * The gate is the whole of what stops the flip recreating the loop in the
+     * other direction: `COURSES_ARE_OWNED` makes the export publish courses, and
+     * without this line the seed would keep rewriting them from the committed
+     * files on the next scheduled run, reverting whatever somebody had just
+     * saved. One flag, read from both sides, is what makes that impossible
+     * rather than merely unlikely.
+     *
+     * `--bootstrap` still writes them, because that is the import path for a new
+     * project, and `refuseToOverwriteAuthored` is what makes it safe.
      */
-    await seed('courses', 'courses', COURSE_FILES, courseSchema, withTeeIds)
+    if (!COURSES_ARE_OWNED || bootstrap) {
+        await seed('courses', 'courses', COURSE_FILES, courseSchema, withTeeIds)
+    }
 })
 console.log('Done.')

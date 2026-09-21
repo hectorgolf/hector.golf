@@ -1,7 +1,7 @@
 # Courses in the admin
 
-*Written 2026-09-21, and executed as it was written. Steps 1-3 shipped with this document; step 4 is
-still a proposal.*
+*Written 2026-09-21 and executed as it was written. Steps 1-3 shipped with this document; step 4's
+editor and machinery shipped the same day. What is left is the flag.*
 
 Seventeen golf courses live in `astrosite/src/data/courses/` and are edited by hand. They were the
 last section of the admin that said `planned`. This moves them into Firestore, renders them, and
@@ -177,22 +177,66 @@ courses; `Mirror` gained an optional `plan`. A notice pointing at the wrong docu
 one pointing at none, because it sends somebody to a plan that does not mention what they are
 looking at.
 
-### Step 4 — the editor, and owning the collection — *not started*
+### Step 4 — the editor, and owning the collection — **built, flag still false**
 
-The remaining work, and the part that needs the decisions above to have been made properly.
+Everything is wired and `COURSES_ARE_OWNED` is `false`, so the flip is one line in a change of its
+own. The shape step 1 of the other plan used, and for the same reason: the flag is the piece worth
+being able to revert cleanly.
 
-- An editor for what a person authors: name, homepage, contact, the descriptions, and the tees.
-- `COURSES_ARE_OWNED` — or, more likely, courses joining the same ownership vocabulary players use.
-- An export path, writing names and not ids.
-- `export-admin-data.yml` staging `astrosite/src/data/courses` — **it has to be added there
-  explicitly**; the export deciding to publish a collection means nothing if the workflow does not
-  stage it. That was a real bug in the players migration, caught the day before this was written.
+**The editor covers identity, contact, the prose and the tees** — what the plan named. Not the
+scorecard: eighteen holes of par, stroke index and a length per tee is around 130 numbers off an
+official card, a transcription exercise with no proofreader. Not the hole descriptions, the images
+or the datasources either.
 
-Nothing about step 4 is hard. It is deferred because steps 1-3 are worth having on their own — they
-unblock step 2 of the other plan — and because an editor written before anybody has looked at the
-imported data is an editor written against assumptions.
+All of which have to survive a save, and none of which would survive a naive one. Zod strips what it
+is not told about, so an editor that rebuilt the record from its own fields would delete the larger
+half of a course with nothing failing — the same blind spot `course-schema-coverage.test.ts` names,
+one level up. `courseFromForm` starts from the stored course and overwrites only what the form
+carried; `course-details.test.ts` asserts that group by group.
 
-## Before the flip, when step 4 comes
+**`description_long` was the trap.** It is prose *and images*, interleaved: 32 image entries across
+15 of the 17 courses. A textarea holding only the paragraphs would have dropped every one. So the
+form edits paragraphs by their index in that array, renders the images as read-only markers where
+they sit, and rebuilds the sequence position by position. Paragraphs cannot be added or removed,
+because that would mean deciding where the images go.
+
+**A tee cannot be removed**, though `applyTeeEdits` supports it. Clearing a name would delete that
+tee's scorecard column, and a form that deletes measurements by accident is worse than one that
+cannot delete them at all. Adding is safe and is the blank row at the end.
+
+Duplicate tee names are now unrepresentable: the schema refuses them, since two tees sharing a name
+make a per-hole length ambiguous.
+
+Both sides of the flip read the one flag:
+
+- `saveCourse` refuses while it is false.
+- The export publishes courses when it is true, through `withoutTeeIds`.
+- **The seed stops writing them when it is true**, which is what stops the flip recreating the loop
+  in the other direction — export publishes, next scheduled seed reverts.
+- `--bootstrap` refuses over an admin-authored course, via `authoredCourses`.
+- `export-admin-data.yml` stages `astrosite/src/data/courses`, added before courses were exportable
+  so the two could never be out of step in the direction that loses work.
+
+## What the acceptance test found
+
+Run as the plan prescribes — seed, export, `git diff --exit-code`, with the flag flipped locally:
+
+```text
+courses: 17 exported, 17 changed, 0 removed
+```
+
+and **nothing semantically different at all**. The course files were indented with four spaces;
+players, Hector events and `clubs.json` all use two, which is what `serializeJson` writes. Courses
+were the outlier, and the export would have reformatted all seventeen on its first real run.
+
+Settled as its own commit before the flip, which is exactly what the checklist says to do with this:
+a reformat landing on the same day as the first real course edit would bury it. The export is
+idempotent against the result.
+
+That is a third reason a round trip is not a no-op, beside the two the other plan lists — schema
+defaults and key order. **Formatting.** Worth knowing for step 2 of that plan.
+
+## Before the flip
 
 The checklist from [`authoring-players-and-events.md`](./authoring-players-and-events.md) applies
 unchanged, and its hardest-won item doubly:

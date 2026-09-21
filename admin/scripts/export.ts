@@ -34,9 +34,16 @@ import { glob } from 'glob'
 
 import { genericEventSchema, type Event } from '@hector/schemas/src/events.ts'
 import { serializeJson } from '@hector/schemas/src/json.ts'
+import { schema as courseSchema, withoutTeeIds, type Course } from '@hector/schemas/src/courses.ts'
 import { schema as playerSchema, type Player } from '@hector/schemas/src/players.ts'
 
-import { OWNED_FORMATS, PLAYERS_ARE_OWNED, PLAYER_FILES } from '../src/lib/ownership.ts'
+import {
+    COURSES_ARE_OWNED,
+    COURSE_FILES,
+    OWNED_FORMATS,
+    PLAYERS_ARE_OWNED,
+    PLAYER_FILES,
+} from '../src/lib/ownership.ts'
 
 import { firestore, reportingStoreErrors, target } from './store.ts'
 
@@ -177,6 +184,28 @@ if (PLAYERS_ARE_OWNED) {
 
     const files = new Map(players.map((player) => [playerPath(player), player]))
     sync('players', files, await glob(PLAYER_FILES, { cwd: dataDir }))
+}
+
+/*
+ * Courses, once the admin owns them — and not before.
+ *
+ * Gated the way the players block is, and here before its caller for the same
+ * reason: the plan's acceptance test is seed, export, `git diff --exit-code`, and
+ * without this there is nothing to run it against. The first person to own
+ * courses should not be discovering schema defaults, key order *and* the tee-id
+ * round trip in the change that flips the flag.
+ *
+ * `withoutTeeIds` is what makes this not a straight dump of the store. A tee's
+ * `id` exists so a rename can rekey the scorecard, and it has no business in a
+ * file people open by hand — see `docs/plans/courses-in-the-admin.md` for why
+ * that makes seed and export deliberately *not* strict complements here.
+ */
+if (COURSES_ARE_OWNED) {
+    const courses = await reportingStoreErrors(() => read<Course>('courses', courseSchema))
+    refuseEmpty('courses', courses.length, 'every committed course file')
+
+    const files = new Map(courses.map((course) => [`courses/${course.id}.json`, withoutTeeIds(course)]))
+    sync('courses', files, await glob(COURSE_FILES, { cwd: dataDir }))
 }
 
 console.log('Done.')
