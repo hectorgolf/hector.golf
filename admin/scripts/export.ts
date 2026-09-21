@@ -52,7 +52,7 @@ import {
     PLAYER_FILES,
 } from '../src/lib/ownership.ts'
 
-import { getAsset } from '../src/lib/assets.ts'
+import { assetBucket, getAsset } from '../src/lib/assets.ts'
 import { firestore, reportingStoreErrors, target } from './store.ts'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -142,6 +142,25 @@ const uploadedDir = (courseId: string) => join(publicDir, 'images/courses', cour
 async function publishUploadedImages(courses: readonly Course[]): Promise<void> {
     let written = 0
     let removed = 0
+
+    /*
+     * Said once, before anything is fetched, rather than thrown from whichever
+     * course happens to have the first uploaded image.
+     *
+     * That is how this failed the first time somebody uploaded one: a
+     * `NoAssetBucketError` and a stack trace out of `getAsset`, after two
+     * collections had already exported, naming neither the variable to set nor
+     * the reason the run had got this far without it. A run with no bucket and
+     * nothing to fetch is fine and stays fine — most of them are.
+     */
+    if (!assetBucket && courses.some((course) => referencedObjects(course).length > 0)) {
+        const needing = courses.filter((course) => referencedObjects(course).length > 0).map((course) => course.id)
+        throw new Error(
+            `ASSET_BUCKET is not set, and ${needing.length} course(s) reference an uploaded image: ` +
+                `${needing.join(', ')}. The export has to fetch those from the bucket to commit them, ` +
+                `so set it to the bucket in terraform/storage.tf and run this again.`
+        )
+    }
 
     for (const course of courses) {
         const wanted = new Map(
