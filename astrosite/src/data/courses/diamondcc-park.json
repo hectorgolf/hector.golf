@@ -19,6 +19,14 @@
       "content": "Designed by Jeremy Pern, Diamond Country Club features three courses: the championship-length 18-hole Diamond course, and its two smaller brothers, the 14-hole Country and 9-hole Park courses. Each course provides unique challenges and stunning views, making for a diverse and engaging round of golf. Each layout includes wide fairways, strategically placed bunkers, and water hazards that demand precise shot-making and thoughtful strategy."
     },
     {
+      "type": "image",
+      "url": "/images/courses/diamondcc-park/uploaded/493e7104663347dc.jpg"
+    },
+    {
+      "type": "paragraph",
+      "content": "Great snack between two full-length championship courses!"
+    },
+    {
       "type": "paragraph",
       "content": "The family-friendly 9-hole Diamond Park Course - our Public Course - is the ideal place not only for beginners but also for the occasional after-work round."
     }
@@ -29,7 +37,6 @@
       {
         "name": "Yellow",
         "color": "#ffff00",
-        "stroke": "#000000",
         "length": 4444,
         "par": 34,
         "rating": {
@@ -44,7 +51,6 @@
       {
         "name": "Blue",
         "color": "#0000ff",
-        "stroke": "#000000",
         "length": 3996,
         "par": 34,
         "rating": {
@@ -59,7 +65,6 @@
       {
         "name": "Red",
         "color": "#ff0000",
-        "stroke": "#000000",
         "length": 3772,
         "par": 34,
         "rating": {
