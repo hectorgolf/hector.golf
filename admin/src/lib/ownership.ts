@@ -85,6 +85,21 @@ export const PLAYERS_ARE_OWNED = true
 export const PLAYER_FILES = 'players/*.json'
 
 /**
+ * Whether the admin authors the golf courses, or only reads them.
+ *
+ * The same single edit `PLAYERS_ARE_OWNED` is, and a much smaller one to make:
+ * no scheduled writer has ever touched `astrosite/src/data/courses/`, so there
+ * is no second system to move first and no day on which two of them disagree.
+ * What this waits for is only the editor being worth trusting with seventeen
+ * courses, which is a judgement rather than a migration.
+ *
+ * Flipping it makes the export publish courses and the seed stop overwriting
+ * them, in the same edit, because both read this. See
+ * `docs/plans/courses-in-the-admin.md`.
+ */
+export const COURSES_ARE_OWNED = false
+
+/**
  * Where the committed course files are, relative to `astrosite/src/data/`.
  *
  * Here beside the others rather than in the seed that uses it, because the
@@ -92,9 +107,5 @@ export const PLAYER_FILES = 'players/*.json'
  * pattern that drifted between the two would be a silently half-covered
  * collection, which is the whole reason `PLAYER_FILES` is a constant.
  *
- * There is no `COURSES_ARE_OWNED` beside it yet, deliberately. Courses are a
- * mirror: the seed writes them, nothing else does, and owning a collection with
- * no editor would take away the only way to change a course and offer nothing
- * in its place. See `docs/plans/courses-in-the-admin.md`.
  */
 export const COURSE_FILES = 'courses/*.json'

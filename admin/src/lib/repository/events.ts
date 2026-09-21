@@ -8,7 +8,7 @@ import { schema as courseSchema, type Course } from '@hector/schemas/src/courses
 import { schema as playerSchema, type Player } from '@hector/schemas/src/players.ts'
 
 import { firestore } from '../firestore.ts'
-import { OWNED_FORMATS, PLAYERS_ARE_OWNED } from '../ownership.ts'
+import { COURSES_ARE_OWNED, OWNED_FORMATS, PLAYERS_ARE_OWNED } from '../ownership.ts'
 
 /**
  * Reading and writing Hector's data.
@@ -282,6 +282,30 @@ export async function savePlayer(player: Player, updatedBy: string): Promise<voi
         updatedBy,
     }
     await firestore().collection(PLAYERS).doc(validated.id).set(record)
+}
+
+/**
+ * Writes a course, once the admin owns them.
+ *
+ * Stores the tee ids, unlike the export, which strips them: the store is where
+ * an id has to survive a rename, and the committed file is where it would be a
+ * token nobody can read.
+ *
+ * `COURSES_ARE_OWNED` is false today, so this throws for every input — the same
+ * shape `savePlayer` had before the players flip, and correct rather than a
+ * placeholder: the seed still rewrites every course on every run, so a course
+ * written here would be reverted within hours.
+ */
+export async function saveCourse(course: Course, updatedBy: string): Promise<void> {
+    if (!COURSES_ARE_OWNED) throw new NotOwnedError('The courses collection')
+
+    const validated = courseSchema.parse(course)
+    const record: StoredDocument = {
+        doc: JSON.stringify(validated),
+        updatedAt: new Date().toISOString(),
+        updatedBy,
+    }
+    await firestore().collection(COURSES).doc(validated.id).set(record)
 }
 
 /**
