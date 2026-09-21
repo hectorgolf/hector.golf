@@ -88,21 +88,40 @@ export class NoAssetBucketError extends Error {
 }
 
 /**
- * Stores a file and answers the name it was given.
+ * Stores a file and answers the name it was stored under.
  *
- * Idempotent by construction: the name is the digest, so writing the same bytes
- * twice is the same object written twice with the same content.
+ * **Names the object itself rather than taking a name**, which is what makes the
+ * two properties below true instead of merely usual. It took a name once, and
+ * the guarantees were the caller's to keep: the digest is only the digest if
+ * every call site remembers to run `assetName` over the same bytes it is about
+ * to upload, and nothing would have complained about a call that did not.
+ *
+ * Idempotent: the name is a digest of the bytes, so writing the same file twice
+ * writes the same object twice with the same content. And the object is
+ * immutable, which is what lets it be cached forever — different bytes are a
+ * different name, so there is nothing a cache could be holding that has since
+ * changed underneath it.
+ *
+ * `extension` stays the caller's business. The digest is the part worth
+ * enforcing here; what a file is called at the end is about what is being
+ * uploaded, and this bucket is not only ever going to hold images.
  */
-export async function putAsset(name: string, bytes: Uint8Array, contentType: string): Promise<string> {
+export async function putAsset(
+    owner: AssetOwner,
+    recordId: string,
+    bytes: Uint8Array,
+    contentType: string,
+    extension: string
+): Promise<string> {
     if (!assetBucket) throw new NoAssetBucketError()
+
+    const name = assetName(owner, recordId, bytes, extension)
 
     await storage()
         .bucket(assetBucket)
         .file(name)
         .save(Buffer.from(bytes), {
             contentType,
-            // The object is immutable — its name is its digest — so anything
-            // that does cache it may cache it for good.
             metadata: { cacheControl: 'public, max-age=31536000, immutable' },
         })
 

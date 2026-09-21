@@ -1,4 +1,4 @@
-import { IMAGE_TYPES, MAX_UPLOAD_BYTES, assetName, putAsset } from '../assets.ts'
+import { IMAGE_TYPES, MAX_UPLOAD_BYTES, putAsset } from '../assets.ts'
 
 export { assetBucket } from '../assets.ts'
 
@@ -41,5 +41,5 @@ export async function storeUpload(courseId: string, file: File): Promise<string>
     }
 
     const bytes = new Uint8Array(await file.arrayBuffer())
-    return putAsset(assetName('courses', courseId, bytes, extension), bytes, file.type)
+    return putAsset('courses', courseId, bytes, file.type, extension)
 }
