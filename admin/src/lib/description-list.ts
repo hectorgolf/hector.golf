@@ -8,9 +8,14 @@
  * but a position is how the form talks to itself, "one new item per save" is a
  * strange thing to ask of somebody writing three paragraphs, and neither is
  * anything a person editing prose should have to know about. So when this runs
- * it hides the position boxes and the blank rows, reveals arrows and two add
- * buttons the page has already rendered, and keeps the numbering correct behind
- * them.
+ * it hides the position boxes and the blank rows, reveals arrows, a Remove
+ * button and two add buttons the page has already rendered, and keeps the
+ * numbering correct behind them.
+ *
+ * Removing without the script is a checkbox you tick and then press Save, which
+ * is the least a form can do and reads like a form doing the least: the row you
+ * asked to be rid of sits there looking exactly as it did. With the script the
+ * row goes when you say so, and an "Undo" takes its place until you save.
  *
  * The controls are in the markup rather than built here on purpose: an element
  * created in script carries none of Astro's scoping attributes and comes out
@@ -59,11 +64,38 @@ const ENHANCED = 'list-enhanced'
  */
 const BLANK = 'blank'
 
-const isBlank = (row: Element): boolean => row.classList.contains(BLANK)
+/**
+ * A row somebody has pressed Remove on.
+ *
+ * The row is still in the form and its fields still hold what they held. What
+ * changes is that every one of them is disabled, and a disabled field is not
+ * submitted — so the row arrives as no `item-N-` keys at all, and the server
+ * reads it as a row that is not there. That is only true because the server
+ * reads whichever indices turn up rather than counting rows; before that it
+ * would have read the row after it as this one.
+ *
+ * Disabled rather than detached, so Undo is putting the fields back rather than
+ * rebuilding them, and the text somebody wrote survives a mistaken click.
+ */
+const REMOVED = 'removed'
 
-/** The rows somebody can see. The blank ones are hidden and inert. */
+/** Marks a field this file disabled, so Undo re-enables only those. */
+const MINE = 'wasEnabled'
+
+const isBlank = (row: Element): boolean => row.classList.contains(BLANK)
+const isRemoved = (row: Element): boolean => row.classList.contains(REMOVED)
+
+/** The rows somebody can see and act on. Blank ones are hidden; removed ones are gone. */
 const rowsOf = (list: Element): HTMLElement[] =>
-    [...list.children].filter((child): child is HTMLElement => child instanceof HTMLElement && !isBlank(child))
+    [...list.children].filter(
+        (child): child is HTMLElement => child instanceof HTMLElement && !isBlank(child) && !isRemoved(child)
+    )
+
+/** The rest, in DOM order: numbered after the visible ones so nothing collides. */
+const asideOf = (list: Element): HTMLElement[] =>
+    [...list.children].filter(
+        (child): child is HTMLElement => child instanceof HTMLElement && (isBlank(child) || isRemoved(child))
+    )
 
 const blanksOf = (list: Element): HTMLElement[] =>
     [...list.children].filter((child): child is HTMLElement => child instanceof HTMLElement && isBlank(child))
@@ -88,7 +120,7 @@ const kindOf = (row: ParentNode): string =>
  * something it does not mean.
  */
 function renumber(list: Element): void {
-    const rows = [...rowsOf(list), ...blanksOf(list)]
+    const rows = [...rowsOf(list), ...asideOf(list)]
     rows.forEach((row, index) => {
         const position = row.querySelector<HTMLInputElement>('input[name$="-position"]')
         if (position) position.value = String(index + 1)
@@ -132,6 +164,51 @@ function move(list: Element, row: HTMLElement, direction: 'up' | 'down'): void {
     // a second press land on the same row — and is the whole of the keyboard
     // story for this control.
     row.querySelector<HTMLButtonElement>(`[data-move="${direction}"]:not([disabled])`)?.focus()
+}
+
+/**
+ * Takes a row out of the form, keeping what is in it.
+ *
+ * Every field it holds is disabled, so none of them is submitted and the server
+ * sees no `item-N-` keys for this index at all. Nothing is deleted and nothing
+ * reaches the server until Save, so this is undoable for as long as the page is
+ * open — which is what the "Undo" beside it is.
+ *
+ * Only fields this file disabled are re-enabled later, which is why they are
+ * marked. A file input on a service with no asset bucket is already disabled
+ * and must stay that way; blanket re-enabling would offer an upload that cannot
+ * happen.
+ */
+function remove(list: Element, row: HTMLElement): void {
+    row.classList.add(REMOVED)
+    for (const field of fieldsOf(row)) {
+        const control = field as HTMLInputElement
+        if (control.disabled) continue
+        control.dataset[MINE] = 'yes'
+        control.disabled = true
+    }
+
+    renumber(list)
+    refreshArrows(list)
+
+    // Focus goes to the Undo that replaced the button just pressed, so the
+    // mistake and its remedy are the same keystroke twice.
+    row.querySelector<HTMLButtonElement>('[data-undo]')?.focus()
+}
+
+/** Puts it back, exactly as it was. */
+function undo(list: Element, row: HTMLElement): void {
+    row.classList.remove(REMOVED)
+    for (const field of fieldsOf(row)) {
+        const control = field as HTMLInputElement
+        if (control.dataset[MINE] !== 'yes') continue
+        delete control.dataset[MINE]
+        control.disabled = false
+    }
+
+    renumber(list)
+    refreshArrows(list)
+    row.querySelector<HTMLButtonElement>('[data-remove]')?.focus()
 }
 
 /**
@@ -205,10 +282,18 @@ export function enhance(root: ParentNode = document): void {
     for (const blank of blanksOf(list)) templates.set(kindOf(blank), blank.cloneNode(true) as HTMLElement)
 
     list.addEventListener('click', (event) => {
-        const button = (event.target as Element | null)?.closest<HTMLButtonElement>('[data-move]')
-        const row = button?.closest<HTMLElement>('[data-row]')
-        if (!button || !row || button.disabled) return
-        move(list, row, button.dataset.move === 'up' ? 'up' : 'down')
+        const target = event.target as Element | null
+        const row = target?.closest<HTMLElement>('[data-row]')
+        if (!row) return
+
+        const move_ = target?.closest<HTMLButtonElement>('[data-move]')
+        if (move_ && !move_.disabled) return move(list, row, move_.dataset.move === 'up' ? 'up' : 'down')
+
+        const remove_ = target?.closest<HTMLButtonElement>('[data-remove]')
+        if (remove_ && !remove_.disabled) return remove(list, row)
+
+        const undo_ = target?.closest<HTMLButtonElement>('[data-undo]')
+        if (undo_ && !undo_.disabled) return undo(list, row)
     })
 
     section.addEventListener('click', (event) => {

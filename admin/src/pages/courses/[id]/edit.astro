@@ -353,7 +353,30 @@ const rows = submitted.description
 									/>
 									<span>Remove</span>
 								</label>
+								{/*
+								 * The same job as the checkbox beside it, for a page
+								 * whose script is running: press it and the row goes,
+								 * rather than sitting there ticked until Save. Rendered
+								 * and hidden rather than built, so Astro's scoped styles
+								 * reach it — and only one of the two is ever visible.
+								 */}
+								<button type="button" class="remove-row danger" data-remove disabled={!COURSES_ARE_OWNED}>
+									Remove
+								</button>
 							</div>
+
+							{/*
+							 * What is left of a removed row: one line and a way back.
+							 * The row's fields are still here, disabled — so nothing is
+							 * submitted for it and nothing is lost either, which is what
+							 * makes Undo possible without the page remembering anything.
+							 */}
+							<p class="removed-note">
+								Removed.{' '}
+								<button type="button" class="secondary" data-undo>
+									Undo
+								</button>
+							</p>
 
 							{row.kind === 'paragraph' ? (
 								<textarea
@@ -653,6 +676,52 @@ const rows = submitted.description
 	.move:disabled {
 		opacity: 0.35;
 		cursor: not-allowed;
+	}
+
+	/*
+	 * Which way of removing a row is on offer. Exactly one of them ever is: the
+	 * checkbox for a page with no script, the button once `description-list.ts`
+	 * has taken over. Two controls for one job is how somebody ticks a box,
+	 * presses a button, and wonders which of them they asked for.
+	 */
+	.remove-row {
+		display: none;
+		padding: 0.05rem 0.5rem;
+		font-size: 0.78rem;
+		line-height: 1.5;
+	}
+
+	section.list-enhanced .remove-row {
+		display: inline-block;
+	}
+
+	section.list-enhanced .item .remove {
+		display: none;
+	}
+
+	/* A removed row is one line and a way back; everything else in it goes. */
+	.removed-note {
+		display: none;
+		align-items: center;
+		gap: 0.6rem;
+		margin: 0;
+		font-size: 0.82rem;
+		color: var(--text-dim);
+	}
+
+	/* Sized to the sentence it sits in, not to a form's main action. */
+	.removed-note button {
+		padding: 0.05rem 0.5rem;
+		font-size: 0.78rem;
+		line-height: 1.5;
+	}
+
+	.item.removed > *:not(.removed-note) {
+		display: none;
+	}
+
+	.item.removed .removed-note {
+		display: flex;
 	}
 
 	.adders {
