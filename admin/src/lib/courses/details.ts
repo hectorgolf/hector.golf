@@ -38,11 +38,21 @@ export type CourseForm = {
  * One row of the long description: a paragraph or an image, plus what the form
  * lets somebody do to it.
  *
- * Ordering is a number somebody types rather than buttons that move a row,
- * because moving a row means a round trip per move and a page that has to
- * remember unsaved edits across each one. Typing `1` next to the last paragraph
- * says the same thing in one submit, and works with no script at all — which is
- * how the rest of this admin's forms work.
+ * Ordering is a number somebody types, which is the simplest thing that works
+ * with no script — and that is the whole of the reason, stated plainly because
+ * the tempting version of it is wrong.
+ *
+ * The tempting version: "buttons would mean a round trip per move". They would
+ * not. Buttons or drag-and-drop done in the browser reorder the rows in the
+ * page and submit once, exactly as this does, and nothing would reach the
+ * server until Save. They would also let the position stay hidden, which it
+ * should be — it is how the form talks to itself, not something a person
+ * editing prose should have to think about.
+ *
+ * So the cost of this design is real and is paid by the reader: they see an
+ * implementation detail. The server side is indifferent — it sorts by whatever
+ * numbers arrive — so enhancing this with client-side reordering later changes
+ * the page and nothing here.
  */
 export type DescriptionRow = {
     kind: 'paragraph' | 'image'

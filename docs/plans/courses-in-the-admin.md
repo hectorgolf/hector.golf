@@ -289,11 +289,17 @@ them — not a side effect of the first course edit.
 
 ### How the form does it, with no script
 
-Ordering is a number somebody types, not buttons that move a row. Buttons mean a round trip per
-move and a page that has to remember unsaved edits across each one; a position column says the same
-thing in one submit and keeps the form working the way every other form here does. Ties keep their
-existing order, so renumbering two rows leaves the rest alone, and a fractional position slips a row
-between two others.
+Ordering is a number somebody types. Ties keep their existing order, so renumbering two rows leaves
+the rest alone, and a fractional position slips a row between two others.
+
+**That is the simplest thing that works without script, and it is not the best thing.** The reason
+to write it down rather than let it stand: a position is how the form talks to itself, and a person
+editing prose should not have to see it. Buttons or drag-and-drop in the browser would reorder the
+rows and submit once — no round trip, nothing reaching the server until Save — and would let the
+number stay hidden.
+
+The server is indifferent to which it is: it sorts by whatever numbers arrive. So that enhancement
+is a change to one page and nothing else, and this design does not stand in its way.
 
 Removing is a checkbox. Adding is the pair of empty rows every description ends with — one
 paragraph, one image — dropped on save when nobody touches them, which is the same trick the tee
