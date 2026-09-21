@@ -38,6 +38,16 @@ interface Props {
 const { label, value, href, hint } = Astro.props
 
 const text = value === undefined || value === null || value === '' ? undefined : String(value)
+
+/*
+ * A new tab for a page, nothing for a `tel:` or a `mailto:`.
+ *
+ * `target="_blank"` on those hands the browser a tab to open and a handler to
+ * hand off to, and what it leaves behind when the handler takes over is a blank
+ * tab the reader has to close. The rel goes with the target: it is there to
+ * deny the opened page a handle on this one, and there is no opened page.
+ */
+const away = /^https?:/i.test(href ?? '') ? { target: '_blank', rel: 'noreferrer noopener' } : {}
 const hasSlot = Astro.slots.has('default')
 ---
 
@@ -51,7 +61,7 @@ const hasSlot = Astro.slots.has('default')
 		) : (
 			<p class:list={['value', { empty: text === undefined }]}>
 				{href && text !== undefined ? (
-					<a href={href} target="_blank" rel="noreferrer noopener">
+					<a href={href} {...away}>
 						{text}
 					</a>
 				) : (
