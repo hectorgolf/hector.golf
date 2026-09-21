@@ -208,15 +208,25 @@ const PUBLIC_SITE = 'https://hector.golf'
 				<textarea id="descriptionShort" name="descriptionShort" rows="3" disabled={!COURSES_ARE_OWNED}>{submitted.descriptionShort}</textarea>
 			</div>
 
-			<p class="hint">
-				Paragraphs and images, in the order the <strong>position</strong> column asks for. Type a
-				number to move a row; ties keep the order they are in, so renumbering two rows leaves the
-				rest alone. Tick <strong>remove</strong> to drop one.
-				<br />
-				<strong>To add one:</strong> use an empty row at the end — type the paragraph, or choose an
-				image — and give it the position you want it at. A fraction puts it between two others, so
-				<code>2.5</code> lands after the second item, and <code>0</code> puts it first. Leave the
-				position alone and it goes last.
+			<p class="hint" data-reorder-hint>
+				<span class="when-plain">
+					Paragraphs and images, in the order the <strong>position</strong> column asks for. Type
+					a number to move a row; ties keep the order they are in, so renumbering two rows
+					leaves the rest alone. Tick <strong>remove</strong> to drop one.
+					<br />
+					<strong>To add one:</strong> use an empty row at the end — type the paragraph, or
+					choose an image — and give it the position you want it at. A fraction puts it between
+					two others, so <code>2.5</code> lands after the second item, and <code>0</code> puts
+					it first. Leave the position alone and it goes last.
+				</span>
+				<span class="when-enhanced">
+					Paragraphs and images, in the order shown. Use <strong>↑</strong> and{' '}
+					<strong>↓</strong> to move one, and tick <strong>remove</strong> to drop it.
+					<br />
+					<strong>To add one:</strong> use an empty row at the end — type the paragraph, or
+					choose an image — then move it where you want it. Nothing is saved until you press
+					Save.
+				</span>
 				{!assetBucket && (
 					<>
 						{' '}
@@ -227,13 +237,23 @@ const PUBLIC_SITE = 'https://hector.golf'
 				)}
 			</p>
 
-			<div class="items">
+			<div class="items" data-reorder>
 				{
 					rows.map((row, index) => (
-						<div class:list={['item', row.kind]}>
+						<div class:list={['item', row.kind]} data-row>
 							<div class="controls">
+								{/*
+								 * Rendered here rather than created by the script, so Astro's
+								 * scoped styles reach them — a button built in JS carries no
+								 * `data-astro-cid-*` and would come out unstyled. They are
+								 * hidden until `lib/reorder.ts` marks the section, so with
+								 * the script off nobody is offered a control that does
+								 * nothing.
+								 */}
+								<button type="button" class="move" data-move="up" aria-label="Move this item up">↑</button>
+								<button type="button" class="move" data-move="down" aria-label="Move this item down">↓</button>
 								<label class="position">
-									<span>Position</span>
+									<span class="when-plain">Position</span>
 									<input
 										name={`item-${index}-position`}
 										type="text"
@@ -492,6 +512,50 @@ const PUBLIC_SITE = 'https://hector.golf'
 		text-align: right;
 	}
 
+	/*
+	 * Which of the two explanations applies, and whether the position boxes are
+	 * anything a reader should see. `reorder-enhanced` is added by
+	 * `lib/reorder.ts` once it has taken the ordering over; with the script off
+	 * or not yet run, the page is exactly what the server sent.
+	 */
+	.when-enhanced {
+		display: none;
+	}
+
+	section.reorder-enhanced .when-plain {
+		display: none;
+	}
+
+	section.reorder-enhanced .when-enhanced {
+		display: inline;
+	}
+
+	section.reorder-enhanced .position {
+		/*
+		 * Hidden rather than removed: it is still the field that carries the
+		 * order through the submit, and a disabled or detached input would
+		 * submit nothing.
+		 */
+		display: none;
+	}
+
+	.move {
+		display: none;
+		padding: 0.05rem 0.4rem;
+		font-size: 0.85rem;
+		line-height: 1.4;
+		min-width: 1.7rem;
+	}
+
+	section.reorder-enhanced .move {
+		display: inline-block;
+	}
+
+	.move:disabled {
+		opacity: 0.35;
+		cursor: not-allowed;
+	}
+
 	.item figure {
 		margin: 0;
 		display: flex;
@@ -534,3 +598,9 @@ const PUBLIC_SITE = 'https://hector.golf'
 		cursor: not-allowed;
 	}
 </style>
+
+<script>
+	import { enhance } from '../../../lib/reorder.ts'
+
+	enhance(document)
+</script>

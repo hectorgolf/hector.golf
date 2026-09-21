@@ -292,14 +292,22 @@ them — not a side effect of the first course edit.
 Ordering is a number somebody types. Ties keep their existing order, so renumbering two rows leaves
 the rest alone, and a fractional position slips a row between two others.
 
-**That is the simplest thing that works without script, and it is not the best thing.** The reason
-to write it down rather than let it stand: a position is how the form talks to itself, and a person
-editing prose should not have to see it. Buttons or drag-and-drop in the browser would reorder the
-rows and submit once — no round trip, nothing reaching the server until Save — and would let the
-number stay hidden.
+**That is what the form sends, and not what a person sees.** A position is how the form talks to
+itself; somebody editing prose should not have to think about it. So `lib/reorder.ts` hides the
+boxes, reveals a pair of arrows per row, and renumbers the hidden inputs as rows move — the second
+progressive enhancement in this admin after `run-now.ts`, and the same shape: the page is complete
+before it runs and better after.
 
-The server is indifferent to which it is: it sorts by whatever numbers arrive. So that enhancement
-is a change to one page and nothing else, and this design does not stand in its way.
+Nothing reaches the server until Save. Moving a row reorders the DOM and rewrites hidden values;
+there is no request and nothing to lose if the tab closes.
+
+Arrows rather than dragging, for now. Dragging is nicer with a mouse and unusable without one;
+arrows are keyboard-reachable and screen-reader-readable for free, which a drag handle only becomes
+once the keyboard affordance is written back in — at which point the arrows exist anyway. Dragging
+can be added on top; the ordering it produces is the same renumbering.
+
+The buttons are rendered by the page and hidden with CSS rather than created in script, because a
+button built in JS carries none of Astro's scoping attributes and comes out unstyled.
 
 Removing is a checkbox. Adding is the pair of empty rows every description ends with — one
 paragraph, one image — dropped on save when nobody touches them, which is the same trick the tee
