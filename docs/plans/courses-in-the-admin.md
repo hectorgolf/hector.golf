@@ -323,6 +323,31 @@ how to render. With the script off the two empty rows are the offer instead, one
 page last rendered — that is the shape of the bug below, and once the browser can add rows there is
 no count that could be right.
 
+### The hero image
+
+`hero_image` is the picture the course card on `/courses` and the top of the course page lead with,
+and the editor could not change it. It was a string, which is fine for a file somebody committed and
+no use for one somebody uploads — an upload is an object in a bucket until the export fetches it,
+and there is no path to write down yet. So it became what a description's image already is: one
+`ImageSchema`, `url` once committed and `object` while it is only in the bucket, with the export
+publishing and keeping both.
+
+Two things about that are worth knowing before touching it.
+
+**The stored records carry the old string.** Courses are owned by Firestore, so nothing rewrites
+those 17 documents on a schedule, and a schema that refused them would have taken every course page
+down on deploy. `hero_image` accepts a bare string and normalises it — one dated `z.preprocess`,
+doing real work until each record is rewritten by its first save.
+
+**Removing is a checkbox, and the key is deleted rather than emptied.** A browser will not let
+somebody clear a file input, and "no hero" is a state the schema allows; but
+`{ ...stored, hero_image: undefined }` is a course with the key present and empty, which the schema
+refuses. A save that removed the hero would have failed validation instead of removing the hero.
+
+`images.hero` is a different field, set on 10 courses and rendered nowhere, as is `images.aerial` on
+2. Only `images.course_layout` is used. Nothing here touches them; they are dead weight somebody
+could delete.
+
 **And the upload happens on save, not at its own endpoint.** The form is `multipart/form-data`, so a
 chosen file arrives with the save that references it: no upload endpoint, no client script, and no
 window in which an object exists that no form knows about. The cost is that a rejected save loses
