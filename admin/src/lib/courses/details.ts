@@ -216,7 +216,7 @@ export function teesFrom(rows: readonly TeeForm[]): CourseTee[] {
 }
 
 /**
- * Which description rows a submitted form carries.
+ * Which rows of a repeating group a submitted form carries.
  *
  * Read off the keys rather than counted from what the page last rendered,
  * because those two stopped agreeing twice. First when `formOf` answered the
@@ -227,20 +227,28 @@ export function teesFrom(rows: readonly TeeForm[]): CourseTee[] {
  * could add rows in the browser, where the count is whatever somebody pressed
  * the button.
  *
- * Every row carries its own index and its own kind, so a row is whatever
- * arrived under `item-N-`. Gaps are fine — a row removed in the browser simply
- * does not turn up — and the indices are sorted numerically because `10` sorts
- * before `2` as text and this order is the tie-break `descriptionFrom` falls
- * back on for equal positions.
+ * Every row carries its own index, so a row is whatever arrived under
+ * `<prefix>-N-`. Gaps are fine — a row removed in the browser simply does not
+ * turn up — and the indices are sorted numerically because `10` sorts before
+ * `2` as text and this order is the tie-break `descriptionFrom` falls back on
+ * for equal positions.
+ *
+ * The tees need this for the same reason and had the same bug: their loop ran
+ * over the rows the page had rendered, so a tee added in the browser was read
+ * as nothing at all.
  */
-export function rowIndices(form: FormData): number[] {
+export function formIndices(form: FormData, prefix: string): number[] {
+    const pattern = new RegExp(`^${prefix}-(\\d+)-`)
     const seen = new Set<number>()
     for (const key of form.keys()) {
-        const match = /^item-(\d+)-/.exec(key)
+        const match = pattern.exec(key)
         if (match) seen.add(Number(match[1]))
     }
     return [...seen].sort((a, b) => a - b)
 }
+
+/** The description's rows, which is where this was needed first. */
+export const rowIndices = (form: FormData): number[] => formIndices(form, 'item')
 
 /**
  * The rows, plus one empty paragraph and one empty image row at the end.
