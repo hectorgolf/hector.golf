@@ -7,7 +7,9 @@
     "phone": "tel:+34972760450",
     "email": "golf@empordagolf.com"
   },
-  "hero_image": "/images/courses/emporda-forest/hero.jpg",
+  "hero_image": {
+    "url": "/images/courses/emporda-forest/hero.jpg"
+  },
   "description_short": "Empordà Forest is a masterpiece carved through ancient pines. Nestled in the heart of a century-old pine forest, Empordà Forest offers a truly immersive golfing experience, where nature and design blend seamlessly. Protected from coastal winds by towering pines, this hidden gem of the Costa Brava presents a course that is as strategic as it is scenic.",
   "description_long": [
     {

@@ -7,7 +7,9 @@
     "phone": "tel://+43227520075",
     "email": "office@diamondcityhotel.at"
   },
-  "hero_image": "/images/courses/diamondcc-diamond/hero.jpg",
+  "hero_image": {
+    "url": "/images/courses/diamondcc-diamond/hero.jpg"
+  },
   "description_short": "Nothing is as precise as the knivesof our greenkeepers, who work daily to ensure maintenance and improvement of the heart of the resort – the 18-hole European Tour Diamond Course. They meticulously remove bushes and branches on and off the Fairways to facilitate precise shots – even from tougher spots. The short mown Rough, as well as the neat Greens, enable the best Golf, always accompanied by striking water hazards surrounding the centrally located 10-hectare lake. Enjoy the impressive Diamond Course and walk in the footsteps of European Tour professionals.",
   "description_long": [
     {

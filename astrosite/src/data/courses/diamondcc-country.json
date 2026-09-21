@@ -7,7 +7,9 @@
     "phone": "tel://+43227520075",
     "email": "office@diamondcityhotel.at"
   },
-  "hero_image": "/images/courses/diamondcc-country/hero.jpg",
+  "hero_image": {
+    "url": "/images/courses/diamondcc-country/hero.jpg"
+  },
   "description_short": "The sophisticated 14-hole Country course calls for relaxed rounds throughout the week, and for a quick round during busy times while captivate players with its equally perfect condition as Diamond Country Club's championship-length European Tour course.",
   "description_long": [
     {

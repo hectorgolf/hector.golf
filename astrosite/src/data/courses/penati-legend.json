@@ -7,7 +7,9 @@
     "phone": "tel://+421917907777",
     "email": "reception@penatigolfresort.sk"
   },
-  "hero_image": "/images/courses/penati-legend/hero1.jpg",
+  "hero_image": {
+    "url": "/images/courses/penati-legend/hero1.jpg"
+  },
   "description_short": "What sets apart the first of the two 18-hole courses, the Nicklaus Design LEGEND COURSE, are the wide, undulating fairways that offer players ample playing freedom, no out-of-bounds areas, sufficient privacy, and excellent visibility to the greens, all combined with the high, shaped \"Nicklaus Design\" sand bunkers and the challenging divergent terrain. The longest hole on this course measures 712 meters and has 11 tees. It plays as either a par 5 or par 6 and it also holds the title of the longest hole in Central Europe. It used to be the longest hole in all of Europe in the 2012 – 2019 period!",
   "description_long": [
     {

@@ -4,7 +4,7 @@ import Breadcrumb from '@hector/ui/components/Breadcrumb.astro';
 import PageHeader from '@hector/ui/components/PageHeader.astro';
 import CourseRatingTable from '../../components/courses/CourseRatingTable.astro';
 import ScorecardTable from '../../components/courses/ScorecardTable.astro';
-import { type Course } from '@hector/schemas/src/courses.ts';
+import { imageUrl, type Course } from '@hector/schemas/src/courses.ts';
 import { getEventsAtCourse, linkToEvent } from '../../code/events';
 import { getCourseById } from '../../code/courses';
 import { formatEventDates } from '@hector/schemas/src/dates.ts';
@@ -44,7 +44,7 @@ const holeLayoutShape = course.course?.descriptions?.[0]?.shape === 'wide' ? 'wi
         />
 
         <figure class="hero-figure course-hero">
-            <img src={course.hero_image} alt="" />
+            <img src={imageUrl(course.hero_image)} alt="" />
             {course.contact?.address && <figcaption>{course.contact.address}</figcaption>}
         </figure>
 

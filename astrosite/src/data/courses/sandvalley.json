@@ -7,7 +7,9 @@
     "phone": "tel://+48784638607",
     "email": "info@sandvalley.pl"
   },
-  "hero_image": "/images/courses/sandvalley/hero.jpg",
+  "hero_image": {
+    "url": "/images/courses/sandvalley/hero.jpg"
+  },
   "description_short": "Sand Valley’s Championship Course extends over 80 hectares of picturesque Polish country side. Rated by Golf World as TOP 100 Course in Europe it is the Home for the Lotos Polish Open of 2013 and 2014 (a Pro Golf Tour event). The resort offers a 18 hole championship course (par 72), 6 hole par 3 course, roofed 20 bay driving range and a large practice putting green.",
   "description_long": [
     {

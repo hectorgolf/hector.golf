@@ -7,7 +7,9 @@
     "phone": "tel://+420317784044",
     "email": "gcko@gcko.cz"
   },
-  "hero_image": "/images/courses/konopiste-radecky/hero.jpg",
+  "hero_image": {
+    "url": "/images/courses/konopiste-radecky/hero.jpg"
+  },
   "description_short": "The Radecký course at Konopiště is an impressive course cut through a beautiful forest area. This championship course is up to 6,484 meters from the back tee. Named after the property’s original residents, Radecký was built in consultation with the European PGA and is a great test even for the low handicapper.",
   "description_long": [
     {

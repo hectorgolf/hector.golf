@@ -7,7 +7,9 @@
     "phone": "tel://+49853292440",
     "email": "gppenning@quellness-golf.com"
   },
-  "hero_image": "/images/courses/quellness-porsche/hero1.jpg",
+  "hero_image": {
+    "url": "/images/courses/quellness-porsche/hero1.jpg"
+  },
   "description_short": "The Porsche Golf Course, which is directly opposite the Beckenbauer Golf Course, is the \"little brother\" of the European Tour championship course in sporting terms, and thus an ideal complement. The par 71 course was also designed by Germany’s world-class golfer Bernhard Langer and has comparable features, but was geared more towards the requirements of leisure-time golfers.",
   "description_long": [
     {

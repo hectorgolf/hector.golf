@@ -8,18 +8,22 @@ const ContactSchema = z.object({
     email: z.email().optional(),
 });
 
+/** A picture. `url` once committed; `object` while it is only in the bucket. */
+const ImageSchema = z.object({
+    url: AbsoluteOrRelativeImageURL.optional(),
+    /** Bucket object backing this image. In Firestore only; the export turns it into `url`. */
+    object: z.string().optional(),
+});
+
 const MultimediaDescriptionSchema = z.array(
     z.union([
         z.object({
             type: z.literal("paragraph"),
             content: z.string().optional(),
         }),
-        z.object({
-            type: z.literal("image"),
-            url: AbsoluteOrRelativeImageURL.optional(),
-            /** Bucket object backing this image. In Firestore only; the export turns it into `url`. */
-            object: z.string().optional(),
-        }),
+        // `type` first, not `ImageSchema.extend(...)`: Zod emits keys in schema
+        // order, and putting it last rewrites every image in all 17 files.
+        z.object({ type: z.literal("image"), ...ImageSchema.shape }),
     ]),
 );
 
@@ -71,7 +75,8 @@ export const schema = z.object({
     name: z.string(),
     homepage: z.url(),
     contact: ContactSchema,
-    hero_image: AbsoluteOrRelativeImageURL.optional(),
+    /** A bare string is the shape before 2026-09-21; records in Firestore still carry it. */
+    hero_image: z.preprocess((value) => (typeof value === "string" ? { url: value } : value), ImageSchema).optional(),
     description_short: z.string(),
     description_long: MultimediaDescriptionSchema,
     images: z.object({
@@ -111,6 +116,11 @@ export function teeId(name: string): string {
         .replace(/^-+|-+$/g, "");
 }
 
+/** Where a picture is, or `undefined` while it is only in the bucket. */
+export function imageUrl(image?: { url?: string; object?: string }): string | undefined {
+    return image?.url;
+}
+
 /** Where the export writes an uploaded image, relative to the site's `public/`. */
 export function uploadedImagePath(courseId: string, objectName: string): string {
     return `/images/courses/${courseId}/uploaded/${objectName.split("/").pop()}`;
@@ -124,21 +134,24 @@ export function uploadedImagePath(courseId: string, objectName: string): string 
  * store's business, the way a tee's `id` is.
  */
 export function withPublishedImages(course: Course): Course {
+    const published = <T extends { url?: string; object?: string }>(image: T): T => {
+        if (!image.object) return image;
+        const { object, ...rest } = image;
+        return { ...rest, url: uploadedImagePath(course.id, object) } as T;
+    };
     return {
         ...course,
-        description_long: course.description_long.map((part) => {
-            if (part.type !== "image" || !part.object) return part;
-            const { object, ...rest } = part;
-            return { ...rest, url: uploadedImagePath(course.id, object) };
-        }),
+        ...(course.hero_image ? { hero_image: published(course.hero_image) } : {}),
+        description_long: course.description_long.map((part) =>
+            part.type === "image" ? published(part) : part,
+        ),
     };
 }
 
 /** Every bucket object a course references, for the export to fetch and to keep. */
 export function referencedObjects(course: Course): string[] {
-    return course.description_long
-        .filter((part) => part.type === "image" && part.object)
-        .map((part) => (part as { object: string }).object);
+    const images = [...course.description_long.filter((part) => part.type === "image"), course.hero_image];
+    return images.map((image) => image?.object).filter((object): object is string => Boolean(object));
 }
 
 /** The tees as the committed files carry them: no ids. */

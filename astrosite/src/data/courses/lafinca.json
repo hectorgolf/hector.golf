@@ -7,7 +7,9 @@
     "phone": "tel://+34966729055",
     "email": "info@lafincaresort.com"
   },
-  "hero_image": "/images/courses/lafinca/hero.jpg",
+  "hero_image": {
+    "url": "/images/courses/lafinca/hero.jpg"
+  },
   "description_short": "Located on the Costa Blanca, in the south of the province of Alicante, and blessed with an exceptional climate, La Finca Resort is one of south-eastern Spain’s most iconic resorts, and a favourite haunt of golfing enthusiasts.",
   "description_long": [
     {
