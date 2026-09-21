@@ -96,8 +96,17 @@ export const PLAYER_FILES = 'players/*.json'
  * Flipping it makes the export publish courses and the seed stop overwriting
  * them, in the same edit, because both read this. See
  * `docs/plans/courses-in-the-admin.md`.
+ *
+ * ## Flipped 2026-09-21
+ *
+ * The acceptance test the plan names was run against **production** last, as
+ * the players flip taught: export with this true, `git diff`, expect nothing.
+ * It reported `courses: 17 exported, 0 changed, 0 removed` and an empty tree,
+ * so Firestore held exactly what the committed files held and there was nothing
+ * to settle first. The formatting difference that check found a few hours
+ * earlier had already been settled as its own commit.
  */
-export const COURSES_ARE_OWNED = false
+export const COURSES_ARE_OWNED = true
 
 /**
  * Where the committed course files are, relative to `astrosite/src/data/`.

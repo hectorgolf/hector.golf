@@ -177,11 +177,14 @@ courses; `Mirror` gained an optional `plan`. A notice pointing at the wrong docu
 one pointing at none, because it sends somebody to a plan that does not mention what they are
 looking at.
 
-### Step 4 — the editor, and owning the collection — **built, flag still false**
+### Step 4 — the editor, and owning the collection — **done**
 
-Everything is wired and `COURSES_ARE_OWNED` is `false`, so the flip is one line in a change of its
-own. The shape step 1 of the other plan used, and for the same reason: the flag is the piece worth
-being able to revert cleanly.
+Everything was wired first and `COURSES_ARE_OWNED` flipped on its own, which is the shape step 1 of
+the other plan used and for the same reason: the flag is the piece worth being able to revert
+cleanly.
+
+**Flipped 2026-09-21**, after the acceptance test was run against production and came back
+`courses: 17 exported, 0 changed, 0 removed` with an empty diff.
 
 **The editor covers identity, contact, the prose and the tees** — what the plan named. Not the
 scorecard: eighteen holes of par, stroke index and a length per tee is around 130 numbers off an

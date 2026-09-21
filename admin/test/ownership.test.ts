@@ -109,7 +109,7 @@ describe('the players collection, which has a flag rather than a list', () => {
  * export publishing courses while the seed keeps overwriting them from the
  * committed files, reverting every edit within hours.
  */
-describe('the courses collection, which is authored here once the flag says so', () => {
+describe('the courses collection, which the admin authors', () => {
     const read = (path: string) => readFileSync(join(dirname(fileURLToPath(import.meta.url)), path), 'utf-8')
 
     it('is seeded through the same kind of glob constant the others use', () => {
@@ -117,8 +117,15 @@ describe('the courses collection, which is authored here once the flag says so',
         expect(read('../scripts/seed.ts')).toContain('COURSE_FILES')
     })
 
-    it('is mirrored today, so the flip has not happened', () => {
-        expect(COURSES_ARE_OWNED).toBe(false)
+    /**
+     * Asserted rather than left implicit, because the gates below only mean
+     * something in one direction at a time: while this was false they stopped a
+     * premature flip, and now they are what keeps the seed from reverting an
+     * authored course. A silent flip back would disarm the second meaning
+     * without touching a line of the code that enforces it.
+     */
+    it('is authored here, the editor and both gates having landed first', () => {
+        expect(COURSES_ARE_OWNED).toBe(true)
     })
 
     it('is gated on the flag in both directions, which is what stops the loop', () => {
