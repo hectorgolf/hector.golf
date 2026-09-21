@@ -375,3 +375,58 @@ describe('composing the long description', () => {
         expect(result.map((part) => part.type)).toEqual(['paragraph', 'image', 'paragraph'])
     })
 })
+
+/**
+ * Adding an item *where you want it*, which is the path somebody actually
+ * takes and the one the other cases here skirted.
+ *
+ * Both halves matter and neither is obvious from the form: the blank rows at
+ * the end are how an item is added, and their position boxes are how it lands
+ * anywhere but last. Tested together because separately they each pass while
+ * the combination is what a person does.
+ */
+describe('adding an item at a chosen position', () => {
+    const existing: DescriptionRow[] = [
+        { kind: 'paragraph', content: 'One.', position: '1', remove: false },
+        { kind: 'image', content: '', url: '/images/a.jpg', position: '2', remove: false },
+        { kind: 'paragraph', content: 'Three.', position: '3', remove: false },
+    ]
+
+    const shape = (parts: ReturnType<typeof descriptionFrom>) =>
+        parts.map((part) => (part.type === 'paragraph' ? part.content : (part.object ?? part.url)))
+
+    it('puts a new paragraph between two existing entries', () => {
+        const rows = withBlankRows(existing)
+        rows[3] = { ...rows[3]!, content: 'Inserted.', position: '1.5' }
+
+        expect(shape(descriptionFrom(rows))).toEqual(['One.', 'Inserted.', '/images/a.jpg', 'Three.'])
+    })
+
+    it('puts a new image between two existing entries', () => {
+        const rows = withBlankRows(existing)
+        rows[4] = { ...rows[4]!, object: 'courses/x/new.jpg', position: '2.5' }
+
+        expect(shape(descriptionFrom(rows))).toEqual([
+            'One.',
+            '/images/a.jpg',
+            'courses/x/new.jpg',
+            'Three.',
+        ])
+    })
+
+    /** Including at the very front, which is what a position below 1 is for. */
+    it('adds both in one save, each where it was asked for', () => {
+        const rows = withBlankRows(existing)
+        rows[3] = { ...rows[3]!, content: 'First now.', position: '0' }
+        rows[4] = { ...rows[4]!, object: 'courses/x/new.jpg', position: '2.5' }
+
+        expect(shape(descriptionFrom(rows))).toEqual([
+            'First now.',
+            'One.',
+            '/images/a.jpg',
+            'courses/x/new.jpg',
+            'Three.',
+        ])
+    })
+})
+
