@@ -29,6 +29,8 @@ export type CourseForm = {
     phone: string
     email: string
     descriptionShort: string
+    /** The picture the course card and the course page lead with. */
+    hero: HeroForm
     /** The long description, in the order the boxes are in. */
     description: DescriptionRow[]
     tees: TeeForm[]
@@ -65,6 +67,22 @@ export type DescriptionRow = {
     /** Where this row should end up. Sorted on, not trusted to be sequential. */
     position: string
     /** Ticked to drop this row. */
+    remove: boolean
+}
+
+/**
+ * The hero image, as the form carries it.
+ *
+ * The same two sources a description image has — `url` for one already on the
+ * site, `object` for one in the bucket that no export has fetched yet — plus
+ * the one thing a hero can do that a description row cannot express by going
+ * empty: be taken away. A course with no hero is a course the schema allows,
+ * and clearing a file input is not something a browser lets somebody do.
+ */
+export type HeroForm = {
+    url?: string
+    object?: string
+    /** Ticked to leave the course with no hero at all. */
     remove: boolean
 }
 
@@ -131,6 +149,7 @@ export function formOf(course: Course): CourseForm {
         phone: course.contact.phone ?? '',
         email: course.contact.email ?? '',
         descriptionShort: course.description_short,
+        hero: { ...course.hero_image, remove: false },
         /*
          * With the blank rows, exactly as the tees line below carries its blank
          * tee — and for the reason the tees never had this bug and the
@@ -293,6 +312,22 @@ export function descriptionFrom(rows: readonly DescriptionRow[]): Course['descri
 }
 
 /**
+ * The hero the form describes, or `undefined` for a course that should have
+ * none.
+ *
+ * `object` wins over `url` when both are set, which is what makes replacing a
+ * published hero keep the new picture rather than the one still on the site.
+ * The old `url` is dropped rather than carried along: the export will write the
+ * uploaded object to a path of its own, and a stale `url` beside it is a second
+ * answer to where the hero is.
+ */
+export function heroFrom(hero: HeroForm): Course['hero_image'] {
+    if (hero.remove) return undefined
+    if (hero.object) return { object: hero.object }
+    return hero.url ? { url: hero.url } : undefined
+}
+
+/**
  * The whole course a form describes, built on the stored one.
  *
  * The starting point is `stored` rather than an empty object, which is what
@@ -315,6 +350,14 @@ export function courseFromForm(stored: Course, form: CourseForm): Course {
         description_short: form.descriptionShort.trim(),
         description_long: descriptionFrom(form.description),
     }
+
+    // Assigned rather than spread, because `hero_image` is optional and
+    // `{ ...stored, hero_image: undefined }` is a course with the key present
+    // and empty — which the schema refuses and a reader would read as "no hero"
+    // either way. Deleting it says the one thing meant.
+    const hero = heroFrom(form.hero)
+    if (hero) withProse.hero_image = hero
+    else delete withProse.hero_image
 
     // `applyTeeEdits` is what moves the scorecard's keys with a renamed tee.
     return withProse.course ? applyTeeEdits(withProse, teesFrom(form.tees)) : withProse
