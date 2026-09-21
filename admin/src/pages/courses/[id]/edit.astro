@@ -19,6 +19,7 @@ import {
 	type DescriptionRow,
 	type TeeForm,
 } from '../../../lib/courses/details.ts'
+import { previewSrc } from '../../../lib/courses/preview.ts'
 import { ACCEPTED_TYPES, assetBucket, storeUpload } from '../../../lib/courses/uploads.ts'
 
 /*
@@ -138,13 +139,6 @@ if (Astro.request.method === 'POST') {
 }
 
 const rows = submitted.description
-
-/**
- * Where a committed image can be looked at. The admin serves its own assets and
- * none of the site's, so a preview of an already-published image has to come
- * from the site itself.
- */
-const PUBLIC_SITE = 'https://hector.golf'
 ---
 
 <AdminLayout title={`Edit ${course.name}`}>
@@ -301,16 +295,13 @@ const PUBLIC_SITE = 'https://hector.golf'
 									<input type="hidden" name={`item-${index}-object`} value={row.object ?? ''} />
 
 									{/*
-									 * Two sources, because there are two kinds of image. An
-									 * uploaded one is in the bucket and nowhere public, so it
-									 * comes back through this service; a committed one is
-									 * already on the site, and the admin does not serve the
-									 * site's files. Using `row.url` directly here renders a
-									 * broken square, which is what the first cut did.
+									 * `previewSrc` knows which of the two an image is and
+									 * where to look at it; what differs here is only what
+									 * the caption can honestly say about it.
 									 */}
 									{row.object ? (
 										<figure>
-											<img src={`/api/assets/${row.object}`} alt="" loading="lazy" />
+											<img src={previewSrc(row)} alt="" loading="lazy" />
 											<figcaption>
 												Uploaded, not yet published. Becomes{' '}
 												<code>{uploadedImagePath(course.id, row.object)}</code> at the next
@@ -319,7 +310,7 @@ const PUBLIC_SITE = 'https://hector.golf'
 										</figure>
 									) : row.url ? (
 										<figure>
-											<img src={`${PUBLIC_SITE}${row.url}`} alt="" loading="lazy" />
+											<img src={previewSrc(row)} alt="" loading="lazy" />
 											<figcaption>
 												Already published · <code>{row.url}</code>
 											</figcaption>

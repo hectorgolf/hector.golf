@@ -8,6 +8,7 @@ import ReadOnlyField from '../../components/ReadOnlyField.astro'
 import { COURSE_MIRROR } from '../../lib/mirror.ts'
 import { COURSES_ARE_OWNED } from '../../lib/ownership.ts'
 import { getCourse } from '../../lib/repository/events.ts'
+import { previewSrc } from '../../lib/courses/preview.ts'
 
 const { id } = Astro.params
 if (!id) return Astro.redirect('/courses')
@@ -30,10 +31,19 @@ const holes = scorecard?.men ?? []
 const lengthAt = (hole: { lengths?: unknown }, teeName: string): number | undefined =>
 	(hole.lengths as Record<string, number> | undefined)?.[teeName]
 
-const paragraphs = course.description_long
-	.filter((part): part is { type: 'paragraph'; content?: string } => part.type === 'paragraph')
-	.map((part) => part.content)
-	.filter((content): content is string => Boolean(content))
+/*
+ * The description as it is: prose and images, interleaved, in order.
+ *
+ * This used to be `paragraphs` — the images were filtered out and had never
+ * been rendered here at all. That was invisible while the images were all
+ * committed files somebody had put in `astrosite/public/` by hand, and stopped
+ * being invisible the moment one could be uploaded in the editor: you upload a
+ * picture, the save redirects here, and the page it lands on is the one page
+ * that does not show it.
+ */
+const description = course.description_long.filter((part) =>
+	part.type === 'paragraph' ? Boolean(part.content) : Boolean(previewSrc(part))
+)
 ---
 
 <AdminLayout title={course.name}>
@@ -176,13 +186,17 @@ const paragraphs = course.description_long
 	}
 
 	{
-		paragraphs.length > 0 && (
+		description.length > 0 && (
 			<section class="stack">
 				<h2>Description</h2>
 				<div class="prose">
-					{paragraphs.map((paragraph) => (
-						<p>{paragraph}</p>
-					))}
+					{description.map((part) =>
+						part.type === 'paragraph' ? (
+							<p>{part.content}</p>
+						) : (
+							<img src={previewSrc(part)} alt="" loading="lazy" />
+						)
+					)}
 				</div>
 			</section>
 		)
@@ -190,6 +204,16 @@ const paragraphs = course.description_long
 </AdminLayout>
 
 <style>
+	.prose img {
+		display: block;
+		max-width: 100%;
+		max-height: 20rem;
+		width: auto;
+		margin: 0.4rem 0;
+		border: 1px solid var(--line);
+		border-radius: 4px;
+	}
+
 	h2 {
 		margin: 0;
 		font-family: var(--font-serif);
