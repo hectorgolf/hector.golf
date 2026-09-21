@@ -23,7 +23,7 @@
     "course": {
         "tees": [
             {
-                "name": "white",
+                "name": "White",
                 "color": "#ffffff",
                 "length": 6165,
                 "par": 72,
@@ -37,7 +37,7 @@
                 }
             },
             {
-                "name": "yellow",
+                "name": "Yellow",
                 "color": "#ffff00",
                 "length": 5866,
                 "par": 72,
@@ -51,7 +51,7 @@
                 }
             },
             {
-                "name": "orange",
+                "name": "Orange",
                 "color": "#ffa500",
                 "length": 5515,
                 "par": 72,
@@ -65,7 +65,7 @@
                 }
             },
             {
-                "name": "blue",
+                "name": "Blue",
                 "color": "#0000ff",
                 "length": 5244,
                 "par": 72,
@@ -79,7 +79,7 @@
                 }
             },
             {
-                "name": "red",
+                "name": "Red",
                 "color": "#ff0000",
                 "length": 4959,
                 "par": 72,
@@ -95,24 +95,24 @@
         ],
         "scorecard": {
             "men": [
-                { "hole":  1, "par": 4, "hcp":  7, "lengths": { "white": 364, "yellow": 359, "orange": 335, "blue": 329, "red": 326 }},
-                { "hole":  2, "par": 3, "hcp": 15, "lengths": { "white": 165, "yellow": 159, "orange": 142, "blue": 121, "red": 118 }},
-                { "hole":  3, "par": 4, "hcp":  5, "lengths": { "white": 379, "yellow": 363, "orange": 339, "blue": 324, "red": 315 }},
-                { "hole":  4, "par": 5, "hcp":  9, "lengths": { "white": 498, "yellow": 481, "orange": 456, "blue": 433, "red": 414 }},
-                { "hole":  5, "par": 3, "hcp": 17, "lengths": { "white": 152, "yellow": 146, "orange": 128, "blue": 124, "red": 105 }},
-                { "hole":  6, "par": 4, "hcp": 11, "lengths": { "white": 292, "yellow": 281, "orange": 267, "blue": 243, "red": 214 }},
-                { "hole":  7, "par": 5, "hcp":  1, "lengths": { "white": 566, "yellow": 518, "orange": 485, "blue": 473, "red": 459 }},
-                { "hole":  8, "par": 3, "hcp": 13, "lengths": { "white": 171, "yellow": 164, "orange": 134, "blue": 131, "red": 120 }},
-                { "hole":  9, "par": 5, "hcp":  3, "lengths": { "white": 491, "yellow": 465, "orange": 462, "blue": 443, "red": 417 }},
-                { "hole": 10, "par": 5, "hcp":  8, "lengths": { "white": 479, "yellow": 469, "orange": 435, "blue": 396, "red": 374 }},
-                { "hole": 11, "par": 4, "hcp": 14, "lengths": { "white": 309, "yellow": 295, "orange": 276, "blue": 269, "red": 257 }},
-                { "hole": 12, "par": 3, "hcp": 18, "lengths": { "white": 171, "yellow": 151, "orange": 144, "blue": 123, "red": 107 }},
-                { "hole": 13, "par": 5, "hcp":  4, "lengths": { "white": 485, "yellow": 465, "orange": 455, "blue": 436, "red": 416 }},
-                { "hole": 14, "par": 3, "hcp": 16, "lengths": { "white": 158, "yellow": 143, "orange": 134, "blue": 119, "red": 108 }},
-                { "hole": 15, "par": 4, "hcp": 12, "lengths": { "white": 335, "yellow": 319, "orange": 297, "blue": 291, "red": 275 }},
-                { "hole": 16, "par": 4, "hcp":  6, "lengths": { "white": 377, "yellow": 351, "orange": 334, "blue": 331, "red": 299 }},
-                { "hole": 17, "par": 4, "hcp": 10, "lengths": { "white": 363, "yellow": 353, "orange": 334, "blue": 305, "red": 298 }},
-                { "hole": 18, "par": 4, "hcp":  2, "lengths": { "white": 410, "yellow": 384, "orange": 358, "blue": 353, "red": 337 }}
+                { "hole":  1, "par": 4, "hcp":  7, "lengths": { "White": 364, "Yellow": 359, "Orange": 335, "Blue": 329, "Red": 326 }},
+                { "hole":  2, "par": 3, "hcp": 15, "lengths": { "White": 165, "Yellow": 159, "Orange": 142, "Blue": 121, "Red": 118 }},
+                { "hole":  3, "par": 4, "hcp":  5, "lengths": { "White": 379, "Yellow": 363, "Orange": 339, "Blue": 324, "Red": 315 }},
+                { "hole":  4, "par": 5, "hcp":  9, "lengths": { "White": 498, "Yellow": 481, "Orange": 456, "Blue": 433, "Red": 414 }},
+                { "hole":  5, "par": 3, "hcp": 17, "lengths": { "White": 152, "Yellow": 146, "Orange": 128, "Blue": 124, "Red": 105 }},
+                { "hole":  6, "par": 4, "hcp": 11, "lengths": { "White": 292, "Yellow": 281, "Orange": 267, "Blue": 243, "Red": 214 }},
+                { "hole":  7, "par": 5, "hcp":  1, "lengths": { "White": 566, "Yellow": 518, "Orange": 485, "Blue": 473, "Red": 459 }},
+                { "hole":  8, "par": 3, "hcp": 13, "lengths": { "White": 171, "Yellow": 164, "Orange": 134, "Blue": 131, "Red": 120 }},
+                { "hole":  9, "par": 5, "hcp":  3, "lengths": { "White": 491, "Yellow": 465, "Orange": 462, "Blue": 443, "Red": 417 }},
+                { "hole": 10, "par": 5, "hcp":  8, "lengths": { "White": 479, "Yellow": 469, "Orange": 435, "Blue": 396, "Red": 374 }},
+                { "hole": 11, "par": 4, "hcp": 14, "lengths": { "White": 309, "Yellow": 295, "Orange": 276, "Blue": 269, "Red": 257 }},
+                { "hole": 12, "par": 3, "hcp": 18, "lengths": { "White": 171, "Yellow": 151, "Orange": 144, "Blue": 123, "Red": 107 }},
+                { "hole": 13, "par": 5, "hcp":  4, "lengths": { "White": 485, "Yellow": 465, "Orange": 455, "Blue": 436, "Red": 416 }},
+                { "hole": 14, "par": 3, "hcp": 16, "lengths": { "White": 158, "Yellow": 143, "Orange": 134, "Blue": 119, "Red": 108 }},
+                { "hole": 15, "par": 4, "hcp": 12, "lengths": { "White": 335, "Yellow": 319, "Orange": 297, "Blue": 291, "Red": 275 }},
+                { "hole": 16, "par": 4, "hcp":  6, "lengths": { "White": 377, "Yellow": 351, "Orange": 334, "Blue": 331, "Red": 299 }},
+                { "hole": 17, "par": 4, "hcp": 10, "lengths": { "White": 363, "Yellow": 353, "Orange": 334, "Blue": 305, "Red": 298 }},
+                { "hole": 18, "par": 4, "hcp":  2, "lengths": { "White": 410, "Yellow": 384, "Orange": 358, "Blue": 353, "Red": 337 }}
             ],
             "ladies": null
         },

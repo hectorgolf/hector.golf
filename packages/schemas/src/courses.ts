@@ -45,6 +45,8 @@ const HoleDescriptionSchema = z.object({
 });
 
 const CourseTeeSchema = z.object({
+    /** Stable across renames. Assigned on import; absent from committed files. */
+    id: z.string().optional(),
     name: z.string(),
     name_local: z.string().optional(),
     color: z.string(),
@@ -90,5 +92,27 @@ export const schema = z.object({
 });
 
 export type Course = z.infer<typeof schema>;
+export type CourseTee = z.infer<typeof CourseTeeSchema>;
+
+/** A tee's id from the name it was born with. See `course-tee-names.test.ts`. */
+export function teeId(name: string): string {
+    return name
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+}
+
+/** Every tee given an id, leaving one it already has alone. */
+export function withTeeIds(course: Course): Course {
+    if (!course.course) return course;
+    return {
+        ...course,
+        course: {
+            ...course.course,
+            tees: course.course.tees.map(({ id, ...rest }) => ({ id: id ?? teeId(rest.name), ...rest })),
+        },
+    };
+}
 
 export default schema;

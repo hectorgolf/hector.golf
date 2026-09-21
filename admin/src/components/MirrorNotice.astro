@@ -50,14 +50,14 @@ const { mirror, what } = Astro.props
 			</p>
 		) : (
 			<p class="price">
-				Nothing writes these on a schedule, which is what makes them the cheapest collection
-				to hand over first.
+				Nothing writes these on a schedule, so there is no writer to move first — what is
+				missing is an editor, which makes this the cheapest kind of collection to take over.
 			</p>
 		)
 	}
 	<p class="where">
-		Planned in <code>docs/plans/authoring-players-and-events.md</code>; the rule is in{' '}
-		<code>docs/current/data-ownership.md</code>.
+		Planned in <code>{mirror.plan ?? 'docs/plans/authoring-players-and-events.md'}</code>; the rule
+		is in <code>docs/current/data-ownership.md</code>.
 	</p>
 </aside>
 

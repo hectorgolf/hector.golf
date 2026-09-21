@@ -59,7 +59,7 @@
     "course": {
         "tees": [
             {
-                "name": "black",
+                "name": "Black",
                 "name_local": "černá",
                 "color": "#000000",
                 "stroke": "#ffffff",
@@ -75,7 +75,7 @@
                 }
             },
             {
-                "name": "white",
+                "name": "White",
                 "name_local": "bílá",
                 "color": "#ffffff",
                 "length": 6168,
@@ -90,7 +90,7 @@
                 }
             },
             {
-                "name": "yellow",
+                "name": "Yellow",
                 "name_local": "žlutá",
                 "color": "#dddd00",
                 "length": 5859,
@@ -105,7 +105,7 @@
                 }
             },
             {
-                "name": "blue",
+                "name": "Blue",
                 "name_local": "modrá",
                 "color": "#0000dd",
                 "length": 5522,
@@ -120,7 +120,7 @@
                 }
             },
             {
-                "name": "red",
+                "name": "Red",
                 "name_local": "červená",
                 "color": "#dd0000",
                 "length": 5221,
@@ -137,24 +137,24 @@
         ],
         "scorecard": {
             "men": [
-                { "hole":  1, "par": 5, "hcp": 10, "lengths": { "black": 471, "white": 453, "yellow": 421, "blue": 412, "red": 391 }},
-                { "hole":  2, "par": 4, "hcp": 18, "lengths": { "black": 360, "white": 330, "yellow": 308, "blue": 277, "red": 257 }},
-                { "hole":  3, "par": 4, "hcp":  4, "lengths": { "black": 358, "white": 337, "yellow": 319, "blue": 301, "red": 288 }},
-                { "hole":  4, "par": 5, "hcp": 14, "lengths": { "black": 436, "white": 419, "yellow": 403, "blue": 383, "red": 363 }},
-                { "hole":  5, "par": 4, "hcp":  6, "lengths": { "black": 352, "white": 332, "yellow": 313, "blue": 296, "red": 296 }},
-                { "hole":  6, "par": 3, "hcp": 16, "lengths": { "black": 166, "white": 155, "yellow": 147, "blue": 124, "red": 105 }},
-                { "hole":  7, "par": 4, "hcp":  2, "lengths": { "black": 376, "white": 357, "yellow": 337, "blue": 305, "red": 278 }},
-                { "hole":  8, "par": 3, "hcp":  8, "lengths": { "black": 189, "white": 178, "yellow": 163, "blue": 153, "red": 138 }},
-                { "hole":  9, "par": 4, "hcp": 12, "lengths": { "black": 379, "white": 353, "yellow": 335, "blue": 324, "red": 303 }},
-                { "hole": 10, "par": 3, "hcp": 11, "lengths": { "black": 128, "white": 128, "yellow": 128, "blue": 112, "red": 112 }},
-                { "hole": 11, "par": 4, "hcp":  7, "lengths": { "black": 370, "white": 354, "yellow": 339, "blue": 323, "red": 306 }},
-                { "hole": 12, "par": 5, "hcp":  5, "lengths": { "black": 545, "white": 528, "yellow": 503, "blue": 482, "red": 459 }},
-                { "hole": 13, "par": 4, "hcp": 17, "lengths": { "black": 384, "white": 368, "yellow": 344, "blue": 336, "red": 308 }},
-                { "hole": 14, "par": 5, "hcp":  1, "lengths": { "black": 542, "white": 519, "yellow": 499, "blue": 478, "red": 454 }},
-                { "hole": 15, "par": 4, "hcp": 13, "lengths": { "black": 422, "white": 399, "yellow": 383, "blue": 375, "red": 355 }},
-                { "hole": 16, "par": 3, "hcp":  3, "lengths": { "black": 192, "white": 182, "yellow": 168, "blue": 147, "red": 138 }},
-                { "hole": 17, "par": 4, "hcp": 15, "lengths": { "black": 421, "white": 398, "yellow": 387, "blue": 370, "red": 370 }},
-                { "hole": 18, "par": 4, "hcp":  9, "lengths": { "black": 393, "white": 378, "yellow": 362, "blue": 324, "red": 300 }}
+                { "hole":  1, "par": 5, "hcp": 10, "lengths": { "Black": 471, "White": 453, "Yellow": 421, "Blue": 412, "Red": 391 }},
+                { "hole":  2, "par": 4, "hcp": 18, "lengths": { "Black": 360, "White": 330, "Yellow": 308, "Blue": 277, "Red": 257 }},
+                { "hole":  3, "par": 4, "hcp":  4, "lengths": { "Black": 358, "White": 337, "Yellow": 319, "Blue": 301, "Red": 288 }},
+                { "hole":  4, "par": 5, "hcp": 14, "lengths": { "Black": 436, "White": 419, "Yellow": 403, "Blue": 383, "Red": 363 }},
+                { "hole":  5, "par": 4, "hcp":  6, "lengths": { "Black": 352, "White": 332, "Yellow": 313, "Blue": 296, "Red": 296 }},
+                { "hole":  6, "par": 3, "hcp": 16, "lengths": { "Black": 166, "White": 155, "Yellow": 147, "Blue": 124, "Red": 105 }},
+                { "hole":  7, "par": 4, "hcp":  2, "lengths": { "Black": 376, "White": 357, "Yellow": 337, "Blue": 305, "Red": 278 }},
+                { "hole":  8, "par": 3, "hcp":  8, "lengths": { "Black": 189, "White": 178, "Yellow": 163, "Blue": 153, "Red": 138 }},
+                { "hole":  9, "par": 4, "hcp": 12, "lengths": { "Black": 379, "White": 353, "Yellow": 335, "Blue": 324, "Red": 303 }},
+                { "hole": 10, "par": 3, "hcp": 11, "lengths": { "Black": 128, "White": 128, "Yellow": 128, "Blue": 112, "Red": 112 }},
+                { "hole": 11, "par": 4, "hcp":  7, "lengths": { "Black": 370, "White": 354, "Yellow": 339, "Blue": 323, "Red": 306 }},
+                { "hole": 12, "par": 5, "hcp":  5, "lengths": { "Black": 545, "White": 528, "Yellow": 503, "Blue": 482, "Red": 459 }},
+                { "hole": 13, "par": 4, "hcp": 17, "lengths": { "Black": 384, "White": 368, "Yellow": 344, "Blue": 336, "Red": 308 }},
+                { "hole": 14, "par": 5, "hcp":  1, "lengths": { "Black": 542, "White": 519, "Yellow": 499, "Blue": 478, "Red": 454 }},
+                { "hole": 15, "par": 4, "hcp": 13, "lengths": { "Black": 422, "White": 399, "Yellow": 383, "Blue": 375, "Red": 355 }},
+                { "hole": 16, "par": 3, "hcp":  3, "lengths": { "Black": 192, "White": 182, "Yellow": 168, "Blue": 147, "Red": 138 }},
+                { "hole": 17, "par": 4, "hcp": 15, "lengths": { "Black": 421, "White": 398, "Yellow": 387, "Blue": 370, "Red": 370 }},
+                { "hole": 18, "par": 4, "hcp":  9, "lengths": { "Black": 393, "White": 378, "Yellow": 362, "Blue": 324, "Red": 300 }}
             ],
             "ladies": null
         },

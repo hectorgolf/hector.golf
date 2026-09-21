@@ -174,7 +174,7 @@ players. Firestore holds the other event formats too, but as a mirror the admin 
 | `events/finnkampen/` | by hand | mirror, for reading | no |
 | `players/` | the admin UI, and the admin service's `biographies` and `club-memberships` jobs | **source of truth** | yes |
 | handicap observations | the admin service's job | **source of truth** | no — backed up to `data/handicaps/observations.ndjson`, and read by the site through the API |
-| `courses/` | by hand | not in Firestore | no |
+| `courses/` | by hand | mirror, for reading | no — see [`plans/courses-in-the-admin.md`](../plans/courses-in-the-admin.md) |
 
 **The admin renders the mirror, read-only.** Since 2026-09-20 there are pages for Hector events and
 players — a list and a record page each — alongside the matchplay editor. They show what Firestore
@@ -218,8 +218,14 @@ now the output. Three things follow:
   morning of a Draft is worse than not publishing. Git also keeps a reviewable history of every
   change the admin made, so the fix for a bad edit is a revert.
 
-`astrosite/src/data/courses/` is further out still: hand-maintained, not in Firestore at all, and not
-seeded. `handicaps.json` used to be described here the same way; it has since moved to Firestore and
+`astrosite/src/data/courses/` joined the mirror on 2026-09-21: `npm run seed` writes the seventeen
+courses into Firestore and the admin renders them read-only, while the committed files stay the
+source of truth and are still edited by hand. It is the one mirror with no scheduled writer behind
+it — nothing writes those files on a schedule, so what stands between it and being authored here is
+an editor rather than a migration. [`plans/courses-in-the-admin.md`](../plans/courses-in-the-admin.md)
+is that plan.
+
+`handicaps.json` used to be described here the same way; it has since moved to Firestore and
 is the one dataset that has, so the row above covers it instead. The file itself is still committed
 and nothing writes it any more: `update-handicaps.yml` was the last writer and was deleted on
 2026-09-20. What still reads it is the handicaps job, as `LEGACY_PATH`, and

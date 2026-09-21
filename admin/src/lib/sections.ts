@@ -60,9 +60,10 @@ export const SECTIONS: Section[] = [
         slug: 'courses',
         label: 'Courses',
         blurb: 'Tees, ratings, slope and the per-hole descriptions the course guides render.',
-        // Not in Firestore at all, so there is nothing to render read-only
-        // either. See "Not in scope" in the authoring plan.
-        readiness: 'planned',
+        // In Firestore as a mirror since 2026-09-21, so there is something to
+        // render. Editable is step 4 of `docs/plans/courses-in-the-admin.md`;
+        // until then this is the same read-only shape players had.
+        readiness: 'read-only',
     },
     {
         slug: 'players',

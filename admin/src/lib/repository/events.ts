@@ -4,6 +4,7 @@ import {
     type Event,
     type MatchplayEvent,
 } from '@hector/schemas/src/events.ts'
+import { schema as courseSchema, type Course } from '@hector/schemas/src/courses.ts'
 import { schema as playerSchema, type Player } from '@hector/schemas/src/players.ts'
 
 import { firestore } from '../firestore.ts'
@@ -35,6 +36,7 @@ type EventOfFormat<F extends EventFormat> = Extract<Event, { format: F }>
 
 const EVENTS = 'events'
 const PLAYERS = 'players'
+const COURSES = 'courses'
 
 function parse<T>(schema: { safeParse: (v: unknown) => { success: boolean; data?: T } }, raw: unknown, id: string): T | undefined {
     const stored = raw as Partial<StoredDocument> | undefined
@@ -225,6 +227,33 @@ export async function getPlayer(id: string): Promise<Player | undefined> {
     const doc = await firestore().collection(PLAYERS).doc(id).get()
     if (!doc.exists) return undefined
     return parse<Player>(playerSchema, doc.data(), id)
+}
+
+/**
+ * Every course, by name.
+ *
+ * Seventeen documents and no cheaper way to list them: unlike players, whose
+ * handicaps come from one snapshot document, a course carries everything about
+ * itself. It is still one read per page rather than per course, and the pages
+ * that use it are opened by hand.
+ *
+ * Sorted here rather than in Firestore because the id is the document key and
+ * the name is what a reader scans — `tahko-old-course` sorts nowhere near
+ * "Tahko Golf - Old Course" would.
+ */
+export async function listCourses(): Promise<Course[]> {
+    const snapshot = await firestore().collection(COURSES).get()
+    return snapshot.docs
+        .map((d) => parse<Course>(courseSchema, d.data(), d.id))
+        .filter((c): c is Course => c !== undefined)
+        .sort((a, b) => a.name.localeCompare(b.name))
+}
+
+/** One course, or undefined when the id is not in the store. */
+export async function getCourse(id: string): Promise<Course | undefined> {
+    const doc = await firestore().collection(COURSES).doc(id).get()
+    if (!doc.exists) return undefined
+    return parse<Course>(courseSchema, doc.data(), id)
 }
 
 /**

@@ -11,6 +11,7 @@ import {
     OWNED_FORMATS,
     PLAYERS_ARE_OWNED,
     PLAYER_FILES,
+    COURSE_FILES,
 } from '../src/lib/ownership.ts'
 
 /**
@@ -90,5 +91,49 @@ describe('the players collection, which has a flag rather than a list', () => {
 
     it('is covered by the bootstrap refusal, the gap that used to be events-only', () => {
         expect(read('../scripts/seed.ts')).toContain('authoredPlayers')
+    })
+})
+
+/**
+ * Courses, the one collection with no writer to move.
+ *
+ * Every other mirror in this repository is waiting on a scheduled writer.
+ * Courses are waiting on an editor, which is a different and much smaller thing
+ * — so there is deliberately no `COURSES_ARE_OWNED` beside the others, and the
+ * seed writes them on no gate at all.
+ *
+ * What is asserted here is that absence, because it is the sort of thing that
+ * gets "fixed" by somebody adding a flag for symmetry: a flag nothing reads is
+ * worse than none, and a flag something reads would stop the seed writing a
+ * collection nothing else writes either. See `docs/plans/courses-in-the-admin.md`.
+ */
+describe('the courses collection, which is a mirror with no writer to move', () => {
+    const read = (path: string) => readFileSync(join(dirname(fileURLToPath(import.meta.url)), path), 'utf-8')
+
+    it('is seeded through the same kind of glob constant the others use', () => {
+        expect(COURSE_FILES).toBe('courses/*.json')
+        expect(read('../scripts/seed.ts')).toContain('COURSE_FILES')
+    })
+
+    it('is seeded on no ownership gate, because nothing else writes it', () => {
+        const seed = read('../scripts/seed.ts')
+        const line = seed.split('\n').find((l) => l.includes("seed('courses'"))
+        expect(line, 'the seed no longer writes courses').toBeDefined()
+        expect(seed).not.toContain('COURSES_ARE_OWNED')
+    })
+
+    it('gets its tees their ids on the way in, which the files do not carry', () => {
+        expect(read('../scripts/seed.ts')).toContain('withTeeIds')
+    })
+
+    /**
+     * The export is the other half of ownership and courses are not in it yet.
+     * Asserted so that adding one is a deliberate act with this test in front of
+     * it — an export without `export-admin-data.yml` staging the directory is a
+     * publish that reports success and pushes nothing, which is a bug this
+     * repository has already shipped once.
+     */
+    it('is not exported yet, since the admin cannot author one', () => {
+        expect(read('../scripts/export.ts')).not.toContain('COURSE_FILES')
     })
 })
