@@ -6,7 +6,15 @@ import { describe, expect, it } from 'vitest'
 
 import { schema as courseSchema, withTeeIds, type Course } from '@hector/schemas/src/courses.ts'
 
-import { BLANK_TEE, courseFromForm, formOf, teesFrom } from '../src/lib/courses/details.ts'
+import {
+    BLANK_TEE,
+    courseFromForm,
+    descriptionFrom,
+    formOf,
+    teesFrom,
+    withBlankRows,
+    type DescriptionRow,
+} from '../src/lib/courses/details.ts'
 
 /**
  * What the course editor makes of a filled-in form.
@@ -59,20 +67,18 @@ describe('filling the boxes from a stored course', () => {
     })
 
     /**
-     * Indexed by position in `description_long`, not packed into a list, because
-     * the images between the paragraphs keep their places and the indices are
-     * what puts the prose back where it came from.
+     * A row per entry, paragraphs and images alike, in the order the record has
+     * them. The editor can move and remove them, so the list *is* the model
+     * rather than an index into one.
      */
-    it('indexes the paragraphs by their place among the images', () => {
+    it('gives every description entry a row, in order', () => {
         const course = konopiste()
         const form = formOf(course)
 
-        const paragraphIndices = course.description_long
-            .map((part, index) => (part.type === 'paragraph' ? index : undefined))
-            .filter((index): index is number => index !== undefined)
-
-        expect(Object.keys(form.paragraphs).map(Number)).toEqual(paragraphIndices)
-        expect(paragraphIndices).not.toEqual([...paragraphIndices.keys()])
+        expect(form.description.map((row) => row.kind)).toEqual(course.description_long.map((part) => part.type))
+        expect(form.description.map((row) => row.position)).toEqual(
+            course.description_long.map((_, index) => String(index + 1))
+        )
     })
 })
 
@@ -116,6 +122,21 @@ describe('what a save leaves alone', () => {
         )
     })
 
+    /**
+     * The blank rows the form ends with, which are how an item is added. An
+     * untouched pair must leave the description exactly as it was, or every
+     * save of an unrelated field would append an empty paragraph.
+     */
+    it('ignores the blank rows nobody typed into', () => {
+        const course = konopiste()
+        const result = courseFromForm(course, {
+            ...formOf(course),
+            description: withBlankRows(formOf(course).description),
+        })
+
+        expect(result.description_long).toEqual(course.description_long)
+    })
+
     it('still parses as a course afterwards', () => {
         const { result } = saved()
         expect(courseSchema.safeParse(result).success).toBe(true)
@@ -146,11 +167,13 @@ describe('what a save changes', () => {
     it('rewrites a paragraph without disturbing its neighbours', () => {
         const course = konopiste()
         const form = formOf(course)
-        const first = Number(Object.keys(form.paragraphs)[0])
+        const first = form.description.findIndex((row) => row.kind === 'paragraph')
 
         const result = courseFromForm(course, {
             ...form,
-            paragraphs: { ...form.paragraphs, [first]: 'Rewritten.' },
+            description: form.description.map((row, index) =>
+                index === first ? { ...row, content: 'Rewritten.' } : row
+            ),
         })
 
         const part = result.description_long[first]
@@ -244,3 +267,166 @@ describe('the rule the scorecard depends on', () => {
         expect(parsed.success).toBe(false)
     })
 })
+
+/**
+ * Composing a description, which is what step 5 of the plan is about.
+ *
+ * Step 4's editor could rewrite a paragraph and nothing else: the order was
+ * fixed and the images were read-only markers, because a textarea holding only
+ * the prose would have deleted the 32 image entries interleaved with it. This
+ * is the model that replaced it — a row per entry, ordered by a number somebody
+ * types, with add, remove and replace.
+ */
+const row = (over: Partial<DescriptionRow> & { kind: DescriptionRow['kind'] }): DescriptionRow => ({
+    content: '',
+    position: '1',
+    remove: false,
+    ...over,
+})
+
+describe('composing the long description', () => {
+    it('orders by the typed position, not by the order of the boxes', () => {
+        const result = descriptionFrom([
+            row({ kind: 'paragraph', content: 'Third.', position: '3' }),
+            row({ kind: 'paragraph', content: 'First.', position: '1' }),
+            row({ kind: 'paragraph', content: 'Second.', position: '2' }),
+        ])
+
+        expect(result.map((part) => part.type === 'paragraph' && part.content)).toEqual([
+            'First.',
+            'Second.',
+            'Third.',
+        ])
+    })
+
+    /**
+     * Ties keep the order they are in, which is what makes a partly-filled
+     * column usable: renumber the two rows you care about and the rest stay put
+     * rather than shuffling.
+     */
+    it('leaves tied positions in the order they were already in', () => {
+        const result = descriptionFrom([
+            row({ kind: 'paragraph', content: 'A.', position: '1' }),
+            row({ kind: 'paragraph', content: 'B.', position: '1' }),
+            row({ kind: 'paragraph', content: 'C.', position: '1' }),
+        ])
+
+        expect(result.map((part) => part.type === 'paragraph' && part.content)).toEqual(['A.', 'B.', 'C.'])
+    })
+
+    it('accepts a fractional position, which is how a row is slipped between two', () => {
+        const result = descriptionFrom([
+            row({ kind: 'paragraph', content: 'One.', position: '1' }),
+            row({ kind: 'paragraph', content: 'Two.', position: '2' }),
+            row({ kind: 'paragraph', content: 'Between.', position: '1.5' }),
+        ])
+
+        expect(result.map((part) => part.type === 'paragraph' && part.content)).toEqual([
+            'One.',
+            'Between.',
+            'Two.',
+        ])
+    })
+
+    it('drops a row that was marked for removal', () => {
+        const result = descriptionFrom([
+            row({ kind: 'paragraph', content: 'Kept.', position: '1' }),
+            row({ kind: 'paragraph', content: 'Gone.', position: '2', remove: true }),
+            row({ kind: 'image', url: '/images/courses/x/a.jpg', position: '3', remove: true }),
+        ])
+
+        expect(result).toEqual([{ type: 'paragraph', content: 'Kept.' }])
+    })
+
+    /**
+     * An empty paragraph is not a thing the public page has, and dropping it is
+     * what lets the form end with blank rows nobody has to press "add" before
+     * using.
+     */
+    it('drops an empty paragraph and an image with nothing behind it', () => {
+        expect(descriptionFrom([row({ kind: 'paragraph', content: '   ' }), row({ kind: 'image' })])).toEqual([])
+    })
+
+    it('keeps an image that is already committed, by its url', () => {
+        const result = descriptionFrom([row({ kind: 'image', url: '/images/courses/x/hero.jpg' })])
+        expect(result).toEqual([{ type: 'image', url: '/images/courses/x/hero.jpg' }])
+    })
+
+    /**
+     * An uploaded image is recorded by its object name and *not* by a url. The
+     * export is what turns one into the other, so a committed file never
+     * mentions the bucket and the site needs no change at all.
+     */
+    it('records an uploaded image by object, never by url', () => {
+        const result = descriptionFrom([
+            row({ kind: 'image', object: 'courses/x/abc123.jpg', url: '/images/courses/x/old.jpg' }),
+        ])
+
+        expect(result).toEqual([{ type: 'image', object: 'courses/x/abc123.jpg' }])
+    })
+
+    it('mixes paragraphs and images in one order', () => {
+        const result = descriptionFrom([
+            row({ kind: 'image', object: 'courses/x/pic.jpg', position: '2' }),
+            row({ kind: 'paragraph', content: 'Before.', position: '1' }),
+            row({ kind: 'paragraph', content: 'After.', position: '3' }),
+        ])
+
+        expect(result.map((part) => part.type)).toEqual(['paragraph', 'image', 'paragraph'])
+    })
+})
+
+/**
+ * Adding an item *where you want it*, which is the path somebody actually
+ * takes and the one the other cases here skirted.
+ *
+ * Both halves matter and neither is obvious from the form: the blank rows at
+ * the end are how an item is added, and their position boxes are how it lands
+ * anywhere but last. Tested together because separately they each pass while
+ * the combination is what a person does.
+ */
+describe('adding an item at a chosen position', () => {
+    const existing: DescriptionRow[] = [
+        { kind: 'paragraph', content: 'One.', position: '1', remove: false },
+        { kind: 'image', content: '', url: '/images/a.jpg', position: '2', remove: false },
+        { kind: 'paragraph', content: 'Three.', position: '3', remove: false },
+    ]
+
+    const shape = (parts: ReturnType<typeof descriptionFrom>) =>
+        parts.map((part) => (part.type === 'paragraph' ? part.content : (part.object ?? part.url)))
+
+    it('puts a new paragraph between two existing entries', () => {
+        const rows = withBlankRows(existing)
+        rows[3] = { ...rows[3]!, content: 'Inserted.', position: '1.5' }
+
+        expect(shape(descriptionFrom(rows))).toEqual(['One.', 'Inserted.', '/images/a.jpg', 'Three.'])
+    })
+
+    it('puts a new image between two existing entries', () => {
+        const rows = withBlankRows(existing)
+        rows[4] = { ...rows[4]!, object: 'courses/x/new.jpg', position: '2.5' }
+
+        expect(shape(descriptionFrom(rows))).toEqual([
+            'One.',
+            '/images/a.jpg',
+            'courses/x/new.jpg',
+            'Three.',
+        ])
+    })
+
+    /** Including at the very front, which is what a position below 1 is for. */
+    it('adds both in one save, each where it was asked for', () => {
+        const rows = withBlankRows(existing)
+        rows[3] = { ...rows[3]!, content: 'First now.', position: '0' }
+        rows[4] = { ...rows[4]!, object: 'courses/x/new.jpg', position: '2.5' }
+
+        expect(shape(descriptionFrom(rows))).toEqual([
+            'First now.',
+            'One.',
+            '/images/a.jpg',
+            'courses/x/new.jpg',
+            'Three.',
+        ])
+    })
+})
+

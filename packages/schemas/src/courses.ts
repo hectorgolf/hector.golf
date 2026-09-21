@@ -17,6 +17,8 @@ const MultimediaDescriptionSchema = z.array(
         z.object({
             type: z.literal("image"),
             url: AbsoluteOrRelativeImageURL.optional(),
+            /** Bucket object backing this image. In Firestore only; the export turns it into `url`. */
+            object: z.string().optional(),
         }),
     ]),
 );
@@ -107,6 +109,36 @@ export function teeId(name: string): string {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "");
+}
+
+/** Where the export writes an uploaded image, relative to the site's `public/`. */
+export function uploadedImagePath(courseId: string, objectName: string): string {
+    return `/images/courses/${courseId}/uploaded/${objectName.split("/").pop()}`;
+}
+
+/**
+ * The description as a committed file carries it: `url`, never `object`.
+ *
+ * The site reads `url` and has done since before any of this; keeping that the
+ * only thing in the file is what lets none of the site change. `object` is the
+ * store's business, the way a tee's `id` is.
+ */
+export function withPublishedImages(course: Course): Course {
+    return {
+        ...course,
+        description_long: course.description_long.map((part) => {
+            if (part.type !== "image" || !part.object) return part;
+            const { object, ...rest } = part;
+            return { ...rest, url: uploadedImagePath(course.id, object) };
+        }),
+    };
+}
+
+/** Every bucket object a course references, for the export to fetch and to keep. */
+export function referencedObjects(course: Course): string[] {
+    return course.description_long
+        .filter((part) => part.type === "image" && part.object)
+        .map((part) => (part as { object: string }).object);
 }
 
 /** The tees as the committed files carry them: no ids. */

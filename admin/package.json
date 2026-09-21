@@ -19,6 +19,7 @@
     "@astrojs/node": "^11.1.5",
     "@google-cloud/firestore": "^9.0.1",
     "@google-cloud/secret-manager": "^7.1.0",
+    "@google-cloud/storage": "^8.2.0",
     "@hector/schemas": "*",
     "@hector/ui": "*",
     "@hector/wisegolf": "*",

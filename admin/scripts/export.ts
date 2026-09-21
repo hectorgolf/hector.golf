@@ -26,7 +26,7 @@
  *   npm run export                                  # the real database
  *   FIRESTORE_EMULATOR_HOST=localhost:8432 npm run export
  */
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -34,7 +34,14 @@ import { glob } from 'glob'
 
 import { genericEventSchema, type Event } from '@hector/schemas/src/events.ts'
 import { serializeJson } from '@hector/schemas/src/json.ts'
-import { schema as courseSchema, withoutTeeIds, type Course } from '@hector/schemas/src/courses.ts'
+import {
+    schema as courseSchema,
+    referencedObjects,
+    uploadedImagePath,
+    withPublishedImages,
+    withoutTeeIds,
+    type Course,
+} from '@hector/schemas/src/courses.ts'
 import { schema as playerSchema, type Player } from '@hector/schemas/src/players.ts'
 
 import {
@@ -45,6 +52,7 @@ import {
     PLAYER_FILES,
 } from '../src/lib/ownership.ts'
 
+import { getAsset } from '../src/lib/assets.ts'
 import { firestore, reportingStoreErrors, target } from './store.ts'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -99,6 +107,72 @@ const eventPath = (event: Event): string => `events/${event.format}/${event.id}.
  * anything.
  */
 const playerPath = (player: Player): string => `players/${player.id}.json`
+
+/** Where the site serves images from, as opposed to where it reads data. */
+const publicDir = join(here, '../../astrosite/public')
+
+/** The one directory the export owns inside a course's images. */
+const uploadedDir = (courseId: string) => join(publicDir, 'images/courses', courseId, 'uploaded')
+
+/**
+ * Brings every image a course references out of the bucket and into the
+ * repository, and takes away the ones it no longer references.
+ *
+ * ## Why the pruning is scoped to one directory
+ *
+ * The obvious rule is "delete images git holds that no document references",
+ * and it is wrong here — measurably. `astrosite/public/images/courses/` holds
+ * 326 files against 300 referenced paths, and of the 26 nobody names, 18 are
+ * `lafinca/holes/*.svg`: hole-layout diagrams for the one course whose hole
+ * descriptions have not been written yet. That rule would throw away work
+ * somebody did in advance.
+ *
+ * So the export owns exactly one directory per course — `uploaded/` — creates
+ * it, writes only objects the document references into it, and deletes only
+ * files in it. Everything else under `images/courses/` belongs to whoever put
+ * it there. See `docs/plans/courses-in-the-admin.md`, step 5.
+ *
+ * ## Why the names are stable
+ *
+ * An object is named after a digest of its own bytes, so the same picture
+ * produces the same filename every time and an unchanged image is not a diff.
+ * A random id per upload would rewrite a file in git whenever somebody re-picked
+ * the same photograph.
+ */
+async function publishUploadedImages(courses: readonly Course[]): Promise<void> {
+    let written = 0
+    let removed = 0
+
+    for (const course of courses) {
+        const wanted = new Map(
+            referencedObjects(course).map((object) => [uploadedImagePath(course.id, object).split('/').pop()!, object])
+        )
+        const directory = uploadedDir(course.id)
+
+        if (wanted.size === 0 && !existsSync(directory)) continue
+        mkdirSync(directory, { recursive: true })
+
+        for (const [filename, object] of wanted) {
+            const path = join(directory, filename)
+            // Named after a digest of its contents, so a file that is already
+            // there is already correct and downloading it again would cost a
+            // request to prove it.
+            if (existsSync(path)) continue
+            writeFileSync(path, await getAsset(object))
+            written += 1
+        }
+
+        for (const filename of readdirSync(directory)) {
+            if (wanted.has(filename)) continue
+            rmSync(join(directory, filename))
+            removed += 1
+        }
+    }
+
+    if (written || removed) {
+        console.log(`  course images: ${written} written, ${removed} removed`)
+    }
+}
 
 /**
  * Refuses to publish an empty set over a directory that is not empty.
@@ -204,7 +278,11 @@ if (COURSES_ARE_OWNED) {
     const courses = await reportingStoreErrors(() => read<Course>('courses', courseSchema))
     refuseEmpty('courses', courses.length, 'every committed course file')
 
-    const files = new Map(courses.map((course) => [`courses/${course.id}.json`, withoutTeeIds(course)]))
+    await publishUploadedImages(courses)
+
+    const files = new Map(
+        courses.map((course) => [`courses/${course.id}.json`, withoutTeeIds(withPublishedImages(course))])
+    )
     sync('courses', files, await glob(COURSE_FILES, { cwd: dataDir }))
 }
 

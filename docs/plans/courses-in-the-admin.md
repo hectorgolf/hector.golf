@@ -236,6 +236,113 @@ idempotent against the result.
 That is a third reason a round trip is not a no-op, beside the two the other plan lists — schema
 defaults and key order. **Formatting.** Worth knowing for step 2 of that plan.
 
+## Step 5 — a description that can be composed, with uploaded images
+
+*Asked for on 2026-09-21, once step 4's editor made plain how limiting a fixed sequence is.*
+
+Step 4 lets a paragraph be rewritten and nothing else: the order is fixed, images are read-only
+markers, and neither can be added or removed. That is defensible as a first cut and useless as a
+final one — a description is a thing people compose.
+
+So `description_long` becomes an editable ordered list of items, each a paragraph or an image, with
+add, remove, replace and move. And an image can be uploaded from the machine doing the editing,
+which is the part with infrastructure behind it.
+
+### Where an uploaded image lives
+
+**In a Cloud Storage bucket the admin service owns, referenced from the Firestore document by object
+name.** The export downloads what a course references and writes it into git; the site keeps reading
+committed files under `astrosite/public/images/` exactly as it does now.
+
+That keeps the two-press publish honest. An upload is not public until an export runs, the same way
+an edited biography is not public until an export runs, and a picture somebody uploaded and then
+thought better of never reaches the repository at all.
+
+The stored shape is one extra field, and the export translates rather than passing it through:
+
+| | Firestore | committed file |
+| --- | --- | --- |
+| an uploaded image | `{ type: "image", object: "courses/{id}/{key}.jpg" }` | `{ type: "image", url: "/images/courses/{id}/uploaded/{key}.jpg" }` |
+| an image already in git | `{ type: "image", url: "/images/..." }` | unchanged |
+
+So the site needs no change at all, the committed data keeps the shape it has, and `object` never
+reaches a file — the same division `withoutTeeIds` already draws for tee ids.
+
+### Pruning has to be narrower than "unreferenced"
+
+The obvious rule — delete images git holds that the document no longer references — **is wrong here,
+and measurably so.** Under `astrosite/public/images/courses/` there are 326 files and 300 distinct
+referenced paths. Of the 26 the documents do not name, 18 are `lafinca/holes/*.svg`: hole-layout
+diagrams for the one course whose hole descriptions have not been written yet. Deleting them would
+throw away work somebody did in advance.
+
+It is also a much smaller slice of that directory than it sounds. `description_long[].url` accounts
+for 32 of the 300; `descriptions[].layout` accounts for 234, and those are not edited here at all.
+
+**So the export prunes only inside `images/courses/{id}/uploaded/`, and never outside it.** That
+directory is created by the export, written only by the export, and everything in it is named after
+an object the document references or is deleted. Anything else under `images/courses/` is somebody's
+asset and is not the export's business.
+
+The 26 orphans stay. If they should go, that is a deliberate commit somebody makes while looking at
+them — not a side effect of the first course edit.
+
+### How the form does it, with no script
+
+Ordering is a number somebody types. Ties keep their existing order, so renumbering two rows leaves
+the rest alone, and a fractional position slips a row between two others.
+
+**That is what the form sends, and not what a person sees.** A position is how the form talks to
+itself; somebody editing prose should not have to think about it. So `lib/reorder.ts` hides the
+boxes, reveals a pair of arrows per row, and renumbers the hidden inputs as rows move — the second
+progressive enhancement in this admin after `run-now.ts`, and the same shape: the page is complete
+before it runs and better after.
+
+Nothing reaches the server until Save. Moving a row reorders the DOM and rewrites hidden values;
+there is no request and nothing to lose if the tab closes.
+
+Arrows rather than dragging, for now. Dragging is nicer with a mouse and unusable without one;
+arrows are keyboard-reachable and screen-reader-readable for free, which a drag handle only becomes
+once the keyboard affordance is written back in — at which point the arrows exist anyway. Dragging
+can be added on top; the ordering it produces is the same renumbering.
+
+The buttons are rendered by the page and hidden with CSS rather than created in script, because a
+button built in JS carries none of Astro's scoping attributes and comes out unstyled.
+
+Removing is a checkbox. Adding is the pair of empty rows every description ends with — one
+paragraph, one image — dropped on save when nobody touches them, which is the same trick the tee
+table uses.
+
+**And the upload happens on save, not at its own endpoint.** The form is `multipart/form-data`, so a
+chosen file arrives with the save that references it: no upload endpoint, no client script, and no
+window in which an object exists that no form knows about. The cost is that a rejected save loses
+the chosen file, because a browser will not re-populate a file input.
+
+### What this cost
+
+- A bucket, and the first `google_storage_bucket` in `terraform/`. Uniform access, no public
+  reading: the admin writes with its runtime identity, the export reads with the deployer's. Both
+  bindings are **bucket-scoped**, because `hector-golf-tfstate` is in this same project and
+  `iam.tf` has carried the warning about project-wide storage roles since long before this.
+- `roles/storage.admin` for terraform-ci, which is project-wide because creating a bucket is. It
+  passes the test `secretmanager.admin` passes and for the same reason — that identity holds
+  `resourcemanager.projectIamAdmin` and can grant itself anything — rather than the comfortable
+  reason, which is wrong and is written down beside it so nobody reaches for it twice.
+- One route that serves an uploaded image back, so the editor can show a picture that has been
+  uploaded and not yet published. Without it the preview is a blank square at exactly the moment
+  somebody wants to look at what they chose.
+- A laptop has no bucket. Uploading degrades to a disabled file input and a sentence saying so;
+  everything else in the editor still works.
+
+### What is not verified
+
+**The bucket leg.** The bucket does not exist until `terraform apply` runs, so uploading, the
+export's download, and pruning have been built and unit-tested but never run against Cloud Storage.
+Reordering, removing, adding a paragraph and the whole save path *are* verified end to end against
+an emulator, through the real multipart form.
+
+The first thing to do after the apply is upload one image to one course and export it.
+
 ## Before the flip
 
 The checklist from [`authoring-players-and-events.md`](./authoring-players-and-events.md) applies

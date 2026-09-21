@@ -29,9 +29,43 @@ export type CourseForm = {
     phone: string
     email: string
     descriptionShort: string
-    /** One per `description_long` paragraph, by its index in that array. */
-    paragraphs: Record<number, string>
+    /** The long description, in the order the boxes are in. */
+    description: DescriptionRow[]
     tees: TeeForm[]
+}
+
+/**
+ * One row of the long description: a paragraph or an image, plus what the form
+ * lets somebody do to it.
+ *
+ * Ordering is a number somebody types, which is the simplest thing that works
+ * with no script — and that is the whole of the reason, stated plainly because
+ * the tempting version of it is wrong.
+ *
+ * The tempting version: "buttons would mean a round trip per move". They would
+ * not. Buttons or drag-and-drop done in the browser reorder the rows in the
+ * page and submit once, exactly as this does, and nothing would reach the
+ * server until Save. They would also let the position stay hidden, which it
+ * should be — it is how the form talks to itself, not something a person
+ * editing prose should have to think about.
+ *
+ * So the cost of this design is real and is paid by the reader: they see an
+ * implementation detail. The server side is indifferent — it sorts by whatever
+ * numbers arrive — so enhancing this with client-side reordering later changes
+ * the page and nothing here.
+ */
+export type DescriptionRow = {
+    kind: 'paragraph' | 'image'
+    /** Paragraph text. Empty for an image row. */
+    content: string
+    /** An image already committed, as `/images/...`. */
+    url?: string
+    /** An image in the asset bucket, as its object name. */
+    object?: string
+    /** Where this row should end up. Sorted on, not trusted to be sequential. */
+    position: string
+    /** Ticked to drop this row. */
+    remove: boolean
 }
 
 export type TeeForm = {
@@ -77,13 +111,19 @@ export const BLANK_TEE: TeeForm = {
     slopeLadies: '',
 }
 
+/** A row per description entry, in the order the record has them. */
+const descriptionOf = (course: Course): DescriptionRow[] =>
+    course.description_long.map((part, index) => ({
+        kind: part.type,
+        content: part.type === 'paragraph' ? (part.content ?? '') : '',
+        url: part.type === 'image' ? part.url : undefined,
+        object: part.type === 'image' ? part.object : undefined,
+        position: String(index + 1),
+        remove: false,
+    }))
+
 /** The stored course as the boxes should first show it. */
 export function formOf(course: Course): CourseForm {
-    const paragraphs: Record<number, string> = {}
-    course.description_long.forEach((part, index) => {
-        if (part.type === 'paragraph') paragraphs[index] = part.content ?? ''
-    })
-
     return {
         name: course.name,
         homepage: course.homepage,
@@ -91,7 +131,7 @@ export function formOf(course: Course): CourseForm {
         phone: course.contact.phone ?? '',
         email: course.contact.email ?? '',
         descriptionShort: course.description_short,
-        paragraphs,
+        description: descriptionOf(course),
         tees: [...(course.course?.tees ?? []).map(teeOf), { ...BLANK_TEE }],
     }
 }
@@ -144,6 +184,54 @@ export function teesFrom(rows: readonly TeeForm[]): CourseTee[] {
 }
 
 /**
+ * The rows, plus one empty paragraph and one empty image row at the end.
+ *
+ * How a description item gets added without script, and the same trick the tee
+ * table uses: the form always renders one more of each than there are, and an
+ * untouched one is dropped by `descriptionFrom` because it has no content and
+ * no image. Nobody has to press "add" before typing.
+ */
+export function withBlankRows(rows: readonly DescriptionRow[]): DescriptionRow[] {
+    const next = rows.length + 1
+    return [
+        ...rows,
+        { kind: 'paragraph', content: '', position: String(next), remove: false },
+        { kind: 'image', content: '', position: String(next + 1), remove: false },
+    ]
+}
+
+/**
+ * The long description the rows describe: removals dropped, the rest in the
+ * order their positions ask for.
+ *
+ * Sorted by the typed position rather than trusted to be sequential, so `1, 2,
+ * 2.5, 3` does what somebody obviously meant and `1, 1, 1` leaves the order
+ * alone. Ties keep their existing order, which is what makes a partly-filled
+ * column behave: renumber the two rows you care about and the rest stay put.
+ *
+ * An empty paragraph is dropped rather than committed. There is no such thing
+ * as a blank paragraph on the public page, and it is how the blank row at the
+ * end of the form stays ignorable.
+ */
+export function descriptionFrom(rows: readonly DescriptionRow[]): Course['description_long'] {
+    return rows
+        .map((row, index) => ({ row, index }))
+        .filter(({ row }) => !row.remove)
+        .filter(({ row }) => (row.kind === 'paragraph' ? row.content.trim() !== '' : Boolean(row.url || row.object)))
+        .sort((a, b) => {
+            const byPosition = (Number(a.row.position) || 0) - (Number(b.row.position) || 0)
+            return byPosition !== 0 ? byPosition : a.index - b.index
+        })
+        .map(({ row }) =>
+            row.kind === 'paragraph'
+                ? { type: 'paragraph' as const, content: row.content.trim() }
+                : row.object
+                  ? { type: 'image' as const, object: row.object }
+                  : { type: 'image' as const, url: row.url! }
+        )
+}
+
+/**
  * The whole course a form describes, built on the stored one.
  *
  * The starting point is `stored` rather than an empty object, which is what
@@ -152,11 +240,6 @@ export function teesFrom(rows: readonly TeeForm[]): CourseTee[] {
  * delete every one of them — and silently, because Zod strips what it is not
  * told about rather than complaining. `course-schema-coverage.test.ts` exists
  * about that failure one level down.
- *
- * `description_long` is rebuilt by index for the same reason. Thirty-two of its
- * entries across fifteen courses are *images*, interleaved with the prose, and a
- * textarea holding only the paragraphs would drop all of them. Only the
- * paragraph contents are replaced; every entry keeps its place.
  */
 export function courseFromForm(stored: Course, form: CourseForm): Course {
     const withProse: Course = {
@@ -169,9 +252,7 @@ export function courseFromForm(stored: Course, form: CourseForm): Course {
             ...(form.email.trim() ? { email: form.email.trim() } : {}),
         },
         description_short: form.descriptionShort.trim(),
-        description_long: stored.description_long.map((part, index) =>
-            part.type === 'paragraph' ? { ...part, content: form.paragraphs[index]?.trim() ?? part.content } : part
-        ),
+        description_long: descriptionFrom(form.description),
     }
 
     // `applyTeeEdits` is what moves the scorecard's keys with a renamed tee.
