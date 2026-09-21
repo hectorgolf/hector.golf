@@ -7,7 +7,9 @@
     "phone": "tel:+34972760450",
     "email": "golf@empordagolf.com"
   },
-  "hero_image": "/images/courses/emporda-dunes/hero.jpg",
+  "hero_image": {
+    "url": "/images/courses/emporda-dunes/hero.jpg"
+  },
   "description_short": "Empordà Dunes is a bold and wind-swept challenge. Where others saw unremarkable marshland, architect Robert von Hagge saw an opportunity to craft a course of pure imagination. Empordà Dunes is a masterful blend of rolling inland dunes, unpredictable coastal winds, and modern water hazards, capturing the soul of traditional Scottish links while adding its own unique character.",
   "description_long": [
     {

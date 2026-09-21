@@ -7,7 +7,9 @@
     "phone": "tel://+34966765170",
     "email": "golfvillamartin@grupoquara.com"
   },
-  "hero_image": "/images/courses/villamartin/hero.jpg",
+  "hero_image": {
+    "url": "/images/courses/villamartin/hero.jpg"
+  },
   "description_short": "Villamartin hosted the 1994 Mediterranean Open which was won by Jose Maria Olazabal after an exciting play-off with Paul McGinley.\n\nVillamartin Golf Course, designed by Paul Putman, is situated within a mile of the sea between Torrevieja and Murcia airport at San Javier on the south eastern tip of the Costa Blanca. The par for the course is 72 and it measures 6005 metres.\n\nIt is built on hilly ground with the front nine holes being at the highest point of the course offering some spectacular sea views. The second nine are situated more in valleys with brancas ( ravines ) coming into play on several holes.",
   "description_long": [
     {

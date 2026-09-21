@@ -7,7 +7,9 @@
     "phone": "tel://+358600550740",
     "email": "toimisto@tahkogolf.fi"
   },
-  "hero_image": "/images/courses/tahko-new-course/hero.jpg",
+  "hero_image": {
+    "url": "/images/courses/tahko-new-course/hero.jpg"
+  },
   "description_short": "",
   "description_long": [
     {

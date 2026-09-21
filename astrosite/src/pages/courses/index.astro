@@ -6,7 +6,7 @@ import PageHeader from '@hector/ui/components/PageHeader.astro';
 import { getCollection } from 'astro:content';
 import { getEventsAtCourse } from '../../code/courses';
 import { compareIsoDates } from '@hector/schemas/src/dates.ts';
-import type { Course } from '@hector/schemas/src/courses.ts';
+import { imageUrl, type Course } from '@hector/schemas/src/courses.ts';
 import type { Event } from '@hector/schemas/src/events.ts';
 
 
@@ -57,7 +57,7 @@ const coursesSortedByDate = courses
         />
         <ul role="list" class="grid grid-wide">
             {coursesSortedByDate.map((course) => (
-                <CourseCard name={course.name} image={course.hero_image} location={course.contact.address} href={linkToCourse(course)}/>
+                <CourseCard name={course.name} image={imageUrl(course.hero_image)} location={course.contact.address} href={linkToCourse(course)}/>
             ))}
         </ul>
     </main>

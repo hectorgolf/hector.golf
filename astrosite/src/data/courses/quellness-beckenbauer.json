@@ -7,7 +7,9 @@
     "phone": "tel://+49853292440",
     "email": "gppenning@quellness-golf.com"
   },
-  "hero_image": "/images/courses/quellness-beckenbauer/hero1.jpg",
+  "hero_image": {
+    "url": "/images/courses/quellness-beckenbauer/hero1.jpg"
+  },
   "description_short": "Venue of the PGA European Tour 2013-2017, the course was already awarded the \"world class\" rating in its opening year. The 18 holes don’t hold back when it comes to challenges, but also offer plenty of opportunities for that sweet feeling of success.",
   "description_long": [
     {

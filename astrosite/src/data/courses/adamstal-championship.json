@@ -7,7 +7,9 @@
     "phone": "+4327643500",
     "email": "info@adamstal.at"
   },
-  "hero_image": "/images/courses/adamstal-championship/hero1.jpg",
+  "hero_image": {
+    "url": "/images/courses/adamstal-championship/hero1.jpg"
+  },
   "description_short": "The \"Championship Course\" of the Adamstal golf club is quite sporty: the professionals of the European Challenge Tour, who made several guest appearances, were able to find that out. Thanks to up to five tees per hole, the course is still fair for golfers of all levels. Another plus: The \"Championship Course\" is fully e-car compatible – even a challenge should be a pleasure.",
   "description_long": [
     {

@@ -7,7 +7,9 @@
     "phone": "tel://+420317784044",
     "email": "gcko@gcko.cz"
   },
-  "hero_image": "/images/courses/konopiste-deste/hero.jpg",
+  "hero_image": {
+    "url": "/images/courses/konopiste-deste/hero.jpg"
+  },
   "description_short": "The d'Este course at Konopiště is a par-72 championship course that stretches up to 6,086 meters from the back tee. Located in the beautiful Czech countryside at the Konopiště golf resort, the D’ Este course is tougher than its sibling, Radecký, and requires skill and golf planning. The key is to stay on the fairways and off the rough – as several golfers have found that it can be quite treacherous.",
   "description_long": [
     {
