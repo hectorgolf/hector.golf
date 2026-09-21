@@ -9,6 +9,7 @@ import { COURSE_MIRROR } from '../../lib/mirror.ts'
 import { COURSES_ARE_OWNED } from '../../lib/ownership.ts'
 import { getCourse } from '../../lib/repository/events.ts'
 import { previewSrc } from '../../lib/courses/preview.ts'
+import { telHref, telText } from '../../lib/contact.ts'
 
 const { id } = Astro.params
 if (!id) return Astro.redirect('/courses')
@@ -70,13 +71,21 @@ const description = course.description_long.filter((part) =>
 
 		<div class="fields">
 			<ReadOnlyField label="Id" value={course.id} hint="The document key and the filename." />
-			<ReadOnlyField label="Homepage" value={course.homepage} />
-			<ReadOnlyField label="Phone" value={course.contact.phone ?? '—'} />
+			<ReadOnlyField label="Homepage" value={course.homepage} href={course.homepage} />
+			<ReadOnlyField
+				label="Phone"
+				value={telText(course.contact.phone) ?? '—'}
+				href={telHref(course.contact.phone)}
+			/>
 		</div>
 
 		<div class="fields">
 			<ReadOnlyField label="Address" value={course.contact.address} />
-			<ReadOnlyField label="Email" value={course.contact.email ?? '—'} />
+			<ReadOnlyField
+				label="Email"
+				value={course.contact.email ?? '—'}
+				href={course.contact.email && `mailto:${course.contact.email}`}
+			/>
 			<ReadOnlyField
 				label="Datasources"
 				value={course.datasources.map((source) => source.name).join(', ') || '—'}
