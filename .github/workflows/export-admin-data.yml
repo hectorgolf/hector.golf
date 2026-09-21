@@ -127,6 +127,15 @@ jobs:
           # Terraform creates. The project is a variable because it already is
           # one everywhere else.
           GOOGLE_CLOUD_PROJECT: ${{ vars.GCP_PROJECT_ID }}
+          # Where an uploaded image is until this job fetches it. Without this
+          # the export dies on the first course that has one — which is what it
+          # did, the first time anybody uploaded one.
+          #
+          # Derived rather than a repository variable of its own, because the
+          # name is derived: `terraform/storage.tf` calls the bucket
+          # "${var.project_id}-assets". A second variable would be a second
+          # place to keep that agreement, set by hand, discovered wrong here.
+          ASSET_BUCKET: ${{ vars.GCP_PROJECT_ID }}-assets
 
       - name: Commit what changed
         if: steps.guard.outputs.configured == 'true'
