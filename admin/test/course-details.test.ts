@@ -198,11 +198,22 @@ describe('what a save leaves alone', () => {
         expect(result.course!.descriptions_local).toEqual(course.course!.descriptions_local)
     })
 
-    it('keeps the images, the datasources and the id', () => {
+    it('keeps the images and the id', () => {
         const { course, result } = saved()
         expect(result.images).toEqual(course.images)
-        expect(result.datasources).toEqual(course.datasources)
         expect(result.id).toBe(course.id)
+    })
+
+    /*
+     * The datasources *are* carried by the form now, so this is the narrower
+     * promise: a save where nobody touched that section reproduces the list
+     * exactly, order included. Rebuilding it in vocabulary order instead would
+     * reorder the JSON of every course anybody edits, and the export would
+     * commit that as a diff nobody asked for.
+     */
+    it('reproduces the datasources exactly, in their own order', () => {
+        const { course, result } = saved()
+        expect(result.datasources).toEqual(course.datasources)
     })
 
     /*
