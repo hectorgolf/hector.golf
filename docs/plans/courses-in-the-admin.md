@@ -421,10 +421,22 @@ The export simply never used it. #252 added the step. The edit that exposed this
 twelve minutes late, carried there by an unrelated merge that happened to include the export commit
 in its tree.
 
-### What is not verified
+### Pruning, too
 
-Pruning, against the real bucket: an image dropped from a description should disappear from
-`uploaded/` on the next export. Only the keeping half has run in production.
+Verified the same evening, by replacing a hero rather than by dropping a description image — which
+is the better test of the two. The export deletes everything in `uploaded/` that nothing references,
+so a hero absent from `referencedObjects` would be a hero deleted on the next export, quietly and
+only for the courses whose hero happens to be an upload. Both halves ran in one export:
+
+```text
+course images: 1 written, 1 removed
+  A astrosite/public/images/courses/diamondcc-park/uploaded/3136f241fff3dc72.jpg
+  D astrosite/public/images/courses/diamondcc-park/uploaded/a2269b3bae867f7f.jpg
+  M astrosite/src/data/courses/diamondcc-park.json
+```
+
+and the deploy request that follows it answered `HTTP 202`, with a `workflow_dispatch` run of
+`deploy-site.yml` a second later. Nothing in this pipeline is unexercised now.
 
 ## Before the flip
 
