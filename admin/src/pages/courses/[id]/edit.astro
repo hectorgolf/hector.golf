@@ -91,6 +91,12 @@ if (Astro.request.method === 'POST') {
 }
 
 const longParts = course.description_long
+
+/** Array index to human paragraph number, so the images do not create gaps. */
+const paragraphNumber = new Map<number, number>()
+longParts.forEach((part, index) => {
+	if (part.type === 'paragraph') paragraphNumber.set(index, paragraphNumber.size + 1)
+})
 ---
 
 <AdminLayout title={`Edit ${course.name}`}>
@@ -147,9 +153,7 @@ const longParts = course.description_long
 			<h2>Description</h2>
 			<div class="field">
 				<label for="descriptionShort">Short</label>
-				<textarea id="descriptionShort" name="descriptionShort" rows="2" disabled={!COURSES_ARE_OWNED}
-					>{submitted.descriptionShort}</textarea
-				>
+				<textarea id="descriptionShort" name="descriptionShort" rows="3" disabled={!COURSES_ARE_OWNED}>{submitted.descriptionShort}</textarea>
 			</div>
 
 			<p class="hint">
@@ -162,15 +166,18 @@ const longParts = course.description_long
 				longParts.map((part, index) =>
 					part.type === 'paragraph' ? (
 						<div class="field">
-							<label for={`paragraph-${index}`}>Paragraph {index + 1}</label>
-							<textarea
-								id={`paragraph-${index}`}
-								name={`paragraph-${index}`}
-								rows="4"
-								disabled={!COURSES_ARE_OWNED}
-							>
-								{submitted.paragraphs[index] ?? ''}
-							</textarea>
+							{/*
+							 * Numbered as paragraphs rather than by array index, which is
+							 * what the field name uses: the images occupy indices too, so
+							 * labelling by index skips numbers and reads as a bug.
+							 */}
+							<label for={`paragraph-${index}`}>Paragraph {paragraphNumber.get(index)}</label>
+							{/*
+							 * The value sits flush against the tags. A textarea renders its
+							 * content literally, so indenting it here would put that
+							 * indentation in the box and in front of whatever gets typed.
+							 */}
+							<textarea id={`paragraph-${index}`} name={`paragraph-${index}`} rows="4" disabled={!COURSES_ARE_OWNED}>{submitted.paragraphs[index] ?? ''}</textarea>
 						</div>
 					) : (
 						<p class="placeholder">
@@ -201,8 +208,10 @@ const longParts = course.description_long
 							<th>Length</th>
 							<th>Par</th>
 							<th>Par ♀</th>
-							<th>Rating ♂/♀</th>
-							<th>Slope ♂/♀</th>
+							<th>Rating ♂</th>
+							<th>Rating ♀</th>
+							<th>Slope ♂</th>
+							<th>Slope ♀</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -244,12 +253,16 @@ const longParts = course.description_long
 								<td>
 									<input name={`tee-${index}-parLadies`} type="text" value={tee.parLadies} disabled={!COURSES_ARE_OWNED} class="num" />
 								</td>
-								<td class="duo">
+								<td>
 									<input name={`tee-${index}-ratingMen`} type="text" value={tee.ratingMen} disabled={!COURSES_ARE_OWNED} class="num" />
+								</td>
+								<td>
 									<input name={`tee-${index}-ratingLadies`} type="text" value={tee.ratingLadies} disabled={!COURSES_ARE_OWNED} class="num" />
 								</td>
-								<td class="duo">
+								<td>
 									<input name={`tee-${index}-slopeMen`} type="text" value={tee.slopeMen} disabled={!COURSES_ARE_OWNED} class="num" />
+								</td>
+								<td>
 									<input name={`tee-${index}-slopeLadies`} type="text" value={tee.slopeLadies} disabled={!COURSES_ARE_OWNED} class="num" />
 								</td>
 							</tr>
@@ -267,8 +280,19 @@ const longParts = course.description_long
 </AdminLayout>
 
 <style>
+	/*
+	 * Wider than the player editor's form, because of the tees table: ten columns
+	 * of numbers that a reader compares across rows. `.tablewrap` scrolls it when
+	 * the window is narrow, and the prose fields above keep a readable measure of
+	 * their own.
+	 */
 	form {
-		max-width: 62rem;
+		max-width: 76rem;
+	}
+
+	.field,
+	.pair {
+		max-width: 46rem;
 	}
 
 	h2 {
@@ -302,17 +326,12 @@ const longParts = course.description_long
 	}
 
 	.tees .num {
-		width: 4.5rem;
+		width: 4rem;
 		text-align: right;
 	}
 
 	.tees .colour {
 		width: 6rem;
-	}
-
-	.tees .duo {
-		display: flex;
-		gap: 0.3rem;
 	}
 
 	input:disabled,
