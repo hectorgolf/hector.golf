@@ -199,9 +199,9 @@ carried; `course-details.test.ts` asserts that group by group.
 
 **`description_long` was the trap.** It is prose *and images*, interleaved: 32 image entries across
 15 of the 17 courses. A textarea holding only the paragraphs would have dropped every one. So the
-form edits paragraphs by their index in that array, renders the images as read-only markers where
-they sit, and rebuilds the sequence position by position. Paragraphs cannot be added or removed,
-because that would mean deciding where the images go.
+form edits the array as a list of rows, each a paragraph or an image, and rebuilds the sequence
+position by position. Rows can be added, removed, reordered and — for an image — uploaded from the
+machine doing the editing, because deciding where an image goes is exactly what the list is for.
 
 **A tee cannot be removed**, though `applyTeeEdits` supports it. Clearing a name would delete that
 tee's scorecard column, and a form that deletes measurements by accident is worse than one that
@@ -296,10 +296,10 @@ Ordering is a number somebody types. Ties keep their existing order, so renumber
 the rest alone, and a fractional position slips a row between two others.
 
 **That is what the form sends, and not what a person sees.** A position is how the form talks to
-itself; somebody editing prose should not have to think about it. So `lib/reorder.ts` hides the
-boxes, reveals a pair of arrows per row, and renumbers the hidden inputs as rows move — the second
-progressive enhancement in this admin after `run-now.ts`, and the same shape: the page is complete
-before it runs and better after.
+itself; somebody editing prose should not have to think about it. So `lib/description-list.ts`
+hides the boxes, reveals a pair of arrows per row and a pair of add buttons under the list, and
+renumbers the hidden inputs as rows move — the second progressive enhancement in this admin after
+`run-now.ts`, and the same shape: the page is complete before it runs and better after.
 
 Nothing reaches the server until Save. Moving a row reorders the DOM and rewrites hidden values;
 there is no request and nothing to lose if the tab closes.
@@ -312,9 +312,16 @@ can be added on top; the ordering it produces is the same renumbering.
 The buttons are rendered by the page and hidden with CSS rather than created in script, because a
 button built in JS carries none of Astro's scoping attributes and comes out unstyled.
 
-Removing is a checkbox. Adding is the pair of empty rows every description ends with — one
-paragraph, one image — dropped on save when nobody touches them, which is the same trick the tee
-table uses.
+Removing is a checkbox. Adding is **+ Add paragraph** and **+ Add image**, which clone one of the
+two empty rows every description ends with — one paragraph, one image, dropped on save when nobody
+touches them, the same trick the tee table uses. Cloned rather than built, for the reason the
+arrows are rendered rather than built: a row assembled in script has none of Astro's scoping
+attributes, and none of the `accept` list, disabled states and remove box the page already knows
+how to render. With the script off the two empty rows are the offer instead, one item per save.
+
+**A row is whatever arrives under `item-N-`, and says what kind it is.** Not a count of what the
+page last rendered — that is the shape of the bug below, and once the browser can add rows there is
+no count that could be right.
 
 **And the upload happens on save, not at its own endpoint.** The form is `multipart/form-data`, so a
 chosen file arrives with the save that references it: no upload endpoint, no client script, and no
@@ -337,12 +344,29 @@ the chosen file, because a browser will not re-populate a file input.
 - A laptop has no bucket. Uploading degrades to a disabled file input and a sentence saying so;
   everything else in the editor still works.
 
-### What is not verified
+### What was not verified, and what it cost
 
-**The bucket leg.** The bucket does not exist until `terraform apply` runs, so uploading, the
-export's download, and pruning have been built and unit-tested but never run against Cloud Storage.
-Reordering, removing, adding a paragraph and the whole save path *are* verified end to end against
-an emulator, through the real multipart form.
+This section used to claim that "reordering, removing, adding a paragraph and the whole save path
+are verified end to end against an emulator, through the real multipart form". Two of those were
+true. **Adding was not**, and neither was uploading.
+
+What had actually been driven through the form was moving and removing rows that were already
+there. Adding had been tested one level down, by calling `descriptionFrom(withBlankRows(...))`
+directly — which passes whatever the page does, because it never submits anything. The page was
+meanwhile reading a submitted form by looping over the rows it had *stored*, `item-0` through
+`item-{stored - 1}`, while rendering two blank ones after them. So the row somebody typed a
+paragraph into was never read, and neither was the row they chose an image in. Both saves reported
+success. Both did nothing. It reached production and was found by the person using it, twice in one
+evening — once for a paragraph, once for an image.
+
+The unit test that would have caught it is the one that says what `formOf` answers is what the page
+renders. The end-to-end check that would have caught it is the one that adds a row rather than
+moving one. Both exist now, and the loop no longer has a count in it to get wrong: a row is
+whatever arrives under `item-N-`.
+
+**The bucket leg** is still the untested one. The bucket does not exist until `terraform apply`
+runs, so uploading, the export's download and pruning have been run against a stub that speaks
+enough of the Cloud Storage JSON API to accept a file and hand it back — not against Cloud Storage.
 
 The first thing to do after the apply is upload one image to one course and export it.
 

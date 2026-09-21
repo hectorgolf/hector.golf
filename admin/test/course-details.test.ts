@@ -12,6 +12,7 @@ import {
     descriptionFrom,
     formOf,
     teesFrom,
+    rowIndices,
     withBlankRows,
     type DescriptionRow,
 } from '../src/lib/courses/details.ts'
@@ -73,12 +74,109 @@ describe('filling the boxes from a stored course', () => {
      */
     it('gives every description entry a row, in order', () => {
         const course = konopiste()
-        const form = formOf(course)
+        const stored = formOf(course).description.slice(0, course.description_long.length)
 
-        expect(form.description.map((row) => row.kind)).toEqual(course.description_long.map((part) => part.type))
-        expect(form.description.map((row) => row.position)).toEqual(
+        expect(stored.map((row) => row.kind)).toEqual(course.description_long.map((part) => part.type))
+        expect(stored.map((row) => row.position)).toEqual(
             course.description_long.map((_, index) => String(index + 1))
         )
+    })
+
+    /**
+     * The blank rows are part of what `formOf` answers, exactly as the blank tee
+     * is — and this is the assertion that would have caught the bug they were
+     * missing from.
+     *
+     * The page loops over `formOf(course).description` to read a submitted form
+     * back. When the blanks were added separately, and only on the GET path,
+     * that loop ran `stored` times against a form with `stored + 2` rows in it:
+     * it never read the two somebody had just typed into. Adding a paragraph
+     * saved nothing, said it had saved, and left no trace anywhere.
+     */
+    it('ends with an empty paragraph and an empty image row, which is how one is added', () => {
+        const course = konopiste()
+        const form = formOf(course)
+
+        expect(form.description).toHaveLength(course.description_long.length + 2)
+        expect(form.description.at(-2)).toMatchObject({ kind: 'paragraph', content: '' })
+        expect(form.description.at(-1)!.kind).toBe('image')
+        expect(form.description.at(-1)!.url).toBeUndefined()
+        expect(form.description.at(-1)!.object).toBeUndefined()
+    })
+
+    /** Applying it twice is applying it once, so a rejected save does not grow the form. */
+    it('does not stack more blank rows on each re-render', () => {
+        const once = formOf(konopiste()).description
+        expect(withBlankRows(once)).toHaveLength(once.length)
+    })
+
+    /*
+     * The same promise, for rows that came back in the order somebody put them
+     * in rather than the order they were rendered in.
+     *
+     * Reordering in the browser moves the real rows past the blank ones, so
+     * what a rejected save gets back has its blanks in the middle. Dropping
+     * only the trailing ones left them there and added two more — every retry
+     * two more again.
+     */
+    it('drops a blank row that reordering left in the middle', () => {
+        const reordered = [
+            { kind: 'paragraph' as const, content: 'One.', position: '1', remove: false },
+            { kind: 'paragraph' as const, content: '', position: '4', remove: false },
+            { kind: 'image' as const, content: '', position: '5', remove: false },
+            { kind: 'paragraph' as const, content: 'Two.', position: '2', remove: false },
+        ]
+
+        const rows = withBlankRows(reordered)
+
+        expect(rows.filter((row) => row.content === '')).toHaveLength(2)
+        expect(rows.map((row) => row.content)).toEqual(['One.', 'Two.', '', ''])
+    })
+})
+
+/*
+ * Which rows the editor reads back, which is the question it got wrong twice.
+ *
+ * Both times the same way: it answered with a count of what it had rendered
+ * rather than with what had arrived. First the count was two short, so the row
+ * somebody had typed a paragraph into and the row they had chosen an image in
+ * were never read — the save reported success and did nothing. Then the page
+ * learned to add rows in the browser, and no count could have been right.
+ */
+describe('finding the rows a submitted form carries', () => {
+    const formWith = (...names: string[]): FormData => {
+        const form = new FormData()
+        for (const name of names) form.append(name, '')
+        return form
+    }
+
+    it('finds every row, and nothing that is not one', () => {
+        const form = formWith('name', 'item-0-content', 'item-0-position', 'item-1-file', 'tee-0-name')
+
+        expect(rowIndices(form)).toEqual([0, 1])
+    })
+
+    /** Rows added in the browser, which the page never rendered and cannot count. */
+    it('finds rows past the ones the page rendered', () => {
+        const form = formWith('item-0-content', 'item-5-content', 'item-6-file')
+
+        expect(rowIndices(form)).toEqual([0, 5, 6])
+    })
+
+    /** A row removed in the browser leaves a hole, and a hole is not a row. */
+    it('is happy with gaps', () => {
+        expect(rowIndices(formWith('item-0-content', 'item-3-content'))).toEqual([0, 3])
+    })
+
+    /*
+     * Numerically. As text `10` sorts before `2`, and this order is the
+     * tie-break `descriptionFrom` falls back on when two rows claim the same
+     * position — so a form with ten rows in it would quietly reorder itself.
+     */
+    it('orders the rows by number rather than by name', () => {
+        const form = formWith('item-10-content', 'item-2-content', 'item-1-content')
+
+        expect(rowIndices(form)).toEqual([1, 2, 10])
     })
 })
 

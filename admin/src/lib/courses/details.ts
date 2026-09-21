@@ -131,7 +131,15 @@ export function formOf(course: Course): CourseForm {
         phone: course.contact.phone ?? '',
         email: course.contact.email ?? '',
         descriptionShort: course.description_short,
-        description: descriptionOf(course),
+        /*
+         * With the blank rows, exactly as the tees line below carries its blank
+         * tee — and for the reason the tees never had this bug and the
+         * description did: what `formOf` answers is what the page renders, so a
+         * form's indices refer to it. Leaving the blanks to a second call meant
+         * the POST handler sized its loop on the stored count and never read the
+         * two rows somebody had just typed into.
+         */
+        description: withBlankRows(descriptionOf(course)),
         tees: [...(course.course?.tees ?? []).map(teeOf), { ...BLANK_TEE }],
     }
 }
@@ -184,6 +192,33 @@ export function teesFrom(rows: readonly TeeForm[]): CourseTee[] {
 }
 
 /**
+ * Which description rows a submitted form carries.
+ *
+ * Read off the keys rather than counted from what the page last rendered,
+ * because those two stopped agreeing twice. First when `formOf` answered the
+ * stored rows while the page rendered two blank ones after them: the editor's
+ * loop ran `item-0` through `item-{stored - 1}` and never read the row somebody
+ * had just typed a paragraph into, or the one they had just chosen an image in,
+ * so both appeared to save and neither did. Then again the moment the page
+ * could add rows in the browser, where the count is whatever somebody pressed
+ * the button.
+ *
+ * Every row carries its own index and its own kind, so a row is whatever
+ * arrived under `item-N-`. Gaps are fine — a row removed in the browser simply
+ * does not turn up — and the indices are sorted numerically because `10` sorts
+ * before `2` as text and this order is the tie-break `descriptionFrom` falls
+ * back on for equal positions.
+ */
+export function rowIndices(form: FormData): number[] {
+    const seen = new Set<number>()
+    for (const key of form.keys()) {
+        const match = /^item-(\d+)-/.exec(key)
+        if (match) seen.add(Number(match[1]))
+    }
+    return [...seen].sort((a, b) => a - b)
+}
+
+/**
  * The rows, plus one empty paragraph and one empty image row at the end.
  *
  * How a description item gets added without script, and the same trick the tee
@@ -192,13 +227,39 @@ export function teesFrom(rows: readonly TeeForm[]): CourseTee[] {
  * no image. Nobody has to press "add" before typing.
  */
 export function withBlankRows(rows: readonly DescriptionRow[]): DescriptionRow[] {
-    const next = rows.length + 1
+    /*
+     * Every blank row is dropped before a fresh pair is added, so applying this
+     * twice gives the same answer as applying it once. A page that re-renders
+     * after a rejected save would otherwise grow two more empty rows each time.
+     *
+     * Every one rather than the trailing ones, because a blank row does not
+     * stay at the end. Reordering in the browser moves the real rows past the
+     * blanks, and what comes back is then blank rows in the middle — which the
+     * trailing test walked straight past, leaving them there and adding two
+     * more. They are dropped wherever they are for the same reason
+     * `descriptionFrom` drops them wherever they are: an empty row is not an
+     * item, and where it sits says nothing about it.
+     */
+    const filled = rows.filter((row) => !isBlank(row))
+
+    const next = filled.length + 1
     return [
-        ...rows,
+        ...filled,
         { kind: 'paragraph', content: '', position: String(next), remove: false },
         { kind: 'image', content: '', position: String(next + 1), remove: false },
     ]
 }
+
+/**
+ * Nothing typed and no image: the state a blank row is still in.
+ *
+ * Exported because the page renders a blank row differently — no remove box,
+ * and hidden entirely once the script is adding rows on demand — and "blank"
+ * had better mean the same thing there as it does to `descriptionFrom`, which
+ * is what actually drops these.
+ */
+export const isBlank = (row: DescriptionRow): boolean =>
+    row.content.trim() === '' && !row.url && !row.object
 
 /**
  * The long description the rows describe: removals dropped, the rest in the

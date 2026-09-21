@@ -12,6 +12,8 @@ import {
 	BLANK_TEE,
 	courseFromForm,
 	formOf,
+	isBlank,
+	rowIndices,
 	withBlankRows,
 	type CourseForm,
 	type DescriptionRow,
@@ -67,15 +69,12 @@ if (Astro.request.method === 'POST') {
     const viewer = viewerFromHeaders(Astro.request.headers)
 
     /*
-     * Rows come back by index, and the indices are the ones this page rendered:
-     * every existing entry, then a blank paragraph and a blank image row. A row
-     * whose paragraph is empty and whose image is neither chosen nor inherited
-     * is dropped by `descriptionFrom`, which is what makes the blank rows
-     * ignorable when nobody touches them.
+     * A row whose paragraph is empty and whose image is neither chosen nor
+     * inherited is dropped by `descriptionFrom`, which is what makes the blank
+     * rows at the end ignorable when nobody touches them.
      */
     const rows: DescriptionRow[] = []
-    for (let index = 0; index < submitted.description.length; index += 1) {
-        const existing = submitted.description[index]!
+    for (const index of rowIndices(form)) {
         const upload = form.get(`item-${index}-file`)
         const file = upload instanceof File && upload.size > 0 ? upload : undefined
 
@@ -89,7 +88,10 @@ if (Astro.request.method === 'POST') {
         }
 
         rows.push({
-            kind: existing.kind,
+            // Carried by the row rather than looked up in what was rendered:
+            // a row added in the browser is a clone of a blank one, and the
+            // kind is the only thing about it the server cannot infer.
+            kind: form.get(`item-${index}-kind`) === 'image' ? 'image' : 'paragraph',
             content: String(form.get(`item-${index}-content`) ?? ''),
             url: String(form.get(`item-${index}-url`) ?? '') || undefined,
             object,
@@ -128,12 +130,12 @@ if (Astro.request.method === 'POST') {
     }
 
     // A rejected save keeps what was typed, plus fresh blank rows so a tee or a
-    // description item can still be added on the retry.
+    // description item can still be added on the retry. `withBlankRows` drops
+    // the blank rows it finds before adding its pair, so this does not
+    // accumulate however the rows came back ordered.
     if (submitted.tees.at(-1)?.name.trim() !== '') submitted = { ...submitted, tees: [...submitted.tees, { ...BLANK_TEE }] }
     submitted = { ...submitted, description: withBlankRows(submitted.description) }
 }
-
-if (Astro.request.method !== 'POST') submitted = { ...submitted, description: withBlankRows(submitted.description) }
 
 const rows = submitted.description
 
@@ -223,9 +225,9 @@ const PUBLIC_SITE = 'https://hector.golf'
 					Paragraphs and images, in the order shown. Use <strong>↑</strong> and{' '}
 					<strong>↓</strong> to move one, and tick <strong>remove</strong> to drop it.
 					<br />
-					<strong>To add one:</strong> use an empty row at the end — type the paragraph, or
-					choose an image — then move it where you want it. Nothing is saved until you press
-					Save.
+					<strong>To add one:</strong> press <strong>+ Add paragraph</strong> or{' '}
+					<strong>+ Add image</strong> below, as many times as you like, then move it where
+					you want it. Nothing is saved until you press Save.
 				</span>
 				{!assetBucket && (
 					<>
@@ -240,15 +242,21 @@ const PUBLIC_SITE = 'https://hector.golf'
 			<div class="items" data-reorder>
 				{
 					rows.map((row, index) => (
-						<div class:list={['item', row.kind]} data-row>
+						<div class:list={['item', row.kind, { blank: isBlank(row) }]} data-row>
+							{/*
+							 * The row says what it is. The server reads this rather than
+							 * matching the index against what it rendered, which is what
+							 * lets a row added in the browser be a plain clone.
+							 */}
+							<input type="hidden" name={`item-${index}-kind`} value={row.kind} />
 							<div class="controls">
 								{/*
 								 * Rendered here rather than created by the script, so Astro's
 								 * scoped styles reach them — a button built in JS carries no
 								 * `data-astro-cid-*` and would come out unstyled. They are
-								 * hidden until `lib/reorder.ts` marks the section, so with
-								 * the script off nobody is offered a control that does
-								 * nothing.
+								 * hidden until `lib/description-list.ts` marks the section, so
+								 * with the script off nobody is offered a control that
+								 * does nothing.
 								 */}
 								<button type="button" class="move" data-move="up" aria-label="Move this item up">↑</button>
 								<button type="button" class="move" data-move="down" aria-label="Move this item down">↓</button>
@@ -263,16 +271,21 @@ const PUBLIC_SITE = 'https://hector.golf'
 										class="num"
 									/>
 								</label>
-								{(row.content || row.url || row.object) && (
-									<label class="remove">
-										<input
-											name={`item-${index}-remove`}
-											type="checkbox"
-											disabled={!COURSES_ARE_OWNED}
-										/>
-										<span>Remove</span>
-									</label>
-								)}
+								{/*
+								 * Rendered on every row and hidden on the blank ones by
+								 * CSS, rather than left out of them: a row added in the
+								 * browser is a clone of a blank row, and a checkbox that
+								 * was never in the markup cannot be cloned into one.
+								 * Removing the class is how the clone gets its own.
+								 */}
+								<label class="remove">
+									<input
+										name={`item-${index}-remove`}
+										type="checkbox"
+										disabled={!COURSES_ARE_OWNED}
+									/>
+									<span>Remove</span>
+								</label>
 							</div>
 
 							{row.kind === 'paragraph' ? (
@@ -330,6 +343,22 @@ const PUBLIC_SITE = 'https://hector.golf'
 					))
 				}
 			</div>
+
+			{/*
+			 * The other half of the enhancement: with the script off these are
+			 * hidden and the two blank rows above are how an item is added, one
+			 * per save. With it on, the blank rows are hidden instead and these
+			 * clone them — so either way there is exactly one way in, and the
+			 * script never has to build a row out of nothing.
+			 */}
+			<p class="adders">
+				<button type="button" data-add="paragraph" disabled={!COURSES_ARE_OWNED}>
+					+ Add paragraph
+				</button>
+				<button type="button" data-add="image" disabled={!COURSES_ARE_OWNED}>
+					+ Add image
+				</button>
+			</p>
 		</section>
 
 		<section class="stack">
@@ -514,23 +543,23 @@ const PUBLIC_SITE = 'https://hector.golf'
 
 	/*
 	 * Which of the two explanations applies, and whether the position boxes are
-	 * anything a reader should see. `reorder-enhanced` is added by
-	 * `lib/reorder.ts` once it has taken the ordering over; with the script off
-	 * or not yet run, the page is exactly what the server sent.
+	 * anything a reader should see. `list-enhanced` is added by
+	 * `lib/description-list.ts` once it has taken the list over; with the script
+	 * off or not yet run, the page is exactly what the server sent.
 	 */
 	.when-enhanced {
 		display: none;
 	}
 
-	section.reorder-enhanced .when-plain {
+	section.list-enhanced .when-plain {
 		display: none;
 	}
 
-	section.reorder-enhanced .when-enhanced {
+	section.list-enhanced .when-enhanced {
 		display: inline;
 	}
 
-	section.reorder-enhanced .position {
+	section.list-enhanced .position {
 		/*
 		 * Hidden rather than removed: it is still the field that carries the
 		 * order through the submit, and a disabled or detached input would
@@ -547,13 +576,43 @@ const PUBLIC_SITE = 'https://hector.golf'
 		min-width: 1.7rem;
 	}
 
-	section.reorder-enhanced .move {
+	section.list-enhanced .move {
 		display: inline-block;
 	}
 
 	.move:disabled {
 		opacity: 0.35;
 		cursor: not-allowed;
+	}
+
+	.adders {
+		/*
+		 * Hidden until the script can honour them. A button that adds a row is
+		 * a promise of a row appearing without losing what is typed above it,
+		 * and the server cannot keep that promise without a round trip — so
+		 * with no script the blank rows below are the offer instead.
+		 */
+		display: none;
+		margin: 0;
+		gap: 0.6rem;
+	}
+
+	section.list-enhanced .adders {
+		display: flex;
+	}
+
+	section.list-enhanced .item.blank {
+		/*
+		 * The no-script way in, hidden now that there is a button for it. Still
+		 * rendered because it is what a new row is cloned from, and still
+		 * submitted — empty, so `descriptionFrom` drops it.
+		 */
+		display: none;
+	}
+
+	.item.blank .remove {
+		/* Nothing to remove yet. */
+		display: none;
 	}
 
 	.item figure {
@@ -600,7 +659,7 @@ const PUBLIC_SITE = 'https://hector.golf'
 </style>
 
 <script>
-	import { enhance } from '../../../lib/reorder.ts'
+	import { enhance } from '../../../lib/description-list.ts'
 
 	enhance(document)
 </script>
