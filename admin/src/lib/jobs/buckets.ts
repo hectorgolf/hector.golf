@@ -111,14 +111,33 @@ function halfOf(buckets: ReadonlyArray<ReadonlyArray<{ id: string }>> | undefine
     return index === -1 ? undefined : `bucket ${index + 1}`
 }
 
+/** The seats of both halves, in order, as one comparable string. */
+const seating = (buckets: ReadonlyArray<ReadonlyArray<{ id: string }>>): string =>
+    buckets.map((bucket) => bucket.map((seat) => seat.id).join(' ')).join(' | ')
+
 /**
  * What changed about a split, in terms somebody reading the run log can act on.
  *
- * A player crossing between halves is the thing that matters — it is what the
- * Draft after round one reads. A re-ordering *within* the halves still changes
- * the file, and is reported as one line rather than as twenty: the order inside a
- * bucket is not something anybody plays off, and listing every seat would bury
- * the crossings it is mixed in with.
+ * Three cases, in descending order of how much anybody cares:
+ *
+ * **A player crossed between halves.** The thing that matters, because it is what
+ * the Draft after round one reads. Reported one line per player.
+ *
+ * **The order within a half changed.** Still a real change to the file, reported
+ * as one line rather than as twenty: the order inside a bucket is not something
+ * anybody plays off, and listing every seat would bury a crossing mixed in with
+ * it.
+ *
+ * **Neither, and the file still changed.** Every seat stores the handicap it was
+ * sorted on, so a player moving from 8.7 to 9 rewrites the file without moving
+ * anybody. This case was missing until it happened in production on 2026-09-21
+ * and the run log claimed "a new order within them" about a split whose order was
+ * identical — true of the file having changed, false about what changed, and the
+ * sort of sentence that misleads whoever reads it six months later.
+ *
+ * `bucketChanges` is only called for an event whose rendered file differs from
+ * what is committed, so there is no fourth case: something changed, and these
+ * three are what it can have been.
  */
 export function bucketChanges(
     event: Pick<HectorEvent, 'id' | 'buckets'>,
@@ -133,7 +152,15 @@ export function bucketChanges(
         }
     }
     if (crossings.length > 0) return crossings
-    return [{ subject: event.id, from: 'the same halves', to: 'a new order within them' }]
+
+    const reordered = seating(event.buckets ?? []) !== seating(next)
+    return [
+        {
+            subject: event.id,
+            from: 'the same halves',
+            to: reordered ? 'a new order within them' : 'the same order, with updated handicaps',
+        },
+    ]
 }
 
 /**

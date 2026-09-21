@@ -218,6 +218,27 @@ describe('what a split change is reported as', () => {
         ])
     })
 
+    it('says the handicaps moved when the seating is identical', () => {
+        // What actually happened on 2026-09-21: olli-v 8.7 -> 9 and lasse-k
+        // 14 -> 14.1, neither crossing nor swapping. Every seat stores the
+        // handicap it was sorted on, so the file changed and nobody moved. The
+        // run log used to call that "a new order within them", which was false.
+        const samePeopleNewNumbers = [
+            [
+                { id: 'adam', handicap: 4.1 },
+                { id: 'ben', handicap: 8.2 },
+            ],
+            [
+                { id: 'cec', handicap: 12 },
+                { id: 'dee', handicap: 16 },
+            ],
+        ] as const
+
+        expect(bucketChanges(event, samePeopleNewNumbers)).toEqual([
+            { subject: 'HECTOR2026', from: 'the same halves', to: 'the same order, with updated handicaps' },
+        ])
+    })
+
     it('says so in one line when only the order inside the halves moved', () => {
         // The order within a bucket is not something anybody plays off, and
         // listing every seat would bury the crossings it gets mixed in with.
