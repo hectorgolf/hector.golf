@@ -1,17 +1,21 @@
 {
-  "name": "@hector/schemas",
-  "version": "0.0.0",
-  "private": true,
-  "description": "Zod schemas for Hector's data. The contract between the site, the admin service and the data pipeline.",
-  "type": "module",
-  "exports": {
-    "./*": "./*"
-  },
-  "dependencies": {
-    "luxon": "^3.7.2",
-    "zod": "^4.0.0"
-  },
-  "devDependencies": {
-    "@types/luxon": "^3.7.5"
-  }
+    "name": "@hector/schemas",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Zod schemas for Hector's data. The contract between the site, the admin service and the data pipeline.",
+    "type": "module",
+    "exports": {
+        "./*": "./*"
+    },
+    "dependencies": {
+        "luxon": "^3.7.2",
+        "zod": "^4.0.0"
+    },
+    "devDependencies": {
+        "@types/luxon": "^3.7.5",
+        "vitest": "^4.1.11"
+    },
+    "scripts": {
+        "test": "vitest run"
+    }
 }

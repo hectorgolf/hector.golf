@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { applyTeeEdits, withoutTeeIds, withTeeIds, type Course, type CourseTee } from "@hector/schemas/src/courses.ts";
+import { applyTeeEdits, withoutTeeIds, withTeeIds, type Course, type CourseTee } from "../src/courses.ts";
 
 /**
  * Editing a course's tees, and the scorecard that has to move with them.
