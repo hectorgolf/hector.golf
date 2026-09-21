@@ -3,12 +3,21 @@ import AdminLayout from '../../../layouts/AdminLayout.astro'
 import PageHeader from '@hector/ui/components/PageHeader.astro'
 import Breadcrumb from '@hector/ui/components/Breadcrumb.astro'
 
-import { schema as courseSchema } from '@hector/schemas/src/courses.ts'
+import { schema as courseSchema, uploadedImagePath } from '@hector/schemas/src/courses.ts'
 
 import { viewerFromHeaders } from '../../../lib/identity.ts'
 import { COURSES_ARE_OWNED } from '../../../lib/ownership.ts'
 import { getCourse, saveCourse } from '../../../lib/repository/events.ts'
-import { BLANK_TEE, courseFromForm, formOf, type CourseForm, type TeeForm } from '../../../lib/courses/details.ts'
+import {
+	BLANK_TEE,
+	courseFromForm,
+	formOf,
+	withBlankRows,
+	type CourseForm,
+	type DescriptionRow,
+	type TeeForm,
+} from '../../../lib/courses/details.ts'
+import { ACCEPTED_TYPES, assetBucket, storeUpload } from '../../../lib/courses/uploads.ts'
 
 /*
  * Editing the part of a course a person writes.
@@ -36,6 +45,7 @@ const course = await getCourse(id)
 if (!course) return new Response('Course not found', { status: 404 })
 
 let error: string | undefined
+let uploadError: string | undefined
 let submitted: CourseForm = formOf(course)
 
 const teeRow = (form: FormData, index: number): TeeForm => ({
@@ -56,10 +66,37 @@ if (Astro.request.method === 'POST') {
     const form = await Astro.request.formData()
     const viewer = viewerFromHeaders(Astro.request.headers)
 
-    const paragraphs: Record<number, string> = {}
-    course.description_long.forEach((part, index) => {
-        if (part.type === 'paragraph') paragraphs[index] = String(form.get(`paragraph-${index}`) ?? '')
-    })
+    /*
+     * Rows come back by index, and the indices are the ones this page rendered:
+     * every existing entry, then a blank paragraph and a blank image row. A row
+     * whose paragraph is empty and whose image is neither chosen nor inherited
+     * is dropped by `descriptionFrom`, which is what makes the blank rows
+     * ignorable when nobody touches them.
+     */
+    const rows: DescriptionRow[] = []
+    for (let index = 0; index < submitted.description.length; index += 1) {
+        const existing = submitted.description[index]!
+        const upload = form.get(`item-${index}-file`)
+        const file = upload instanceof File && upload.size > 0 ? upload : undefined
+
+        let object = String(form.get(`item-${index}-object`) ?? '') || undefined
+        if (file) {
+            try {
+                object = await storeUpload(course.id, file)
+            } catch (failure) {
+                uploadError = failure instanceof Error ? failure.message : String(failure)
+            }
+        }
+
+        rows.push({
+            kind: existing.kind,
+            content: String(form.get(`item-${index}-content`) ?? ''),
+            url: String(form.get(`item-${index}-url`) ?? '') || undefined,
+            object,
+            position: String(form.get(`item-${index}-position`) ?? String(index + 1)),
+            remove: form.get(`item-${index}-remove`) !== null,
+        })
+    }
 
     submitted = {
         name: String(form.get('name') ?? ''),
@@ -68,13 +105,18 @@ if (Astro.request.method === 'POST') {
         phone: String(form.get('phone') ?? ''),
         email: String(form.get('email') ?? ''),
         descriptionShort: String(form.get('descriptionShort') ?? ''),
-        paragraphs,
+        description: rows,
         tees: submitted.tees.map((_, index) => teeRow(form, index)),
     }
 
     const parsed = courseSchema.safeParse(courseFromForm(course, submitted))
 
-    if (!parsed.success) {
+    if (uploadError) {
+        // An upload that failed must not take the rest of the save with it
+        // silently: the row it belonged to has no object, so saving now would
+        // drop the image and report success.
+        error = uploadError
+    } else if (!parsed.success) {
         error = parsed.error.issues.map((issue) => `${issue.path.join('.') || 'form'}: ${issue.message}`).join('; ')
     } else {
         try {
@@ -85,18 +127,22 @@ if (Astro.request.method === 'POST') {
         }
     }
 
-    // A rejected save keeps what was typed, plus a fresh blank row so a tee can
-    // still be added on the retry.
+    // A rejected save keeps what was typed, plus fresh blank rows so a tee or a
+    // description item can still be added on the retry.
     if (submitted.tees.at(-1)?.name.trim() !== '') submitted = { ...submitted, tees: [...submitted.tees, { ...BLANK_TEE }] }
+    submitted = { ...submitted, description: withBlankRows(submitted.description) }
 }
 
-const longParts = course.description_long
+if (Astro.request.method !== 'POST') submitted = { ...submitted, description: withBlankRows(submitted.description) }
 
-/** Array index to human paragraph number, so the images do not create gaps. */
-const paragraphNumber = new Map<number, number>()
-longParts.forEach((part, index) => {
-	if (part.type === 'paragraph') paragraphNumber.set(index, paragraphNumber.size + 1)
-})
+const rows = submitted.description
+
+/**
+ * Where a committed image can be looked at. The admin serves its own assets and
+ * none of the site's, so a preview of an already-published image has to come
+ * from the site itself.
+ */
+const PUBLIC_SITE = 'https://hector.golf'
 ---
 
 <AdminLayout title={`Edit ${course.name}`}>
@@ -122,7 +168,13 @@ longParts.forEach((part, index) => {
 		)
 	}
 
-	<form method="POST" class="stack">
+	{/*
+	 * `multipart/form-data` because a description item can carry an image. A
+	 * urlencoded form sends a file input's *name* and nothing else, so the file
+	 * would silently never arrive — the save would succeed and the picture would
+	 * not be there.
+	 */}
+	<form method="POST" enctype="multipart/form-data" class="stack">
 		<section class="stack">
 			<h2>Identity</h2>
 			<div class="field">
@@ -157,35 +209,103 @@ longParts.forEach((part, index) => {
 			</div>
 
 			<p class="hint">
-				The long description is prose and images in a fixed order. The images are shown where they
-				sit and are not editable here; a paragraph can be rewritten but one cannot be added or
-				removed, because that would mean deciding where the images go.
+				Paragraphs and images, in the order the <strong>position</strong> column asks for. Type a
+				number to move a row; ties keep the order they are in, so renumbering two rows leaves the
+				rest alone. Tick <strong>remove</strong> to drop one. The two empty rows at the end are how
+				you add a paragraph or an image.
+				{!assetBucket && (
+					<>
+						{' '}
+						<strong>Uploading is unavailable here:</strong> this service has no asset bucket
+						configured, which is normal on a laptop. Existing images still show and can be
+						reordered or removed.
+					</>
+				)}
 			</p>
 
-			{
-				longParts.map((part, index) =>
-					part.type === 'paragraph' ? (
-						<div class="field">
-							{/*
-							 * Numbered as paragraphs rather than by array index, which is
-							 * what the field name uses: the images occupy indices too, so
-							 * labelling by index skips numbers and reads as a bug.
-							 */}
-							<label for={`paragraph-${index}`}>Paragraph {paragraphNumber.get(index)}</label>
-							{/*
-							 * The value sits flush against the tags. A textarea renders its
-							 * content literally, so indenting it here would put that
-							 * indentation in the box and in front of whatever gets typed.
-							 */}
-							<textarea id={`paragraph-${index}`} name={`paragraph-${index}`} rows="4" disabled={!COURSES_ARE_OWNED}>{submitted.paragraphs[index] ?? ''}</textarea>
+			<div class="items">
+				{
+					rows.map((row, index) => (
+						<div class:list={['item', row.kind]}>
+							<div class="controls">
+								<label class="position">
+									<span>Position</span>
+									<input
+										name={`item-${index}-position`}
+										type="text"
+										inputmode="decimal"
+										value={row.position}
+										disabled={!COURSES_ARE_OWNED}
+										class="num"
+									/>
+								</label>
+								{(row.content || row.url || row.object) && (
+									<label class="remove">
+										<input
+											name={`item-${index}-remove`}
+											type="checkbox"
+											disabled={!COURSES_ARE_OWNED}
+										/>
+										<span>Remove</span>
+									</label>
+								)}
+							</div>
+
+							{row.kind === 'paragraph' ? (
+								<textarea
+									name={`item-${index}-content`}
+									rows="4"
+									disabled={!COURSES_ARE_OWNED}
+									placeholder={row.content ? undefined : 'Add a paragraph'}
+								>{row.content}</textarea>
+							) : (
+								<div class="image">
+									<input type="hidden" name={`item-${index}-url`} value={row.url ?? ''} />
+									<input type="hidden" name={`item-${index}-object`} value={row.object ?? ''} />
+
+									{/*
+									 * Two sources, because there are two kinds of image. An
+									 * uploaded one is in the bucket and nowhere public, so it
+									 * comes back through this service; a committed one is
+									 * already on the site, and the admin does not serve the
+									 * site's files. Using `row.url` directly here renders a
+									 * broken square, which is what the first cut did.
+									 */}
+									{row.object ? (
+										<figure>
+											<img src={`/api/assets/${row.object}`} alt="" loading="lazy" />
+											<figcaption>
+												Uploaded, not yet published. Becomes{' '}
+												<code>{uploadedImagePath(course.id, row.object)}</code> at the next
+												export.
+											</figcaption>
+										</figure>
+									) : row.url ? (
+										<figure>
+											<img src={`${PUBLIC_SITE}${row.url}`} alt="" loading="lazy" />
+											<figcaption>
+												Already published · <code>{row.url}</code>
+											</figcaption>
+										</figure>
+									) : (
+										<p class="asset empty">No image yet. Choose one below.</p>
+									)}
+
+									<label class="file">
+										<span>{row.url || row.object ? 'Replace with' : 'Upload an image'}</span>
+										<input
+											name={`item-${index}-file`}
+											type="file"
+											accept={ACCEPTED_TYPES}
+											disabled={!COURSES_ARE_OWNED || !assetBucket}
+										/>
+									</label>
+								</div>
+							)}
 						</div>
-					) : (
-						<p class="placeholder">
-							Image <code>{part.url ?? '—'}</code>
-						</p>
-					)
-				)
-			}
+					))
+				}
+			</div>
 		</section>
 
 		<section class="stack">
@@ -328,6 +448,74 @@ longParts.forEach((part, index) => {
 	.tees .num {
 		width: 4rem;
 		text-align: right;
+	}
+
+	.items {
+		display: flex;
+		flex-direction: column;
+		gap: 1.1rem;
+		max-width: 46rem;
+	}
+
+	.item {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		padding-left: 0.8rem;
+		border-left: 2px solid var(--line);
+	}
+
+	.item.image {
+		border-left-color: var(--line-strong);
+	}
+
+	.controls {
+		display: flex;
+		align-items: center;
+		gap: 1.2rem;
+		font-size: 0.78rem;
+		color: var(--text-dim);
+	}
+
+	.controls label {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	.controls .num {
+		width: 3.5rem;
+		text-align: right;
+	}
+
+	.item figure {
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.3rem;
+	}
+
+	.item img {
+		max-width: 22rem;
+		max-height: 12rem;
+		width: auto;
+		border: 1px solid var(--line);
+		border-radius: 4px;
+	}
+
+	.item figcaption,
+	.item .asset {
+		margin: 0;
+		font-size: 0.78rem;
+		color: var(--text-dim);
+	}
+
+	.item .file {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.78rem;
+		color: var(--text-dim);
 	}
 
 	.tees .colour {

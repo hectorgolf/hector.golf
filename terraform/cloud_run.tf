@@ -112,6 +112,16 @@ resource "google_cloud_run_v2_service" "admin" {
         value = "${google_secret_manager_secret.functions["astrosite-api-key"].name}/versions/latest"
       }
 
+      # Where an uploaded file goes, whatever it belongs to — the prefix inside
+      # the bucket says that. A name rather than a secret: the bucket is not
+      # readable without the bindings in storage.tf, and a service that does not
+      # know where to put a file should say so on the page rather than fail at
+      # the first upload.
+      env {
+        name  = "ASSET_BUCKET"
+        value = google_storage_bucket.assets.name
+      }
+
       resources {
         limits = {
           cpu    = "1"

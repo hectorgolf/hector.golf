@@ -33,6 +33,10 @@ locals {
     "run.googleapis.com",
     "secretmanager.googleapis.com",
     "serviceusage.googleapis.com",
+    # The bucket in storage.tf. Storage is usually on already in a project that
+    # has ever run Terraform — its own state lives in one — but "usually on"
+    # is how a fresh project fails at `terraform apply` instead of at `enable`.
+    "storage.googleapis.com",
     # The leaderboard scrape reads two spreadsheets. This is the one API here
     # that is not enabled for the sake of a resource in this directory: nothing
     # in terraform/ calls Sheets, and nothing here can, because a spreadsheet is

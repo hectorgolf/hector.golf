@@ -144,7 +144,14 @@ jobs:
           # `astrosite/src/data`: the scrape's own outputs live in that tree too,
           # and a wider pattern here would commit a half-finished scrape under an
           # export's commit message.
-          git add -A astrosite/src/data/events/matchplay astrosite/src/data/players astrosite/src/data/courses
+          # `astrosite/public/images/courses` is the second kind of output this
+          # export has: an uploaded course image is downloaded from the asset
+          # bucket and written there, and one no course references any more is
+          # deleted. Only the `uploaded/` directory under each course is ever
+          # touched — everything else under images/courses belongs to whoever
+          # put it there, 18 unreferenced La Finca hole diagrams included.
+          git add -A astrosite/src/data/events/matchplay astrosite/src/data/players astrosite/src/data/courses \
+            astrosite/public/images/courses
 
           if git diff --cached --quiet; then
             echo "Nothing to publish: the committed files already match the store."

@@ -64,6 +64,27 @@ locals {
     # a secret *version*, so the token stays out of state.
     "roles/secretmanager.admin",
     "roles/cloudscheduler.admin", # the jobs in scheduler.tf
+    # The assets bucket in storage.tf and the two bindings on it. Project-wide because
+    # creating a bucket is a project-level act; no narrower predefined role can
+    # make one, and a custom role would need iam.roleAdmin here to create it,
+    # which is a larger grant than the one it would avoid.
+    #
+    # This *is* the shape of grant the warning further down tells you not to
+    # make, and it needs the real reason rather than a comfortable one. The
+    # comfortable one — "it already reads that bucket on every plan" — is wrong:
+    # the bootstrap gives this identity roles/storage.objectAdmin on
+    # hector-golf-tfstate, which is object access. storage.admin would newly let
+    # it delete that bucket.
+    #
+    # The real reason is two lines up: this identity holds
+    # resourcemanager.projectIamAdmin, so it can grant itself any role in the
+    # project whenever it likes. Naming storage.admin here adds convenience
+    # rather than reach, which is the same trade secretmanager.admin above makes
+    # and the same test it has to pass. The warning further down is about an
+    # *application* identity, which has no such escape hatch and must therefore
+    # never be given a project-wide storage role — and neither of the two in
+    # storage.tf is.
+    "roles/storage.admin",
   ]
 }
 
