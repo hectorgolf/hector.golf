@@ -1,4 +1,4 @@
-import { contrast, parseHex } from './palette'
+import { contrast, parseHex } from './colour.ts'
 
 /**
  * The ring around a tee's dot, worked out rather than stored.
@@ -39,6 +39,9 @@ import { contrast, parseHex } from './palette'
  * answer has to be a colour by the time it reaches the `stroke` attribute. It
  * is checked against the stylesheet by `tee-dots.test.ts`, so the two cannot
  * drift apart silently.
+ *
+ * The same colour in both apps, because both import `hector.css` — the admin's
+ * scorecard sits on the same `--surface` the site's does.
  */
 export const DOT_GROUND = '#131215'
 

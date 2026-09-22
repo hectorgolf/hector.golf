@@ -10,6 +10,7 @@ import { COURSES_ARE_OWNED } from '../../lib/ownership.ts'
 import { getCourse } from '../../lib/repository/events.ts'
 import { previewSrc } from '../../lib/courses/preview.ts'
 import { telHref, telText } from '../../lib/contact.ts'
+import { ringFor } from '@hector/ui/code/tee-dots.ts'
 
 const { id } = Astro.params
 if (!id) return Astro.redirect('/courses')
@@ -172,7 +173,20 @@ const description = course.description_long.filter((part) =>
 								<th>Par</th>
 								<th>Index</th>
 								{tees.map((tee) => (
-									<th class="num">{tee.name}</th>
+									<th class="num">
+										{/*
+										 * The same dot the site draws, by the same rule and
+										 * against the same `--surface` — both apps load
+										 * `hector.css`. A column of numbers headed by a
+										 * name tells you which tee only if you already know
+										 * the names; the colour is how the card is read in
+										 * the clubhouse.
+										 */}
+										<svg class="tee-dot" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+											<circle cx="6" cy="6" r="4.5" style={`fill:${tee.color};stroke:${ringFor(tee.color)};`} />
+										</svg>
+										<span>{tee.name}</span>
+									</th>
 								))}
 							</tr>
 						</thead>
@@ -213,6 +227,18 @@ const description = course.description_long.filter((part) =>
 </AdminLayout>
 
 <style>
+	/*
+	 * Beside the name rather than instead of it: two tees can share a colour
+	 * across courses, and a dot on its own is only readable by somebody who
+	 * already knows which. The ring is what keeps a black tee from being a
+	 * hole in the page — see `@hector/ui/code/tee-dots.ts`.
+	 */
+	.tee-dot {
+		vertical-align: -0.1em;
+		margin-right: 0.35rem;
+		stroke-width: 1;
+	}
+
 	.prose img {
 		display: block;
 		max-width: 100%;
