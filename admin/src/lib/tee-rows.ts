@@ -41,15 +41,55 @@ const REMOVED = 'removed'
 const rowsIn = (body: Element): HTMLTableRowElement[] =>
     [...body.querySelectorAll<HTMLTableRowElement>('tr[data-tee]')]
 
-function add(body: Element, template: HTMLTableRowElement): void {
+function add(body: Element, template: HTMLTableRowElement, blankColumn: number): void {
     const row = template.cloneNode(true) as HTMLTableRowElement
     row.classList.remove(BLANK)
-    reindex(row, PREFIX, nextIndex(body, PREFIX))
+    const index = nextIndex(body, PREFIX)
+    reindex(row, PREFIX, index)
 
     // Before the blank row rather than after it, so the row somebody just asked
     // for is where they are looking and the hidden one stays last.
     body.insertBefore(row, rowsIn(body).find((candidate) => candidate.classList.contains(BLANK)) ?? null)
+    addLengthColumn(row.ownerDocument, blankColumn, index)
     row.querySelector<HTMLInputElement>(`[name$="-name"]`)?.focus()
+}
+
+/**
+ * Gives a newly added tee a column in the scorecard, so it can be measured in
+ * the same save it is created in.
+ *
+ * Without this, adding a tee with the script running is the one way of adding
+ * one that cannot record a length: the page renders a column per tee row it
+ * knew about, and the empty row those would have used is hidden the moment this
+ * enhancement takes over. The no-script path has never had the problem — you
+ * type in the empty row and its column is right there.
+ *
+ * The cell is cloned from that same hidden column rather than built, for the
+ * reason everything here is cloned: an element made in script carries none of
+ * Astro's scoping attributes. Only the tee half of the name is rewritten —
+ * `hole-3-len-2` keeps its hole and changes its tee — which is why this does
+ * not use the shared `reindex`.
+ */
+function addLengthColumn(document: Document, from: number, to: number): void {
+    const holes = document.querySelector('[data-holes]')
+    if (!holes) return
+
+    for (const row of holes.querySelectorAll('tr')) {
+        const source = row.querySelector<HTMLInputElement>(`[name$="-len-${from}"]`)?.closest('td')
+        if (!source) continue
+
+        const cell = source.cloneNode(true) as HTMLTableCellElement
+        for (const field of cell.querySelectorAll<HTMLInputElement>('[name]')) {
+            field.setAttribute('name', field.getAttribute('name')!.replace(/-len-\d+$/, `-len-${to}`))
+            field.value = ''
+        }
+        row.append(cell)
+    }
+
+    // And a heading for it, cloned from the one the hidden column had.
+    const headings = holes.closest('table')?.querySelectorAll('thead th')
+    const lastHeading = headings?.[headings.length - 1]
+    if (lastHeading) lastHeading.parentElement?.append(lastHeading.cloneNode(true))
 }
 
 function remove(row: HTMLTableRowElement): void {
@@ -81,9 +121,13 @@ export function enhance(root: ParentNode = document): void {
     if (!template) return
     const blank = template.cloneNode(true) as HTMLTableRowElement
 
+    // The column the hidden empty row would have used, which is the one a new
+    // tee's column is copied from.
+    const blankColumn = rowsIn(body).findIndex((row) => row.classList.contains(BLANK))
+
     section.addEventListener('click', (event) => {
         const target = event.target as Element | null
-        if (target?.closest('[data-add-tee]')) return add(body, blank)
+        if (target?.closest('[data-add-tee]')) return add(body, blank, blankColumn)
 
         const row = target?.closest<HTMLTableRowElement>('tr[data-tee]')
         if (!row) return
