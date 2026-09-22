@@ -399,8 +399,15 @@ const rows = submitted.description
 								 * and hidden rather than built, so Astro's scoped styles
 								 * reach it — and only one of the two is ever visible.
 								 */}
-								<button type="button" class="remove-row danger" data-remove disabled={!COURSES_ARE_OWNED}>
-									Remove
+								<button
+									type="button"
+									class="remove-row danger"
+									data-remove
+									disabled={!COURSES_ARE_OWNED}
+									aria-label="Remove this item"
+									title="Remove this item"
+								>
+									<span aria-hidden="true">×</span>
 								</button>
 							</div>
 
@@ -723,8 +730,14 @@ const rows = submitted.description
 								 * Astro's scoping attributes and comes out unstyled.
 								 */}
 								<td class="actions">
-									<button type="button" class="remove-tee danger" data-remove>
-										Remove
+									<button
+										type="button"
+										class="remove-tee danger"
+										data-remove
+										aria-label="Remove this tee"
+										title="Remove this tee"
+									>
+										<span aria-hidden="true">×</span>
 									</button>
 									<button type="button" class="undo-tee secondary" data-undo>
 										Undo
@@ -895,13 +908,10 @@ const rows = submitted.description
 	 */
 	.remove-row {
 		display: none;
-		padding: 0.05rem 0.5rem;
-		font-size: 0.78rem;
-		line-height: 1.5;
 	}
 
 	section.list-enhanced .remove-row {
-		display: inline-block;
+		display: inline-flex;
 	}
 
 	section.list-enhanced .item .remove {
@@ -1017,7 +1027,10 @@ const rows = submitted.description
 		display: none;
 	}
 
-	section.tees-enhanced .remove-tee,
+	section.tees-enhanced .remove-tee {
+		display: inline-flex;
+	}
+
 	section.tees-enhanced .tee-adders {
 		display: inline-block;
 	}
@@ -1042,12 +1055,35 @@ const rows = submitted.description
 		display: none;
 	}
 
-	.remove-tee,
 	.undo-tee {
 		padding: 0.05rem 0.5rem;
 		font-size: 0.78rem;
 		line-height: 1.5;
 		white-space: nowrap;
+	}
+
+	/*
+	 * A cross rather than the word, in both lists.
+	 *
+	 * The word costs a column of width in a table that already scrolls
+	 * sideways, and it is the only control here whose meaning a symbol carries
+	 * on its own — ↑ and ↓ are already glyphs beside it, and Undo is a word
+	 * because nothing draws "put it back".
+	 *
+	 * The name is on `aria-label` rather than in the button, so a screen reader
+	 * still hears "Remove this tee" and not "times".
+	 */
+	.remove-row,
+	.remove-tee {
+		width: 1.6rem;
+		height: 1.6rem;
+		padding: 0;
+		font-size: 1rem;
+		line-height: 1;
+		/* Centres the glyph, which sits high in its own box. */
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 	}
 
 	/*
