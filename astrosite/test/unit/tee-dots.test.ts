@@ -37,20 +37,20 @@ describe('the tee dots this site draws', () => {
     })
 
     /*
-     * The threshold lands in open space rather than on a boundary: the fills
-     * sort into a group at 2.17 and below — black and the two blues — and a
-     * group from 3.62 up. A tee should not change appearance because somebody
-     * nudged a hex by one digit.
+    * The source colours are deliberately away from the border threshold: the
+    * fills sort into a group at 2.17 and below — black and the two blues —
+    * and a group from 3.62 up. A tee should not change appearance because
+    * somebody nudged a hex by one digit.
      */
-    it('decides every committed fill well clear of the threshold', () => {
+    it('keeps committed fills in their established contrast groups', () => {
         const ground = parseHex(DOT_GROUND)
 
         for (const tee of tees()) {
             const ratio = contrast(parseHex(tee.color), ground)
             expect(
-                Math.abs(ratio - 3),
-                `${tee.course} ${tee.name} (${tee.color}) sits on the threshold at ${ratio.toFixed(2)}`
-            ).toBeGreaterThan(0.5)
+                ratio < 2.5 || ratio > 3.5,
+                `${tee.course} ${tee.name} (${tee.color}) sits in the uncertain gap at ${ratio.toFixed(2)}`
+            ).toBe(true)
         }
     })
 

@@ -60,10 +60,10 @@ export const DOT_STROKE_WIDTH = 1;
  *
  * It lands in real space here rather than on a boundary: across the committed
  * courses the fills sort into a group at 2.17 and below — black, and the two
- * blues — and a group from 3.62 up. Nothing sits near the line, so a tee does
- * not change appearance because somebody nudged a hex by a digit.
+ * blues — and a group from 3.62 up. The border asks for the stronger floor of
+ * 4, so low-contrast fills use the colour search below.
  */
-const ENOUGH = 3;
+const ENOUGH = 4;
 
 /** White, and the only ring colour that is not simply the fill. */
 const WHITE = "#ffffff";

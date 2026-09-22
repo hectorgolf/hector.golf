@@ -13,9 +13,9 @@ import { DOT_GROUND, DOT_STROKE_WIDTH, ringFor } from "../code/tee-dots.ts";
  */
 describe("the ring around a tee dot", () => {
     it("uses a visible ring when the fill does not separate from the page", () => {
-        expect(ringFor("#000000")).toBe("#626262");
-        expect(ringFor("#0000ff")).toBe("#4d4dff");
-        expect(ringFor("#0000dd")).toBe("#4d4de0");
+        expect(ringFor("#000000")).toBe("#757575");
+        expect(ringFor("#0000ff")).toBe("#6a6aff");
+        expect(ringFor("#0000dd")).toBe("#6a6ae3");
     });
 
     it("is the fill itself when it does", () => {
@@ -23,7 +23,7 @@ describe("the ring around a tee dot", () => {
         expect(ringFor("#ffff00")).toBe("#ffff00");
         expect(ringFor("#ff0000")).toBe("#ff0000");
         expect(ringFor("#ffa500")).toBe("#ffa500");
-        expect(ringFor("#0433ff")).toBe("#4e5bff");
+        expect(ringFor("#0433ff")).toBe("#6a73ff");
     });
 
     /*
@@ -47,12 +47,12 @@ describe("the ring around a tee dot", () => {
 
     it("reads a three-digit hex the way CSS does", () => {
         expect(ringFor("#fff")).toBe("#fff");
-        expect(ringFor("#000")).toBe("#626262");
+        expect(ringFor("#000")).toBe("#757575");
     });
 
     /** Against a light ground the answers turn over, which is the rule working. */
     it("answers for whatever ground it is given", () => {
-        expect(ringFor("#ffffff", "#ffffff")).toBe("#929292");
+        expect(ringFor("#ffffff", "#ffffff")).toBe("#7e7e7e");
         expect(ringFor("#000000", "#ffffff")).toBe("#000000");
     });
 
