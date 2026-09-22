@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 
 import { describe, expect, it } from 'vitest'
 
-import { schema as courseSchema, withTeeIds, type Course } from '@hector/schemas/src/courses.ts'
+import { schema as courseSchema, withTeeIds, type Course, type CourseTee } from '@hector/schemas/src/courses.ts'
 
 import {
     BLANK_TEE,
@@ -383,14 +383,99 @@ describe('a save that touches nothing keeps every tee exactly', () => {
         'villamartin',
     ]
 
+    /*
+     * Compared against the stored tees plus the one thing a save is meant to
+     * add — rather than against a copy with that field excluded, which would
+     * stop this noticing if the field went missing instead.
+     */
+    const played = (tee: CourseTee) => tee.rating.ladies !== null || tee.slope.ladies !== null
+    const asSaved = (tees: CourseTee[] = []): CourseTee[] =>
+        tees.map((tee) => ({
+            ...tee,
+            ...(tee.par_ladies === undefined && played(tee) ? { par_ladies: tee.par } : {}),
+        }))
+
     it.each(ids)('reproduces every tee of %s', (id) => {
         const course = real(id)
         const after = courseFromForm(course, formOf(course))
 
-        expect(after.course?.tees).toEqual(course.course?.tees)
+        expect(after.course?.tees).toEqual(asSaved(course.course?.tees))
     })
 
 
+})
+
+/*
+ * A women's par, for the tees that are played by women.
+ *
+ * Fifty-one of the seventy-eight tees carry a ladies course rating or slope.
+ * Forty-eight of those say nothing about par, and the three that do — Sand
+ * Valley's — say 73 against a men's 72. So the usual case is that the two agree
+ * and nobody wrote it down, and the interesting case is already written down.
+ *
+ * Nothing on the site reads `par_ladies` today. What this buys is a field that
+ * means one thing: absent because the tee is not played by women, rather than
+ * absent for that reason *or* because somebody did not fill it in.
+ */
+describe("a tee's women's par", () => {
+    const teeNamed = (course: Course, name: string) => course.course!.tees.find((tee) => tee.name === name)
+
+    it('is offered as the men\'s par when the tee is played by women', () => {
+        const course = real('konopiste-radecky')
+        const yellow = teeNamed(course, 'Yellow')!
+        expect(yellow.par_ladies).toBeUndefined()
+        expect(yellow.slope.ladies).not.toBeNull()
+
+        expect(formOf(course).tees.find((tee) => tee.name === 'Yellow')?.parLadies).toBe(String(yellow.par))
+    })
+
+    it('stays empty for a tee that is not', () => {
+        const course = real('konopiste-radecky')
+        const black = teeNamed(course, 'Black')!
+        expect(black.rating.ladies).toBeNull()
+        expect(black.slope.ladies).toBeNull()
+
+        expect(formOf(course).tees.find((tee) => tee.name === 'Black')?.parLadies).toBe('')
+    })
+
+    /** A rating on its own is enough; so is a slope. Half a measurement is still a measurement. */
+    it('counts a ladies rating and a ladies slope separately', () => {
+        const course = real('konopiste-radecky')
+        const form = formOf(course)
+        const row = form.tees.find((tee) => tee.name === 'Black')!
+        expect(row.parLadies).toBe('')
+
+        row.ratingLadies = '71.2'
+        const after = courseFromForm(course, form)
+
+        expect(teeNamed(after, 'Black')?.rating.ladies).toBe(71.2)
+    })
+
+    /*
+     * The four that disagree with the men's par keep saying so — including
+     * Cherry, which states a women's par of 73 and carries no ladies rating or
+     * slope at all. Whatever that means, it is somebody's typing and not this
+     * form's business to tidy away.
+     */
+    it('leaves a par somebody wrote down alone', () => {
+        const course = real('sandvalley')
+        const stated = course.course!.tees.filter((tee) => tee.par_ladies !== undefined)
+        expect(stated.length).toBe(4)
+
+        const after = courseFromForm(course, formOf(course))
+
+        for (const tee of stated) {
+            expect(teeNamed(after, tee.name)?.par_ladies).toBe(tee.par_ladies)
+            expect(teeNamed(after, tee.name)?.par_ladies).not.toBe(tee.par)
+        }
+    })
+
+    it('is saved rather than shown and forgotten', () => {
+        const course = real('konopiste-radecky')
+        const after = courseFromForm(course, formOf(course))
+
+        expect(teeNamed(after, 'Yellow')?.par_ladies).toBe(teeNamed(course, 'Yellow')?.par)
+    })
 })
 
 describe('reading the tee rows', () => {
