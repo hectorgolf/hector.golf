@@ -6,13 +6,14 @@ import { holeRows, scorecardFrom, type HoleRow } from './scorecard.ts'
 /**
  * What a person writes on a golf course, read off a submitted form.
  *
- * Four groups: identity, contact, the prose, and the tees. What is *not* here is
- * the larger half of the record, and each omission is deliberate rather than
- * unfinished:
+ * Identity, contact, the prose, the datasources, the tees and the scorecard. The
+ * scorecard arrived last and was argued against here for a while — around 130
+ * numbers off an official card, a transcription exercise with no proofreader —
+ * and the argument was answered rather than overruled: one grid rather than two,
+ * because sixteen of the seventeen courses have no women's card at all.
  *
- * - **The scorecard.** Eighteen holes of par, stroke index and a length per tee
- *   is around 130 numbers that come off an official card, not out of somebody's
- *   head. A form for them would be a transcription exercise with no proofreader.
+ * What is still *not* here is deliberate rather than unfinished:
+ *
  * - **Hole descriptions.** Prose, eighteen at a time and in two languages for
  *   the Tahko courses. Worth an editor; worth its own one.
  * - **Images.** Paths. Nothing has asked.

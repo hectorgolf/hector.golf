@@ -163,9 +163,9 @@ Firestore is where the admin's data is authored, and the matching files under
 `astrosite/src/data/` are **generated from it** by `admin/scripts/export.ts`. The public site builds
 from those generated files exactly as it always has.
 
-**The export writes only what the admin can author.** Since 2026-09-21 that is matchplay events and
-players. Firestore holds the other event formats too, but as a mirror the admin reads — refreshed by
-`npm run seed` — rather than as their source:
+**The export writes only what the admin can author.** Since 2026-09-21 that is matchplay events,
+players and courses. Firestore holds the other event formats too, but as a mirror the admin reads —
+refreshed by `npm run seed` — rather than as their source:
 
 | Data | Authored by | In Firestore | Exported |
 | --- | --- | --- | --- |
@@ -174,16 +174,23 @@ players. Firestore holds the other event formats too, but as a mirror the admin 
 | `events/finnkampen/` | by hand | mirror, for reading | no |
 | `players/` | the admin UI, and the admin service's `biographies` and `club-memberships` jobs | **source of truth** | yes |
 | handicap observations | the admin service's job | **source of truth** | no — backed up to `data/handicaps/observations.ndjson`, and read by the site through the API |
-| `courses/` | by hand today; the admin once `COURSES_ARE_OWNED` | mirror, for reading | no — see [`plans/courses-in-the-admin.md`](../plans/courses-in-the-admin.md) |
+| `courses/` | the admin UI | **source of truth** | yes |
 
-**The admin renders the mirror, read-only.** Since 2026-09-20 there are pages for Hector events and
-players — a list and a record page each — alongside the matchplay editor. They show what Firestore
-holds and offer no way to change it, and each one carries a notice saying where
-the record is edited instead and which scheduled writers would have to move before the admin could
-own it. That notice is derived rather than written per page: `admin/src/lib/mirror.ts` asks
-`OWNED_FORMATS`, so the change that moves a format into the owned column is the change that removes
-its notice. The read-only fields are laid out as the form fields that will replace them, which is
-the other half of the same idea — see `admin/src/components/ReadOnlyField.astro`.
+**The admin renders the mirror, read-only.** What is left of it is the mirrored event formats, of
+which only Hector has pages: a list and a record page that show what Firestore holds and offer no
+way to change it, each carrying a notice saying where the record is edited instead and which
+scheduled writers would have to move before the admin could own it. That notice is derived rather
+than written per page: `admin/src/lib/mirror.ts` asks `OWNED_FORMATS`, so the change that moves a
+format into the owned column is the change that removes its notice. The read-only fields are laid
+out as the form fields that will replace them, which is the other half of the same idea — see
+`admin/src/components/ReadOnlyField.astro`.
+
+**Derived is the point, and the two collections outside `OWNED_FORMATS` did not get it for free.**
+Players and courses have no entry in that set to be absent from, so each had a mirror constant its
+pages named directly — and a constant a page names itself is a notice nothing can withdraw. The
+courses pages went on saying a course could not be edited here for a day after the editor shipped,
+and the dashboard called both sections `Read-only` for as long. Both constants are gone now and
+`admin/src/lib/sections.ts` reads the ownership flags rather than restating them.
 
 Exporting a mirror would publish stale data over a fresh scrape and revert it silently — and because
 the scrape commits its own work, the loss would look like the losing side of a merge nobody
@@ -218,18 +225,18 @@ now the output. Three things follow:
   morning of a Draft is worse than not publishing. Git also keeps a reviewable history of every
   change the admin made, so the fix for a bad edit is a revert.
 
-`astrosite/src/data/courses/` joined the mirror on 2026-09-21: `npm run seed` writes the seventeen
-courses into Firestore and the admin renders them, while the committed files stay the source of
-truth. It is the one mirror with no scheduled writer behind it — nothing writes those files on a
-schedule — so what stood between it and being authored here was an editor rather than a migration,
-and that editor was built the same day. `COURSES_ARE_OWNED` is the one edit left, and both the seed
-and the export read it. [`plans/courses-in-the-admin.md`](../plans/courses-in-the-admin.md) is that
-plan.
+`astrosite/src/data/courses/` joined the mirror on 2026-09-21 and left it the same day: `npm run
+seed` imported the seventeen courses, the admin got pages and then an editor, and `COURSES_ARE_OWNED`
+flipped once the acceptance test came back clean against production. It is the one collection that
+made the whole trip in a day, because it is the one with no scheduled writer behind it — nothing
+writes those files on a schedule, so what stood between it and being authored here was an editor
+rather than a migration. [`plans/courses-in-the-admin.md`](../plans/courses-in-the-admin.md) is that
+plan, executed.
 
-The editor covers identity, contact, the prose and the tees; the scorecard, the hole descriptions,
-the images and the datasources are carried through a save untouched rather than being rebuilt from
-the form, because Zod strips what it is not told about and an editor that rebuilt the record would
-delete them silently.
+The editor covers identity, contact, the prose, the datasources, the tees and — since 2026-09-22 —
+the scorecard; the hole descriptions and the images are carried through a save untouched rather than
+being rebuilt from the form, because Zod strips what it is not told about and an editor that rebuilt
+the record would delete them silently.
 
 `handicaps.json` used to be described here the same way; it has since moved to Firestore and
 is the one dataset that has, so the row above covers it instead. The file itself is still committed

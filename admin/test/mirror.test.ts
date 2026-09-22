@@ -52,15 +52,22 @@ describe('why a record is read-only', () => {
     })
 
     /**
-     * Players had a `PLAYER_MIRROR` here until 2026-09-21, because they have no
-     * `OWNED_FORMATS` entry to be absent from — the property above could not
-     * derive their answer, so it was written down. It went with the flip, and
-     * the check that it went is the one below: the module exports mirrors for
-     * event formats and nothing else, so a player page cannot render a notice
-     * apologising for a limitation that has been lifted.
+     * Players had a `PLAYER_MIRROR` here until 2026-09-21 and courses a
+     * `COURSE_MIRROR` until 2026-09-22, because neither has an `OWNED_FORMATS`
+     * entry to be absent from — the property above could not derive their
+     * answer, so it was written down. Both went with their flip, and the check
+     * that they went is the one below: the module exports mirrors for event
+     * formats and nothing else, so no page can render a notice apologising for
+     * a limitation that has been lifted.
+     *
+     * Which is what the course pages did for a day. A constant a page names
+     * itself is a mirror nothing can withdraw, so the guard is the export list
+     * rather than the pages: a page cannot render what the module does not hand
+     * out.
      */
-    it('has nothing left to say about players, who are authored here now', async () => {
+    it('has nothing left to say about players or courses, which are authored here now', async () => {
         const mirror = await import('../src/lib/mirror.ts')
         expect(Object.keys(mirror)).not.toContain('PLAYER_MIRROR')
+        expect(Object.keys(mirror)).not.toContain('COURSE_MIRROR')
     })
 })
