@@ -53,7 +53,6 @@
       {
         "name": "Black",
         "color": "#000000",
-        "stroke": "#ffffff",
         "length": 6819,
         "par": 72,
         "rating": {
@@ -68,7 +67,6 @@
       {
         "name": "White",
         "color": "#ffffff",
-        "stroke": "#000000",
         "length": 6465,
         "par": 72,
         "rating": {
@@ -83,7 +81,6 @@
       {
         "name": "Yellow",
         "color": "#ffff00",
-        "stroke": "#000000",
         "length": 6130,
         "par": 72,
         "rating": {
@@ -98,7 +95,6 @@
       {
         "name": "Blue",
         "color": "#0000ff",
-        "stroke": "#000000",
         "length": 5821,
         "par": 72,
         "rating": {
@@ -113,7 +109,6 @@
       {
         "name": "Red",
         "color": "#ff0000",
-        "stroke": "#000000",
         "length": 5457,
         "par": 72,
         "rating": {
@@ -128,7 +123,6 @@
       {
         "name": "Orange",
         "color": "#ffa500",
-        "stroke": "#000000",
         "length": 5011,
         "par": 72,
         "rating": {

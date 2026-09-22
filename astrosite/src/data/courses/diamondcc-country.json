@@ -31,7 +31,6 @@
       {
         "name": "White",
         "color": "#ffffff",
-        "stroke": "#000000",
         "length": 3955,
         "par": 55,
         "rating": {
@@ -46,7 +45,6 @@
       {
         "name": "Yellow",
         "color": "#ffff00",
-        "stroke": "#000000",
         "length": 3579,
         "par": 55,
         "rating": {
@@ -61,7 +59,6 @@
       {
         "name": "Blue",
         "color": "#0000ff",
-        "stroke": "#000000",
         "length": 3529,
         "par": 55,
         "rating": {
@@ -76,7 +73,6 @@
       {
         "name": "Red",
         "color": "#ff0000",
-        "stroke": "#000000",
         "length": 3143,
         "par": 55,
         "rating": {
