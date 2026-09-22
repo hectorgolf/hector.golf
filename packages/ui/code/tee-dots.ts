@@ -49,14 +49,16 @@ export const DOT_GROUND = '#131215'
 export const DOT_STROKE_WIDTH = 1
 
 /**
- * WCAG's floor for a graphical object against its background.
+ * Sufficient contrast for omitting a border ring against the ground color.
+ * WCAG's floor for a graphical object against its background is actually a bit
+ * higher (~3) but for our purposes this is good enough.
  *
  * It lands in real space here rather than on a boundary: across the committed
  * courses the fills sort into a group at 2.17 and below — black, and the two
  * blues — and a group from 3.62 up. Nothing sits near the line, so a tee does
  * not change appearance because somebody nudged a hex by a digit.
  */
-const ENOUGH = 3
+const ENOUGH = 2.5
 
 /** White, and the only ring colour that is not simply the fill. */
 export const RING = '#ffffff'

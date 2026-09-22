@@ -23,6 +23,7 @@ describe('the ring around a tee dot', () => {
         expect(ringFor('#ffff00')).toBe('#ffff00')
         expect(ringFor('#ff0000')).toBe('#ff0000')
         expect(ringFor('#ffa500')).toBe('#ffa500')
+        expect(ringFor('#0433ff')).toBe('#0433ff')
     })
 
     /*
@@ -62,5 +63,6 @@ describe('the ring around a tee dot', () => {
 
         expect(contrast(parseHex(RING), ground)).toBeGreaterThan(15)
         expect(contrast(parseHex('#000000'), ground)).toBeLessThan(1.5)
+        expect(contrast(parseHex('#0433ff'), ground)).toBeGreaterThan(2.5)
     })
 })

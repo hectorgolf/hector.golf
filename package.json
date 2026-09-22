@@ -14,7 +14,7 @@
     "scripts": {
         "build:site": "npm run build --workspace=astroversion",
         "build:admin": "npm run build --workspace=hector-admin",
-        "test": "npm run test --workspace=@hector/schemas && npm run test --workspace=astroversion && npm run test --workspace=hector-admin",
+        "test": "npm run test --workspace=@hector/schemas && npm run test --workspace=@hector/ui && npm run test --workspace=astroversion && npm run test --workspace=hector-admin && npm run test --prefix backend/backend-functions",
         "icons": "node scripts/render-icons.ts",
         "lint:md": "markdownlint-cli2",
         "lint:md:fix": "markdownlint-cli2 --fix"
