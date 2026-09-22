@@ -22,6 +22,7 @@ import {
 } from '../../../lib/courses/details.ts'
 import { previewSrc } from '../../../lib/courses/preview.ts'
 import { type DatasourceRow } from '../../../lib/courses/datasources.ts'
+import { type HoleRow } from '../../../lib/courses/scorecard.ts'
 import { ACCEPTED_TYPES, assetBucket, storeUpload } from '../../../lib/courses/uploads.ts'
 
 /*
@@ -119,6 +120,10 @@ if (Astro.request.method === 'POST') {
         }
     }
 
+    // Read once: the tees and the scorecard's length columns are the same list
+    // seen from two directions, and they have to agree about it.
+    const teeIndices = formIndices(form, 'tee')
+
     submitted = {
         name: String(form.get('name') ?? ''),
         homepage: String(form.get('homepage') ?? ''),
@@ -146,7 +151,25 @@ if (Astro.request.method === 'POST') {
         // added in the browser has an index past that count, and a tee removed
         // there sends nothing at all — `teesFrom` then drops it and
         // `applyTeeEdits` takes its scorecard column with it.
-        tees: formIndices(form, 'tee').map((index) => teeRow(form, index)),
+        tees: teeIndices.map((index) => teeRow(form, index)),
+        /*
+         * The holes are the ones this page rendered, because the scorecard's
+         * shape belongs to the course and not to the form: eighteen holes stay
+         * eighteen holes, and there is no control here that adds or drops one.
+         *
+         * The *lengths* are a different matter. They are named by the tee row
+         * they belong to, and a tee added in the browser has a row this page
+         * never rendered — so the columns come from the same `teeIndices` the
+         * tees themselves do, which is what keeps the two lists lined up when
+         * one of those rows is missing because its tee was removed.
+         */
+        holes: submitted.holes.map((row, index) => ({
+            hole: row.hole,
+            par: String(form.get(`hole-${index}-par`) ?? ''),
+            parLadies: String(form.get(`hole-${index}-parLadies`) ?? ''),
+            hcp: String(form.get(`hole-${index}-hcp`) ?? ''),
+            lengths: teeIndices.map((tee) => String(form.get(`hole-${index}-len-${tee}`) ?? '')),
+        })),
     }
 
     const parsed = courseSchema.safeParse(courseFromForm(course, submitted))
@@ -463,6 +486,76 @@ const rows = submitted.description
 				</button>
 			</p>
 		</section>
+
+		{
+			submitted.holes.length > 0 && (
+				<section class="stack">
+					<h2>Scorecard</h2>
+					<p class="hint">
+						Par, stroke index and a length per tee. The lengths line up with the tee rows
+						above, the empty one included — so a tee and its measurements can be added in
+						the same save.
+						<br />
+						<strong>Par ♀ is only for a hole where the women's par differs.</strong> Leave it
+						alone and the course has one card; fill in a hole and it gains a women's card
+						with that hole changed and the rest as they are here. Clear them all again and
+						the second card goes away rather than sitting there repeating the first — which
+						is what sixteen of the seventeen courses do today, and the seventeenth differs
+						on exactly one hole.
+					</p>
+
+					<div class="tablewrap">
+						<table class="datagrid holes">
+							<thead>
+								<tr>
+									<th>Hole</th>
+									<th>Par</th>
+									<th>Par ♀</th>
+									<th>Index</th>
+									{submitted.tees.map((tee) => (
+										<th class="num">{tee.name || 'New tee'}</th>
+									))}
+								</tr>
+							</thead>
+							<tbody data-holes>
+								{submitted.holes.map((row: HoleRow, index: number) => (
+									<tr>
+										<td class="num hole">{row.hole}</td>
+										<td>
+											<input name={`hole-${index}-par`} type="text" value={row.par} disabled={!COURSES_ARE_OWNED} class="num" />
+										</td>
+										<td>
+											<input
+												name={`hole-${index}-parLadies`}
+												type="text"
+												value={row.parLadies}
+												disabled={!COURSES_ARE_OWNED}
+												class="num ladies"
+												placeholder={row.par}
+											/>
+										</td>
+										<td>
+											<input name={`hole-${index}-hcp`} type="text" value={row.hcp} disabled={!COURSES_ARE_OWNED} class="num" />
+										</td>
+										{row.lengths.map((length: string, tee: number) => (
+											<td>
+												<input
+													name={`hole-${index}-len-${tee}`}
+													type="text"
+													value={length}
+													disabled={!COURSES_ARE_OWNED}
+													class="num"
+												/>
+											</td>
+										))}
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				</section>
+			)
+		}
 
 		<section class="stack">
 			<h2>Where the numbers came from</h2>
@@ -995,6 +1088,31 @@ const rows = submitted.description
 
 	section.tee-colours-enhanced .swatch {
 		display: inline-block;
+	}
+
+	/*
+	 * A grid of numbers read across and down, so the boxes are as small as the
+	 * numbers in them and the hole number is not a box at all — it is the one
+	 * thing in the row nobody edits.
+	 */
+	.holes td {
+		padding: 0.2rem 0.35rem;
+	}
+
+	.holes input {
+		width: 3.4rem;
+		padding: 0.3rem 0.4rem;
+	}
+
+	.holes .hole {
+		font-family: var(--font-score);
+		color: var(--text-dim);
+	}
+
+	/* Quieter, because an empty one is the normal state and says "no difference". */
+	.holes .ladies::placeholder {
+		color: var(--text-dim);
+		opacity: 0.5;
 	}
 
 	.tees .colour {

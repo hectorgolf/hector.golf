@@ -1,6 +1,7 @@
 import { applyTeeEdits, type Course, type CourseTee } from '@hector/schemas/src/courses.ts'
 
 import { datasourceRows, datasourcesFrom, type DatasourceRow } from './datasources.ts'
+import { holeRows, scorecardFrom, type HoleRow } from './scorecard.ts'
 
 /**
  * What a person writes on a golf course, read off a submitted form.
@@ -37,6 +38,8 @@ export type CourseForm = {
     description: DescriptionRow[]
     /** Where the numbers came from: a URL box per name. */
     datasources: DatasourceRow[]
+    /** The scorecard, one row per hole. Empty for a course that has none. */
+    holes: HoleRow[]
     tees: TeeForm[]
 }
 
@@ -174,6 +177,7 @@ const descriptionOf = (course: Course): DescriptionRow[] =>
 
 /** The stored course as the boxes should first show it. */
 export function formOf(course: Course): CourseForm {
+    const tees: TeeForm[] = [...(course.course?.tees ?? []).map(teeOf), { ...BLANK_TEE }]
     return {
         name: course.name,
         homepage: course.homepage,
@@ -192,7 +196,10 @@ export function formOf(course: Course): CourseForm {
          */
         description: withBlankRows(descriptionOf(course)),
         datasources: datasourceRows(course),
-        tees: [...(course.course?.tees ?? []).map(teeOf), { ...BLANK_TEE }],
+        tees,
+        // A length column per tee row, the blank one included, so a tee and its
+        // lengths can be added in the same save.
+        holes: holeRows(course, tees.map((tee) => tee.name)),
     }
 }
 
@@ -401,6 +408,28 @@ export function courseFromForm(stored: Course, form: CourseForm): Course {
     if (hero) withProse.hero_image = hero
     else delete withProse.hero_image
 
-    // `applyTeeEdits` is what moves the scorecard's keys with a renamed tee.
-    return withProse.course ? applyTeeEdits(withProse, teesFrom(form.tees)) : withProse
+    if (!withProse.course) return withProse
+
+    // `applyTeeEdits` is what moves the scorecard's keys with a renamed tee, so
+    // it runs first and the grid is written onto its answer: by then the tees
+    // have their final names, and the k-th surviving tee is the k-th named row
+    // of the form.
+    const withTees = applyTeeEdits(withProse, teesFrom(form.tees))
+
+    if (form.holes.length === 0) return withTees
+
+    const columns = form.tees
+        .map((tee, index) => ({ tee, index }))
+        .filter(({ tee }) => tee.name.trim() !== '')
+        .map(({ index }) => index)
+
+    return {
+        ...withTees,
+        course: scorecardFrom(
+            withTees,
+            (withTees.course?.tees ?? []).map((tee) => tee.name),
+            columns,
+            form.holes
+        ),
+    }
 }
