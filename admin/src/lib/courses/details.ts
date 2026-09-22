@@ -105,6 +105,16 @@ export type TeeForm = {
     slopeLadies: string
 }
 
+/**
+ * Whether a tee is played by women at all, as the record says it.
+ *
+ * Either number is enough. A tee with a ladies course rating and no slope, or
+ * the other way round, is a tee somebody has measured for women and recorded
+ * half of — and the question this answers is "is there a women's par to state",
+ * not "is this record complete".
+ */
+const playedByLadies = (tee: CourseTee): boolean => tee.rating.ladies !== null || tee.slope.ladies !== null
+
 const teeOf = (tee: CourseTee): TeeForm => ({
     id: tee.id,
     name: tee.name,
@@ -112,7 +122,25 @@ const teeOf = (tee: CourseTee): TeeForm => ({
     color: tee.color,
     length: String(tee.length),
     par: String(tee.par),
-    parLadies: tee.par_ladies === undefined ? '' : String(tee.par_ladies),
+    /*
+     * The men's par, for a tee played by women that does not state its own.
+     *
+     * Forty-eight of the fifty-one such tees say nothing, and the three that do
+     * — Sand Valley's — say 73 against a men's 72. So the usual case is that
+     * they agree and nobody wrote it down, and the interesting case is already
+     * written down; showing the number that is almost certainly right beats an
+     * empty box somebody has to decide about.
+     *
+     * A real value rather than a placeholder, so it saves. That is the point:
+     * a tee played by women ends up stating its par instead of leaving it to be
+     * inferred from a field that is absent for two different reasons.
+     */
+    parLadies:
+        tee.par_ladies !== undefined
+            ? String(tee.par_ladies)
+            : playedByLadies(tee)
+              ? String(tee.par)
+              : '',
     ratingMen: tee.rating.men === null ? '' : String(tee.rating.men),
     ratingLadies: tee.rating.ladies === null ? '' : String(tee.rating.ladies),
     slopeMen: tee.slope.men === null ? '' : String(tee.slope.men),
