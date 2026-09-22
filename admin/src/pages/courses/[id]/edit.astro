@@ -669,11 +669,19 @@ const rows = submitted.description
 									/>
 								</td>
 								{/*
-								 * A swatch beside the hex rather than instead of it. The
-								 * text box is what submits, so a value can still be
-								 * pasted, read and compared between rows — and a colour
-								 * input holds nothing but a plain `#rrggbb`, while
-								 * `color` is a free string on the schema.
+								 * A swatch beside the hex rather than instead of it: it
+								 * shows the colour and opens the platform's colour wheel,
+								 * and the text box is what submits. A colour input holds
+								 * nothing but a plain `#rrggbb` while `color` is a free
+								 * string on the schema, so a course carrying `red` would
+								 * be rewritten by a control nobody touched — and a hex is
+								 * worth reading down the column and pasting between rows.
+								 *
+								 * Labelled and reachable rather than `aria-hidden` and
+								 * `tabindex="-1"`, which is what it was: a picker nobody
+								 * can tab to is a picker half the people using this page
+								 * do not have.
+								 *
 								 * `lib/tee-colours.ts` keeps the two in step and reveals
 								 * the swatch; with no script the hex box is exactly what
 								 * it was.
@@ -684,7 +692,13 @@ const rows = submitted.description
 								 */}
 								<td>
 									<div class="swatched">
-										<input type="color" class="swatch" tabindex="-1" aria-hidden="true" disabled={!COURSES_ARE_OWNED} />
+										<input
+											type="color"
+											class="swatch"
+											aria-label={`Pick the colour for ${tee.name || 'this tee'}`}
+											title="Pick a colour"
+											disabled={!COURSES_ARE_OWNED}
+										/>
 										<input
 											name={`tee-${index}-color`}
 											type="text"
