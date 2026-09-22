@@ -647,10 +647,19 @@ const rows = submitted.description
 							<th>Length</th>
 							<th>Par ♂</th>
 							<th>Par ♀</th>
-							<th>Rating ♂</th>
-							<th>Rating ♀</th>
-							<th>Slope ♂</th>
-							<th>Slope ♀</th>
+							{/*
+							 * Abbreviated so the row of headings stays one line. "Rating ♂"
+							 * wrapped at anything short of a wide window, and a wrapped
+							 * heading makes every heading in the row twice as tall — the
+							 * table's header was 55px for the sake of one cell.
+							 *
+							 * `title` rather than the word, because these are read far more
+							 * often than they are learned.
+							 */}
+							<th title="Course rating">CR ♂</th>
+							<th title="Course rating">CR ♀</th>
+							<th title="Slope rating">SR ♂</th>
+							<th title="Slope rating">SR ♀</th>
 							<th class="actions"><span class="sr-only">Actions</span></th>
 						</tr>
 					</thead>
@@ -1190,6 +1199,15 @@ const rows = submitted.description
 	.holes .ladies::placeholder {
 		color: var(--text-dim);
 		opacity: 0.5;
+	}
+
+	/*
+	 * One line per heading, always. The abbreviations are short enough that this
+	 * never truncates anything — it is here so that a longer one added later
+	 * widens its column rather than doubling the height of every other.
+	 */
+	.tees thead th {
+		white-space: nowrap;
 	}
 
 	.tees .colour {
