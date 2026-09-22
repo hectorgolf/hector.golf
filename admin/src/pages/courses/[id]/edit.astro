@@ -521,8 +521,28 @@ const rows = submitted.description
 								{submitted.holes.map((row: HoleRow, index: number) => (
 									<tr>
 										<td class="num hole">{row.hole}</td>
+										{/*
+										 * The stored number as a placeholder, which is
+										 * only ever seen after somebody empties the box —
+										 * and is exactly what a save does with an empty
+										 * one. An empty par or index keeps what is on
+										 * record, because there is no such thing as a hole
+										 * without either, so the box says so rather than
+										 * looking like a value about to be lost.
+										 *
+										 * The length columns deliberately have none: an
+										 * empty length *is* an answer there, and the only
+										 * way to say a tee does not play a hole.
+										 */}
 										<td>
-											<input name={`hole-${index}-par`} type="text" value={row.par} disabled={!COURSES_ARE_OWNED} class="num" />
+											<input
+												name={`hole-${index}-par`}
+												type="text"
+												value={row.par}
+												placeholder={row.par}
+												disabled={!COURSES_ARE_OWNED}
+												class="num"
+											/>
 										</td>
 										<td>
 											<input
@@ -535,7 +555,14 @@ const rows = submitted.description
 											/>
 										</td>
 										<td>
-											<input name={`hole-${index}-hcp`} type="text" value={row.hcp} disabled={!COURSES_ARE_OWNED} class="num" />
+											<input
+												name={`hole-${index}-hcp`}
+												type="text"
+												value={row.hcp}
+												placeholder={row.hcp}
+												disabled={!COURSES_ARE_OWNED}
+												class="num"
+											/>
 										</td>
 										{row.lengths.map((length: string, tee: number) => (
 											<td>
