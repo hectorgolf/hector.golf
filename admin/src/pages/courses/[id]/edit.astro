@@ -36,12 +36,17 @@ import { ACCEPTED_TYPES, assetBucket, storeUpload } from '../../../lib/courses/u
  *
  * ## What it does not edit, and why that is safe
  *
- * The scorecard, the hole descriptions and the images are all absent from this
- * form and all survive a save, because `courseFromForm` starts
- * from the stored course and overwrites only what the form carried. That is the
- * property to preserve if a field is ever added here: Zod strips what it is not
- * told about, so an editor that rebuilt the record from its own fields would
- * delete the rest without failing.
+ * The hole descriptions and the `images` block are absent from this form and
+ * both survive a save, because `courseFromForm` starts from the stored course
+ * and overwrites only what the form carried. That is the property to preserve
+ * if a field is ever added here: Zod strips what it is not told about, so an
+ * editor that rebuilt the record from its own fields would delete the rest
+ * without failing.
+ *
+ * The `id` is absent for a different reason. It is the document key, the
+ * filename the export writes and the course's address on the public site, and
+ * it is chosen once on `/courses/new` — a box here would be a box that renames
+ * a file and breaks a URL.
  */
 
 const { id } = Astro.params
@@ -207,7 +212,7 @@ const rows = submitted.description
 	<PageHeader
 		title="Edit course"
 		eyebrow="Course"
-		lede="Identity, contact, the prose, the tees and where the numbers came from. The scorecard, the hole descriptions and the images are not edited here and are carried through a save untouched."
+		lede="Identity, contact, the prose, the hero, the tees, the scorecard and where the numbers came from. The hole descriptions and the layout images are not edited here and are carried through a save untouched."
 	/>
 
 	{error && <p class="notice bad">{error}</p>}

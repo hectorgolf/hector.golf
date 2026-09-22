@@ -189,10 +189,10 @@ cleanly.
 **Flipped 2026-09-21**, after the acceptance test was run against production and came back
 `courses: 17 exported, 0 changed, 0 removed` with an empty diff.
 
-**The editor covers identity, contact, the prose and the tees** — what the plan named. Not the
-scorecard: eighteen holes of par, stroke index and a length per tee is around 130 numbers off an
-official card, a transcription exercise with no proofreader. Not the hole descriptions, the images
-or the datasources either.
+**The editor covered identity, contact, the prose and the tees** on the day of the flip — what the
+plan named. Everything else it did not cover has since been added, one piece at a time; the list is
+in [Step 6](#step-6--the-rest-of-the-course) below, and what is still missing is the hole
+descriptions and nothing else.
 
 All of which have to survive a save, and none of which would survive a naive one. Zod strips what it
 is not told about, so an editor that rebuilt the record from its own fields would delete the larger
@@ -206,9 +206,11 @@ form edits the array as a list of rows, each a paragraph or an image, and rebuil
 position by position. Rows can be added, removed, reordered and — for an image — uploaded from the
 machine doing the editing, because deciding where an image goes is exactly what the list is for.
 
-**A tee cannot be removed**, though `applyTeeEdits` supports it. Clearing a name would delete that
-tee's scorecard column, and a form that deletes measurements by accident is worse than one that
-cannot delete them at all. Adding is safe and is the blank row at the end.
+**A tee could not be removed at first**, though `applyTeeEdits` supported it. Clearing a name would
+delete that tee's scorecard column, and a form that deletes measurements by accident is worse than
+one that cannot delete them at all — so the note said to build a considered way to ask when somebody
+needed one. Somebody did, and it is in Step 6. The argument was about *clearing a name*, and that
+still does nothing but leave a nameless row.
 
 Duplicate tee names are now unrepresentable: the schema refuses them, since two tees sharing a name
 make a per-hole length ambiguous.
@@ -440,6 +442,84 @@ course images: 1 written, 1 removed
 
 and the deploy request that follows it answered `HTTP 202`, with a `workflow_dispatch` run of
 `deploy-site.yml` a second later. Nothing in this pipeline is unexercised now.
+
+## Step 6 — the rest of the course
+
+Written 2026-09-22, after the editor had been in use for a day and the gaps were the ones somebody
+hit rather than the ones somebody predicted. In order of how they turned up:
+
+| What was missing | Where it went |
+| --- | --- |
+| a hero image, uploaded like any other | #251 |
+| where the numbers came from | #256 |
+| tees added and removed | #257 |
+| the scorecard, both cards at once | #261 |
+| a course that did not exist before | #263 |
+
+**The scorecard was the one this plan said not to build**, on the grounds that 130 numbers off an
+official card is a transcription exercise with no proofreader. That was sound and it stopped being
+true for a reason nobody had written down: *the women's card is almost always the men's card
+again*. Sixteen of the seventeen courses have no `ladies` array at all, and the one that does —
+Sand Valley — differs on a single hole, par 4 becoming par 5 at the eleventh. Eighteen rows of
+duplication to record one number, and it is the same number the tee's `par_ladies` of 73 against 72
+is talking about.
+
+So the editor asks for the card once, with a women's par column that is empty wherever the two
+agree. Fill one hole in and the course gains a women's card with that hole changed; clear them all
+and the card goes away rather than repeating the one above it. A save still writes a whole array,
+because that is the shape of the record — but nobody types it twice, and a course where nothing
+differs keeps `ladies: null`.
+
+**Lengths travel by the tee's row rather than by its name**, because a name is what the same save
+might be changing. `applyTeeEdits` rekeys the card first and the grid is written onto its answer,
+pairing the k-th surviving tee with the k-th column it was rendered from. That is what carries a
+length across renaming Yellow to Gold.
+
+**Creating a course had to scaffold `course` itself.** `courseFromForm` returns early when there is
+no such object, so a course created without one could never gain a tee or a scorecard through the
+editor: it would take the typing and save none of it. New courses arrive with their holes, every
+par 4 — 156 of the 293 committed holes — and stroke indexes running `1..n`, which is a permutation
+and obviously a placeholder.
+
+### The same bug, five times
+
+Every repeating group in this form has had the same defect, and each time it read back *as many
+rows as the page rendered* rather than *whatever arrived*:
+
+- description items, which is how adding a paragraph saved nothing (#247);
+- the tee table, found while adding `+ Add tee` (#257);
+- the scorecard's length columns, found while giving a new tee a column (#261);
+- and it would have hit a newly created course had the scaffold not existed (#263).
+
+All of them saved silently and reported success. None was visible to the layer below the page, and
+every one was caught by driving the real form rather than by a test. Three are fixed by
+`formIndices(form, prefix)` and the fourth reads its columns from that same list. **If a fifth
+repeating group joins this editor, that is the thing to reach for first.**
+
+### Two more of the same family
+
+Not row counts, but the same shape — a wrong answer that looks like a deliberate one:
+
+- **`stroke` was deleted from every tee on every save.** `courseFromForm` carries through what the
+  form does not mention, but `teesFrom` builds each tee key by key, and `stroke` was in the schema,
+  in twenty tees, and in none of the form. The guard is now general: a no-op save must reproduce
+  every tee of every committed course, compared whole.
+- **The tee colour swatch showed black for every tee** from the day it shipped, because its `sync`
+  kept reading a `data-picks` attribute that had been removed with the second colour it once
+  described. Picking *from* it still worked, which is why the half that was easy to test passed.
+
+The field it was fighting over is gone: a tee's ring is now computed from its fill and the colour of
+the page, because being a field is what let it be wrong. Eighteen of the twenty tees that set one
+set `#000000`, which against `--surface` is a contrast of 1.13 to 1 — a ring nobody could see, for
+as long as it existed.
+
+### The vocabulary settled itself
+
+`slope table` and `official slope table` were the same thing spelled twice, across three courses and
+never both on one. `slope table` was retired from the list the editor offers, and because a name
+the list does not know is still rendered and still saved, the two Emporda courses kept theirs until
+somebody moved the URL across. Somebody did, by hand, in the editor, on 2026-09-22 — which is the
+whole argument for that rule in one sentence.
 
 ## Before the flip
 
