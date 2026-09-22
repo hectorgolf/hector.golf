@@ -7,9 +7,11 @@
  * the brandbook follows on the next build.
  */
 
-export type Palette = Record<string, string>
+import { contrast, luminance, parseHex, type Rgb } from '@hector/ui/code/colour.ts'
 
-export type Rgb = { r: number; g: number; b: number }
+export { contrast, luminance, parseHex, type Rgb }
+
+export type Palette = Record<string, string>
 
 export type Swatch = {
 	/** Token name including the leading dashes, e.g. `--hector`. */
@@ -56,38 +58,9 @@ export function resolveToken(tokens: Palette, name: string, seen: string[] = [])
 	return reference ? resolveToken(tokens, reference[1], [...seen, name]) : raw
 }
 
-export function parseHex(hex: string): Rgb {
-	const digits = hex.trim().match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i)?.[1]
-	if (!digits) throw new Error(`Not a hex colour: ${hex}`)
-	const full =
-		digits.length === 3
-			? digits
-					.split('')
-					.map((c) => c + c)
-					.join('')
-			: digits
-	return {
-		r: parseInt(full.slice(0, 2), 16),
-		g: parseInt(full.slice(2, 4), 16),
-		b: parseInt(full.slice(4, 6), 16),
-	}
-}
 
-const linearize = (value: number): number => {
-	const channel = value / 255
-	return channel <= 0.04045 ? channel / 12.92 : Math.pow((channel + 0.055) / 1.055, 2.4)
-}
 
-/** WCAG relative luminance. */
-export function luminance({ r, g, b }: Rgb): number {
-	return 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b)
-}
 
-/** WCAG contrast ratio, always >= 1 whichever way round the pair is given. */
-export function contrast(a: Rgb, b: Rgb): number {
-	const [lighter, darker] = [luminance(a), luminance(b)].sort((x, y) => y - x)
-	return (lighter + 0.05) / (darker + 0.05)
-}
 
 /**
  * The most chroma any step of the ink scale carries — ink-500 (#9a98a6), at 14.
