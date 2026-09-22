@@ -1,4 +1,4 @@
-import { contrast, parseHex } from './colour.ts'
+import { contrast, decreaseLuminance, increaseLuminance, parseHex, toHex, type Rgb } from "./colour.ts";
 
 /**
  * The ring around a tee's dot, worked out rather than stored.
@@ -12,15 +12,14 @@ import { contrast, parseHex } from './colour.ts'
  * So every dot gets a ring of the same width, always, and the only question is
  * what colour. There are two useful answers:
  *
- * - **white**, when the fill does not separate from the page on its own. A
- *   black tee on a near-black page is otherwise a hole rather than a dot.
- * - **the fill itself**, when it does. The ring is still there and still a
- *   pixel wide; it simply does not announce itself.
+ * - **the fill itself**, when it separates from the page.
+ * - **a brighter or darker version of the fill**, when that preserves its hue
+ *   and reaches the contrast floor.
+ * - **the nearer extreme**, white or black, when neither direction works.
  *
- * Never black, which is what the stored values used to be: `#000000` against
- * this page is a contrast of 1.13 to 1, so eighteen of the twenty tees that
- * carried an outline had one nobody could see. They read like they were chosen
- * for white paper.
+ * The final extreme is allowed to be black: it is preferable to an invisible
+ * border when the fill is visually closer to black and neither hue-preserving
+ * direction can reach the contrast floor.
  *
  * ## Why this is computed and not a field
  *
@@ -43,25 +42,30 @@ import { contrast, parseHex } from './colour.ts'
  * The same colour in both apps, because both import `hector.css` — the admin's
  * scorecard sits on the same `--surface` the site's does.
  */
-export const DOT_GROUND = '#131215'
+export const DOT_GROUND = "#131215";
 
 /** What every dot's ring is, in the units the SVG uses. */
-export const DOT_STROKE_WIDTH = 1
+export const DOT_STROKE_WIDTH = 1;
 
 /**
- * Sufficient contrast for omitting a border ring against the ground color.
- * WCAG's floor for a graphical object against its background is actually a bit
- * higher (~3) but for our purposes this is good enough.
+ * WCAG's floor for a graphical object against its background.
  *
  * It lands in real space here rather than on a boundary: across the committed
  * courses the fills sort into a group at 2.17 and below — black, and the two
  * blues — and a group from 3.62 up. Nothing sits near the line, so a tee does
  * not change appearance because somebody nudged a hex by a digit.
  */
-const ENOUGH = 2.5
+const ENOUGH = 3;
 
 /** White, and the only ring colour that is not simply the fill. */
-export const RING = '#ffffff'
+const WHITE = "#ffffff";
+
+const BLACK = "#000000";
+const STEP = 0.075;
+
+function rgbDistance(a: Rgb, b: Rgb): number {
+    return Math.hypot(a.r - b.r, a.g - b.g, a.b - b.b);
+}
 
 /**
  * The ring colour for a fill, against the ground the dot is drawn on.
@@ -72,11 +76,39 @@ export const RING = '#ffffff'
  * neither is a hex.
  */
 export function ringFor(fill: string, ground: string = DOT_GROUND): string {
-    let separated: boolean
+    let separated: boolean;
+    const bg = parseHex(ground);
     try {
-        separated = contrast(parseHex(fill), parseHex(ground)) >= ENOUGH
+        separated = contrast(parseHex(fill), bg) >= ENOUGH;
+        if (separated) {
+            return fill;
+        }
+
+        const original = parseHex(fill);
+        let lighter = original;
+        for (let i = 0; i < 10; i++) {
+            const next = increaseLuminance(lighter, STEP);
+            if (toHex(next) === toHex(lighter)) break;
+            if (contrast(next, bg) >= ENOUGH) return toHex(next);
+            lighter = next;
+        }
+
+        let darker = original;
+        for (let i = 0; i < 100; i++) {
+            const next = decreaseLuminance(darker, STEP);
+            if (toHex(next) === toHex(darker)) break;
+            if (contrast(next, bg) >= ENOUGH) return toHex(next);
+            darker = next;
+        }
+
+        const black = parseHex(BLACK);
+        const white = parseHex(WHITE);
+        const blackContrast = contrast(black, bg);
+        const whiteContrast = contrast(white, bg);
+        if (blackContrast >= ENOUGH && whiteContrast < ENOUGH) return BLACK;
+        if (whiteContrast >= ENOUGH && blackContrast < ENOUGH) return WHITE;
+        return rgbDistance(original, black) <= rgbDistance(original, white) ? BLACK : WHITE;
     } catch {
-        return RING
+        return WHITE;
     }
-    return separated ? fill : RING
 }

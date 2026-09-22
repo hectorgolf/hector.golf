@@ -54,11 +54,10 @@ describe('the tee dots this site draws', () => {
         }
     })
 
-    it('never leaves a dot without a visible edge or paints one black', () => {
+    it('never leaves a dot without a ring colour', () => {
         for (const tee of tees()) {
             const ring = ringFor(tee.color)
             expect(ring, `${tee.course} ${tee.name}`).toBeTruthy()
-            expect(ring.toLowerCase()).not.toBe('#000000')
         }
     })
 
