@@ -6,6 +6,7 @@ import MirrorNotice from '../../components/MirrorNotice.astro'
 import type { Course } from '@hector/schemas/src/courses.ts'
 
 import { COURSE_MIRROR } from '../../lib/mirror.ts'
+import { COURSES_ARE_OWNED } from '../../lib/ownership.ts'
 import { listCourses } from '../../lib/repository/events.ts'
 
 /*
@@ -39,10 +40,15 @@ const withHoleNotes = courses.filter((course) => course.course?.descriptions?.le
 ---
 
 <AdminLayout title="Courses">
-	<PageHeader
-		title="Courses"
-		lede="Every course a Hector round has been played on, and a few that are here for the guides."
-	/>
+	<div class="row-between">
+		<PageHeader
+			title="Courses"
+			lede="Every course a Hector round has been played on, and a few that are here for the guides."
+		/>
+		{COURSES_ARE_OWNED && (
+			<a href="/courses/new"><button type="button">New course</button></a>
+		)}
+	</div>
 
 	<MirrorNotice mirror={COURSE_MIRROR} what="A course" />
 
