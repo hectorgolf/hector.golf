@@ -46,7 +46,8 @@ const ScorecardHoleSchema = z.object({
 const HoleDescriptionSchema = z.object({
     hole: HoleNumberSchema,
     shape: z.enum(["narrow", "wide"]).optional(),
-    layout: z.string(),
+    /** A bare string is the shape before 2026-09-23; records in Firestore still carry it. */
+    layout: z.preprocess((value) => (typeof value === "string" ? { url: value } : value), ImageSchema),
     description: z.string(),
 });
 
@@ -138,18 +139,39 @@ export function withPublishedImages(course: Course): Course {
         const { object, ...rest } = image;
         return { ...rest, url: uploadedImagePath(course.id, object) } as T;
     };
+    const holes = (list?: { layout: { url?: string; object?: string } }[] | null) =>
+        Array.isArray(list) ? list.map((hole) => ({ ...hole, layout: published(hole.layout) })) : list;
+
     return {
         ...course,
         ...(course.hero_image ? { hero_image: published(course.hero_image) } : {}),
         description_long: course.description_long.map((part) =>
             part.type === "image" ? published(part) : part,
         ),
+        ...(course.course
+            ? {
+                  course: {
+                      ...course.course,
+                      descriptions: holes(course.course.descriptions),
+                      descriptions_local: holes(course.course.descriptions_local),
+                  },
+              }
+            : {}),
     };
 }
 
 /** Every bucket object a course references, for the export to fetch and to keep. */
 export function referencedObjects(course: Course): string[] {
-    const images = [...course.description_long.filter((part) => part.type === "image"), course.hero_image];
+    const holes = [...(course.course?.descriptions ?? []), ...(course.course?.descriptions_local ?? [])];
+    const images = [
+        ...course.description_long.filter((part) => part.type === "image"),
+        course.hero_image,
+        // Every hole's layout, the local set included — a course whose Finnish
+        // twin points at the same uploaded diagram as its English one still
+        // references it, and an object missing from this list is deleted by the
+        // next export.
+        ...holes.map((hole) => hole.layout),
+    ];
     return images.map((image) => image?.object).filter((object): object is string => Boolean(object));
 }
 

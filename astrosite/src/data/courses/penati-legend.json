@@ -388,109 +388,145 @@
       {
         "hole": 1,
         "shape": "wide",
-        "layout": "/images/courses/penati-legend/holes/1.png",
+        "layout": {
+          "url": "/images/courses/penati-legend/holes/1.png"
+        },
         "description": "This opening hole is generous on the tee shot, but the closer you can hit the tee shot to the fairway bunkers on the left, the better angle you will have into the green which is protected by a large bunker to the front right. The green is fairly gentle and perfect to warm up the putter."
       },
       {
         "hole": 2,
         "shape": "wide",
-        "layout": "/images/courses/penati-legend/holes/2.png",
+        "layout": {
+          "url": "/images/courses/penati-legend/holes/2.png"
+        },
         "description": "The tee shot is uphill and the goal is to get the ball up to the high part of the fairway so you have a clear view for the second shot. The second landing area is guarded by 2 bunkers, but an opening is left between the bunkers in order to have a clear second shot towards the green. The green is guarded by a bunker to the left."
       },
       {
         "hole": 3,
         "shape": "wide",
-        "layout": "/images/courses/penati-legend/holes/3.png",
+        "layout": {
+          "url": "/images/courses/penati-legend/holes/3.png"
+        },
         "description": "Even though short on the scorecard, this hole can play very long against the wind. The hole is framed by a waste bunker on the left and there a bunker to the right of the fairway and one to the front left. It is best to bring in the tee shot from the right and the green is perched and proper shot placement will be a must."
       },
       {
         "hole": 4,
         "shape": "wide",
-        "layout": "/images/courses/penati-legend/holes/4.png",
+        "layout": {
+          "url": "/images/courses/penati-legend/holes/4.png"
+        },
         "description": "This is the longest Par-4 on the course. The landing area is protected by bunkers on the inside left and the outside right. Clearing the bunkers on the left, will give a shorter second shot, but the center of the fairway is preferred for the better angle into the green for the second shot. The second shot is uphill and the green is protected with 2 bunkers short of the green and a deep bunker to the front right. The green has various plateaus and will provide some challenging putts."
       },
       {
         "hole": 5,
         "shape": "wide",
-        "layout": "/images/courses/penati-legend/holes/5.png",
+        "layout": {
+          "url": "/images/courses/penati-legend/holes/5.png"
+        },
         "description": "Short uphill dogleg right par-4 and you should play the tee shot as close as possible to the tree line on the right in order to have the best angle for the second shot into the green. Important on the tee shot is to get the ball up the hill so you can view the green. The green is perched with a low area to the back right."
       },
       {
         "hole": 6,
         "shape": "wide",
-        "layout": "/images/courses/penati-legend/holes/6.png",
+        "layout": {
+          "url": "/images/courses/penati-legend/holes/6.png"
+        },
         "description": "This is a long par-5, but playing downhill from the first landing area on. The tee shot is best played close to the right side fairway bunker. The second shot will require a bold decision whether or not to go for the green in 2 or lay-up the second shot for an approach 3rd shot into the green. The green is protected by a front and right bunker and the angle of approach is best from the right. Be careful hitting beyond the green as a deep bunker guards the back of the green also."
       },
       {
         "hole": 7,
         "shape": "wide",
-        "layout": "/images/courses/penati-legend/holes/7.png",
+        "layout": {
+          "url": "/images/courses/penati-legend/holes/7.png"
+        },
         "description": "This strong hole requires a solid tee shot over the centre fairway bunker in order to take advantage of the bounce forward towards the green and leave a fairly easy second shot. Anything short or sideways off the center bunker will create for a partial blind shot towards the green. Second shot is best played from the left part off the fairway as the green is guarded by bunker on the right and the front."
       },
       {
         "hole": 8,
         "shape": "wide",
-        "layout": "/images/courses/penati-legend/holes/8.png",
+        "layout": {
+          "url": "/images/courses/penati-legend/holes/8.png"
+        },
         "description": "The longest par-3 on the scorecard, but playing 15meters downhill. The green sits up perched and is guarded by a lake and green bunker at the front and a large low area behind the green. Anything outside off the green will provide for a very challenging approach shot and an equally challenging green with a low section running through the middle."
       },
       {
         "hole": 9,
         "shape": "wide",
-        "layout": "/images/courses/penati-legend/holes/9.png",
+        "layout": {
+          "url": "/images/courses/penati-legend/holes/9.png"
+        },
         "description": "The lake should be avoided on the tee shot and it is preferred to keep the shot close to the fairway bunker on the right as the green is angled right to left and is easier to attack from the right part of the fairway. The green falls right to left and will create for some interesting putting."
       },
       {
         "hole": 10,
         "shape": "wide",
-        "layout": "/images/courses/penati-legend/holes/10.png",
+        "layout": {
+          "url": "/images/courses/penati-legend/holes/10.png"
+        },
         "description": "With the lake in play along the right side of the hole, it is a must to keep the tee shot as far left as possible, which will also be rewarded by giving you the best angle into the green for the second shot. The green is guarded by the lake and a bunker to the right and the surface is very undulating, putting a premium on putting."
       },
       {
         "hole": 11,
         "shape": "wide",
-        "layout": "/images/courses/penati-legend/holes/11.png",
+        "layout": {
+          "url": "/images/courses/penati-legend/holes/11.png"
+        },
         "description": "Shortest par-5 on the golf course, but against the wind, this hole will be a challenge. Important to get the tee shot up to the high part of the fairway in order to then have a good view towards the green. The green can be reached in 2 shots and needs to be attacked from the right hand side, using the slope that kicks in from right to left. The green is guarded by bunkers on the left."
       },
       {
         "hole": 12,
         "shape": "wide",
-        "layout": "/images/courses/penati-legend/holes/12.png",
+        "layout": {
+          "url": "/images/courses/penati-legend/holes/12.png"
+        },
         "description": "Strong par-3 which is surrounded and protected by bunkers pretty much all around. When the wind comes into play, good shot placement will be a must in order to avoid a long challenging putt."
       },
       {
         "hole": 13,
         "shape": "wide",
-        "layout": "/images/courses/penati-legend/holes/13.png",
+        "layout": {
+          "url": "/images/courses/penati-legend/holes/13.png"
+        },
         "description": "This strong hole doglegs left around the waste bunker on the inside left. Clearing the waste bunker will shorten the second shot into the green, but this elevated green is best attacked from the right. No bunkers around the green, but a large and deep low area guards the green at the front left."
       },
       {
         "hole": 14,
         "shape": "wide",
-        "layout": "/images/courses/penati-legend/holes/14.png",
+        "layout": {
+          "url": "/images/courses/penati-legend/holes/14.png"
+        },
         "description": "This is the shortest par-4 on the course with an uphill tee shot. The front of the fairway is guarded by 2 \"spectacle\" bunkers and the line of play is just right of these bunkers. Only a short approach shot will be required, but accuracy will be a must in order to place the ball in the proper location on this undulating and rolling green."
       },
       {
         "hole": 15,
         "shape": "wide",
-        "layout": "/images/courses/penati-legend/holes/15.png",
+        "layout": {
+          "url": "/images/courses/penati-legend/holes/15.png"
+        },
         "description": "The longest par-\"5\" on the course, if not in Europe. Two different tee areas have been set up depending on how the hole wants to be played for the day. The distance between both tee areas is the typical driver's distance, and this hole can be played as a par-5 or par-6. The fairway is split by a waster bunker on the tee shot and the second landing area is framed by a large waste bunker area to the left and protected by various fairway bunkers. This hole is not soon to be forgotten, not only because of its length, but also because of the stunning setting."
       },
       {
         "hole": 16,
         "shape": "wide",
-        "layout": "/images/courses/penati-legend/holes/16.png",
+        "layout": {
+          "url": "/images/courses/penati-legend/holes/16.png"
+        },
         "description": "After the longest hole on the golf course, you now have the shortest golf hole, only measuring 151 meters. The hole plays downhill, which will make it even play shorter. The tees and green are separated by a large waste bunker and the green is best attacked from the left."
       },
       {
         "hole": 17,
         "shape": "wide",
-        "layout": "/images/courses/penati-legend/holes/17.png",
+        "layout": {
+          "url": "/images/courses/penati-legend/holes/17.png"
+        },
         "description": "This hole with the elevated tees is bordered by water along the left side, but the water should not come into play on the tee shot. Fairway bunkers to the right can be cleared by a well executed tee shot, leaving only a short approach shot into the green. The green is protected by the lake on the left and the low area to the right and back of the green."
       },
       {
         "hole": 18,
         "shape": "wide",
-        "layout": "/images/courses/penati-legend/holes/18.png",
+        "layout": {
+          "url": "/images/courses/penati-legend/holes/18.png"
+        },
         "description": "What a great way to finish a round of golf on this picturesque downhill par-4 with the island green. The tee shot is all about ball placement in order to setup the best angle and distance for the short second shot. The island green is angled left to right, has water all around and a green bunker to the front right. Again, don't be too aggressive on the tee shot, which will result in the best setup for the second shot hopefully resulting in a birdie on the last hole proudly looking at the people sitting at the club house behind the green."
       }
     ]

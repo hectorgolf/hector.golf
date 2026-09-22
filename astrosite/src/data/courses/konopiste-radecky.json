@@ -346,92 +346,128 @@
     "descriptions": [
       {
         "hole": 1,
-        "layout": "/images/courses/konopiste-radecky/holes/1.png",
+        "layout": {
+          "url": "/images/courses/konopiste-radecky/holes/1.png"
+        },
         "description": ""
       },
       {
         "hole": 2,
-        "layout": "/images/courses/konopiste-radecky/holes/2.png",
+        "layout": {
+          "url": "/images/courses/konopiste-radecky/holes/2.png"
+        },
         "description": ""
       },
       {
         "hole": 3,
-        "layout": "/images/courses/konopiste-radecky/holes/3.png",
+        "layout": {
+          "url": "/images/courses/konopiste-radecky/holes/3.png"
+        },
         "description": ""
       },
       {
         "hole": 4,
-        "layout": "/images/courses/konopiste-radecky/holes/4.png",
+        "layout": {
+          "url": "/images/courses/konopiste-radecky/holes/4.png"
+        },
         "description": ""
       },
       {
         "hole": 5,
-        "layout": "/images/courses/konopiste-radecky/holes/5.png",
+        "layout": {
+          "url": "/images/courses/konopiste-radecky/holes/5.png"
+        },
         "description": ""
       },
       {
         "hole": 6,
-        "layout": "/images/courses/konopiste-radecky/holes/6.png",
+        "layout": {
+          "url": "/images/courses/konopiste-radecky/holes/6.png"
+        },
         "description": ""
       },
       {
         "hole": 7,
-        "layout": "/images/courses/konopiste-radecky/holes/7.png",
+        "layout": {
+          "url": "/images/courses/konopiste-radecky/holes/7.png"
+        },
         "description": ""
       },
       {
         "hole": 8,
-        "layout": "/images/courses/konopiste-radecky/holes/8.png",
+        "layout": {
+          "url": "/images/courses/konopiste-radecky/holes/8.png"
+        },
         "description": ""
       },
       {
         "hole": 9,
-        "layout": "/images/courses/konopiste-radecky/holes/9.png",
+        "layout": {
+          "url": "/images/courses/konopiste-radecky/holes/9.png"
+        },
         "description": ""
       },
       {
         "hole": 10,
-        "layout": "/images/courses/konopiste-radecky/holes/10.png",
+        "layout": {
+          "url": "/images/courses/konopiste-radecky/holes/10.png"
+        },
         "description": ""
       },
       {
         "hole": 11,
-        "layout": "/images/courses/konopiste-radecky/holes/11.png",
+        "layout": {
+          "url": "/images/courses/konopiste-radecky/holes/11.png"
+        },
         "description": ""
       },
       {
         "hole": 12,
-        "layout": "/images/courses/konopiste-radecky/holes/12.png",
+        "layout": {
+          "url": "/images/courses/konopiste-radecky/holes/12.png"
+        },
         "description": ""
       },
       {
         "hole": 13,
-        "layout": "/images/courses/konopiste-radecky/holes/13.png",
+        "layout": {
+          "url": "/images/courses/konopiste-radecky/holes/13.png"
+        },
         "description": ""
       },
       {
         "hole": 14,
-        "layout": "/images/courses/konopiste-radecky/holes/14.png",
+        "layout": {
+          "url": "/images/courses/konopiste-radecky/holes/14.png"
+        },
         "description": ""
       },
       {
         "hole": 15,
-        "layout": "/images/courses/konopiste-radecky/holes/15.png",
+        "layout": {
+          "url": "/images/courses/konopiste-radecky/holes/15.png"
+        },
         "description": ""
       },
       {
         "hole": 16,
-        "layout": "/images/courses/konopiste-radecky/holes/16.png",
+        "layout": {
+          "url": "/images/courses/konopiste-radecky/holes/16.png"
+        },
         "description": ""
       },
       {
         "hole": 17,
-        "layout": "/images/courses/konopiste-radecky/holes/17.png",
+        "layout": {
+          "url": "/images/courses/konopiste-radecky/holes/17.png"
+        },
         "description": ""
       },
       {
         "hole": 18,
-        "layout": "/images/courses/konopiste-radecky/holes/18.png",
+        "layout": {
+          "url": "/images/courses/konopiste-radecky/holes/18.png"
+        },
         "description": ""
       }
     ]
