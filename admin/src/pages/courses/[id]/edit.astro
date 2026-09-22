@@ -23,6 +23,7 @@ import {
 import { previewSrc } from '../../../lib/courses/preview.ts'
 import { type DatasourceRow } from '../../../lib/courses/datasources.ts'
 import { type HoleRow } from '../../../lib/courses/scorecard.ts'
+import { type HoleDescriptionRow } from '../../../lib/courses/holes.ts'
 import { ACCEPTED_TYPES, assetBucket, storeUpload } from '../../../lib/courses/uploads.ts'
 
 /*
@@ -129,6 +130,35 @@ if (Astro.request.method === 'POST') {
     // seen from two directions, and they have to agree about it.
     const teeIndices = formIndices(form, 'tee')
 
+    /*
+     * A diagram per hole, through the same upload as everything else here: one
+     * bucket, one prefix, one thing that can go wrong. A chosen file replaces
+     * whatever the hole had; an empty box leaves it exactly as it was, because
+     * the schema requires a layout and "no diagram" is not a state a hole page
+     * can render.
+     */
+    const descriptions: HoleDescriptionRow[] = []
+    for (const index of formIndices(form, 'desc')) {
+        const chosen = form.get(`desc-${index}-file`)
+        const file = chosen instanceof File && chosen.size > 0 ? chosen : undefined
+
+        let object = String(form.get(`desc-${index}-object`) ?? '') || undefined
+        if (file) {
+            try {
+                object = await storeUpload(course.id, file)
+            } catch (failure) {
+                uploadError = failure instanceof Error ? failure.message : String(failure)
+            }
+        }
+
+        descriptions.push({
+            hole: Number(form.get(`desc-${index}-hole`) ?? index + 1),
+            url: String(form.get(`desc-${index}-url`) ?? '') || undefined,
+            object,
+            text: String(form.get(`desc-${index}-text`) ?? ''),
+        })
+    }
+
     submitted = {
         name: String(form.get('name') ?? ''),
         homepage: String(form.get('homepage') ?? ''),
@@ -175,6 +205,8 @@ if (Astro.request.method === 'POST') {
             hcp: String(form.get(`hole-${index}-hcp`) ?? ''),
             lengths: teeIndices.map((tee) => String(form.get(`hole-${index}-len-${tee}`) ?? '')),
         })),
+        descriptions,
+        wideLayouts: form.get('wide-layouts') !== null,
     }
 
     const parsed = courseSchema.safeParse(courseFromForm(course, submitted))
@@ -591,6 +623,87 @@ const rows = submitted.description
 								))}
 							</tbody>
 						</table>
+					</div>
+				</section>
+			)
+		}
+
+		{
+			submitted.descriptions.length > 0 && (
+				<section class="stack">
+					<h2>Hole by hole</h2>
+					<p class="hint">
+						The diagram each hole page leads with, and what it says underneath. Every course
+						that has these has one per hole — the page does not exist without a diagram,
+						and{' '}<strong>{submitted.descriptions.length}</strong> of them is what decides
+						how many hole pages this course has.
+						<br />
+						Leave a diagram box alone and the hole keeps the one it has. Choosing a file
+						replaces it at the next export, the way a description image or the hero does.
+						{!assetBucket && (
+							<>
+								{' '}
+								<strong>Uploading is unavailable here:</strong> this service has no asset
+								bucket configured, which is normal on a laptop.
+							</>
+						)}
+					</p>
+
+					<label class="wide-layouts">
+						<input
+							name="wide-layouts"
+							type="checkbox"
+							checked={submitted.wideLayouts}
+							disabled={!COURSES_ARE_OWNED}
+						/>
+						<span>
+							The diagrams are wide rather than tall — one answer for the course, because
+							the course page reads it from the first hole and uses it for the whole grid.
+						</span>
+					</label>
+
+					<div class="holes-prose">
+						{submitted.descriptions.map((row: HoleDescriptionRow, index: number) => (
+							<div class="hole-row">
+								<input type="hidden" name={`desc-${index}-hole`} value={String(row.hole)} />
+								<input type="hidden" name={`desc-${index}-url`} value={row.url ?? ''} />
+								<input type="hidden" name={`desc-${index}-object`} value={row.object ?? ''} />
+
+								<div class="diagram">
+									<span class="hole-no">{row.hole}</span>
+									{previewSrc(row) ? (
+										<img src={previewSrc(row)} alt="" loading="lazy" />
+									) : (
+										<p class="asset empty">No diagram.</p>
+									)}
+									{row.object ? (
+										<span class="hint">
+											Uploaded, not yet published. Becomes{' '}
+											<code>{uploadedImagePath(course.id, row.object)}</code> at the next
+											export.
+										</span>
+									) : (
+										<span class="hint"><code>{row.url}</code></span>
+									)}
+									<label class="file">
+										<span>Replace with</span>
+										<input
+											name={`desc-${index}-file`}
+											type="file"
+											accept={ACCEPTED_TYPES}
+											disabled={!COURSES_ARE_OWNED || !assetBucket}
+										/>
+									</label>
+								</div>
+
+								<textarea
+									name={`desc-${index}-text`}
+									rows="5"
+									disabled={!COURSES_ARE_OWNED}
+									placeholder={`What a player should know about hole ${row.hole}`}
+								>{row.text}</textarea>
+							</div>
+						))}
 					</div>
 				</section>
 			)
@@ -1240,6 +1353,72 @@ const rows = submitted.description
 	 * never truncates anything — it is here so that a longer one added later
 	 * widens its column rather than doubling the height of every other.
 	 */
+	.holes-prose {
+		display: flex;
+		flex-direction: column;
+		gap: 1.1rem;
+		max-width: 60rem;
+	}
+
+	/*
+	 * The diagram beside the prose rather than above it: eighteen of these is a
+	 * long page either way, and a picture next to the words about it is how
+	 * somebody checks that the words are about that hole.
+	 */
+	.hole-row {
+		display: grid;
+		grid-template-columns: minmax(12rem, 20rem) 1fr;
+		gap: 1rem;
+		align-items: start;
+		padding-left: 0.8rem;
+		border-left: 2px solid var(--line);
+	}
+
+	.hole-row .diagram {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3rem;
+	}
+
+	.hole-row .hole-no {
+		font-family: var(--font-score);
+		font-size: 0.78rem;
+		color: var(--text-dim);
+	}
+
+	.hole-row img {
+		max-width: 100%;
+		max-height: 11rem;
+		width: auto;
+		border: 1px solid var(--line);
+		border-radius: 4px;
+	}
+
+	.hole-row .hint code {
+		overflow-wrap: anywhere;
+	}
+
+	.wide-layouts {
+		display: flex;
+		align-items: start;
+		gap: 0.5rem;
+		max-width: 46rem;
+		font-size: 0.82rem;
+		color: var(--text-dim);
+	}
+
+	.wide-layouts input {
+		width: auto;
+		margin-top: 0.15rem;
+	}
+
+	/* One column on a narrow window, where the two would be unreadably thin. */
+	@media (max-width: 52rem) {
+		.hole-row {
+			grid-template-columns: 1fr;
+		}
+	}
+
 	.tees thead th {
 		white-space: nowrap;
 	}
