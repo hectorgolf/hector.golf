@@ -1,5 +1,6 @@
 ---
 import { ringFor } from '@hector/ui/code/tee-dots.ts'
+import { imageUrl } from '@hector/schemas/src/courses.ts'
 import Layout from '../../../../layouts/Layout.astro';
 import Breadcrumb from '@hector/ui/components/Breadcrumb.astro';
 import { type Course } from '@hector/schemas/src/courses.ts';
@@ -91,7 +92,7 @@ const nextHoleHref = `${courseHref}/holes/${holeNumber == numberOfHoles ? 1 : ho
                 </table>
             </div>
             <figure class="hole-layout">
-                <img src={holeDescription?.layout} alt={`Layout of hole ${hole}`} />
+                <img src={imageUrl(holeDescription?.layout)} alt={`Layout of hole ${hole}`} />
             </figure>
         </div>
 

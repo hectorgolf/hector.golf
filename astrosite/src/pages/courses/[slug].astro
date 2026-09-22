@@ -89,7 +89,7 @@ const holeLayoutShape = course.course?.descriptions?.[0]?.shape === 'wide' ? 'wi
                         <li class:list={['hole', holeLayoutShape]}>
                             <a class="card-link" href={`/courses/${slug}/holes/${hole.hole}`}>
                                 <span class="hole-no num">Hole {hole.hole}</span>
-                                <img src={hole.layout} alt="" loading="lazy" />
+                                <img src={imageUrl(hole.layout)} alt="" loading="lazy" />
                             </a>
                         </li>
                     ))}

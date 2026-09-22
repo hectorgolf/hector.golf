@@ -348,109 +348,145 @@
       {
         "hole": 1,
         "shape": "wide",
-        "layout": "/images/courses/penati-heritage/holes/1.png",
+        "layout": {
+          "url": "/images/courses/penati-heritage/holes/1.png"
+        },
         "description": "Drive up the right side of the fairway for the easiest approach to attack the first green. Club selection is vital for your second shot to this small green."
       },
       {
         "hole": 2,
         "shape": "wide",
-        "layout": "/images/courses/penati-heritage/holes/2.png",
+        "layout": {
+          "url": "/images/courses/penati-heritage/holes/2.png"
+        },
         "description": "Options are available from the tee. Long hitters can play up the right side to get close to the green. Play up the left side will leave an interesting shot over the water."
       },
       {
         "hole": 3,
         "shape": "wide",
-        "layout": "/images/courses/penati-heritage/holes/3.png",
+        "layout": {
+          "url": "/images/courses/penati-heritage/holes/3.png"
+        },
         "description": "Drive up the left hand side of the fairway for the shortest route to this long par 5. You can be aggressive with shots into the green as the slopes will help run the ball to the pin."
       },
       {
         "hole": 4,
         "shape": "wide",
-        "layout": "/images/courses/penati-heritage/holes/4.png",
+        "layout": {
+          "url": "/images/courses/penati-heritage/holes/4.png"
+        },
         "description": "A par 3 which will reward a left to right ball flight shot. Be careful with your club selection as trouble can be found for the long shot."
       },
       {
         "hole": 5,
         "shape": "wide",
-        "layout": "/images/courses/penati-heritage/holes/5.png",
+        "layout": {
+          "url": "/images/courses/penati-heritage/holes/5.png"
+        },
         "description": "A long par 4 hole. The ideal shot from the tee is a right to left ball flight, this will leave a good approach to the narrow green. A four is a good score on this hole."
       },
       {
         "hole": 6,
         "shape": "wide",
-        "layout": "/images/courses/penati-heritage/holes/6.png",
+        "layout": {
+          "url": "/images/courses/penati-heritage/holes/6.png"
+        },
         "description": "The green was designed to favour a tee shot up the right side of the fairway, any tee shots up the left will face a tricky shot over a deep bunker."
       },
       {
         "hole": 7,
         "shape": "wide",
-        "layout": "/images/courses/penati-heritage/holes/7.png",
+        "layout": {
+          "url": "/images/courses/penati-heritage/holes/7.png"
+        },
         "description": "The draw shot is the perfect shot if you are looking a birdie on this short par 3 hole. Miss the green and the contours will leave you some interesting shots."
       },
       {
         "hole": 8,
         "shape": "wide",
-        "layout": "/images/courses/penati-heritage/holes/8.png",
+        "layout": {
+          "url": "/images/courses/penati-heritage/holes/8.png"
+        },
         "description": "The fairway bunker will give you an ideal line on the 8th hole. Be careful on your second shot as water can be found with any shot not struck 100%."
       },
       {
         "hole": 9,
         "shape": "wide",
-        "layout": "/images/courses/penati-heritage/holes/9.png",
+        "layout": {
+          "url": "/images/courses/penati-heritage/holes/9.png"
+        },
         "description": "Lots of options and decisions for the golfer. Play close to the fairway bunkers if you want to reach this short par 5 in two shots."
       },
       {
         "hole": 10,
         "shape": "wide",
-        "layout": "/images/courses/penati-heritage/holes/10.png",
+        "layout": {
+          "url": "/images/courses/penati-heritage/holes/10.png"
+        },
         "description": "Play close to the fairway bunker to give you a perfect line into the green. The green is bigger than it looks so be aggressive with the approach shot."
       },
       {
         "hole": 11,
         "shape": "wide",
-        "layout": "/images/courses/penati-heritage/holes/11.png",
+        "layout": {
+          "url": "/images/courses/penati-heritage/holes/11.png"
+        },
         "description": "An interesting par 5. Drive up the left side for the easier shot to the green. Carry the bunkers on your second shot and the contours will feed you close to the green."
       },
       {
         "hole": 12,
         "shape": "wide",
-        "layout": "/images/courses/penati-heritage/holes/12.png",
+        "layout": {
+          "url": "/images/courses/penati-heritage/holes/12.png"
+        },
         "description": "The shortest hole on the golf course but not the easiest. Be bold with your tee shot as anything short and weak will find trouble."
       },
       {
         "hole": 13,
         "shape": "wide",
-        "layout": "/images/courses/penati-heritage/holes/13.png",
+        "layout": {
+          "url": "/images/courses/penati-heritage/holes/13.png"
+        },
         "description": "An interesting par 4. The ideal shot will be a 3 wood or hybrid club down the left side, trouble can be found on the right side with 2 large bunkers. Play your second shot to the right side of the green and use the contours to run the ball down to the pin."
       },
       {
         "hole": 14,
         "shape": "wide",
-        "layout": "/images/courses/penati-heritage/holes/14.png",
+        "layout": {
+          "url": "/images/courses/penati-heritage/holes/14.png"
+        },
         "description": "A long par 3 hole which will play shorter than it looks. The ideal shot should carry the bunkers short and feed to the green. Do not go long as you will be faced with a difficult pitch back up the green."
       },
       {
         "hole": 15,
         "shape": "wide",
-        "layout": "/images/courses/penati-heritage/holes/15.png",
+        "layout": {
+          "url": "/images/courses/penati-heritage/holes/15.png"
+        },
         "description": "A big wide fairway is available on hole 15, play on the right side for an easier line to the green. Drives on the left side of the fairway will be faced with a difficult second shot across two deep bunkers."
       },
       {
         "hole": 16,
         "shape": "wide",
-        "layout": "/images/courses/penati-heritage/holes/16.png",
+        "layout": {
+          "url": "/images/courses/penati-heritage/holes/16.png"
+        },
         "description": "A tough long par 4, the perfect tee shot will carry over the fairway bunker on the right side of the fairway. Take an extra club for your second shot as 2 large bunkers can be found short and right of the green."
       },
       {
         "hole": 17,
         "shape": "wide",
-        "layout": "/images/courses/penati-heritage/holes/17.png",
+        "layout": {
+          "url": "/images/courses/penati-heritage/holes/17.png"
+        },
         "description": "A long par 5. Drive over the bunkers in the middle of the fairway to gain some extra distance from the downslope. The second shot is crucial, be careful of water and trees which can be found with a careless shot."
       },
       {
         "hole": 18,
         "shape": "wide",
-        "layout": "/images/courses/penati-heritage/holes/18.png",
+        "layout": {
+          "url": "/images/courses/penati-heritage/holes/18.png"
+        },
         "description": "A right to left tee shot is the favoured shot on the finishing hole. Once in the fairway a bold shot will be required if you are searching for a birdie finish!"
       }
     ]
