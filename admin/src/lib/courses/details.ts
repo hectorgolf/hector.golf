@@ -2,6 +2,7 @@ import { applyTeeEdits, type Course, type CourseTee } from '@hector/schemas/src/
 
 import { datasourceRows, datasourcesFrom, type DatasourceRow } from './datasources.ts'
 import { holeRows, scorecardFrom, type HoleRow } from './scorecard.ts'
+import { holeDescriptionRows, holeDescriptionsFrom, isWide, type HoleDescriptionRow } from './holes.ts'
 
 /**
  * What a person writes on a golf course, read off a submitted form.
@@ -41,6 +42,10 @@ export type CourseForm = {
     datasources: DatasourceRow[]
     /** The scorecard, one row per hole. Empty for a course that has none. */
     holes: HoleRow[]
+    /** A diagram and some prose per hole. Empty for a course with no hole pages. */
+    descriptions: HoleDescriptionRow[]
+    /** Whether this course's diagrams are the wide kind — one answer, not eighteen. */
+    wideLayouts: boolean
     tees: TeeForm[]
 }
 
@@ -201,6 +206,8 @@ export function formOf(course: Course): CourseForm {
         // A length column per tee row, the blank one included, so a tee and its
         // lengths can be added in the same save.
         holes: holeRows(course, tees.map((tee) => tee.name)),
+        descriptions: holeDescriptionRows(course),
+        wideLayouts: isWide(course),
     }
 }
 
@@ -424,7 +431,7 @@ export function courseFromForm(stored: Course, form: CourseForm): Course {
         .filter(({ tee }) => tee.name.trim() !== '')
         .map(({ index }) => index)
 
-    return {
+    const withScorecard: Course = {
         ...withTees,
         course: scorecardFrom(
             withTees,
@@ -433,4 +440,14 @@ export function courseFromForm(stored: Course, form: CourseForm): Course {
             form.holes
         ),
     }
+
+    if (!withScorecard.course) return withScorecard
+
+    // The hole descriptions are their own array and their own count — eighteen
+    // pages whether or not the scorecard has eighteen rows — so they are
+    // written last and from the stored ones, not derived from anything above.
+    const descriptions = holeDescriptionsFrom(withScorecard, form.descriptions, form.wideLayouts)
+    return descriptions === undefined
+        ? withScorecard
+        : { ...withScorecard, course: { ...withScorecard.course, descriptions } }
 }
