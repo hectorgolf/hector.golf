@@ -14,8 +14,8 @@ import { DOT_GROUND, DOT_STROKE_WIDTH, ringFor } from "../code/tee-dots.ts";
 describe("the ring around a tee dot", () => {
     it("uses a visible ring when the fill does not separate from the page", () => {
         expect(ringFor("#000000")).toBe("#626262");
-        expect(ringFor("#0000ff")).toBe("#ffffff");
-        expect(ringFor("#0000dd")).toBe("#ffffff");
+        expect(ringFor("#0000ff")).toBe("#4d4dff");
+        expect(ringFor("#0000dd")).toBe("#4d4de0");
     });
 
     it("is the fill itself when it does", () => {
@@ -23,7 +23,7 @@ describe("the ring around a tee dot", () => {
         expect(ringFor("#ffff00")).toBe("#ffff00");
         expect(ringFor("#ff0000")).toBe("#ff0000");
         expect(ringFor("#ffa500")).toBe("#ffa500");
-        expect(ringFor("#0433ff")).toBe("#ffffff");
+        expect(ringFor("#0433ff")).toBe("#4e5bff");
     });
 
     /*

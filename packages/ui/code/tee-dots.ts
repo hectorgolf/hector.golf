@@ -1,4 +1,12 @@
-import { contrast, decreaseLuminance, increaseLuminance, parseHex, toHex, type Rgb } from "./colour.ts";
+import {
+    contrast,
+    decreaseLuminance,
+    increaseLuminance,
+    moveTowardWhite,
+    parseHex,
+    toHex,
+    type Rgb,
+} from "./colour.ts";
 
 /**
  * The ring around a tee's dot, worked out rather than stored.
@@ -86,7 +94,7 @@ export function ringFor(fill: string, ground: string = DOT_GROUND): string {
 
         const original = parseHex(fill);
         let lighter = original;
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 100; i++) {
             const next = increaseLuminance(lighter, STEP);
             if (toHex(next) === toHex(lighter)) break;
             if (contrast(next, bg) >= ENOUGH) return toHex(next);
@@ -99,6 +107,14 @@ export function ringFor(fill: string, ground: string = DOT_GROUND): string {
             if (toHex(next) === toHex(darker)) break;
             if (contrast(next, bg) >= ENOUGH) return toHex(next);
             darker = next;
+        }
+
+        let lessChromatic = original;
+        for (let i = 0; i < 100; i++) {
+            const next = moveTowardWhite(lessChromatic, STEP);
+            if (toHex(next) === toHex(lessChromatic) || toHex(next) === WHITE) break;
+            if (contrast(next, bg) >= ENOUGH) return toHex(next);
+            lessChromatic = next;
         }
 
         const black = parseHex(BLACK);

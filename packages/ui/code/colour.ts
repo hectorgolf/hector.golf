@@ -151,6 +151,26 @@ export function decreaseLuminance(rgb: Rgb, decrease: number): Rgb {
 }
 
 /**
+ * Moves an sRGB colour toward white in linear RGB, reducing chroma without
+ * clipping any channel.
+ *
+ * @param rgb An sRGB colour with channel values in the range 0..255.
+ * @param amount The fraction of the remaining distance to white to cover.
+ * @returns A gamut-safe sRGB colour with rounded channel values in the range
+ *     0..255.
+ */
+export function moveTowardWhite(rgb: Rgb, amount: number): Rgb {
+    const channels = [linearize(rgb.r), linearize(rgb.g), linearize(rgb.b)];
+    const fraction = Math.min(1, Math.max(0, amount));
+
+    return {
+        r: Math.round(delinearize(channels[0]! + (1 - channels[0]!) * fraction)),
+        g: Math.round(delinearize(channels[1]! + (1 - channels[1]!) * fraction)),
+        b: Math.round(delinearize(channels[2]! + (1 - channels[2]!) * fraction)),
+    };
+}
+
+/**
  * Calculate the WCAG contrast ratio between two RGB values. Always returns a
  * value >= 1 whichever way round the pair is given.
  *
