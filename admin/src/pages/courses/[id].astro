@@ -2,10 +2,8 @@
 import AdminLayout from '../../layouts/AdminLayout.astro'
 import PageHeader from '@hector/ui/components/PageHeader.astro'
 import Breadcrumb from '@hector/ui/components/Breadcrumb.astro'
-import MirrorNotice from '../../components/MirrorNotice.astro'
 import ReadOnlyField from '../../components/ReadOnlyField.astro'
 
-import { COURSE_MIRROR } from '../../lib/mirror.ts'
 import { COURSES_ARE_OWNED } from '../../lib/ownership.ts'
 import { getCourse } from '../../lib/repository/events.ts'
 import { previewSrc } from '../../lib/courses/preview.ts'
@@ -64,8 +62,6 @@ const description = course.description_long.filter((part) =>
 	</div>
 
 	{saved && <p class="notice good">Course saved.</p>}
-
-	<MirrorNotice mirror={COURSE_MIRROR} what="This course" />
 
 	<section class="stack">
 		<h2>Details</h2>

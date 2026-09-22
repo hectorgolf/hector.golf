@@ -1,7 +1,10 @@
 # Courses in the admin
 
 *Written 2026-09-21 and executed as it was written. Steps 1-3 shipped with this document; step 4's
-editor and machinery shipped the same day. What is left is the flag.*
+editor, machinery and flag shipped the same day, and step 5's composable description the evening
+after. Done — except that the admin went on calling Courses read-only for a day afterwards, in the
+dashboard's pill and on both course pages, which is recorded in
+[`current/data-ownership.md`](../current/data-ownership.md) rather than here.*
 
 Seventeen golf courses live in `astrosite/src/data/courses/` and are edited by hand. They were the
 last section of the admin that said `planned`. This moves them into Firestore, renders them, and

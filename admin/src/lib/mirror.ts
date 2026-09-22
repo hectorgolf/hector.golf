@@ -5,13 +5,21 @@ import { OWNED_FORMATS } from './ownership.ts'
 /**
  * Why a record can be looked at here but not changed here.
  *
- * The admin shows every event and every player; it authors matchplay and
- * nothing else. So most of what these pages render is a mirror — Firestore's
+ * The admin shows every event, every player and every course; it authors
+ * matchplay, players and courses. What is left over is a mirror — Firestore's
  * copy of a committed file, refreshed by `npm run seed` after every scrape — and
  * a page that shows one without saying so invites the edit it cannot accept.
  * Worse, the edit would appear to work: writing to the mirror succeeds, and the
  * next seed reverts it within hours, silently. `docs/current/data-ownership.md`
  * is the decision; this is the sentence the UI says about it.
+ *
+ * Two mirrors are left, both event formats, which is why everything below is
+ * keyed by one. `PLAYER_MIRROR` and `COURSE_MIRROR` were here and went with
+ * their flips — on 2026-09-21 and 2026-09-22 — because a collection the admin
+ * authors has nothing to explain away, and a notice that outlives the
+ * limitation it describes is the lie this file exists to prevent. The courses
+ * one outlived it by a day: the editor shipped, the flag flipped, and both
+ * course pages went on apologising for a Save button that was right there.
  *
  * `eventMirror` asks `OWNED_FORMATS` rather than carrying its own list of what
  * is editable, which is the property worth keeping when these pages grow forms:
@@ -28,16 +36,6 @@ export type Mirror = {
      * nothing writes on a schedule.
      */
     scheduledWriters: readonly string[]
-    /**
-     * The plan that says how this collection stops being a mirror.
-     *
-     * Defaulted rather than required because it was one document for a long
-     * time. Courses are the first collection with a plan of their own, and a
-     * notice pointing at the wrong one is worse than a notice pointing at none:
-     * it sends somebody to a document that does not mention what they are
-     * looking at.
-     */
-    plan?: string
 }
 
 /**
@@ -68,25 +66,6 @@ const HECTOR: Mirror = {
 const FINNKAMPEN: Mirror = {
     authoredAt: 'astrosite/src/data/events/finnkampen/',
     scheduledWriters: [],
-}
-
-/**
- * Courses, which are a mirror for a different reason than the others were.
- *
- * Every other mirror in this file exists because a *scheduled writer* owns the
- * committed file and would race the admin. Courses have no scheduled writer at
- * all — nothing in `.github/workflows/` touches them and no npm script writes
- * them — so what keeps them read-only is simply that the editor has not been
- * built yet.
- *
- * That makes this the one mirror with no conflict to resolve, and the reason
- * `docs/plans/courses-in-the-admin.md` calls it the cheapest collection left to
- * move. `scheduledWriters` is empty and says so, the way Finnkampen's does.
- */
-export const COURSE_MIRROR: Mirror = {
-    authoredAt: 'astrosite/src/data/courses/',
-    scheduledWriters: [],
-    plan: 'docs/plans/courses-in-the-admin.md',
 }
 
 const EVENT_MIRRORS: Record<EventFormat, Mirror | undefined> = {

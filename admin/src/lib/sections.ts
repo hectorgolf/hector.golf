@@ -8,6 +8,8 @@
  * coming makes the admin look finished when it is not.
  */
 
+import { COURSES_ARE_OWNED, PLAYERS_ARE_OWNED } from './ownership.ts'
+
 /**
  * How much of a section exists, in the three states it can be in.
  *
@@ -22,6 +24,15 @@
  * `test/sections.test.ts` fails if an entry here promises a page that does not
  * exist. The lie the comment above worries about is cheap to tell in either
  * direction.
+ *
+ * Which is why the two single-collection sections *derive* their readiness from
+ * the ownership flag rather than stating it. They did state it, and both were
+ * wrong for a day: players and courses were both flipped to owned on 2026-09-21
+ * and this list went on calling them read-only, so the dashboard offered a
+ * `Read-only` pill on two sections whose pages have a Save button. The filesystem
+ * cannot answer this one — the page exists either way — but the flag can, and it
+ * is the same flag the store reads when the save arrives. `lib/mirror.ts` draws
+ * the same conclusion for event formats and says why at more length.
  */
 export type Readiness =
     /** The admin authors this: it has forms and they save. */
@@ -60,16 +71,13 @@ export const SECTIONS: Section[] = [
         slug: 'courses',
         label: 'Courses',
         blurb: 'Tees, ratings, slope and the per-hole descriptions the course guides render.',
-        // In Firestore as a mirror since 2026-09-21, so there is something to
-        // render. Editable is step 4 of `docs/plans/courses-in-the-admin.md`;
-        // until then this is the same read-only shape players had.
-        readiness: 'read-only',
+        readiness: COURSES_ARE_OWNED ? 'editable' : 'read-only',
     },
     {
         slug: 'players',
         label: 'Players',
         blurb: 'Profiles, biography text and the prompt hints the biography generator reads.',
-        readiness: 'read-only',
+        readiness: PLAYERS_ARE_OWNED ? 'editable' : 'read-only',
     },
     {
         slug: 'operations',

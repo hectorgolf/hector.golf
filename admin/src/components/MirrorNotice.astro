@@ -15,7 +15,11 @@
  *
  * It disappears on its own. `eventMirror()` reads `OWNED_FORMATS`, so the change
  * that makes a format authorable is the change that removes its notice — there
- * is no second place to remember.
+ * is no second place to remember. The one place that did not go through
+ * `eventMirror()` was the pair of course pages, which rendered this
+ * unconditionally and so kept saying a course could not be edited here for a day
+ * after the editor shipped. Every caller now passes a mirror it was given rather
+ * than one it named.
  */
 import type { Mirror } from '../lib/mirror.ts'
 
@@ -56,7 +60,7 @@ const { mirror, what } = Astro.props
 		)
 	}
 	<p class="where">
-		Planned in <code>{mirror.plan ?? 'docs/plans/authoring-players-and-events.md'}</code>; the rule
+		Planned in <code>docs/plans/authoring-players-and-events.md</code>; the rule
 		is in <code>docs/current/data-ownership.md</code>.
 	</p>
 </aside>

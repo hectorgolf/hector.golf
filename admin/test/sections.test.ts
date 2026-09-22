@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 
 import { EventFormat } from '@hector/schemas/src/events.ts'
 
-import { OWNED_FORMATS } from '../src/lib/ownership.ts'
+import { COURSES_ARE_OWNED, OWNED_FORMATS, PLAYERS_ARE_OWNED } from '../src/lib/ownership.ts'
 import { EVENT_FAMILIES, SECTIONS, adminPathForEvent, hasPage, sectionForPath } from '../src/lib/sections.ts'
 
 /**
@@ -49,6 +49,28 @@ describe('what the navigation promises', () => {
     it('has a page for every event family it offers as a link', () => {
         for (const family of EVENT_FAMILIES.filter(hasPage)) {
             expect(pageExistsAt(join('events', family.slug)), family.slug).toBe(true)
+        }
+    })
+
+    /**
+     * The claim the filesystem cannot check, and the one that went stale.
+     *
+     * A section's page exists whether or not it can be saved, so the two tests
+     * above pass happily while the dashboard offers a `Read-only` pill on a
+     * section with a Save button — which is what it did from the players flip on
+     * 2026-09-21 until this was written. `sections.ts` derives these two from the
+     * flags for that reason, and this is the guard against somebody writing the
+     * word back in.
+     *
+     * Only the two single-collection sections are checked. Events is mixed
+     * underneath and says so in its own comment; Operations owns nothing.
+     */
+    it('calls a collection editable only where the store would accept a write', () => {
+        const owned: Record<string, boolean> = { courses: COURSES_ARE_OWNED, players: PLAYERS_ARE_OWNED }
+        for (const section of SECTIONS.filter((s) => s.slug in owned)) {
+            expect(section.readiness === 'editable', `${section.slug} is ${section.readiness}`).toBe(
+                owned[section.slug]
+            )
         }
     })
 
