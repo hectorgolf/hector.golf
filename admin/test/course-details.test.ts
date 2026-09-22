@@ -342,6 +342,57 @@ describe('what a save changes', () => {
     })
 })
 
+/*
+ * The strongest version of "what a save leaves alone", for the one part of the
+ * record the form rebuilds from its own fields rather than carrying through.
+ *
+ * `courseFromForm` starts from the stored course, so everything it does not
+ * mention survives — except the tees, which `teesFrom` constructs key by key.
+ * A key it does not construct is a key deleted by opening the editor and
+ * pressing Save.
+ *
+ * That is not hypothetical. `stroke` — the ring the site drew around a tee's
+ * dot — was in the schema, in twenty tees across five courses, and in none of
+ * `TeeForm`, `teeOf` or `teesFrom`. A no-op save deleted it from every tee of
+ * whichever course was being edited, and nothing failed. The field is gone now
+ * and the ring is computed from the fill, but the shape of the mistake
+ * outlives both of those.
+ *
+ * So this compares whole tees rather than named fields, across every committed
+ * course. A field added to `CourseTeeSchema` and forgotten here fails this
+ * without anybody having to remember to extend a list.
+ */
+describe('a save that touches nothing keeps every tee exactly', () => {
+    const ids = [
+        'adamstal-championship',
+        'diamondcc-country',
+        'diamondcc-diamond',
+        'diamondcc-park',
+        'emporda-dunes',
+        'emporda-forest',
+        'konopiste-deste',
+        'konopiste-radecky',
+        'lafinca',
+        'penati-heritage',
+        'penati-legend',
+        'quellness-beckenbauer',
+        'quellness-porsche',
+        'sandvalley',
+        'tahko-new-course',
+        'tahko-old-course',
+        'villamartin',
+    ]
+
+    it.each(ids)('reproduces every tee of %s', (id) => {
+        const course = real(id)
+        const after = courseFromForm(course, formOf(course))
+
+        expect(after.course?.tees).toEqual(course.course?.tees)
+    })
+
+
+})
+
 describe('reading the tee rows', () => {
     it('drops a row nobody typed a name into', () => {
         expect(teesFrom([{ ...BLANK_TEE }])).toEqual([])

@@ -46,7 +46,6 @@
         "name": "White",
         "name_local": "bílá",
         "color": "#ffffff",
-        "stroke": "#000000",
         "length": 6086,
         "par": 72,
         "rating": {
@@ -62,7 +61,6 @@
         "name": "Yellow",
         "name_local": "žlutá",
         "color": "#dddd00",
-        "stroke": "#000000",
         "length": 5730,
         "par": 72,
         "rating": {
@@ -78,7 +76,6 @@
         "name": "Blue",
         "name_local": "modrá",
         "color": "#0000dd",
-        "stroke": "#000000",
         "length": 5372,
         "par": 72,
         "rating": {
@@ -94,7 +91,6 @@
         "name": "Red",
         "name_local": "červená",
         "color": "#dd0000",
-        "stroke": "#000000",
         "length": 5011,
         "par": 72,
         "rating": {

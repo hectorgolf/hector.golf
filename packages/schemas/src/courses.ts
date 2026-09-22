@@ -56,7 +56,6 @@ const CourseTeeSchema = z.object({
     name: z.string(),
     name_local: z.string().optional(),
     color: z.string(),
-    stroke: z.string().optional(),
     length: z.number().min(1).max(9999),
     par: z.number().min(1).max(99),
     par_ladies: z.number().min(1).max(99).optional(),

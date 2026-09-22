@@ -548,14 +548,31 @@ const rows = submitted.description
 										disabled={!COURSES_ARE_OWNED}
 									/>
 								</td>
+								{/*
+								 * A swatch beside the hex rather than instead of it. The
+								 * text box is what submits, so a value can still be
+								 * pasted, read and compared between rows — and a colour
+								 * input holds nothing but a plain `#rrggbb`, while
+								 * `color` is a free string on the schema.
+								 * `lib/tee-colours.ts` keeps the two in step and reveals
+								 * the swatch; with no script the hex box is exactly what
+								 * it was.
+								 *
+								 * There is no second colour to pick. The ring the site
+								 * draws around each dot is worked out from this one and
+								 * the page it sits on — see `astrosite/src/code/tee-dots.ts`.
+								 */}
 								<td>
-									<input
-										name={`tee-${index}-color`}
-										type="text"
-										value={tee.color}
-										disabled={!COURSES_ARE_OWNED}
-										class="colour"
-									/>
+									<div class="swatched">
+										<input type="color" class="swatch" tabindex="-1" aria-hidden="true" disabled={!COURSES_ARE_OWNED} />
+										<input
+											name={`tee-${index}-color`}
+											type="text"
+											value={tee.color}
+											disabled={!COURSES_ARE_OWNED}
+											class="colour"
+										/>
+									</div>
 								</td>
 								<td>
 									<input name={`tee-${index}-length`} type="text" value={tee.length} disabled={!COURSES_ARE_OWNED} class="num" />
@@ -944,6 +961,42 @@ const rows = submitted.description
 		text-decoration: line-through;
 	}
 
+	.swatched {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+	}
+
+	/*
+	 * Hidden until `lib/tee-colours.ts` can keep it in step with the hex beside
+	 * it. A swatch that does not write to the field next to it is a control
+	 * that looks like it works.
+	 */
+	.swatch {
+		display: none;
+		flex: none;
+		padding: 0;
+		border: 1px solid var(--line-strong);
+		border-radius: var(--radius-sm);
+		background: none;
+		cursor: pointer;
+	}
+
+	/*
+	 * Under `.tees` rather than on `.swatch` alone, to outweigh the
+	 * `.tees input { width: 100% }` above — which is right for every other box
+	 * in this table and, left to win here, gives the swatch the whole cell and
+	 * squeezes the hex beside it down to a `#`.
+	 */
+	.tees .swatch {
+		width: 1.6rem;
+		height: 1.6rem;
+	}
+
+	section.tee-colours-enhanced .swatch {
+		display: inline-block;
+	}
+
 	.tees .colour {
 		width: 6rem;
 	}
@@ -960,7 +1013,9 @@ const rows = submitted.description
 <script>
 	import { enhance } from '../../../lib/description-list.ts'
 	import { enhance as enhanceTees } from '../../../lib/tee-rows.ts'
+	import { enhance as enhanceColours } from '../../../lib/tee-colours.ts'
 
 	enhance(document)
 	enhanceTees(document)
+	enhanceColours(document)
 </script>

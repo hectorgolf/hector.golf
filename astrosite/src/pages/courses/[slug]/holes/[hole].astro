@@ -1,4 +1,5 @@
 ---
+import { ringFor } from '../../../../code/tee-dots'
 import Layout from '../../../../layouts/Layout.astro';
 import Breadcrumb from '@hector/ui/components/Breadcrumb.astro';
 import { type Course } from '@hector/schemas/src/courses.ts';
@@ -78,7 +79,7 @@ const nextHoleHref = `${courseHref}/holes/${holeNumber == numberOfHoles ? 1 : ho
                                             cx="12"
                                             cy="12"
                                             r="6"
-                                            style={`fill:${tee.color};stroke:${tee.stroke || tee.color};`}
+                                            style={`fill:${tee.color};stroke:${ringFor(tee.color)};`} class="tee-dot"
                                         />
                                     </svg>
                                     <span>{tee.name}</span>
@@ -99,6 +100,16 @@ const nextHoleHref = `${courseHref}/holes/${holeNumber == numberOfHoles ? 1 : ho
 </Layout>
 
 <style>
+    /*
+     * Every dot the same size, always. Which colour the ring is gets worked out
+     * per tee by `ringFor`; what is constant is that there is one — a dot that
+     * drops its ring is visibly smaller than a dot beside it that keeps one,
+     * which reads as a difference in the data rather than in the drawing.
+     */
+    .tee-dot {
+        stroke-width: 1;
+    }
+
     .hole-header {
         padding: 2rem 0 1.5rem;
         text-align: center;
