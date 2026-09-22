@@ -1173,8 +1173,37 @@ const rows = submitted.description
 	 * squeezes the hex beside it down to a `#`.
 	 */
 	.tees .swatch {
+		/*
+		 * `appearance: none` is what actually makes it small. A colour input
+		 * carries a minimum width of its own — 64px in Chrome — that a `width`
+		 * does not beat, so asking for 1.6rem and being given 64 is the default
+		 * behaviour rather than a mistake, and the box stayed two and a half
+		 * times wider than it was told to be.
+		 *
+		 * Dropping the native appearance and flattening the swatch's own
+		 * wrapper and border gives back the size that was asked for. The
+		 * control still opens the platform's colour wheel: this changes how it
+		 * is drawn, not what it does.
+		 */
+		appearance: none;
+		-webkit-appearance: none;
 		width: 1.6rem;
+		min-width: 0;
 		height: 1.6rem;
+	}
+
+	.swatch::-webkit-color-swatch-wrapper {
+		padding: 0;
+	}
+
+	.swatch::-webkit-color-swatch {
+		border: none;
+		border-radius: 2px;
+	}
+
+	.swatch::-moz-color-swatch {
+		border: none;
+		border-radius: 2px;
 	}
 
 	section.tee-colours-enhanced .swatch {
