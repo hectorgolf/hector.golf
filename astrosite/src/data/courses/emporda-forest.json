@@ -438,12 +438,12 @@
       "url": "https://www.empordagolf.com/storage/golf/forest/pdf/4/forest.pdf"
     },
     {
-      "name": "slope table",
-      "url": "https://www.empordagolf.com/storage/golf/forest/pdf/2/forest.pdf"
-    },
-    {
       "name": "local rules",
       "url": "https://www.empordagolf.com/storage/golf/forest/pdf/5/forest.pdf"
+    },
+    {
+      "name": "official slope table",
+      "url": "https://www.empordagolf.com/storage/golf/forest/pdf/2/forest.pdf"
     }
   ]
 }

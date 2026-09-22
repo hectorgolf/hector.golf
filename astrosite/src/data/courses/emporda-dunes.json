@@ -470,12 +470,12 @@
       "url": "https://www.empordagolf.com/storage/golf/links/pdf/4/links.pdf"
     },
     {
-      "name": "slope table",
-      "url": "https://www.empordagolf.com/storage/golf/links/pdf/2/links.pdf"
-    },
-    {
       "name": "local rules",
       "url": "https://www.empordagolf.com/storage/golf/links/pdf/5/links.pdf"
+    },
+    {
+      "name": "official slope table",
+      "url": "https://www.empordagolf.com/storage/golf/links/pdf/2/links.pdf"
     }
   ]
 }
