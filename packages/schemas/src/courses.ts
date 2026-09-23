@@ -160,19 +160,44 @@ export function withPublishedImages(course: Course): Course {
     };
 }
 
-/** Every bucket object a course references, for the export to fetch and to keep. */
-export function referencedObjects(course: Course): string[] {
+/** Every image a course references, wherever it sits in the shape. */
+function courseImages(course: Course): ({ url?: string; object?: string } | undefined)[] {
     const holes = [...(course.course?.descriptions ?? []), ...(course.course?.descriptions_local ?? [])];
-    const images = [
+    return [
         ...course.description_long.filter((part) => part.type === "image"),
         course.hero_image,
         // Every hole's layout, the local set included — a course whose Finnish
         // twin points at the same uploaded diagram as its English one still
-        // references it, and an object missing from this list is deleted by the
+        // references it, and an image missing from this list is deleted by the
         // next export.
         ...holes.map((hole) => hole.layout),
     ];
-    return images.map((image) => image?.object).filter((object): object is string => Boolean(object));
+}
+
+/** Every bucket object a course references, for the export to fetch and to keep. */
+export function referencedObjects(course: Course): string[] {
+    return courseImages(course)
+        .map((image) => image?.object)
+        .filter((object): object is string => Boolean(object));
+}
+
+/** Files in a course's `uploaded/` directory that one of its `url`s still names. */
+function referencedUploads(course: Course): string[] {
+    const prefix = `/images/courses/${course.id}/uploaded/`;
+    const names: string[] = [];
+    for (const image of courseImages(course)) {
+        const url = image?.url;
+        if (url && url.startsWith(prefix)) names.push(url.slice(prefix.length));
+    }
+    return names;
+}
+
+/** Every file the export must keep in a course's `uploaded/` directory. See `course-assets.test.ts`. */
+export function keptUploads(course: Course): Set<string> {
+    const fromObjects = referencedObjects(course).map(
+        (object) => uploadedImagePath(course.id, object).split("/").pop()!,
+    );
+    return new Set([...fromObjects, ...referencedUploads(course)]);
 }
 
 /** The tees as the committed files carry them: no ids. */
