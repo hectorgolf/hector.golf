@@ -226,3 +226,25 @@ resource "google_secret_manager_secret_iam_member" "admin_runtime_reads_function
   role      = "roles/secretmanager.secretAccessor"
   member    = google_service_account.admin_runtime.member
 }
+
+# ---------------------------------------------------------------------------
+# The admin reads app.hector.golf, and needs the key it checks.
+#
+# The `leaderboards` job asks app.hector.golf for the standings of a tournament
+# being played and commits them, which is a request that must carry `x-api-key`.
+#
+# THE SAME KEY AS THE FUNCTION'S, for the same reasons as the grant above: it is
+# app.hector.golf that decides what a valid key is, so "a key of our own" is a
+# change on somebody else's side. `TournamentLeaderboard` already presents this
+# one, and now so does the admin. They rotate together.
+#
+# Unset is a supported state. The job reports a missing key as `not-configured`
+# rather than as a failure, and `/api/jobs/leaderboards/run` answers 503 with the
+# setup step named — which is what a fresh project should say, four times a day,
+# without anybody treating it as an incident.
+resource "google_secret_manager_secret_iam_member" "admin_runtime_reads_hector_app_key" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.functions["hector-app-api-key"].secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = google_service_account.admin_runtime.member
+}

@@ -1,5 +1,5 @@
 import { google, sheets_v4, Common } from "googleapis";
-import type { GoogleSheetIndividualLeaderboard, GoogleSheetTeamLeaderboard } from "./types";
+import type { GoogleSheetIndividualLeaderboard, GoogleSheetTeamLeaderboard } from "@hector/schemas/src/leaderboards/types.ts";
 
 type Rows = Array<Row>;
 type Row = Array<CellValue>;

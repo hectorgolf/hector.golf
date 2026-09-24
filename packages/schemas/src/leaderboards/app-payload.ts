@@ -3,7 +3,7 @@ import {
     type GoogleSheetIndividualLeaderboard,
     type GoogleSheetTeamLeaderboard,
     type ScoringDirection,
-} from "./types";
+} from "./types.ts";
 
 /**
  * The parts of an app.hector.golf tournament payload that the leaderboards read.
@@ -14,9 +14,10 @@ import {
  * than it buys: a malformed payload in the browser means "no live update", and the
  * statically rendered table is still standing behind it.
  *
- * The strict schema lives in `app.ts`, on the path where a malformed payload could
- * be written to disk and published. Both paths share the extractors below, so the
- * field mapping — the part that can actually drift from upstream — is defined once.
+ * The strict schema is `app-response.ts` beside this, on the paths where a
+ * malformed payload could be written to disk and published. Both paths share the
+ * extractors below, so the field mapping — the part that can actually drift from
+ * upstream — is defined once.
  */
 export type AppTeamEntry = {
     players: string;

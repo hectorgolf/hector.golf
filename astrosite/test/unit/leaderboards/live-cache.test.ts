@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { AppLeaderboardSnapshot } from "../../../src/code/leaderboards/app-payload.ts";
+import type { AppLeaderboardSnapshot } from "@hector/schemas/src/leaderboards/app-payload.ts";
 import {
     DEFAULT_MAX_AGE_MS,
     clearCachedSnapshot,

@@ -1,9 +1,10 @@
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
-import type { GoogleSheetIndividualLeaderboard, GoogleSheetTeamLeaderboard } from './types';
+import type { GoogleSheetIndividualLeaderboard, GoogleSheetTeamLeaderboard } from '@hector/schemas/src/leaderboards/types.ts';
 import { type Player } from '@hector/schemas/src/players.ts'
 import { getAllPlayers, getPlayerName, getPlayerAliases } from '../../code/players'
-import { splitCompetitorNames, throughLabel } from './presentation'
+import { splitCompetitorNames } from '@hector/schemas/src/leaderboards/names.ts'
+import { throughLabel } from './presentation'
 
 // Re-exported so the many existing importers keep a single place to reach for it.
 export { leaderboardPosition } from './presentation'

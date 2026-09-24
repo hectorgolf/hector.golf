@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { readAppLeaderboardPayload } from "../../../src/code/leaderboards/app-payload.ts";
-import { BOARD_SCORING } from "../../../src/code/leaderboards/types.ts";
+import { readAppLeaderboardPayload } from "../../src/leaderboards/app-payload.ts";
+import { BOARD_SCORING } from "../../src/leaderboards/types.ts";
 
 const PAYLOAD = {
     generatedAt: "2026-09-25T11:04:12.000Z",

@@ -112,6 +112,13 @@ resource "google_cloud_run_v2_service" "admin" {
         value = "${google_secret_manager_secret.functions["astrosite-api-key"].name}/versions/latest"
       }
 
+      # And where the key app.hector.golf checks is, by the same rule. The
+      # `leaderboards` job presents it when it asks for a tournament's standings.
+      env {
+        name  = "HECTOR_APP_API_KEY_SECRET"
+        value = "${google_secret_manager_secret.functions["hector-app-api-key"].name}/versions/latest"
+      }
+
       # Where an uploaded file goes, whatever it belongs to — the prefix inside
       # the bucket says that. A name rather than a secret: the bucket is not
       # readable without the bindings in storage.tf, and a service that does not

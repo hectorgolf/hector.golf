@@ -20,7 +20,7 @@
  * only. Nothing is written that the page did not already show them.
  */
 
-import type { AppLeaderboardSnapshot } from "./app-payload";
+import type { AppLeaderboardSnapshot } from "@hector/schemas/src/leaderboards/app-payload.ts";
 
 /**
  * Bumped whenever the cached shape changes, as part of the key.
