@@ -36,6 +36,7 @@ import { genericEventSchema, type Event } from '@hector/schemas/src/events.ts'
 import { serializeJson } from '@hector/schemas/src/json.ts'
 import {
     schema as courseSchema,
+    keptUploads,
     referencedObjects,
     uploadedImagePath,
     withPublishedImages,
@@ -138,6 +139,26 @@ const uploadedDir = (courseId: string) => join(publicDir, 'images/courses', cour
  * produces the same filename every time and an unchanged image is not a diff.
  * A random id per upload would rewrite a file in git whenever somebody re-picked
  * the same photograph.
+ *
+ * ## Why a `url` keeps a file, and not only an `object`
+ *
+ * Because the round trip through git drops the object name, and pruning on
+ * objects alone then deletes the picture out from under a document that still
+ * points at it. `withPublishedImages` writes `url` into the committed file and
+ * keeps `object` out of it by design, so `seed --bootstrap` — which reads those
+ * files back — leaves Firestore holding the `url` and nothing else. The next
+ * export would see no referenced objects, find the directory non-empty, and
+ * empty it.
+ *
+ * `refuseToOverwriteAuthored` does not cover this. It refuses over documents
+ * the admin has edited, and the case that hurts is a new project or a reset
+ * emulator, where there is nothing authored to refuse over and the very first
+ * export takes the images out of git.
+ *
+ * Keeping on `url` too means an uploaded image degrades into an ordinary
+ * committed one, which is what the 270 layouts already in git are. Nothing
+ * downstream can tell the difference: the editor reads a `url` as a picture
+ * already committed, and the site only ever read `url`.
  */
 async function publishUploadedImages(courses: readonly Course[]): Promise<void> {
     let written = 0
@@ -166,8 +187,13 @@ async function publishUploadedImages(courses: readonly Course[]): Promise<void> 
         const wanted = new Map(
             referencedObjects(course).map((object) => [uploadedImagePath(course.id, object).split('/').pop()!, object])
         )
+        // Not `wanted.keys()`: a file the document names by `url` stays too.
+        // See the note above on why that half is not optional.
+        const keep = keptUploads(course)
         const directory = uploadedDir(course.id)
 
+        // `wanted`, not `keep`: a url naming a file in a directory that does
+        // not exist is a file already missing, and there is nothing to prune.
         if (wanted.size === 0 && !existsSync(directory)) continue
         mkdirSync(directory, { recursive: true })
 
@@ -182,7 +208,7 @@ async function publishUploadedImages(courses: readonly Course[]): Promise<void> 
         }
 
         for (const filename of readdirSync(directory)) {
-            if (wanted.has(filename)) continue
+            if (keep.has(filename)) continue
             rmSync(join(directory, filename))
             removed += 1
         }

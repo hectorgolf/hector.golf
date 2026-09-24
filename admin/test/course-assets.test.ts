@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+    keptUploads,
     referencedObjects,
     uploadedImagePath,
     withPublishedImages,
@@ -112,5 +113,78 @@ describe('what the export publishes', () => {
         expect(uploadedImagePath('konopiste-radecky', 'courses/konopiste-radecky/abc.jpg')).toBe(
             '/images/courses/konopiste-radecky/uploaded/abc.jpg'
         )
+    })
+})
+
+/**
+ * What survives in git, which is a different question from what the bucket
+ * holds — and the one the pruning gets wrong if it only asks the first.
+ *
+ * `withPublishedImages` writes `url` into the committed file and keeps `object`
+ * out of it by design. So the round trip through git drops the object name:
+ * `seed --bootstrap` reads those files back, and Firestore is left holding the
+ * url and nothing else. Pruning on `referencedObjects` alone would then find
+ * nothing referenced and empty a directory the course is still pointing at.
+ *
+ * `refuseToOverwriteAuthored` does not cover this. It refuses over documents
+ * the admin has edited, and the case that hurts is a new project or a reset
+ * emulator — nothing authored to refuse over, and the first export afterwards
+ * takes the pictures out of git.
+ */
+describe('what the export keeps in git', () => {
+    it('keeps a file the document names by object', () => {
+        const stored = course([{ type: 'image', object: 'courses/test-course/aaa.jpg' }])
+
+        expect([...keptUploads(stored)]).toEqual(['aaa.jpg'])
+    })
+
+    it('keeps a file the document names by url, which is all a bootstrap leaves', () => {
+        const stored = course([{ type: 'image', url: '/images/courses/test-course/uploaded/aaa.jpg' }])
+
+        expect([...keptUploads(stored)]).toEqual(['aaa.jpg'])
+    })
+
+    /** The hazard itself: export, bootstrap, export again, and the picture is still there. */
+    it('keeps the same files after the round trip that loses the object name', () => {
+        const uploaded = course([{ type: 'image', object: 'courses/test-course/aaa.jpg' }])
+        const bootstrapped = withPublishedImages(uploaded)
+
+        expect(referencedObjects(bootstrapped)).toEqual([])
+        expect(keptUploads(bootstrapped)).toEqual(keptUploads(uploaded))
+    })
+
+    /**
+     * The export owns one directory and prunes only inside it, so a committed
+     * image anywhere else is none of its business — and another course's
+     * `uploaded/` is not this course's to keep.
+     */
+    it('names nothing outside the directory the export owns', () => {
+        const stored = course([
+            { type: 'image', url: '/images/courses/test-course/legacy.jpg' },
+            { type: 'image', url: '/images/courses/other-course/uploaded/theirs.jpg' },
+        ])
+
+        expect([...keptUploads(stored)]).toEqual([])
+    })
+
+    it('looks everywhere an image hides, the Finnish twin included', () => {
+        const stored = {
+            ...course([{ type: 'image', object: 'courses/test-course/prose.jpg' }]),
+            hero_image: { url: '/images/courses/test-course/uploaded/hero.jpg' },
+            course: {
+                tees: [],
+                scorecard: { men: [], ladies: null },
+                descriptions: [{ hole: 1, layout: { object: 'courses/test-course/h1.png' }, description: '' }],
+                descriptions_local: [
+                    {
+                        hole: 1,
+                        layout: { url: '/images/courses/test-course/uploaded/h1-fi.png' },
+                        description: '',
+                    },
+                ],
+            },
+        } as Course
+
+        expect([...keptUploads(stored)].sort()).toEqual(['h1-fi.png', 'h1.png', 'hero.jpg', 'prose.jpg'])
     })
 })
