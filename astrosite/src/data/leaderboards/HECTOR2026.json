@@ -1,0 +1,131 @@
+{
+  "event": "HECTOR2026",
+  "scoring": {
+    "hector": "ascending",
+    "victor": "descending"
+  },
+  "hector": [],
+  "victor": [
+    {
+      "player": "Jari K",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    },
+    {
+      "player": "Sami H",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    },
+    {
+      "player": "Ofri P",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    },
+    {
+      "player": "Simo L",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    },
+    {
+      "player": "Ossi L",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    },
+    {
+      "player": "Toni K",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    },
+    {
+      "player": "Olli V",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    },
+    {
+      "player": "Juuso P",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    },
+    {
+      "player": "Marcus M",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    },
+    {
+      "player": "Olli A",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    },
+    {
+      "player": "Jussi A",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    },
+    {
+      "player": "Martin S",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    },
+    {
+      "player": "Timo L",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    },
+    {
+      "player": "Lassi K",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    },
+    {
+      "player": "Harri V",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    },
+    {
+      "player": "Lauri P",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    },
+    {
+      "player": "Toni M",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    },
+    {
+      "player": "Jarkko K",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    },
+    {
+      "player": "Kristian H",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    },
+    {
+      "player": "Lasse K",
+      "points": 0,
+      "diff": "",
+      "through": "0/6"
+    }
+  ],
+  "updatedAt": "2026-09-24T06:43:49.105Z"
+}
