@@ -1,5 +1,5 @@
 import { Octokit, RequestError } from "octokit";
-import { BOARD_SCORING, type GoogleSheetIndividualLeaderboard, type GoogleSheetTeamLeaderboard } from "./types";
+import { BOARD_SCORING, type GoogleSheetIndividualLeaderboard, type GoogleSheetTeamLeaderboard } from "@hector/schemas/src/leaderboards/types.ts";
 import { serializeJson } from "../json";
 
 /**

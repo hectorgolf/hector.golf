@@ -1,11 +1,11 @@
-import z from "zod";
 import { redact } from "../strings";
 import {
     extractHectorRows,
     extractVictorRows,
     type AppLeaderboardPayload,
     type LeaderboardData,
-} from "./app-payload";
+} from "@hector/schemas/src/leaderboards/app-payload.ts";
+import { appTournamentResponseSchema } from "@hector/schemas/src/leaderboards/app-response.ts";
 
 export type { LeaderboardData };
 
@@ -49,15 +49,22 @@ const fetchTournamentDataFromApp = async (url: string): Promise<any | undefined>
  * empty leaderboards, so callers must not treat a failure as "no results" —
  * publishing that would wipe whatever standings are already live.
  *
- * This is the strict path. What it returns gets written to a data file and
- * published, so the payload is validated in full before any of it is believed.
- * The browser-side live leaderboard reads the same payload through
- * `readAppLeaderboardPayload`, which checks only the fields it renders.
+ * This is the strict path: the payload is validated in full, by the schema in
+ * `@hector/schemas`, before any of it is believed. The browser-side live
+ * leaderboard reads the same payload through `readAppLeaderboardPayload`, which
+ * checks only the fields it renders.
+ *
+ * Nothing on the site publishes what this returns any more — the admin service's
+ * `leaderboards` job took the app-sourced events on 2026-09-24. What keeps this
+ * here is `test/unit/integrations/hectorapp-api.test.ts`, which calls it against
+ * the real endpoint on every CI run: that test is how a change to the upstream
+ * payload is noticed, and the schema it exercises is the one the admin publishes
+ * from.
  */
 export const fetchHectorLeaderboardDataFromApp = async (url: string): Promise<LeaderboardData | undefined> => {
     const json = await fetchTournamentDataFromApp(url);
     if (json === undefined) return undefined;
-    const result = AppHectorGolfResponseSchema.safeParse(json);
+    const result = appTournamentResponseSchema.safeParse(json);
     if (!result.success) {
         console.error(`Invalid response from Hector API. Error: ${result.error} Payload: ${JSON.stringify(json)}`);
         return undefined;
@@ -65,66 +72,3 @@ export const fetchHectorLeaderboardDataFromApp = async (url: string): Promise<Le
     const payload = result.data as AppLeaderboardPayload;
     return { hector: extractHectorRows(payload), victor: extractVictorRows(payload) };
 };
-
-const AppHectorGolfResponseSchema = z.object({
-    generatedAt: z.coerce.date(),
-    event: z.object({
-        id: z.string(),
-        name: z.string(),
-        venue: z.string(),
-        dates: z.string(),
-    }),
-    status: z.enum(["upcoming", "live", "final"]),
-    levelPar: z.number(),
-    players: z.array(
-        z.object({
-            id: z.string(),
-            name: z.string(),
-            hi: z.number(),
-            bucket: z.union([z.literal(1), z.literal(2)]),
-        }),
-    ),
-    pairs: z.array(
-        z.object({
-            id: z.string(),
-            defending: z.boolean(),
-            players: z.array(z.string()),
-        }),
-    ),
-    rounds: z.array(
-        z.object({
-            seq: z.number(),
-            day: z.string(),
-            date: z.coerce.date(),
-            course: z.string(),
-            status: z.enum(["final", "open", "upcoming"]),
-            formats: z.array(z.string()),
-        }),
-    ),
-    hector: z.array(
-        z.object({
-            // null (or absent) until the event is under way and there is something to rank.
-            position: z.number().nullable().optional(),
-            positionLabel: z.string().optional(),
-            pairId: z.string().optional(),
-            players: z.string(),
-            points: z.number().default(0),
-            diffToLeader: z.number().optional().nullable(),
-            thru: z.number().optional().nullable(),
-            roundsPlayed: z.number().default(0),
-            perRound: z.record(z.string(), z.number()).optional(),
-        }),
-    ),
-    victor: z.array(
-        z.object({
-            // null (or absent) until the event is under way and there is something to rank.
-            position: z.number().nullable().optional(),
-            positionLabel: z.string().optional(),
-            playerId: z.string().optional(),
-            player: z.string(),
-            points: z.number().default(0),
-            diffToLeader: z.number().optional().nullable(),
-            roundsPlayed: z.number().default(0),
-        }),
-    ),
-});

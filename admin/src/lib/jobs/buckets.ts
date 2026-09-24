@@ -1,9 +1,10 @@
 import { bucketingOrder, bucketsToRecompute, splitIntoBuckets } from '@hector/schemas/src/buckets.ts'
-import { hectorEventSchema, type HectorEvent } from '@hector/schemas/src/events.ts'
+import { type HectorEvent } from '@hector/schemas/src/events.ts'
 import { getPlayerHandicapFromHistory, type HandicapHistoryEntry } from '@hector/schemas/src/handicaps.ts'
 import { serializeJson } from '@hector/schemas/src/json.ts'
 import type { Player } from '@hector/schemas/src/players.ts'
 
+import { readHectorEvents } from './hector-events.ts'
 import type { Change } from './log.ts'
 
 /**
@@ -31,9 +32,6 @@ import type { Change } from './log.ts'
  * nothing expressing it. One scrape, and the buckets fall out of it.
  */
 
-/** Where the Hector event files live. */
-export const EVENTS_PATH = 'astrosite/src/data/events/hector'
-
 export type BucketDependencies = {
     /** The files in a directory, as repository-relative paths. Throws if it cannot look. */
     listDirectory(path: string): Promise<string[]>
@@ -58,24 +56,6 @@ export type BucketResult = {
      * whether the push has already started one. See `publish()` in `execute.ts`.
      */
     committed: string[]
-}
-
-/** An event as it is committed, kept beside the parsed copy. See `splitFor`. */
-type StoredEvent = {
-    path: string
-    /** The file's text, to compare a render against. */
-    raw: string
-    /**
-     * The file's JSON, which is what gets written back.
-     *
-     * Deliberately not the Zod output. `hectorEventSchema` defaults `ignore` to
-     * `false`, so writing the parsed copy would materialise that field into every
-     * event that does not carry it — the same objection `data-ownership.md` makes
-     * to giving `bucketsLocked` a default, and it would arrive as a diff on files
-     * this run had no business touching.
-     */
-    json: Record<string, unknown>
-    event: HectorEvent
 }
 
 /** The name the sort's last tiebreak orders on. */
@@ -182,7 +162,7 @@ export async function recompute(
     now: Date,
     dryRun: boolean
 ): Promise<BucketResult> {
-    const stored = await read(dependencies)
+    const stored = await readHectorEvents(dependencies)
     const { recompute: open, locked } = bucketsToRecompute(
         stored.map((entry) => entry.event),
         now
@@ -265,42 +245,4 @@ export async function recompute(
         return { outcome: 'failed', detail: failures.join('; '), changes, committed }
     }
     return { outcome: 'ok', changes, committed }
-}
-
-/**
- * Every committed Hector event, parsed, with the text it was parsed from.
- *
- * A file that does not parse is a hard stop rather than a skip, which is the
- * judgement `admin/scripts/export.ts` already makes about the same documents: a
- * silently dropped event is one whose split simply stops being maintained, and
- * nothing anywhere says so.
- */
-async function read(dependencies: BucketDependencies): Promise<StoredEvent[]> {
-    const paths = (await dependencies.listDirectory(EVENTS_PATH)).filter((path) => path.endsWith('.json'))
-    const stored: StoredEvent[] = []
-
-    for (const path of paths) {
-        const raw = await dependencies.readFile(path)
-        if (raw === undefined) {
-            // Listed a moment ago and gone now. Not a skip: it means something is
-            // rewriting this directory while the sweep reads it.
-            throw new Error(`${path} was listed but could not be read`)
-        }
-
-        let json: unknown
-        try {
-            json = JSON.parse(raw)
-        } catch (error) {
-            throw new Error(`${path} is not valid JSON: ${String(error)}`)
-        }
-
-        const parsed = hectorEventSchema.safeParse(json)
-        if (!parsed.success) {
-            throw new Error(`${path} does not match the Hector event schema; refusing to redraw any split`)
-        }
-
-        stored.push({ path, raw, json: json as Record<string, unknown>, event: parsed.data })
-    }
-
-    return stored
 }

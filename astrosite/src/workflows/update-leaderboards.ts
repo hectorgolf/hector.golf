@@ -7,18 +7,29 @@ import { playersData, eventsData, pathToEventJson, isHectorEvent } from "../code
 import { redact } from "../code/strings.ts";
 import { fetchHectorLeaderboardData, fetchVictorLeaderboardData } from "../code/leaderboards/google-sheets.ts";
 import { updateHectorEventLeaderboard } from "../code/leaderboards/github.ts";
-import { fetchHectorLeaderboardDataFromApp } from "../code/leaderboards/app.ts";
-import { splitCompetitorNames } from "../code/leaderboards/presentation.ts";
+import { splitCompetitorNames } from "@hector/schemas/src/leaderboards/names.ts";
 import { writeJsonFile } from "../code/json.ts";
 import {
     googleSheetIdFromLeaderboardUrl,
     isAppHectorGolfLeaderboard,
     isGoogleSheetsLeaderboard,
-} from "../code/leaderboards/sources.ts";
-import type { GoogleSheetTeamLeaderboard, GoogleSheetIndividualLeaderboard } from "../code/leaderboards/types.ts";
+} from "@hector/schemas/src/leaderboards/sources.ts";
+import type { GoogleSheetTeamLeaderboard, GoogleSheetIndividualLeaderboard } from "@hector/schemas/src/leaderboards/types.ts";
 
-// This workflow updates the leaderboards for all ongoing Hector events that
-// have a live leaderboard (either on Google Sheets or on app.hector.golf).
+// This workflow updates the leaderboards for the ongoing Hector events whose
+// standings live in a Google Sheet.
+//
+// It used to do the app.hector.golf ones too. Those moved to the admin service's
+// `leaderboards` job on 2026-09-24, because a board that changes with every putt
+// wants an update that starts when it is told to, and a GitHub run is dispatched,
+// queued, given a runner and made to `npm ci` first. app.hector.golf calls
+// `POST /api/jobs/leaderboards/run` instead, and the tick runs the same job.
+//
+// The split is by source, and both sides enforce it: `skipEventsOwnedByTheAdmin`
+// below drops what the job takes. Two writers for one leaderboard file would race
+// for it and commit over each other, which is the whole reason this is a hard
+// split rather than a fallback.
+//
 // This constant defines whether to include future (upcoming) events in the
 // update or not. If set to false, only events that have already started will
 // be updated. If set to true, future events will also be updated.
@@ -41,10 +52,29 @@ function getPlayerByName(name: string): string | undefined {
     })?.id;
 }
 
+/**
+ * Drops the events the admin service's `leaderboards` job publishes.
+ *
+ * Said out loud rather than filtered silently: somebody reading this run's log
+ * because a board looks stale needs to be told where that board is updated now.
+ */
+function skipEventsOwnedByTheAdmin(events: Array<HectorEvent>): Array<HectorEvent> {
+    return events.filter((e) => {
+        if (isAppHectorGolfLeaderboard(e.leaderboardSheet)) {
+            console.log(
+                `Not updating leaderboards for ${e.name} here: it is managed on app.hector.golf, which the admin ` +
+                    `service's 'leaderboards' job publishes.`,
+            );
+            return false;
+        }
+        return true;
+    });
+}
+
 function getOngoingHectorEvents(): Array<HectorEvent> {
-    return (eventsData as Array<HectorEvent>)
-        .filter(isHectorEvent)
-        .filter((e) => !!e.leaderboardSheet)
+    return skipEventsOwnedByTheAdmin(
+        (eventsData as Array<HectorEvent>).filter(isHectorEvent).filter((e) => !!e.leaderboardSheet),
+    )
         .filter((e) => {
             if (!updateFutureEvents && e.timing.start > isoDateToday()) {
                 const title = `Not updating leaderboards for ${e.name} because it's in the future`;
@@ -131,17 +161,7 @@ async function updateLeaderboardsForAllOngoingTournaments(): Promise<void> {
         let hectorLeaderboard: GoogleSheetTeamLeaderboard | undefined;
         let victorLeaderboard: GoogleSheetIndividualLeaderboard | undefined;
 
-        if (isAppHectorGolfLeaderboard(event.leaderboardSheet)) {
-            console.log(`${event.name} seems to be managed on app.hector.golf`);
-            const data = await fetchHectorLeaderboardDataFromApp(event.leaderboardSheet);
-            if (!data) {
-                // Leave both undefined so the update is skipped rather than
-                // overwriting the published leaderboard with nothing.
-                console.error(`Could not read leaderboard data for ${event.name}; skipping this event.`);
-            }
-            hectorLeaderboard = data?.hector;
-            victorLeaderboard = data?.victor;
-        } else if (isGoogleSheetsLeaderboard(event.leaderboardSheet)) {
+        if (isGoogleSheetsLeaderboard(event.leaderboardSheet)) {
             console.log(`${event.name} seems to be managed on Google Sheets`);
             const leaderboardSheetId = googleSheetIdFromLeaderboardUrl(event.leaderboardSheet);
             console.log(`Leaderboard sheet URL: ${event.leaderboardSheet}`);
