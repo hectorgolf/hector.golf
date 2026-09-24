@@ -102,6 +102,14 @@ jobs:
         env:
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HECTOR_APP_API_KEY: ${{ secrets.HECTOR_APP_API_KEY }}
+          # The script commits the leaderboard JSON through the GitHub contents
+          # API rather than the working tree, so it needs the committer address
+          # here and not only in the "Commit changes" step below. Missing it was
+          # invisible for as long as no tournament was ongoing: the API call only
+          # happens for a live event, so the first run of Hector Trophée 2026 on
+          # 2026-09-24 was the first run to reach it, and it crashed twice before
+          # anyone had a leaderboard to miss.
+          GIT_COMMITTER_EMAIL: ${{ secrets.GIT_COMMITTER_EMAIL }}
       - name: Commit changes
         id: commit
         run: |
