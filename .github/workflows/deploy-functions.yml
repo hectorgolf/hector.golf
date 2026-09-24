@@ -115,6 +115,24 @@ jobs:
           - function: TournamentLeaderboard
             secrets: "HECTOR_APP_API_KEY=hector-app-api-key:latest"
             extra_flags: "--timeout=30s --max-instances=5"
+          - function: RequestLeaderboardUpdate
+            secrets: "LEADERBOARD_TRIGGER_KEY=leaderboard-trigger-key:latest"
+            # The only function with configuration that is not a secret. Both
+            # values are public — a hostname, and an OAuth client id that appears
+            # in IAP's own sign-in URL — and neither belongs in Secret Manager,
+            # which would mean inventing a container for a published identifier.
+            # Expanded by the shell from the step's `env` below, so the value
+            # itself is not in this file.
+            env_vars: "ADMIN_DOMAIN=${ADMIN_DOMAIN},IAP_CLIENT_ID=${IAP_CLIENT_ID}"
+            # Its own identity, not GH_FUNCTIONS_RUNTIME_SA. That one is shared by
+            # three public endpoints, and this is the one function that may get
+            # into the admin service — see terraform/iap.tf.
+            runtime_sa: "hector-leaderboard-trigger"
+            # It waits for the admin, which reads app.hector.golf and commits to
+            # GitHub inside the request. `max-instances` is small on purpose: the
+            # admin takes a lease and answers 409 to a second run anyway, so
+            # parallelism here buys nothing but load.
+            extra_flags: "--timeout=120s --max-instances=3"
 
     defaults:
       run:
@@ -141,7 +159,19 @@ jobs:
       # which is also why the install in the build is a clean one and picks up
       # the `overrides` block in package.json.
       - name: Deploy
+        env:
+          # Only RequestLeaderboardUpdate's `env_vars` reads these; they are empty
+          # strings for every other row and nothing expands them.
+          ADMIN_DOMAIN: ${{ vars.TF_ADMIN_DOMAIN }}
+          IAP_CLIENT_ID: ${{ secrets.TF_IAP_OAUTH_CLIENT_ID }}
         run: |
+          # A function with no `env_vars` gets no flag at all, rather than an
+          # empty one: `--set-env-vars=""` is not the same as leaving it out.
+          env_flag=()
+          if [ -n "${{ matrix.env_vars }}" ]; then
+            env_flag=(--set-env-vars="${{ matrix.env_vars }}")
+          fi
+
           gcloud functions deploy ${{ matrix.function }} \
             --gen2 \
             --project="${{ vars.GCP_PROJECT_ID }}" \
@@ -150,9 +180,10 @@ jobs:
             --trigger-http \
             --entry-point=${{ matrix.function }} \
             --source=. \
-            --service-account="${{ vars.GH_FUNCTIONS_RUNTIME_SA }}" \
+            --service-account="${{ matrix.runtime_sa && format('{0}@{1}.iam.gserviceaccount.com', matrix.runtime_sa, vars.GCP_PROJECT_ID) || vars.GH_FUNCTIONS_RUNTIME_SA }}" \
             --build-service-account="projects/${{ vars.GCP_PROJECT_ID }}/serviceAccounts/${{ vars.GH_FUNCTIONS_BUILDER_SA }}" \
             --set-secrets="${{ matrix.secrets }}" \
+            "${env_flag[@]}" \
             ${{ matrix.extra_flags }} \
             --quiet
 
@@ -164,6 +195,6 @@ jobs:
             echo
             echo "- Commit: \`${GITHUB_SHA::12}\`"
             echo "- Region: ${{ vars.GCP_REGION }}"
-            echo "- Runs as: ${{ vars.GH_FUNCTIONS_RUNTIME_SA }}"
+            echo "- Runs as: ${{ matrix.runtime_sa || vars.GH_FUNCTIONS_RUNTIME_SA }}"
             echo "- Secrets: \`${{ matrix.secrets }}\`"
           } >> "$GITHUB_STEP_SUMMARY"

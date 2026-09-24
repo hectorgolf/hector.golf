@@ -226,6 +226,11 @@ resource "google_cloud_run_v2_service_iam_member" "functions_public" {
     "generateplayeravatar",
     "generateplayerbiography",
     "tournamentleaderboard",
+    # Public, and the one on this list that can cause a write. It has to be:
+    # app.hector.golf holds no Google credential, which is the whole reason the
+    # relay exists. What stands in for run.invoker is the API key it checks
+    # before it does anything at all — see the ordering note in the handler.
+    "requestleaderboardupdate",
   ])
 
   project  = var.project_id

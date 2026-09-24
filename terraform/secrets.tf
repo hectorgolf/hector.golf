@@ -86,6 +86,17 @@ locals {
     "gemini-api-key"     = "GOOGLE_GEMINI_API_KEY"
     "astrosite-api-key"  = "ASTROSITE_API_KEY"
     "hector-app-api-key" = "HECTOR_APP_API_KEY"
+
+    # What app.hector.golf presents to `RequestLeaderboardUpdate`, which is the
+    # opposite direction to `hector-app-api-key` above and deliberately not the
+    # same value. That one is their key, for us to call them; this one is ours,
+    # for them to call us. One value doing both would mean either side's leak
+    # opening both doors, and neither side could rotate without the other.
+    #
+    # Nobody but app.hector.golf is meant to hold it, so it is a long random
+    # string rather than anything meaningful — `openssl rand -base64 32` — and it
+    # is given to them out of band, the way they gave us theirs.
+    "leaderboard-trigger-key" = "LEADERBOARD_TRIGGER_KEY"
   }
 }
 
@@ -123,12 +134,31 @@ resource "google_secret_manager_secret" "functions" {
 # which also means TournamentLeaderboard's identity could be split off later
 # without touching the other two.
 resource "google_secret_manager_secret_iam_member" "functions_runtime_reads" {
-  for_each = google_secret_manager_secret.functions
+  # Every key except the relay's, which belongs to an identity of its own. The
+  # three functions that share `hector-functions` have no use for it, and a
+  # for_each that hands it to them anyway is how "one function, one door" stops
+  # being true without anybody deciding that it should.
+  for_each = {
+    for id, secret in google_secret_manager_secret.functions : id => secret
+    if id != "leaderboard-trigger-key"
+  }
 
   project   = var.project_id
   secret_id = each.value.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = google_service_account.functions_runtime.member
+}
+
+# The relay runs as an identity of its own — see iam.tf for why — so the grant
+# above does not reach it, and it needs exactly one of these secrets.
+#
+# Which is the arrangement working rather than an inconvenience: each identity
+# reads the keys its own functions present, and neither reads the other's.
+resource "google_secret_manager_secret_iam_member" "leaderboard_trigger_reads_its_key" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.functions["leaderboard-trigger-key"].secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = google_service_account.leaderboard_trigger.member
 }
 
 # ---------------------------------------------------------------------------
