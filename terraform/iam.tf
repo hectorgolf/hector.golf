@@ -228,6 +228,31 @@ resource "google_service_account" "functions_runtime" {
 
 }
 
+# ---------------------------------------------------------------------------
+# The one function that may get into the admin service.
+#
+# `RequestLeaderboardUpdate` is how app.hector.golf asks for a leaderboard
+# refresh: it checks an API key and then calls the admin's job endpoint, holding
+# an ID token minted for the IAP audience. So unlike the account above, this one
+# does authenticate to a Google service — and the service it authenticates to is
+# the one that holds everything.
+#
+# That is the whole reason it is not `hector-functions`. Three public endpoints
+# share that identity, and IAP access granted there would be IAP access for all
+# of them, permanently, because nothing would ever say which function needed it.
+# Here the grant in iap.tf names this account, and this account runs one
+# function.
+#
+# It reads one secret — `leaderboard-trigger-key`, in secrets.tf — and holds no
+# project roles.
+resource "google_service_account" "leaderboard_trigger" {
+  project      = var.project_id
+  account_id   = "hector-leaderboard-trigger"
+  display_name = "hector.golf leaderboard update relay (runtime)"
+  description  = "Identity RequestLeaderboardUpdate runs as. Gets into the admin through IAP; nothing else."
+  depends_on   = [google_project_service.enabled["iam.googleapis.com"]]
+}
+
 resource "google_service_account" "functions_deployer" {
   project      = var.project_id
   account_id   = "functions-deployer"
@@ -269,6 +294,16 @@ resource "google_project_iam_member" "functions_deployer_deploy" {
 # admin_deployer_act_as above.
 resource "google_service_account_iam_member" "functions_deployer_act_as" {
   service_account_id = google_service_account.functions_runtime.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = google_service_account.functions_deployer.member
+}
+
+# The same, for the relay's own identity. A second binding rather than a wider
+# one: `for_each` over both accounts would read as "the deployer may act as the
+# function accounts", which is a rule that quietly covers the next account
+# somebody adds.
+resource "google_service_account_iam_member" "functions_deployer_act_as_leaderboard_trigger" {
+  service_account_id = google_service_account.leaderboard_trigger.name
   role               = "roles/iam.serviceAccountUser"
   member             = google_service_account.functions_deployer.member
 }

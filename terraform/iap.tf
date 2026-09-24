@@ -21,6 +21,31 @@ resource "google_iap_web_cloud_run_service_iam_member" "admins" {
   member                 = each.value
 }
 
+# The leaderboard relay gets in the same front door as everybody else.
+#
+# `RequestLeaderboardUpdate` is the public function app.hector.golf calls when a
+# score changes; it checks an API key and then asks the admin to run the
+# `leaderboards` job. That second call is a caller like any other — an ID token
+# minted for the OAuth client below, presented to IAP, with the admin reading the
+# identity back out of IAP's header.
+#
+# Which is the point of doing it this way rather than opening a side door. The
+# alternative — an ingress exception, or a `run.invoker` binding that skips the
+# proxy — would need its own authentication, written by us, in front of the
+# service that holds everything. What this grant costs instead is one service
+# account that may reach the admin, and what it can do once inside is bounded by
+# what the admin admits: the endpoints, not the database.
+#
+# `scheduler.tf` makes the same argument for the schedule, and the two are
+# deliberately the same shape.
+resource "google_iap_web_cloud_run_service_iam_member" "leaderboard_trigger" {
+  project                = var.project_id
+  location               = google_cloud_run_v2_service.admin.location
+  cloud_run_service_name = google_cloud_run_v2_service.admin.name
+  role                   = "roles/iap.httpsResourceAccessor"
+  member                 = google_service_account.leaderboard_trigger.member
+}
+
 # The custom OAuth client IAP authenticates with.
 #
 # Two independent reasons make a custom client the only supported shape here,

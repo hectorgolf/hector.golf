@@ -61,6 +61,7 @@ const configured = {
     GOOGLE_GEMINI_API_KEY: "deployment-test-gemini-key",
     ASTROSITE_API_KEY: "deployment-test-site-key",
     HECTOR_APP_API_KEY: "deployment-test-app-key",
+    LEADERBOARD_TRIGGER_KEY: "deployment-test-trigger-key",
 };
 
 /**
@@ -85,6 +86,13 @@ const behaviours: Record<string, { description: string; call: (fn: DeployedFunct
         description: "turns down a request that names no event",
         call: (fn) => fn.fetch("/"),
     },
+    RequestLeaderboardUpdate: {
+        description: "asks an unauthenticated caller for an API key",
+        // No ADMIN_DOMAIN or IAP_CLIENT_ID in `configured`, deliberately: this
+        // answers 401 before it looks at either, which is the ordering the
+        // handler exists to guarantee for a public endpoint.
+        call: (fn) => fn.fetch("/", { method: "POST", body: "{}", headers: { "content-type": "application/json" } }),
+    },
 };
 
 const expectedStatus: Record<string, number> = {
@@ -92,6 +100,7 @@ const expectedStatus: Record<string, number> = {
     GeneratePlayerBiography: 401,
     GeneratePlayerAvatar: 401,
     TournamentLeaderboard: 400,
+    RequestLeaderboardUpdate: 401,
 };
 
 describe("the artifact a deploy would upload", () => {
