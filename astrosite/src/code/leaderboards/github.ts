@@ -2,12 +2,24 @@ import { Octokit, RequestError } from "octokit";
 import { BOARD_SCORING, type GoogleSheetIndividualLeaderboard, type GoogleSheetTeamLeaderboard } from "./types";
 import { serializeJson } from "../json";
 
-const getEnvironmentVariable = (name: string): string => {
-    const value = process.env[name];
-    if (!value) {
-        throw new Error(`Environment variable ${name} is not set`);
-    }
-    return value;
+/**
+ * Who the leaderboard commits are attributed to.
+ *
+ * The address falls back rather than throwing, which it used to do. Attribution
+ * is the least important thing this file does — the leaderboard is still correct
+ * when the commit is signed by the wrong address, and unreachable when the run
+ * dies — so an unset variable must not be what stops a live tournament updating.
+ * That is not hypothetical: it is exactly what happened on 2026-09-24, when the
+ * workflow passed the address to its commit step but not to the step that runs
+ * this code, and the first ongoing tournament in a year found the gap.
+ *
+ * The fallback address matches COMMITTER in admin/src/lib/jobs/registry.ts, so
+ * commits the admin makes and commits this makes are attributable to the same
+ * place when neither has been told otherwise.
+ */
+const COMMITTER = {
+    name: "UpdateHectorLeaderboard",
+    email: process.env.GIT_COMMITTER_EMAIL || "noreply@hector.golf",
 };
 
 const standardOptions = {
@@ -78,10 +90,7 @@ const createOrReplaceHectorLeaderboardDataFile = async (
         ...standardOptions,
         path: `astrosite/src/data/leaderboards/${eventId}.json`,
         message: `Automated leaderboard update for ${eventId} at ${payload.updatedAt}`,
-        committer: {
-            name: "UpdateHectorLeaderboard",
-            email: getEnvironmentVariable("GIT_COMMITTER_EMAIL"),
-        },
+        committer: COMMITTER,
         sha: existingSHA,
         content: fileContentsBase64,
     });
