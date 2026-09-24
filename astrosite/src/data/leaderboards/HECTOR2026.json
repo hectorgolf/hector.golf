@@ -7,125 +7,125 @@
   "hector": [],
   "victor": [
     {
-      "player": "Jarkko K",
-      "points": 14,
+      "player": "Toni M",
+      "points": 42,
       "diff": "",
       "through": "1/6"
     },
     {
-      "player": "Timo L",
-      "points": 13,
+      "player": "Jarkko K",
+      "points": 41,
       "diff": "-1",
-      "through": "1/6"
-    },
-    {
-      "player": "Toni M",
-      "points": 9,
-      "diff": "-1",
-      "through": "1/6"
-    },
-    {
-      "player": "Sami H",
-      "points": 11,
-      "diff": "-3",
-      "through": "1/6"
-    },
-    {
-      "player": "Olli V",
-      "points": 13,
-      "diff": "-3",
-      "through": "1/6"
-    },
-    {
-      "player": "Jussi A",
-      "points": 17,
-      "diff": "-3",
-      "through": "1/6"
-    },
-    {
-      "player": "Lassi K",
-      "points": 7,
-      "diff": "-3",
-      "through": "1/6"
-    },
-    {
-      "player": "Harri V",
-      "points": 7,
-      "diff": "-3",
-      "through": "1/6"
-    },
-    {
-      "player": "Juuso P",
-      "points": 12,
-      "diff": "-4",
-      "through": "1/6"
-    },
-    {
-      "player": "Olli A",
-      "points": 16,
-      "diff": "-4",
       "through": "1/6"
     },
     {
       "player": "Lauri P",
-      "points": 10,
-      "diff": "-4",
+      "points": 40,
+      "diff": "-2",
       "through": "1/6"
     },
     {
-      "player": "Jari K",
-      "points": 5,
-      "diff": "-5",
-      "through": "1/6"
-    },
-    {
-      "player": "Kristian H",
-      "points": 7,
-      "diff": "-5",
-      "through": "1/6"
-    },
-    {
-      "player": "Ofri P",
-      "points": 10,
-      "diff": "-6",
+      "player": "Olli V",
+      "points": 39,
+      "diff": "-3",
       "through": "1/6"
     },
     {
       "player": "Martin S",
-      "points": 14,
+      "points": 38,
+      "diff": "-4",
+      "through": "1/6"
+    },
+    {
+      "player": "Sami H",
+      "points": 36,
       "diff": "-6",
       "through": "1/6"
     },
     {
-      "player": "Lasse K",
-      "points": 6,
+      "player": "Olli A",
+      "points": 36,
       "diff": "-6",
       "through": "1/6"
     },
     {
-      "player": "Simo L",
-      "points": 13,
+      "player": "Lassi K",
+      "points": 36,
+      "diff": "-6",
+      "through": "1/6"
+    },
+    {
+      "player": "Harri V",
+      "points": 36,
+      "diff": "-6",
+      "through": "1/6"
+    },
+    {
+      "player": "Ofri P",
+      "points": 35,
       "diff": "-7",
       "through": "1/6"
     },
     {
-      "player": "Ossi L",
-      "points": 4,
+      "player": "Juuso P",
+      "points": 34,
       "diff": "-8",
       "through": "1/6"
     },
     {
-      "player": "Toni K",
-      "points": 4,
+      "player": "Jussi A",
+      "points": 34,
       "diff": "-8",
+      "through": "1/6"
+    },
+    {
+      "player": "Timo L",
+      "points": 34,
+      "diff": "-8",
+      "through": "1/6"
+    },
+    {
+      "player": "Lasse K",
+      "points": 33,
+      "diff": "-9",
+      "through": "1/6"
+    },
+    {
+      "player": "Simo L",
+      "points": 32,
+      "diff": "-10",
+      "through": "1/6"
+    },
+    {
+      "player": "Kristian H",
+      "points": 32,
+      "diff": "-10",
       "through": "1/6"
     },
     {
       "player": "Marcus M",
-      "points": 7,
-      "diff": "-9",
+      "points": 30,
+      "diff": "-12",
+      "through": "1/6"
+    },
+    {
+      "player": "Jari K",
+      "points": 29,
+      "diff": "-13",
+      "through": "1/6"
+    },
+    {
+      "player": "Ossi L",
+      "points": 29,
+      "diff": "-13",
+      "through": "1/6"
+    },
+    {
+      "player": "Toni K",
+      "points": 28,
+      "diff": "-14",
       "through": "1/6"
     }
   ],
-  "updatedAt": "2026-09-24T12:00:49.406Z"
+  "updatedAt": "2026-09-24T17:00:27.676Z"
 }
