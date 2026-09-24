@@ -195,7 +195,7 @@ Needs `GCLOUD_PROJECT_ID` in `.env`. It no longer needs `HECTOR_APP_API_KEY`:
 the function reads that from Secret Manager, and the deploy only names the
 secret.
 
-All four deploy scripts name the target project on the command line
+All five deploy scripts name the target project on the command line
 (`--project=$GCLOUD_PROJECT_ID`) and set the quota project for that one
 invocation, so they never modify your active `gcloud` configuration. If you keep
 more than one GCP context on one machine, deploying here leaves the other one
@@ -205,7 +205,7 @@ until that is set, the leaderboard pages render exactly as they did before.
 
 ### CI ships these, configuration included
 
-`.github/workflows/deploy-functions.yml` redeploys all four when code lands on
+`.github/workflows/deploy-functions.yml` redeploys all five when code lands on
 `main`, and it deploys *configuration* as well as code: every deploy states
 `--service-account` and `--set-secrets`, so a function's identity and its keys
 are whatever the workflow says rather than whatever the last laptop set.
@@ -235,6 +235,104 @@ somebody's `.env`.
 cd backend/backend-functions
 npm run start:tournament-leaderboard    # reads .env, serves on :8080
 ```
+
+# RequestLeaderboardUpdate API
+
+`RequestLeaderboardUpdate` is how app.hector.golf asks hector.golf to republish a
+tournament's standings the moment a score changes. It checks an API key and then calls
+the admin service's `POST /api/jobs/leaderboards/run`, which does the work in the
+request and commits the new board.
+
+Without it, the published leaderboard moves at the Cloud Scheduler tick — four times a
+day — which is not a live leaderboard.
+
+## Why there is a relay at all
+
+The admin service is behind IAP, which admits Google principals presenting an ID token
+signed for the audience of the OAuth client in front of the service. app.hector.golf is
+somebody else's system and holds no Google credential.
+
+The choices were a Google service account key on their side, or a shim on ours that
+speaks both. This is the shim: an API key in, a Google-signed token out.
+
+It is **not** a way past IAP. The relay goes in the same front door as Cloud Scheduler
+and the admins, as its own service account — `hector-leaderboard-trigger`, the only
+function identity holding `roles/iap.httpsResourceAccessor` — and the admin still reads
+the caller's identity from IAP's header. There is no second ingress and no
+`run.invoker` binding that skips the proxy.
+
+## Asking for an update
+
+```bash
+curl -X POST "https://europe-north1-hector-golf.cloudfunctions.net/RequestLeaderboardUpdate" \
+  -H "x-api-key: $LEADERBOARD_TRIGGER_KEY" \
+  -H "Content-Type: application/json" \
+  --data '{}'
+```
+
+`POST` only: a `GET` that publishes a leaderboard is one link preview away from
+publishing a leaderboard.
+
+There is no body to send and no event to name. The admin refreshes every Hector that is
+being played and whose standings live on app.hector.golf, which today is at most one.
+Letting the caller name an event would be a parameter the admin has to defend against
+rather than a capability anybody needs.
+
+The key is **not** `HECTOR_APP_API_KEY`. That one is app.hector.golf's key, for us to
+call them; this is ours, for them to call us. They rotate independently, which is the
+point of there being two.
+
+## What it answers
+
+The admin's own status and body are passed straight through, because they already say
+what a caller needs in order to decide whether to retry.
+
+| Status | When                                                                                      |
+| ------ | ----------------------------------------------------------------------------------------- |
+| `200`  | The job ran. The body says what it did, including when that was finding nothing to change |
+| `401`  | No `x-api-key`, or the wrong one. Deliberately the same answer for both                   |
+| `405`  | Anything other than `POST`                                                                |
+| `409`  | Another run is already going. Not worth retrying: it publishes the same standings         |
+| `500`  | The relay is not configured, or could not mint an identity token                          |
+| `502`  | The job failed, e.g. app.hector.golf could not be read. The board is unchanged            |
+| `503`  | The admin has no app.hector.golf key configured. A setup step, not a wait                 |
+| `504`  | The admin could not be reached within 60 seconds                                          |
+
+A `409` is the expected answer to a burst: the admin takes a lease, so two pushes a
+second apart produce one run and one refusal rather than two racing commits.
+
+## Deploying the relay
+
+```bash
+cd backend/backend-functions
+npm run deploy:request-leaderboard-update
+```
+
+Needs `GCLOUD_PROJECT_ID`, `ADMIN_DOMAIN` and `IAP_CLIENT_ID` in `.env`. The last two are
+configuration rather than secrets — a hostname, and an OAuth client id that appears in
+IAP's own sign-in URL — so unlike every other value here they are passed as
+`--set-env-vars`. The key itself comes from Secret Manager, as the others do.
+
+Creating that key is a one-off. Terraform makes the container and deliberately never the
+value:
+
+```bash
+openssl rand -base64 32 | tr -d '\n' | gcloud secrets versions add leaderboard-trigger-key \
+  --project=hector-golf --data-file=-
+```
+
+Then give the value to app.hector.golf out of band, the way they gave us theirs.
+
+## Running the relay locally
+
+```bash
+cd backend/backend-functions
+npm run start:request-leaderboard-update    # reads .env, serves on :8080
+```
+
+It will not get far on a laptop: minting the ID token needs the GCP metadata server,
+which is not there. What a local run does answer is everything above that point — the
+method check, the key check, and what an unconfigured deployment says.
 
 # Local CLI For GeneratePlayerAvatar
 
