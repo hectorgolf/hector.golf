@@ -82,6 +82,21 @@ export const wisegolfPasswordSecret = process.env.WISEGOLF_PASSWORD_SECRET
  */
 export const backendFunctionsKeySecret = process.env.ASTROSITE_API_KEY_SECRET
 
+/**
+ * Where the key app.hector.golf checks lives, by the same rule as the others:
+ * the *location* is configuration and the value never is.
+ *
+ * The same `hector-app-api-key` the `TournamentLeaderboard` function presents,
+ * and shared for the same reason it shares the biography key: app.hector.golf
+ * compares the header against one value, so a key of the admin's own would be a
+ * change on somebody else's side in service of a tidiness nothing is asking for.
+ *
+ * Unset is a supported state. The leaderboards job reports it as `not-configured`
+ * — a setup step rather than a failure — which is what the 503 on
+ * `/api/jobs/leaderboards/run` is saying.
+ */
+export const hectorAppKeySecret = process.env.HECTOR_APP_API_KEY_SECRET
+
 export type SecretLocation = { project: string; secretId: string }
 
 /**
@@ -177,6 +192,17 @@ export async function wisegolfCredentials(): Promise<{ username: string; passwor
  */
 export async function backendFunctionsKey(): Promise<string | undefined> {
     return readSecret(backendFunctionsKeySecret, process.env.ASTROSITE_API_KEY, 'the backend functions key')
+}
+
+/**
+ * The key app.hector.golf checks, or `undefined` when there is none.
+ *
+ * `HECTOR_APP_API_KEY` is the environment fallback, which is the spelling
+ * `update-leaderboards.yml` and the site's own reader already use — so a laptop
+ * `.env` needs no second name to remember.
+ */
+export async function hectorAppKey(): Promise<string | undefined> {
+    return readSecret(hectorAppKeySecret, process.env.HECTOR_APP_API_KEY, 'the app.hector.golf API key')
 }
 
 /**

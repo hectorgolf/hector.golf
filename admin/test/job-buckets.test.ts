@@ -5,7 +5,8 @@ import type { HandicapHistoryEntry } from '@hector/schemas/src/handicaps.ts'
 import { serializeJson } from '@hector/schemas/src/json.ts'
 import type { Player } from '@hector/schemas/src/players.ts'
 
-import { EVENTS_PATH, type BucketDependencies, bucketChanges, recompute } from '../src/lib/jobs/buckets.ts'
+import { type BucketDependencies, bucketChanges, recompute } from '../src/lib/jobs/buckets.ts'
+import { EVENTS_PATH } from '../src/lib/jobs/hector-events.ts'
 
 /**
  * What the recompute decides, without standing in for GitHub.

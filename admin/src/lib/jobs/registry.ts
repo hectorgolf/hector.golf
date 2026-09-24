@@ -4,6 +4,7 @@ import * as biographies from './biographies.ts'
 import * as clubs from './club-memberships.ts'
 import * as clubList from './clubs.ts'
 import * as handicaps from './handicaps.ts'
+import * as leaderboards from './leaderboards.ts'
 import type { Change } from './log.ts'
 
 /**
@@ -122,8 +123,14 @@ export class NotConfigured extends Error {
      */
     readonly notConfigured = true
 
-    constructor(what: string) {
-        super(`${what} needs a GitHub token, and this service has none configured`)
+    /**
+     * `needs` is a parameter because there is more than one credential now: the
+     * GitHub token every read here wants, and the app.hector.golf key the
+     * leaderboards job presents. A message that names the wrong one sends
+     * somebody to `gcloud secrets versions add` on a secret that was fine.
+     */
+    constructor(what: string, needs: string = 'a GitHub token') {
+        super(`${what} needs ${needs}, and this service has none configured`)
         this.name = 'NotConfigured'
     }
 }
@@ -329,6 +336,45 @@ export const JOBS: readonly Job[] = [
         run: (dryRun) =>
             handicaps.run(
                 { readFile, listDirectory, commit, replace, now: () => new Date(), ...handicaps.LIVE },
+                dryRun
+            ),
+    },
+    {
+        slug: 'leaderboards',
+        label: 'Tournament leaderboards',
+        blurb:
+            'Republishes the standings of a Hector being played, from app.hector.golf. ' +
+            'The sheet-sourced events are still the workflow of the same name.',
+        // Live from the start, and for the same reason the `clubs` job was: there
+        // is no second writer to shadow against. This does not run alongside
+        // `update-leaderboards.yml` for the events it takes — that workflow skips
+        // the app-sourced ones as of the same change — so a dry run would be a
+        // tournament with no leaderboard rather than evidence.
+        //
+        // It is also the job where a shadow period costs the most. The whole
+        // point of the endpoint is that app.hector.golf pushes an update and the
+        // board moves; a run that declines to write is one the caller has no way
+        // to tell from a run that had nothing to write.
+        //
+        // What makes that safe is what the file is: a current-state document
+        // whose previous versions are in git, so a bad write is a revert. The
+        // append-only rule that guards the handicap backups is about a different
+        // kind of file — see `wholesale` above.
+        dryRun: false,
+        // On the tick as well as on the push. The push is what makes the board
+        // current during a round; the tick is what covers the round where
+        // somebody's phone had no signal, and the fifty weeks a year when it
+        // finds nothing and says so in a sentence.
+        scheduled: true,
+        // The published board is a page on the site, so a change here is a page
+        // that is wrong until something rebuilds it. `publishes` is nearly always
+        // moot for this job in practice — its commits land under `astrosite/` and
+        // therefore start a deploy by themselves — but the flag is what is true
+        // rather than what is usually needed.
+        publishes: true,
+        run: (dryRun) =>
+            leaderboards.run(
+                { readFile, listDirectory, replace, now: () => new Date(), ...leaderboards.LIVE },
                 dryRun
             ),
     },

@@ -106,20 +106,6 @@ export function pointsLabel(points: number | string, decimals: number): string {
 }
 
 /**
- * Splits a competitor label into the individual names it names.
- *
- * Google Sheets writes a pair as "A + B"; app.hector.golf writes "A & B". Both
- * separators are accepted so that a pair is linked to its players' pages whichever
- * source the standings came from.
- */
-export function splitCompetitorNames(competitor: string): string[] {
-    return competitor
-        .split(/\s*[+&]\s*/)
-        .map((name) => name.trim())
-        .filter((name) => name.length > 0);
-}
-
-/**
  * A timestamp as the live board prints it: the time of day, in the reader's own
  * formatting.
  *

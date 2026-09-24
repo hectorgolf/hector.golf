@@ -35,10 +35,16 @@ describe('why a record is read-only', () => {
      * 2026-09-20 — so the notice would be overstating the price if it still named
      * it, and the page would be telling somebody to wait for a move that has
      * happened.
+     *
+     * Narrowed on 2026-09-24 rather than removed, and the qualifier is the whole
+     * of what the notice now promises: the admin's `leaderboards` job took the
+     * app-sourced events, so what is left outside this service is the workflow's
+     * sheet-sourced half. Dropping the entry would claim the price is nothing,
+     * which is wrong the moment somebody adds a sheet-managed Hector.
      */
     it('names the one job that still has to move before a Hector can be authored', () => {
         const mirror = eventMirror(EventFormat.Hector)
-        expect(mirror?.scheduledWriters).toEqual(['update-leaderboards (results.teams)'])
+        expect(mirror?.scheduledWriters).toEqual(['update-leaderboards (results.teams, sheet-sourced events)'])
     })
 
     /**
