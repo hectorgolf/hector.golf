@@ -4,7 +4,68 @@
     "hector": "ascending",
     "victor": "descending"
   },
-  "hector": [],
+  "hector": [
+    {
+      "team": "Toni M + Simo L",
+      "points": 22,
+      "diff": "",
+      "through": "1/6"
+    },
+    {
+      "team": "Jarkko K + Olli V",
+      "points": 22.33,
+      "diff": "+0.33",
+      "through": "1/6"
+    },
+    {
+      "team": "Lauri P + Sami H",
+      "points": 22.67,
+      "diff": "+0.67",
+      "through": "1/6"
+    },
+    {
+      "team": "Martin S + Juuso P",
+      "points": 23.33,
+      "diff": "+1.33",
+      "through": "1/6"
+    },
+    {
+      "team": "Olli A + Ossi L",
+      "points": 24,
+      "diff": "+2",
+      "through": "1/6"
+    },
+    {
+      "team": "Harri V + Marcus M",
+      "points": 24,
+      "diff": "+2",
+      "through": "1/6"
+    },
+    {
+      "team": "Lassi K + Jussi A",
+      "points": 24,
+      "diff": "+2",
+      "through": "1/6"
+    },
+    {
+      "team": "Ofri P + Timo L",
+      "points": 24.33,
+      "diff": "+2.33",
+      "through": "1/6"
+    },
+    {
+      "team": "Lasse K + Jari K",
+      "points": 25,
+      "diff": "+3",
+      "through": "1/6"
+    },
+    {
+      "team": "Kristian H + Toni K",
+      "points": 25.33,
+      "diff": "+3.33",
+      "through": "1/6"
+    }
+  ],
   "victor": [
     {
       "player": "Toni M",
@@ -127,5 +188,5 @@
       "through": "1/6"
     }
   ],
-  "updatedAt": "2026-09-24T17:00:27.676Z"
+  "updatedAt": "2026-09-25T03:00:53.242Z"
 }
