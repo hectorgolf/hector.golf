@@ -61,8 +61,8 @@ const decimals = decimalsForBoard(ascending)
 				</tr>
 			)}
 			{
-				entries.map(({ players, points, diff, through, description }) => {
-					const position = leaderboardPosition(entries, points, ascending)
+				entries.map(({ players, points, diff, through, description, dnf }) => {
+					const position = leaderboardPosition(entries, points, ascending, dnf)
 					// A shared lead ('T1') is still a lead, and gets the gold chip.
 					const leading = position === '1' || position === 'T1'
 					return (

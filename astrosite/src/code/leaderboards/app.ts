@@ -112,6 +112,7 @@ const AppHectorGolfResponseSchema = z.object({
             diffToLeader: z.number().optional().nullable(),
             thru: z.number().optional().nullable(),
             roundsPlayed: z.number().default(0),
+            dnf: z.boolean().optional(),
             perRound: z.record(z.string(), z.number()).optional(),
         }),
     ),
@@ -125,6 +126,7 @@ const AppHectorGolfResponseSchema = z.object({
             points: z.number().default(0),
             diffToLeader: z.number().optional().nullable(),
             roundsPlayed: z.number().default(0),
+            dnf: z.boolean().optional(),
         }),
     ),
 });

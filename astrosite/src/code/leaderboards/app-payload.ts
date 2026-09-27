@@ -23,6 +23,7 @@ export type AppTeamEntry = {
     points?: number;
     diffToLeader?: number | null;
     roundsPlayed?: number;
+    dnf?: boolean;
 };
 
 export type AppPlayerEntry = {
@@ -30,6 +31,7 @@ export type AppPlayerEntry = {
     points?: number;
     diffToLeader?: number | null;
     roundsPlayed?: number;
+    dnf?: boolean;
 };
 
 export type AppLeaderboardPayload = {
@@ -79,12 +81,17 @@ const signedDiff = (diffToLeader: number | null | undefined, direction: ScoringD
     return direction === "ascending" ? `+${magnitude}` : `-${magnitude}`;
 };
 
+// Only ever written as `dnf: true`, so rows that finished stay byte-identical to
+// the files written before the flag existed.
+const dnfFlag = (entry: { dnf?: boolean }): { dnf?: true } => (entry.dnf ? { dnf: true } : {});
+
 export const extractHectorRows = (data: AppLeaderboardPayload): GoogleSheetTeamLeaderboard => {
     return data.hector.map((entry) => ({
         team: entry.players,
         points: entry.points ?? 0,
         diff: signedDiff(entry.diffToLeader, BOARD_SCORING.hector),
         through: `${entry.roundsPlayed ?? 0}/${data.rounds.length}`,
+        ...dnfFlag(entry),
     }));
 };
 
@@ -94,6 +101,7 @@ export const extractVictorRows = (data: AppLeaderboardPayload): GoogleSheetIndiv
         points: entry.points ?? 0,
         diff: signedDiff(entry.diffToLeader, BOARD_SCORING.victor),
         through: `${entry.roundsPlayed ?? 0}/${data.rounds.length}`,
+        ...dnfFlag(entry),
     }));
 };
 
@@ -106,10 +114,12 @@ const hasEntryShape = (value: unknown, nameField: "players" | "player"): boolean
     const diff = value.diffToLeader;
     const points = value.points;
     const roundsPlayed = value.roundsPlayed;
+    const dnf = value.dnf;
     return (
         typeof value[nameField] === "string" &&
         (points === undefined || typeof points === "number") &&
         (roundsPlayed === undefined || typeof roundsPlayed === "number") &&
+        (dnf === undefined || typeof dnf === "boolean") &&
         (diff === undefined || diff === null || typeof diff === "number")
     );
 };

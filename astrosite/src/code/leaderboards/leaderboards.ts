@@ -15,6 +15,7 @@ export type EnrichedLeaderboardEntry = {
     points: number;
     diff: string;
     through: string;
+    dnf: boolean;
 }
 
 export type EnrichedLeaderboard = Array<EnrichedLeaderboardEntry>
@@ -78,6 +79,7 @@ const enrichLeaderboard = (leaderboard: GoogleSheetTeamLeaderboard|GoogleSheetIn
             points: entry.points,
             diff: entry.diff,
             through: status,
+            dnf: entry.dnf === true,
         }
     }
     const isTeamLeaderboard = leaderboard.every(entry => typeof((entry as any).team) === 'string')

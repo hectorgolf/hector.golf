@@ -6,8 +6,8 @@
  * import time and would drag `fs` into the client bundle. Everything here is pure.
  */
 
-/** A row as far as positioning is concerned: only the score matters. */
-type Scored = { points: number | string };
+/** A row as far as positioning is concerned: its score, and whether it counts at all. */
+type Scored = { points: number | string; dnf?: boolean };
 
 const asNumber = (points: number | string): number => {
     return typeof points === "number" ? points : parseFloat(points);
@@ -18,18 +18,24 @@ const asNumber = (points: number | string): number => {
  *
  * Ties are detected on the raw value rather than the parsed one so that two rows
  * both reading "222.0" tie even if a future source starts sending "222".
+ *
+ * A competitor who did not finish prints "DNF" and is left out of everyone
+ * else's ranking, however good their partial score looks.
  */
 export function leaderboardPosition(
     leaderboard: ReadonlyArray<Scored>,
     points: number | string,
     lowerIsBetter: boolean,
+    dnf = false,
 ): string {
+    if (dnf) return "DNF";
+    const field = leaderboard.filter((row) => !row.dnf);
     const score = asNumber(points);
-    const numberOfBetterScores = leaderboard.filter(({ points: other }) => {
+    const numberOfBetterScores = field.filter(({ points: other }) => {
         const value = asNumber(other);
         return lowerIsBetter ? value < score : value > score;
     }).length;
-    const numberOfEqualScores = leaderboard.filter(({ points: other }) => other === points).length;
+    const numberOfEqualScores = field.filter(({ points: other }) => other === points).length;
     if (numberOfEqualScores > 1) {
         return `T${numberOfBetterScores + 1}`;
     }

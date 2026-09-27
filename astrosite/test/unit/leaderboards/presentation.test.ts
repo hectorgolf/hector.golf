@@ -35,6 +35,13 @@ describe("leaderboardPosition", () => {
         expect(leaderboardPosition([{ points: 222 }, { points: 224.9 }], 222, true)).toBe("1");
         expect(leaderboardPosition([{ points: "222.0" }, { points: "224.9" }], "222.0", true)).toBe("1");
     });
+
+    it("prints DNF for a competitor who did not finish, and ranks everyone else without them", () => {
+        const board = [{ points: 206.25 }, { points: 209.33 }, { points: 194.08, dnf: true }];
+        expect(leaderboardPosition(board, 194.08, true, true)).toBe("DNF");
+        expect(leaderboardPosition(board, 206.25, true)).toBe("1");
+        expect(leaderboardPosition(board, 209.33, true)).toBe("2");
+    });
 });
 
 describe("decimalsForBoard", () => {

@@ -35,7 +35,14 @@ export const BOARD_SCORING: { readonly hector: ScoringDirection; readonly victor
  * The "through" is a string formatted as "X/Y" indicating "X rounds played out of Y". If the player
  * has played all rounds, the through is "Y/Y".
  */
-export type GoogleSheetIndividualLeaderboard = Array<{ player: string; points: number; diff: string; through: string }>;
+export type GoogleSheetIndividualLeaderboard = Array<{
+    player: string;
+    points: number;
+    diff: string;
+    through: string;
+    /** Present, and true, only for a competitor who did not finish. */
+    dnf?: true;
+}>;
 
 /**
  * The team leaderboard is a list of teams, each with a team name, points, diff, and through.
@@ -45,4 +52,11 @@ export type GoogleSheetIndividualLeaderboard = Array<{ player: string; points: n
  * The "through" is a string formatted as "X/Y" indicating "X rounds played out of Y". If the team
  * has played all rounds, the through is "Y/Y".
  */
-export type GoogleSheetTeamLeaderboard = Array<{ team: string; points: number; diff: string; through: string }>;
+export type GoogleSheetTeamLeaderboard = Array<{
+    team: string;
+    points: number;
+    diff: string;
+    through: string;
+    /** Present, and true, only for a team that did not finish. */
+    dnf?: true;
+}>;

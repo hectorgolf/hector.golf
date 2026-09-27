@@ -132,7 +132,7 @@ const cacheKey = liveCacheKey(eventId)
 		renderedAt?: string
 		roster: Record<string, RosterEntry>
 	}
-	type Row = { competitor: string; points: number | string; diff: string; through: string }
+	type Row = { competitor: string; points: number | string; diff: string; through: string; dnf?: boolean }
 
 	/**
 	 * How old the standings on screen may be before the page says so.
@@ -449,12 +449,14 @@ const cacheKey = liveCacheKey(eventId)
 			points: entry.points,
 			diff: entry.diff,
 			through: entry.through,
+			dnf: entry.dnf === true,
 		}))
 		const victorRows: Row[] = (snapshot.victor as Array<Record<string, never>>).map((entry: any) => ({
 			competitor: entry.player,
 			points: entry.points,
 			diff: entry.diff,
 			through: entry.through,
+			dnf: entry.dnf === true,
 		}))
 		applyRows(boards.get('hector'), hectorRows, roster)
 		applyRows(boards.get('victor'), victorRows, roster)
@@ -492,7 +494,7 @@ const cacheKey = liveCacheKey(eventId)
 				tr = cloned
 			}
 
-			const position = leaderboardPosition(rows, row.points, ascending)
+			const position = leaderboardPosition(rows, row.points, ascending, row.dnf)
 			const place = tr.querySelector<HTMLElement>('[data-cell="place"]')
 			if (place) {
 				place.textContent = position
