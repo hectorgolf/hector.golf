@@ -3,7 +3,7 @@ import { type Player, schema as PlayerSchema } from '@hector/schemas/src/players
 import { type HandicapHistoryEntry } from '@hector/schemas/src/handicaps.ts';
 import { getPlayerHandicapHistoryById as getPlayerHandicapHistoryByIdImplementation } from './handicaps';
 import { getAllEvents } from './events';
-import { playersData, endDateOfEvent, isHectorEvent, isMatchplayEvent, isFinnkampenEvent } from './data';
+import { playersData, endDateOfEvent, isHectorEvent, isMatchplayEvent, isFinnkampenEvent, isUpcomingEvent } from './data';
 
 export function getAllPlayerIds(): Array<string> {
     return playersData.map((record) => record.id);
@@ -187,7 +187,11 @@ export function getPlayerAliases(player: Player|string, ignorePrivacy?: boolean)
 function getPlayersAtEvent(event: Event): Array<Player> {
     if (isHectorEvent(event)) {
         const teams = event.results?.teams || []
-        const players = teams.flatMap(team => team.players.map(id => getPlayerById(id)))
+        // Teams are often recorded after the event; until then, the roster stands in.
+        const ids = teams.length > 0
+            ? teams.flatMap(team => team.players)
+            : isUpcomingEvent(event) ? [] : event.participants
+        const players = ids.map(id => getPlayerById(id))
         return players.filter(p => !!p) as Array<Player>;
     } else if (isMatchplayEvent(event)) {
         const players = event.participants?.map(id => getPlayerById(id)) || []
