@@ -7,63 +7,63 @@
   "hector": [
     {
       "team": "Toni M + Simo L",
-      "points": 142.25,
+      "points": 199.25,
       "diff": "",
-      "through": "5/6"
+      "through": "6/6"
     },
     {
       "team": "Jarkko K + Olli V",
-      "points": 147.33,
-      "diff": "+5.08",
-      "through": "5/6"
-    },
-    {
-      "team": "Harri V + Marcus M",
-      "points": 147.5,
-      "diff": "+5.25",
-      "through": "5/6"
+      "points": 203.83,
+      "diff": "+4.58",
+      "through": "6/6"
     },
     {
       "team": "Kristian H + Toni K",
-      "points": 147.58,
-      "diff": "+5.33",
-      "through": "5/6"
+      "points": 207.08,
+      "diff": "+4.83",
+      "through": "6/6"
+    },
+    {
+      "team": "Harri V + Marcus M",
+      "points": 208,
+      "diff": "+5.75",
+      "through": "6/6"
     },
     {
       "team": "Lauri P + Sami H",
-      "points": 149.92,
-      "diff": "+7.67",
-      "through": "5/6"
-    },
-    {
-      "team": "Martin S + Juuso P",
-      "points": 150.08,
-      "diff": "+7.83",
-      "through": "5/6"
-    },
-    {
-      "team": "Lassi K + Jussi A",
-      "points": 152.25,
-      "diff": "+10",
-      "through": "5/6"
-    },
-    {
-      "team": "Olli A + Ossi L",
-      "points": 153.25,
-      "diff": "+11",
-      "through": "5/6"
+      "points": 208.92,
+      "diff": "+6.67",
+      "through": "6/6"
     },
     {
       "team": "Lasse K + Jari K",
-      "points": 155.25,
-      "diff": "+13",
-      "through": "5/6"
+      "points": 213.75,
+      "diff": "+7.5",
+      "through": "6/6"
+    },
+    {
+      "team": "Lassi K + Jussi A",
+      "points": 214.25,
+      "diff": "+8",
+      "through": "6/6"
+    },
+    {
+      "team": "Martin S + Juuso P",
+      "points": 211.08,
+      "diff": "+8.83",
+      "through": "6/6"
+    },
+    {
+      "team": "Olli A + Ossi L",
+      "points": 221.75,
+      "diff": "+15.5",
+      "through": "6/6"
     },
     {
       "team": "Ofri P + Timo L",
-      "points": 131.08,
+      "points": 194.08,
       "diff": "",
-      "through": "5/6"
+      "through": "6/6"
     }
   ],
   "victor": [
@@ -188,5 +188,5 @@
       "through": "4/6"
     }
   ],
-  "updatedAt": "2026-09-27T03:01:16.676Z"
+  "updatedAt": "2026-09-27T12:00:53.416Z"
 }
