@@ -7,31 +7,31 @@
   "hector": [
     {
       "team": "Toni M + Simo L",
-      "points": 199.25,
+      "points": 206.25,
       "diff": "",
       "through": "6/6"
     },
     {
       "team": "Jarkko K + Olli V",
-      "points": 203.83,
-      "diff": "+4.58",
-      "through": "6/6"
-    },
-    {
-      "team": "Kristian H + Toni K",
-      "points": 207.08,
-      "diff": "+4.83",
+      "points": 209.33,
+      "diff": "+3.08",
       "through": "6/6"
     },
     {
       "team": "Harri V + Marcus M",
-      "points": 208,
+      "points": 212,
       "diff": "+5.75",
       "through": "6/6"
     },
     {
+      "team": "Kristian H + Toni K",
+      "points": 212.08,
+      "diff": "+5.83",
+      "through": "6/6"
+    },
+    {
       "team": "Lauri P + Sami H",
-      "points": 208.92,
+      "points": 212.92,
       "diff": "+6.67",
       "through": "6/6"
     },
@@ -49,7 +49,7 @@
     },
     {
       "team": "Martin S + Juuso P",
-      "points": 211.08,
+      "points": 215.08,
       "diff": "+8.83",
       "through": "6/6"
     },
@@ -188,5 +188,5 @@
       "through": "4/6"
     }
   ],
-  "updatedAt": "2026-09-27T12:00:53.416Z"
+  "updatedAt": "2026-09-27T13:12:51.306Z"
 }
