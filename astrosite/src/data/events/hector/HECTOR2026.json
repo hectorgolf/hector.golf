@@ -289,8 +289,8 @@
   "results": {
     "teams": [],
     "winners": {
-      "hector": [],
-      "victor": []
+      "hector": ["toni-m", "simo-l"],
+      "victor": ["olli-v", "toni-m"]
     }
   },
   "leaderboardSheet": "https://app.hector.golf/api/tournament?event=HECTOR2026"
