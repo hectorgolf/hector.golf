@@ -1087,7 +1087,7 @@ their absence degrades; this is what reads them.
 | `PUBLIC_LEADERBOARD_PROXY_URL` | Variable | `deploy-site`, `check-site` — absent, live leaderboards drop out of the build |
 | `WISEGOLF_USERNAME` | Secret | PR checks (the live `wisegolf-api` tests), three update workflows — not `deploy-site`, whose build never calls WiseGolf |
 | `WISEGOLF_PASSWORD` | Secret | PR checks (the live `wisegolf-api` tests), three update workflows — not `deploy-site`, whose build never calls WiseGolf |
-| `HECTOR_APP_API_KEY` | Secret | `update-leaderboards`, `check-site` |
+| `HECTOR_APP_API_KEY` | Secret | `check-site`. Also the admin service, via `HECTOR_APP_API_KEY_SECRET`, and `TournamentLeaderboard` |
 | `ASTROSITE_API_KEY` | Secret | The admin service, via `ASTROSITE_API_KEY_SECRET`. Was also `update-player-biographies` until that workflow was deleted on 2026-09-21 |
 | `GIT_COMMITTER_EMAIL` | Secret | `update-leaderboards` and `export-admin-data` — the address they commit as |
 | `GITHUB_TOKEN` | Built-in → `GITHUB_ACCESS_TOKEN` | `update-leaderboards` |
@@ -1100,22 +1100,25 @@ in a handicap scrape.
 ## 10. The backend (`backend/backend-functions/`)
 
 **There is no backend application.** `backend/backend-functions/` is one npm package that builds
-four independent **HTTP-triggered GCP Cloud Functions gen2** — each its own entry point, its own
+five independent **HTTP-triggered GCP Cloud Functions gen2** — each its own entry point, its own
 URL, its own secrets, its own timeout. No Express app, no router, no database, no shared state;
 `@google-cloud/functions-framework` supplies Express-compatible request and response types and
-nothing else. None of the four calls another, and deleting one would not disturb the rest. The
+nothing else. None of the five calls another, and deleting one would not disturb the rest. The
 package is a build and deploy unit, not a program.
 
-They run in `europe-north1` on the `nodejs24` runtime, in the `hector-golf` project, as
-`hector-functions@hector-golf` — an identity that holds read on three Secret Manager secrets and no
-other access. Base URL: `https://europe-north1-hector-golf.cloudfunctions.net/<FunctionName>`. A
+They run in `europe-north1` on the `nodejs24` runtime, in the `hector-golf` project. Four of them
+run as `hector-functions@hector-golf`, an identity that holds read on three Secret Manager secrets
+and no other access. `RequestLeaderboardUpdate` runs as `hector-leaderboard-trigger@hector-golf`
+instead, because it is the one that gets into the admin service — see below.
+
+Base URL: `https://europe-north1-hector-golf.cloudfunctions.net/<FunctionName>`. A
 gen2 function also answers on its underlying Cloud Run URL, of the shape
 `https://<function>-<suffix>-lz.a.run.app`, whose suffix is generated at deploy time; the
 `cloudfunctions.net` alias is the form this repository uses everywhere.
 
 ### Public and private
 
-The four divide by who calls them, and that division decides how each is protected.
+They divide by who calls them, and that division decides how each is protected.
 
 **Public** means called from a visitor's browser, on a page the site has already published. Such a
 function cannot demand a key, because the browser would have to carry one and the site is static —
@@ -1129,11 +1132,12 @@ function demands one.
 | Function | Reach | Called by | Purpose |
 | --- | --- | --- | --- |
 | `TournamentLeaderboard` | **Public** | The live leaderboard in a visitor's browser, polling every 30s | Proxies `app.hector.golf/api/tournament`, adding the `x-api-key` the upstream requires |
+| `RequestLeaderboardUpdate` | **Public, with a key** | app.hector.golf, when a score changes | Asks the admin to run the `leaderboards` job, holding an ID token for IAP |
 | `GeneratePlayerBiography` | **Private** | The admin service's `biographies` job, run by hand while a Hector is upcoming | Writes a player's profile prose from their tournament history |
 | `GeneratePlayerAvatar` | **Private** | Nothing automated. `generate-avatars.sh`, by hand | *[Experiment](../experiments/player-avatar-generation.md)* — a cartoon headshot from a photograph |
 | `ExtractScorecardInformation` | **Private** | Nothing | *[Experiment](../experiments/scorecard-extraction.md)* — a scorecard screenshot read into typed scores |
 
-**Two of the four are experiments**, deployed and reachable and called by nothing. What they do,
+**Two of the five are experiments**, deployed and reachable and called by nothing. What they do,
 why neither was adopted, and what would have to be true to adopt or delete one is in
 [`docs/experiments/`](../experiments/) rather than here — a document describing what the system
 does should not spend its length on the parts of it that do nothing. Everything below about
@@ -1151,6 +1155,30 @@ Browsers are limited by CORS to the hector.golf origins plus localhost, which ke
 becoming somebody else's free API rather than keeping anything secret. Failures answer `502` and are
 never cached, so the next poll retries. The site reaches it through `PUBLIC_LEADERBOARD_PROXY_URL`;
 unset, the live leaderboard is absent from the build entirely.
+
+**`RequestLeaderboardUpdate`, the one that is neither.** It is open to the internet like the proxy
+— app.hector.golf holds no Google credential, so it cannot be a private function in this project's
+sense — and it demands a key like a private one, because unlike the proxy it *causes* something: a
+commit, and a rebuild of the site. The key is its own secret, `leaderboard-trigger-key`, and
+deliberately not `HECTOR_APP_API_KEY`; that is their key for us to call them, and this is ours for
+them to call us, so neither side's leak opens both doors.
+
+What it does with a valid key is mint an ID token from the metadata server for the IAP OAuth client
+id and `POST /api/jobs/leaderboards/run` with it. The admin's own status comes straight back —
+`409` for a lease collision, `502` for a job that failed, `503` for an admin with no app key — so
+the caller can tell a burst it should drop from a failure it should report.
+
+**It is not a way past IAP**, and the design is the argument: it goes in the front door as its own
+service account, holding the same grant Cloud Scheduler holds, and the endpoint reads the caller
+from IAP's header exactly as before. A side door — an ingress exception, a `run.invoker` binding
+that skips the proxy — would have needed its own authentication written by us, in front of the
+service that holds everything. What this costs instead is one service account that may reach the
+admin, and a key check that happens before the handler looks at anything else, so a stranger learns
+only that the endpoint is not for them.
+
+Its ordering is load-bearing and pinned by a test: the key is checked before the configuration is,
+so an unconfigured deployment answers `401` to a stranger and `500` only to app.hector.golf, which
+is the one caller that needs to know its pushes are being dropped.
 
 **`GeneratePlayerBiography`, the private one in use.** The admin's `biographies` job assembles a
 `PlayerBiographyInput` per player with `playerBiographyInput` from `@hector/schemas` and POSTs it
