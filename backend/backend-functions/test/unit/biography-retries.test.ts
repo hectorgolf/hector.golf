@@ -117,6 +117,48 @@ describe("generating a biography when the model is busy", () => {
         expect(generateContent.mock.calls[0]).toEqual(generateContent.mock.calls[1]);
     });
 
+    /**
+     * The model writes `Hector Troph&eacute;e` into its JSON often enough that
+     * the reviewer was reading entities in the textarea. Decoded here, at the one
+     * point its prose enters the system — see `html-entities.ts` for what is and
+     * is not converted.
+     */
+    it("decodes the entities the model writes into its JSON", async () => {
+        const generateContent = vi.fn().mockResolvedValue(
+            answered(["Eero played the Hector Troph&eacute;e.", "He was na&iuml;ve about the wind &amp; the rain."]),
+        );
+
+        const pending = GeneratePlayerBiographyPromptV1(modelOf(generateContent), player);
+        await vi.runAllTimersAsync();
+
+        expect(JSON.parse(await pending).biography).toEqual([
+            "Eero played the Hector Trophée.",
+            "He was naïve about the wind & the rain.",
+        ]);
+    });
+
+    it("leaves a biography that needs no decoding exactly as written", async () => {
+        const written = ["Eero played the Hector Trophée — naïve about the wind."];
+        const generateContent = vi.fn().mockResolvedValue(answered(written));
+
+        const pending = GeneratePlayerBiographyPromptV1(modelOf(generateContent), player);
+        await vi.runAllTimersAsync();
+
+        expect(JSON.parse(await pending).biography).toEqual(written);
+    });
+
+    /** An error response has no `biography` to decode, and must still come back. */
+    it("passes a response with no biography through untouched", async () => {
+        const generateContent = vi
+            .fn()
+            .mockResolvedValue({ response: { text: () => JSON.stringify({ error: "I could not comply" }) } });
+
+        const pending = GeneratePlayerBiographyPromptV1(modelOf(generateContent), player);
+        await vi.runAllTimersAsync();
+
+        expect(JSON.parse(await pending)).toMatchObject({ error: "I could not comply" });
+    });
+
     it("does not retry a failure the next attempt would repeat", async () => {
         const generateContent = vi
             .fn()

@@ -1,6 +1,7 @@
 import "dotenv/config"; // apply the ".env" file to process.env
 
 import { GenerativeModel } from "@google/generative-ai";
+import { decodeBiography } from "../../html-entities";
 import { withRetry } from "../../retry";
 import { PlayerBiographyInput, describeEvent, nth } from "./common";
 
@@ -85,6 +86,12 @@ export const GeneratePlayerBiographyPromptV1 = async (
     const posteriorQualityControlPrompt = [
         "Double-check that the generated biography is factually accurate and does not contain any errors.",
         "If you find any such errors in the generated biography, please fix them and return an updated JSON object.",
+        // The instructions above are wrapped in pseudo-XML tags, which is a
+        // context that invites markup conventions — and the model duly wrote
+        // `Hector Troph&eacute;e` into a JSON string. `html-entities.ts` undoes
+        // it either way; this is the cheaper half of the fix.
+        "Write accented and special characters as the characters themselves, in plain Unicode: " +
+            "Trophée, naïve, Champs-Élysées. Never write them as HTML entities such as &eacute; or &#233;.",
     ].join("\n");
 
     const primaryPrompt = buildPrimaryPrompt(input);
@@ -101,8 +108,20 @@ export const GeneratePlayerBiographyPromptV1 = async (
     const result = await withRetry(() => model.generateContent([primaryPrompt, posteriorQualityControlPrompt]));
     try {
         const data = JSON.parse(result.response.text());
-        console.log(JSON.stringify(data, null, 2));
-        return JSON.stringify({ ...data, prompt: fullPrompt }, null, 2);
+        /*
+         * The one place the model's prose enters the system, and so the one
+         * place to undo its habit of writing `Troph&eacute;e` for `Trophée`.
+         * The prompt asks it not to; this is what makes that a guarantee. See
+         * `html-entities.ts` for what is decoded and what is deliberately left
+         * alone.
+         *
+         * Only `biography` — `error` is a message for a log, and `prompt` below
+         * is our own text going back out unchanged.
+         */
+        const biography = Array.isArray(data?.biography) ? decodeBiography(data.biography) : data?.biography;
+        const decoded = { ...data, ...(biography === undefined ? {} : { biography }) };
+        console.log(JSON.stringify(decoded, null, 2));
+        return JSON.stringify({ ...decoded, prompt: fullPrompt }, null, 2);
     } catch (error: any) {
         const errorResponse = { error: error.message || error, prompt: fullPrompt, response: result.response.text() };
         console.error(`Gemini failed producing a valid JSON response.`, errorResponse);
