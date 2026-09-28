@@ -22,6 +22,19 @@ export type BiographyDraft = {
      */
     eventId?: string
     generatedAt: string
+    /**
+     * Fingerprint of the facts this text was generated from.
+     *
+     * Carried on the draft rather than recomputed on approval, for the reason
+     * `generatedAt` is the draft's date and not the approval's: a draft written
+     * on Monday and approved on Thursday reflects Monday's facts, and stamping it
+     * with Thursday's would declare a biography current about an event it has
+     * never heard of.
+     *
+     * Absent on a draft written before this existed, which reads as stale on the
+     * next run — the safe direction.
+     */
+    promptHash?: string
 }
 
 const DRAFTS = 'biographyDrafts'
@@ -38,6 +51,7 @@ function parse(raw: unknown, id: string): BiographyDraft | undefined {
         biography,
         eventId: draft?.eventId ? String(draft.eventId) : undefined,
         generatedAt: String(draft?.generatedAt ?? ''),
+        promptHash: draft?.promptHash ? String(draft.promptHash) : undefined,
     }
 }
 
@@ -56,7 +70,7 @@ export async function getBiographyDraft(playerId: string): Promise<BiographyDraf
 
 /** One draft per player: a later run replaces a draft nobody has reviewed yet. */
 export async function saveBiographyDraft(draft: BiographyDraft): Promise<void> {
-    const { playerId, biography, generatedAt, eventId } = draft
+    const { playerId, biography, generatedAt, eventId, promptHash } = draft
     await firestore()
         .collection(DRAFTS)
         .doc(playerId)
@@ -64,9 +78,10 @@ export async function saveBiographyDraft(draft: BiographyDraft): Promise<void> {
             biography,
             generatedAt,
             // Firestore rejects `undefined` outright rather than skipping the
-            // field, so an absent event has to be an absent key. `jobs/log.ts`
+            // field, so an absent value has to be an absent key. `jobs/log.ts`
             // strips them the same way and for the same reason.
             ...(eventId ? { eventId } : {}),
+            ...(promptHash ? { promptHash } : {}),
         })
 }
 

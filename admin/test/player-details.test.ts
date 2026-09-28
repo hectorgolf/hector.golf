@@ -121,7 +121,7 @@ describe('reading the four fields off the form', () => {
 
 describe('approving a biography draft', () => {
     const WRITTEN = '2026-09-28T09:00:00.000Z'
-    const draft = { biography: ['Drafted one.', 'Drafted two.'], generatedAt: WRITTEN }
+    const draft = { biography: ['Drafted one.', 'Drafted two.'], generatedAt: WRITTEN, promptHash: 'abc123' }
 
     it('saves the draft as it stands without locking it', () => {
         const approved = playerWithApprovedDraft(player({ biography: ['Old.'] }), draft, 'Drafted one.\n\nDrafted two.')
@@ -168,6 +168,33 @@ describe('approving a biography draft', () => {
 
         expect(approved.biography).toBeUndefined()
         expect(approved.biographyGeneratedAt).toBeUndefined()
+        expect(approved.biographyPromptHash).toBeUndefined()
+    })
+
+    /**
+     * The fingerprint of the facts the draft was generated from, which is what
+     * the next run compares against. The draft's, not one recomputed now: a
+     * draft written on Monday and approved on Thursday reflects Monday's facts,
+     * and stamping it with Thursday's would declare a biography current about an
+     * event it has never heard of.
+     */
+    it('records the fingerprint the draft was generated from', () => {
+        const approved = playerWithApprovedDraft(player(), draft, 'Drafted one.\n\nDrafted two.')
+
+        expect(approved.biographyPromptHash).toBe('abc123')
+    })
+
+    /**
+     * An edit does not clear it. The fingerprint records which facts the text
+     * was written *from*, not how faithful the text is to them — somebody
+     * rewording a paragraph has not made it describe a different tournament, and
+     * clearing it would ask for a fresh draft on every run forever.
+     */
+    it('keeps the fingerprint when the reviewer edits the text', () => {
+        const approved = playerWithApprovedDraft(player(), draft, 'Drafted one.\n\nRewritten by hand.')
+
+        expect(approved.biographyLocked).toBe(true)
+        expect(approved.biographyPromptHash).toBe('abc123')
     })
 })
 

@@ -50,7 +50,7 @@ const hector = (id: string, start: string, participants: string[] = ['eero-s']):
         maxStrokesOverPar: 4,
     }) as Event
 
-type Saved = { id: string; biography: string[]; eventId: string | undefined }
+type Saved = { id: string; biography: string[]; eventId: string | undefined; promptHash: string }
 
 /**
  * Owned and generating, which is the interesting configuration.
@@ -75,10 +75,32 @@ const deps = (
 })
 
 const recording = (saved: Saved[]) => ({
-    save: async (player: Player, biography: string[], event: HectorEvent | undefined) => {
-        saved.push({ id: player.id, biography, eventId: event?.id })
+    save: async ({ player, biography, event, promptHash }: SaveArguments) => {
+        saved.push({ id: player.id, biography, eventId: event?.id, promptHash })
     },
 })
+
+type SaveArguments = Parameters<BiographyDependencies['save']>[0]
+
+/**
+ * The roster as it would stand after running once and approving every draft.
+ *
+ * Built by actually running rather than by recomputing a fingerprint beside the
+ * code that computes one: a test that hashes the input itself would agree with
+ * the job by construction and keep agreeing after the job stopped being right.
+ * This goes through `save`, which is the same path `live()` writes drafts down.
+ */
+const afterApproving = async (players: Player[], events: Event[]): Promise<Player[]> => {
+    const saved: Saved[] = []
+    await run(deps(players, events, recording(saved)), false)
+    const drafts = new Map(saved.map((draft) => [draft.id, draft]))
+    return players.map((player) => {
+        const draft = drafts.get(player.id)
+        return draft
+            ? { ...player, biography: draft.biography, biographyPromptHash: draft.promptHash }
+            : player
+    })
+}
 
 describe('which Hector a run is about', () => {
     /**
@@ -152,7 +174,18 @@ describe('which Hector a run is about', () => {
 })
 
 describe('who a run would rewrite', () => {
-    it('counts the unlocked, and names the ones a lock is holding', async () => {
+    /**
+     * The lock no longer holds a player back, and this is the test that used to
+     * say it did.
+     *
+     * It excluded them because a run *published* what it generated, and the lock
+     * was the only thing between a scheduled job and somebody's hand-written
+     * paragraph. A run drafts now: nothing reaches a player record without
+     * somebody pressing a button beside the current text, so being locked is a
+     * poor reason to leave a biography factually wrong. The run log names them
+     * instead, and the review page warns before anything replaces their words.
+     */
+    it('drafts for a locked player too, and says which ones those are', async () => {
         const result = await run(
             deps(
                 [player('eero-s'), player('lasse-k', { biographyLocked: true })],
@@ -162,8 +195,8 @@ describe('who a run would rewrite', () => {
         )
 
         expect(result.outcome).toBe('ok')
-        expect(result.detail).toContain('1 biography to regenerate')
-        expect(result.detail).toContain('1 left alone (lasse-k Player)')
+        expect(result.detail).toContain('2 biographies to regenerate')
+        expect(result.detail).toContain('1 of them hand-edited (lasse-k Player)')
     })
 
     /**
@@ -180,14 +213,15 @@ describe('who a run would rewrite', () => {
         expect(saved).toEqual([])
     })
 
-    it('says so when every biography is locked', async () => {
+    it('has something to do even when every biography is locked', async () => {
         const result = await run(
             deps([player('eero-s', { biographyLocked: true })], [hector('HECTOR2026', '2026-09-24')]),
             true
         )
 
         expect(result.outcome).toBe('ok')
-        expect(result.detail).toContain('0 biographies to regenerate')
+        expect(result.detail).toContain('1 biography to regenerate')
+        expect(result.detail).toContain('1 of them hand-edited')
     })
 })
 
@@ -202,95 +236,174 @@ describe('who a run would rewrite', () => {
  * applied before an upcoming Hector, a field that has since changed stops being
  * picked up.
  */
-describe('regenerating after a Hector has been played', () => {
-    const written = (id: string, at: string | undefined) =>
-        player(id, { biographyGeneratedAt: at })
+/**
+ * Staleness, which is now a question about the facts rather than about a date.
+ *
+ * A biography is current when the things the generator would be told about that
+ * player are the things it was told when the text was written. The rule is
+ * `promptFingerprint`; what is pinned here is that the job asks it, asks it
+ * about the right things, and stores the answer where the next run will find it.
+ *
+ * This replaces a suite built on `biographyGeneratedAt` against the last
+ * Hector's end date. That date was a proxy for this question: it said "stale" to
+ * all forty-five whenever the comparison moved, and nothing at all about a
+ * player who joined a field, won a trophy or changed clubs.
+ */
+describe('deciding by the facts a biography was written from', () => {
+    const ended = [hector('HECTOR2025', '2025-09-25')]
+    const upcoming = [hector('HECTOR2026', '2026-09-24')]
 
-    it('takes the players whose biography predates the event, and says who it left', async () => {
+    it('drafts for a player with no fingerprint, which is every player before this existed', async () => {
         const saved: Saved[] = []
-        const result = await run(
-            deps(
-                [written('eero-s', '2025-09-20T09:00:00.000Z'), written('lasse-k', '2025-09-30T09:00:00.000Z')],
-                [hector('HECTOR2025', '2025-09-25')],
-                recording(saved)
-            ),
-            false
-        )
+        await run(deps([player('eero-s')], ended, recording(saved)), false)
 
         expect(saved.map((s) => s.id)).toEqual(['eero-s'])
-        expect(result.detail).toContain('1 already reflect it')
+        expect(saved[0]?.promptHash).toMatch(/^[0-9a-f]{16}$/)
     })
 
-    it('takes a player who has no date, which is every player before this existed', async () => {
-        const saved: Saved[] = []
-        await run(
-            deps([written('eero-s', undefined)], [hector('HECTOR2025', '2025-09-25')], recording(saved)),
-            false
-        )
+    /** The whole point: run, approve, run again, and the second run has nothing to do. */
+    it('leaves a player alone once their biography reflects the current facts', async () => {
+        const approved = await afterApproving([player('eero-s')], ended)
 
-        expect(saved.map((s) => s.id)).toEqual(['eero-s'])
-    })
-
-    it('reports a successful no-op once everybody has been rewritten since', async () => {
         const saved: Saved[] = []
-        const result = await run(
-            deps([written('eero-s', '2025-09-30T09:00:00.000Z')], [hector('HECTOR2025', '2025-09-25')], recording(saved)),
-            false
-        )
+        const result = await run(deps(approved, ended, recording(saved)), false)
 
         expect(result.outcome).toBe('ok')
-        expect(result.detail).toContain('0 biographies to regenerate')
         expect(saved).toEqual([])
+        expect(result.detail).toContain('0 biographies to regenerate')
+        expect(result.detail).toContain('1 already current')
     })
 
     /**
-     * The cutoff is for a finished event only. Before one, the field is still
-     * changing, so a biography written yesterday is no evidence that it names
-     * the right event or the right number of appearances.
+     * The case the date rule could not see, and the reason this exists: a player
+     * whose facts moved while everybody else's stood still.
      */
-    it('ignores the dates while a Hector is upcoming', async () => {
+    it('drafts for the one player whose facts changed, and nobody else', async () => {
+        const roster = [player('eero-s'), player('lasse-k')]
+        const approved = await afterApproving(roster, ended)
+
+        // A prompt hint added to one player, which is a fact about that player
+        // and about nobody else. An event moving would be the wrong test: a new
+        // Hector in the store changes `nextEvent` for the whole roster, because
+        // a biography is written knowing whether its subject is in the field.
+        const withHint = approved.map((p) =>
+            p.id === 'eero-s' ? { ...p, misc: ['Plays left-handed.'] } : p
+        )
+
+        const saved: Saved[] = []
+        await run(deps(withHint, ended, recording(saved)), false)
+
+        expect(saved.map((s) => s.id)).toEqual(['eero-s'])
+    })
+
+    /**
+     * The other half of that: a Hector appearing in the store is news to
+     * everybody, because the prompt tells each player whether they are in its
+     * field. Worth pinning rather than discovering — the first draft of the test
+     * above assumed the opposite and the code was right.
+     */
+    it('drafts for the whole roster when a new Hector enters the store', async () => {
+        const roster = [player('eero-s'), player('lasse-k')]
+        const approved = await afterApproving(roster, ended)
+
         const saved: Saved[] = []
         await run(
-            deps(
-                [written('eero-s', '2026-09-19T09:00:00.000Z'), written('lasse-k', '2026-09-20T09:00:00.000Z')],
-                [hector('HECTOR2026', '2026-09-24')],
-                recording(saved)
-            ),
+            deps(approved, [...ended, hector('HECTOR2026', '2026-09-24', ['eero-s'])], recording(saved)),
             false
         )
 
         expect(saved.map((s) => s.id)).toEqual(['eero-s', 'lasse-k'])
     })
 
-    /**
-     * The up-to-date players' text is on the page beside what this run writes,
-     * so it belongs in the do-not-echo context for the reason the locked
-     * players' text does.
-     */
-    it('shows the model what the players it skipped already say', async () => {
-        const seen: string[][] = []
+    it('drafts again when a Hector that was upcoming has been played', async () => {
+        const roster = [player('eero-s')]
+        const approved = await afterApproving(roster, upcoming)
 
+        /*
+         * The same events, read from a day after the event rather than before
+         * it: `HECTOR2026` moves out of `nextEvent` and into the appearances, so
+         * the facts — and the fingerprint — are not what the text was written
+         * from. This is the 2026-09-28 situation in one assertion.
+         */
+        const saved: Saved[] = []
         await run(
-            deps(
-                [
-                    player('eero-s', { biography: ['Being rewritten.'] }),
-                    player('lasse-k', {
-                        biography: ['Written since the Hector.'],
-                        biographyGeneratedAt: '2025-09-30T09:00:00.000Z',
-                    }),
-                ],
-                [hector('HECTOR2025', '2025-09-25')],
-                {
-                    generate: async (input: PlayerBiographyInput) => {
-                        seen.push([...input.otherGeneratedBiographies])
-                        return ['Generated.']
-                    },
-                }
-            ),
+            deps(approved, upcoming, { ...recording(saved), now: () => new Date('2026-09-28T12:00:00Z') }),
             false
         )
 
-        expect(seen).toEqual([['Written since the Hector.']])
+        expect(saved.map((s) => s.id)).toEqual(['eero-s'])
+    })
+
+    /**
+     * A hand-edited biography is as capable of describing a finished Hector as
+     * upcoming as a generated one, and its author is the person best placed to
+     * decide what to do about that. Nothing is published either way.
+     */
+    it('drafts for a locked player whose facts have moved', async () => {
+        const approved = await afterApproving([player('eero-s', { biographyLocked: true })], ended)
+
+        const saved: Saved[] = []
+        const result = await run(
+            deps(approved, [...ended, hector('HECTOR2026', '2026-09-24', ['eero-s'])], recording(saved)),
+            false
+        )
+
+        expect(saved.map((s) => s.id)).toEqual(['eero-s'])
+        expect(result.detail).toContain('hand-edited')
+    })
+
+    it('leaves a locked player alone when nothing about them has changed', async () => {
+        const approved = await afterApproving([player('eero-s', { biographyLocked: true })], ended)
+
+        const saved: Saved[] = []
+        await run(deps(approved, ended, recording(saved)), false)
+
+        expect(saved).toEqual([])
+    })
+
+    /**
+     * The exclusion that makes the whole mechanism work rather than always
+     * reporting everybody stale: the do-not-echo context is the *other* players'
+     * text, so it changes whenever anybody's does, and it is not a fact about
+     * this player.
+     */
+    it('is not disturbed by another player getting a new biography', async () => {
+        const roster = [player('eero-s'), player('lasse-k')]
+        const approved = await afterApproving(roster, ended)
+
+        const withNewProse = approved.map((p) =>
+            p.id === 'lasse-k' ? { ...p, biography: ['Something entirely different, at length.'] } : p
+        )
+
+        const saved: Saved[] = []
+        await run(deps(withNewProse, ended, recording(saved)), false)
+
+        expect(saved).toEqual([])
+    })
+
+    /**
+     * An up-to-date biography is on the page beside everything the run writes,
+     * so it belongs in the do-not-echo context — the failure
+     * `astrosite/test/unit/biography-lock.test.ts` exists about.
+     */
+    it('shows the model what the players it is leaving alone already say', async () => {
+        const roster = [player('eero-s'), player('lasse-k')]
+        const approved = (await afterApproving(roster, ended)).map((p) =>
+            p.id === 'lasse-k' ? p : { ...p, biographyPromptHash: 'stale' }
+        )
+
+        const seen: string[][] = []
+        await run(
+            deps(approved, ended, {
+                generate: async (input: PlayerBiographyInput) => {
+                    seen.push([...input.otherGeneratedBiographies])
+                    return ['Generated.']
+                },
+            }),
+            false
+        )
+
+        expect(seen).toEqual([['Generated.']])
     })
 })
 
@@ -350,7 +463,7 @@ describe('a live run that generates', () => {
         )
 
         expect(result.outcome).toBe('ok')
-        expect(saved).toEqual([{ id: 'eero-s', biography: ['One.', 'Two.', 'Three.'], eventId: 'HECTOR2026' }])
+        expect(saved).toMatchObject([{ id: 'eero-s', biography: ['One.', 'Two.', 'Three.'], eventId: 'HECTOR2026' }])
         expect(result.changes).toEqual([{ subject: 'eero-s', from: '1 paragraph', to: '3 paragraphs' }])
         expect(result.detail).toContain('drafted 1 for review')
     })
@@ -379,32 +492,37 @@ describe('a live run that generates', () => {
 
     /**
      * Not tidiness. Every biography on the page is a biography the model can
-     * echo, so a locked one left out of the seed lets a published sentence
-     * reappear under somebody else's name — and the ones written earlier in this
-     * same run are on that page too.
+     * echo, so one left out of the seed lets a published sentence reappear under
+     * somebody else's name — and the ones written earlier in this same run are on
+     * that page too.
+     *
+     * The seed used to be the locked players' text. It is the *up-to-date*
+     * players' text now, which is the same rule stated against the thing that
+     * actually decides whether a biography stays put: a locked one whose facts
+     * have moved is being redrafted like any other, so its current wording is on
+     * its way out and is no longer something to preserve around.
      */
-    it('seeds the model with the locked biographies and then with its own output', async () => {
+    it('seeds the model with what it is leaving alone, then with its own output', async () => {
         const seen: string[][] = []
 
+        const roster = [player('eero-s'), player('lasse-k'), player('anders-f')]
+        const events = [hector('HECTOR2026', '2026-09-24')]
+        const approved = await afterApproving(roster, events)
+
+        // Only Lasse keeps a current fingerprint; the other two are redrafted.
+        const mixed = approved.map((p) => (p.id === 'lasse-k' ? p : { ...p, biographyPromptHash: undefined }))
+
         await run(
-            deps(
-                [
-                    player('eero-s'),
-                    player('lasse-k', { biographyLocked: true, biography: ['Lasse wrote this.'] }),
-                    player('anders-f'),
-                ],
-                [hector('HECTOR2026', '2026-09-24')],
-                {
-                    generate: async (input: PlayerBiographyInput) => {
-                        seen.push([...input.otherGeneratedBiographies])
-                        return [`About ${input.name}.`]
-                    },
-                }
-            ),
+            deps(mixed, events, {
+                generate: async (input: PlayerBiographyInput) => {
+                    seen.push([...input.otherGeneratedBiographies])
+                    return [`About ${input.name}.`]
+                },
+            }),
             false
         )
 
-        expect(seen).toEqual([['Lasse wrote this.'], ['Lasse wrote this.', 'About eero-s.']])
+        expect(seen).toEqual([['Generated.'], ['Generated.', 'About eero-s.']])
     })
 
     /**
