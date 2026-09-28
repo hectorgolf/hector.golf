@@ -129,21 +129,63 @@ export function eventsToUpdate(stored: readonly StoredEvent[], today: IsoDate): 
 const boardsOf = (file: { hector?: unknown; victor?: unknown }) =>
     JSON.stringify({ hector: file.hector ?? [], victor: file.victor ?? [] })
 
+/** Every way a player is named: their own name and any alias. */
+const namesOf = (player: Player) => [player.name, ...(player.aliases ?? [])]
+
 /**
  * A player id for a name off a leaderboard row, or undefined for a stranger.
  *
- * Matched against a player's own name and any alias, case-insensitively, because
- * that is how the pairings have always been resolved and the rows are typed by
- * whoever is running the tournament. An unmatched name is not an error here —
- * `pairingsFrom` refuses the whole event rather than guessing at one seat.
+ * ## Why a full-name match is not enough
+ *
+ * Because app.hector.golf sends the names **the site prints**, and the site
+ * shortens a surname for any player whose `privacy` says to: every one of the
+ * twenty names on the 2026 board is of the form "Toni M". Matching on
+ * `first last` resolves none of them, which does not fail loudly — it produces
+ * an event whose pairings are simply never written. `update-leaderboards.yml`
+ * had this bug until 2026-09-28.
+ *
+ * ## Why this matches the prefix rather than re-deriving the short name
+ *
+ * The site's short name is the first name plus the *shortest unique prefix* of
+ * the surname among players who share a first name — a rule computed over the
+ * whole roster, in `astrosite/src/code/players.ts`. This could compute the same
+ * thing, and then there would be two implementations of a rule that has to agree
+ * with itself or pairings stop resolving again.
+ *
+ * So it inverts the relation instead: a printed name is a first name and *some*
+ * prefix of a surname, and the player is whoever that describes. Being
+ * indifferent to the prefix length is the property worth having — this stays
+ * right if the rule ever shortens to two letters, or stops shortening, without
+ * anybody remembering this file exists.
+ *
+ * Ambiguity is `undefined` rather than a guess. Two players a fragment could
+ * mean is exactly the case the site's rule lengthens the prefix to avoid, so a
+ * name that arrives ambiguous is one this service should not be resolving on its
+ * own. An exact full name is tried first, so a fragment cannot shadow somebody's
+ * actual name.
  */
 export function playerIdByName(players: readonly Player[], name: string): string | undefined {
     const wanted = name.trim().toLowerCase()
-    return players.find((player) =>
-        [player.name, ...(player.aliases ?? [])].some(
-            (candidate) => `${candidate.first} ${candidate.last}`.toLowerCase() === wanted
+
+    const exact = players.find((player) =>
+        namesOf(player).some((candidate) => `${candidate.first} ${candidate.last}`.toLowerCase() === wanted)
+    )
+    if (exact) return exact.id
+
+    // Split at the *last* space: the printed form is a first name followed by a
+    // prefix of a surname, and it is the first name that can contain a space.
+    const split = wanted.lastIndexOf(' ')
+    if (split === -1) return undefined
+    const first = wanted.slice(0, split)
+    const surname = wanted.slice(split + 1)
+    if (!first || !surname) return undefined
+
+    const shortened = players.filter((player) =>
+        namesOf(player).some(
+            (candidate) => candidate.first.toLowerCase() === first && candidate.last.toLowerCase().startsWith(surname)
         )
-    )?.id
+    )
+    return shortened.length === 1 ? shortened[0]!.id : undefined
 }
 
 export type Pairings = Array<{ name: string; players: string[] }>

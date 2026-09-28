@@ -51,6 +51,9 @@ const player = (id: string, first: string, last: string, aliases?: Array<{ first
 
 const players = [player('lasse', 'Lasse', 'Koskela'), player('jari', 'Jari', 'Kuusela', [{ first: 'Jartsa', last: 'Kuusela' }])]
 
+/** The board sends the names the site prints, which for these two is "Lasse K" and "Jari K". */
+const printed = 'Lasse K & Jari K'
+
 const standings = (over: Partial<LeaderboardData> = {}): LeaderboardData => ({
     hector: [{ team: 'Lasse Koskela & Jari Kuusela', points: 71, diff: '', through: '1/6' }],
     victor: [{ player: 'Lasse Koskela', points: 42, diff: '', through: '1/6' }],
@@ -238,6 +241,47 @@ describe('learning the pairings from a board', () => {
         expect(playerIdByName(players, 'lasse koskela')).toBe('lasse')
         expect(playerIdByName(players, 'Jartsa Kuusela')).toBe('jari')
         expect(playerIdByName(players, 'Nobody At All')).toBeUndefined()
+    })
+
+    /*
+     * The case the full-name match alone got wrong, silently, for as long as it
+     * existed: app.hector.golf sends the names the site prints, and the site
+     * shortens a surname for any player whose privacy says to. Every name on the
+     * 2026 board is of this shape.
+     */
+    it('matches the shortened surname the board actually sends', () => {
+        expect(playerIdByName(players, 'Lasse K')).toBe('lasse')
+        expect(playerIdByName(players, 'Jari K')).toBe('jari')
+    })
+
+    it('matches a shortened alias too', () => {
+        expect(playerIdByName(players, 'Jartsa K')).toBe('jari')
+    })
+
+    it('matches however many letters the site decided to keep', () => {
+        // Indifferent to the prefix length on purpose, so that this stays right
+        // if the site's shortest-unique-prefix rule ever returns a longer one.
+        expect(playerIdByName(players, 'Lasse Kosk')).toBe('lasse')
+    })
+
+    it('refuses a fragment two players could answer to', () => {
+        // Exactly the collision the site's rule lengthens the prefix to avoid,
+        // so a name that arrives ambiguous is one to leave alone rather than
+        // resolve by coin flip.
+        const ambiguous = [...players, player('lasse2', 'Lasse', 'Kuusela')]
+        expect(playerIdByName(ambiguous, 'Lasse K')).toBeUndefined()
+        // The unshortened name still resolves, because exact wins first.
+        expect(playerIdByName(ambiguous, 'Lasse Koskela')).toBe('lasse')
+    })
+
+    it('does not treat a bare first name as a match', () => {
+        expect(playerIdByName(players, 'Lasse')).toBeUndefined()
+    })
+
+    it('reads the teams off a board that names its pairs the printed way', () => {
+        expect(pairingsFrom([{ team: printed, points: 71, diff: '', through: '1/6' }], players)).toEqual([
+            { name: printed, players: ['lasse', 'jari'] },
+        ])
     })
 
     it('reads the teams off a board that shows them', () => {
