@@ -66,6 +66,8 @@ function initializeGenAIModel(
         "including both individual and pair formats. The best individual player is awarded with the Victor Trophy and",
         "the winning pair takes home the coveted Hector Trophée.",
         "",
+        "Always write \"Hector Trophée\" with the accent on the 'e' in 'Trophée' – this is important.",
+        "",
         "When asked to write a biography for a player or an analysis of their current or recent form and performance,",
         "split the text into paragraphs as necessary to avoid overwhelming the reader.",
         "Be extra careful to misrepresent the player's historical appearance and winning record.",
