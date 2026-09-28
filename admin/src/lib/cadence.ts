@@ -1,5 +1,7 @@
 import parseDuration from 'parse-duration'
 
+import type { Event } from '@hector/schemas/src/events.ts'
+
 import type { WorkflowRun } from './github.ts'
 
 /**
@@ -153,4 +155,43 @@ export function due(cadence: Cadence, latest: WorkflowRun | undefined | null, no
     const elapsed = now.getTime() - started
     const because = `last ran ${inWords(elapsed)} ago, and wants every ${cadence.every}`
     return elapsed >= interval ? { due: true, because } : { due: false, because }
+}
+
+/**
+ * Why the site needs rebuilding because of the calendar alone, or `undefined`.
+ *
+ * The site decides whether an event is upcoming, live or over when it is built,
+ * so a page built on an event's last day keeps its "Live" pill until the next
+ * build — and when the leaderboard has stopped changing, nothing commits to ask
+ * for one. This is any midnight of an event — its start, each night during it,
+ * and its end — having passed between the last deploy and now.
+ *
+ * The instants are UTC midnights because the build compares `timing` against
+ * the runner's local date, and GitHub's runners are on UTC.
+ */
+export function eventDatesPassedSince(
+    events: ReadonlyArray<Pick<Event, 'id' | 'ignore' | 'timing'>>,
+    lastDeploy: WorkflowRun,
+    now: Date
+): string | undefined {
+    const since = new Date(lastDeploy.startedAt).getTime()
+    if (Number.isNaN(since)) return undefined
+    const passed = (instant: number) => since < instant && instant <= now.getTime()
+
+    for (const event of events) {
+        if (event.ignore) continue
+        const starts = Date.parse(`${event.timing.start}T00:00:00Z`)
+        const ends = Date.parse(`${event.timing.end}T00:00:00Z`) + DAY
+        if (Number.isNaN(starts) || Number.isNaN(ends)) continue
+        if (passed(ends)) return `${event.id} has ended since the last deploy`
+        // Newest midnight first, so the reason names the day the site is now on.
+        for (let midnight = ends - DAY; midnight > starts; midnight -= DAY) {
+            if (passed(midnight)) {
+                const day = Math.round((midnight - starts) / DAY) + 1
+                return `${event.id} has reached day ${day} since the last deploy`
+            }
+        }
+        if (passed(starts)) return `${event.id} has started since the last deploy`
+    }
+    return undefined
 }

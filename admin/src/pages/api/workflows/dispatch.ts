@@ -1,12 +1,13 @@
-import type { APIRoute } from 'astro'
+import type { APIRoute } from "astro";
 
-import { due } from '../../../lib/cadence.ts'
-import { github } from '../../../lib/github.ts'
-import { viewerFromHeaders } from '../../../lib/identity.ts'
-import { execute } from '../../../lib/jobs/execute.ts'
-import { SCHEDULED_JOBS } from '../../../lib/jobs/registry.ts'
-import { DISPATCHABLE_WORKFLOWS, SCHEDULED_WORKFLOWS } from '../../../lib/workflows.ts'
-import { SEED_PAGES, sync } from '../../../lib/workflow-runs.ts'
+import { due, eventDatesPassedSince, type Due } from "../../../lib/cadence.ts";
+import { github } from "../../../lib/github.ts";
+import { viewerFromHeaders } from "../../../lib/identity.ts";
+import { execute } from "../../../lib/jobs/execute.ts";
+import { SCHEDULED_JOBS } from "../../../lib/jobs/registry.ts";
+import { listEvents } from "../../../lib/repository/events.ts";
+import { DISPATCHABLE_WORKFLOWS, SCHEDULED_WORKFLOWS } from "../../../lib/workflows.ts";
+import { SEED_PAGES, sync } from "../../../lib/workflow-runs.ts";
 
 /**
  * Start everything the schedule is responsible for: the endpoint the two Cloud
@@ -105,59 +106,71 @@ import { SEED_PAGES, sync } from '../../../lib/workflow-runs.ts'
  * and for the note on who is allowed to call either of these.
  */
 
-const wantsHtml = (request: Request) => (request.headers.get('accept') ?? '').includes('text/html')
+const wantsHtml = (request: Request) => (request.headers.get("accept") ?? "").includes("text/html");
 
 export const POST: APIRoute = async ({ request, redirect }) => {
-    const viewer = viewerFromHeaders(request.headers)
-    console.log('Dispatching the scheduled workflows', {
+    const viewer = viewerFromHeaders(request.headers);
+    console.log("Dispatching the scheduled workflows", {
         workflows: SCHEDULED_WORKFLOWS.map((workflow) => workflow.file),
-        by: viewer.email ?? 'unidentified caller admitted by IAP',
-    })
+        by: viewer.email ?? "unidentified caller admitted by IAP",
+    });
 
     // Sequentially, not in parallel. These are dispatches rather than runs, so
     // the ordering GitHub sees is the order they queue in, and the concurrency
     // group then runs them in that order. Two calls to GitHub is not a latency
     // problem worth trading that away for.
-    const now = new Date()
-    const results: Array<{ slug: string; ok: boolean; skipped?: true; because?: string; reason?: string }> = []
+    const now = new Date();
+    const results: Array<{ slug: string; ok: boolean; skipped?: true; because?: string; reason?: string }> = [];
 
     for (const workflow of SCHEDULED_WORKFLOWS) {
         // Only the interval-scheduled ones cost a call. `'tick'` is due by
         // definition, and asking GitHub about it every tick would be a request
         // per workflow per tick to learn nothing.
         const latest =
-            workflow.cadence === 'tick'
+            workflow.cadence === "tick"
                 ? undefined
                 : await github()
                       .recentRuns(workflow, 1)
                       // `null` is "could not read", which `due` treats differently
                       // from "has never run" — see the note there on why an
                       // unreadable history must not dispatch.
-                      .then((outcome) => (outcome.ok ? outcome.runs[0] : null))
+                      .then((outcome) => (outcome.ok ? outcome.runs[0] : null));
 
-        const verdict = due(workflow.cadence, latest, now)
+        let verdict: Due = due(workflow.cadence, latest, now);
+        if (!verdict.due && workflow.followsEventDates && latest) {
+            // A failed read leaves the interval's verdict standing; the daily backstop still applies.
+            const passed = await listEvents()
+                .then((events) => eventDatesPassedSince(events, latest, now))
+                .catch((error) => {
+                    console.warn("Could not read the events to check their dates", { workflow: workflow.file, error });
+                    return undefined;
+                });
+            if (passed) {
+                verdict = { due: true, because: `an event has started or ended since the last run` };
+            }
+        }
         if (!verdict.due) {
-            console.log('Not due on this tick', { workflow: workflow.file, because: verdict.because })
-            results.push({ slug: workflow.slug, ok: true, skipped: true, because: verdict.because })
-            continue
+            console.log("Not due on this tick", { workflow: workflow.file, because: verdict.because });
+            results.push({ slug: workflow.slug, ok: true, skipped: true, because: verdict.because });
+            continue;
         }
 
-        const outcome = await github().dispatch(workflow)
+        const outcome = await github().dispatch(workflow);
         results.push(
             outcome.ok
                 ? { slug: workflow.slug, ok: true, because: verdict.because }
-                : { slug: workflow.slug, ok: false, reason: outcome.reason }
-        )
+                : { slug: workflow.slug, ok: false, reason: outcome.reason },
+        );
     }
 
-    const failures = results.filter((result) => !result.ok)
+    const failures = results.filter((result) => !result.ok);
 
     // Then this service's own jobs, sequentially: they share a Cloud Run
     // instance with one CPU, and two scrapes in parallel would contend for it
     // while making the logs of both harder to read.
-    const jobs = []
+    const jobs = [];
     for (const job of SCHEDULED_JOBS) {
-        jobs.push(await execute(job, viewer.email ?? 'the schedule'))
+        jobs.push(await execute(job, viewer.email ?? "the schedule"));
     }
 
     /*
@@ -172,23 +185,23 @@ export const POST: APIRoute = async ({ request, redirect }) => {
      * are what Cloud Scheduler retries for, and re-dispatching four workflows
      * because a mirror could not be written would be a poor trade.
      */
-    const mirrored = await sync(DISPATCHABLE_WORKFLOWS, { maxPages: SEED_PAGES })
+    const mirrored = await sync(DISPATCHABLE_WORKFLOWS, { maxPages: SEED_PAGES });
     if (mirrored.failures.length > 0) {
-        console.warn('Could not fully mirror the workflow run history', { failures: mirrored.failures })
+        console.warn("Could not fully mirror the workflow run history", { failures: mirrored.failures });
     }
 
     if (wantsHtml(request)) {
         // Reported as one workflow when one failed, so the Operations page can
         // say something specific; "some of them" is not a useful notice.
         return failures.length === 0
-            ? redirect('/operations?ran=scheduled', 303)
-            : redirect(`/operations?failed=${failures[0]!.slug}&reason=${failures[0]!.reason}`, 303)
+            ? redirect("/operations?ran=scheduled", 303)
+            : redirect(`/operations?failed=${failures[0]!.slug}&reason=${failures[0]!.reason}`, 303);
     }
 
     return new Response(JSON.stringify({ dispatched: results, jobs, mirrored }), {
         // The status reports the dispatches only. A failed job is in the body —
         // see the note above on why it must not make the scheduler retry.
         status: failures.length === 0 ? 202 : 502,
-        headers: { 'content-type': 'application/json' },
-    })
-}
+        headers: { "content-type": "application/json" },
+    });
+};

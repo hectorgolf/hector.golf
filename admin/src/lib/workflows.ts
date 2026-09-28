@@ -76,6 +76,8 @@ export type DispatchableWorkflow = {
      * `'manual'` means the button and nothing else.
      */
     cadence: Cadence
+    /** Also due once any event has started or ended since its last run. See `eventDatesPassedSince`. */
+    followsEventDates?: true
 }
 
 export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
@@ -134,6 +136,7 @@ export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
          * which is to say only when the normal path is already broken.
          */
         cadence: { every: '1d' },
+        followsEventDates: true,
     },
 ]
 

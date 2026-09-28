@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { type Cadence, due } from '../src/lib/cadence.ts'
+import { type Cadence, due, eventDatesPassedSince } from '../src/lib/cadence.ts'
 import type { WorkflowRun } from '../src/lib/github.ts'
 import { DISPATCHABLE_WORKFLOWS } from '../src/lib/workflows.ts'
 
@@ -105,6 +105,69 @@ describe('the deploy backstop', () => {
 
     it('fires once a day has passed with no deploy at all', () => {
         expect(due({ every: '1d' }, ranDaysAgo(1.1), NOW).due).toBe(true)
+    })
+})
+
+describe('the site rebuilding when an event starts or ends', () => {
+    const hector = { id: 'HECTOR2026', ignore: false, timing: { start: '2026-09-24', end: '2026-09-27' } }
+    const deployedAt = (iso: string): WorkflowRun => ({ ...ranDaysAgo(0), startedAt: iso })
+
+    it('is due at the first tick after the last day, when the build stops calling it live', () => {
+        expect(
+            eventDatesPassedSince([hector], deployedAt('2026-09-27T14:00:00Z'), new Date('2026-09-28T03:00:00Z'))
+        ).toBe('HECTOR2026 has ended since the last deploy')
+    })
+
+    it('is not due on the last day itself, which the build still counts as live', () => {
+        expect(
+            eventDatesPassedSince([hector], deployedAt('2026-09-27T12:00:00Z'), new Date('2026-09-27T23:59:00Z'))
+        ).toBeUndefined()
+    })
+
+    it('is not due again once a deploy has happened after the event ended', () => {
+        expect(
+            eventDatesPassedSince([hector], deployedAt('2026-09-28T03:00:30Z'), new Date('2026-09-28T12:00:00Z'))
+        ).toBeUndefined()
+    })
+
+    it('is due when an event has started since the last deploy', () => {
+        expect(
+            eventDatesPassedSince([hector], deployedAt('2026-09-23T12:00:00Z'), new Date('2026-09-24T03:00:00Z'))
+        ).toBe('HECTOR2026 has started since the last deploy')
+    })
+
+    it('is due every night during the event', () => {
+        for (const [deployed, tick, day] of [
+            ['2026-09-24T14:00:00Z', '2026-09-25T03:00:00Z', 2],
+            ['2026-09-25T14:00:00Z', '2026-09-26T03:00:00Z', 3],
+            ['2026-09-26T14:00:00Z', '2026-09-27T03:00:00Z', 4],
+        ] as const) {
+            expect(eventDatesPassedSince([hector], deployedAt(deployed), new Date(tick))).toBe(
+                `HECTOR2026 has reached day ${day} since the last deploy`
+            )
+        }
+    })
+
+    it('is not due twice in one night', () => {
+        expect(
+            eventDatesPassedSince([hector], deployedAt('2026-09-25T03:00:30Z'), new Date('2026-09-25T05:00:00Z'))
+        ).toBeUndefined()
+    })
+
+    it('ignores an ignored event', () => {
+        expect(
+            eventDatesPassedSince(
+                [{ ...hector, ignore: true }],
+                deployedAt('2026-09-27T14:00:00Z'),
+                new Date('2026-09-28T03:00:00Z')
+            )
+        ).toBeUndefined()
+    })
+
+    it('is configured on the deploy workflow', () => {
+        expect(DISPATCHABLE_WORKFLOWS.find((workflow) => workflow.file === 'deploy-site.yml')?.followsEventDates).toBe(
+            true
+        )
     })
 })
 
