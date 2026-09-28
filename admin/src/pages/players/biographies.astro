@@ -153,9 +153,33 @@ const generatedOn = (iso: string) => (iso ? iso.slice(0, 10) : 'an unknown date'
                             <textarea id={`biography-${draft.playerId}`} name="biography" rows="14"
                                 >{draft.biography.join('\n\n')}</textarea
                             >
-                            <span class="hint">Blank line between paragraphs.</span>
+                            {/*
+                              * Three things the box does not say for itself, and
+                              * each of them has surprised somebody.
+                              *
+                              * The text is editable and what is saved is whatever
+                              * is in it when the button is pressed — "Approve"
+                              * alone read as "approve what the model wrote",
+                              * which is the opposite of the point.
+                              *
+                              * Paragraphs split on blank lines, so a single
+                              * newline joins two lines into one paragraph. That
+                              * is `paragraphsFrom`, and it is right — the model
+                              * writes prose that a browser wraps — but it is not
+                              * guessable while reflowing a sentence.
+                              *
+                              * An empty box saves a player with no biography at
+                              * all. Discard is what "I do not want this draft"
+                              * means; emptying the box means "delete what is
+                              * published".
+                              */}
+                            <span class="hint">
+                                Edit freely — whatever is in the box is what gets saved. Leave a blank line
+                                between paragraphs; a single line break joins the lines. Emptying the box
+                                removes the biography altogether, so use Discard to drop a draft instead.
+                            </span>
                             <div class="actions">
-                                <button type="submit" name="action" value="approve">Approve</button>
+                                <button type="submit" name="action" value="approve">Save and approve</button>
                                 <button type="submit" name="action" value="discard" class="secondary">Discard</button>
                             </div>
                         </form>
