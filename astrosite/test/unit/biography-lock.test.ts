@@ -187,8 +187,10 @@ describe('the phrasing a run is told to avoid', () => {
 })
 
 /**
- * Against the real roster, because the interesting property of a rule nobody has
- * exercised is that it changes nothing at all.
+ * Against the real roster, because a rule is worth re-reading against the data
+ * somebody actually entered. Who is locked is read from the roster rather than
+ * written down here: an admin locking or unlocking a player is an ordinary day,
+ * and it arrives as an export commit nobody reviews line by line.
  */
 describe('the committed roster', () => {
     const players = getAllPlayers()
@@ -197,10 +199,13 @@ describe('the committed roster', () => {
         expect(players.length).toBeGreaterThan(40)
     })
 
-    it('has nobody locked, and regenerates in full when nothing is vouched for', () => {
+    it('claims exactly the locked players, and still regenerates in full', () => {
+        const locked = players.filter((player) => player.biographyLocked)
         const { regenerate, claimed, alreadyPublished } = biographiesToRegenerate(players)
 
-        expect(claimed).toEqual([])
+        expect(claimed).toEqual(locked)
+        // A lock marks a biography as claimed; it does not excuse anybody from
+        // the run. Nothing is vouched for here, so nothing is echo-protected.
         expect(alreadyPublished).toEqual([])
         expect(regenerate.length).toBe(players.length)
     })
