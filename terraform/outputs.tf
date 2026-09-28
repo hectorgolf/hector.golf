@@ -115,6 +115,30 @@ output "admin_dns_records" {
   value       = try(google_cloud_run_domain_mapping.admin[0].status[0].resource_records, [])
 }
 
+output "hooks_dns_records" {
+  description = <<-EOT
+    The DNS records to create at the registrar for var.hooks_domain, as Google
+    emits them. Empty until the domain is set and the mapping has been applied.
+  EOT
+  value       = try(google_cloud_run_domain_mapping.hooks[0].status[0].resource_records, [])
+}
+
+output "hooks_api_key_secret" {
+  description = <<-EOT
+    The Secret Manager secret the hooks service checks app.hector.golf's
+    x-api-key against. Terraform creates the container and never a version, so
+    the service deploys before the key exists and answers 503 until it does —
+
+      openssl rand -base64 32 | tr -d '\n' | gcloud secrets versions add "$(terraform output -raw hooks_api_key_secret)" --data-file=-
+
+    Then give the value to app.hector.golf out of band. It is deliberately NOT
+    hector-app-api-key: that is their key for us to call them, this is ours for
+    them to call us, and neither side should have to rotate because the other
+    did.
+  EOT
+  value       = google_secret_manager_secret.hooks_api_key.secret_id
+}
+
 output "wisegolf_username_secret" {
   description = <<-EOT
     The Secret Manager secret the admin service reads its WiseGolf username from.

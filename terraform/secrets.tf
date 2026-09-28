@@ -278,3 +278,71 @@ resource "google_secret_manager_secret_iam_member" "admin_runtime_reads_hector_a
   role      = "roles/secretmanager.secretAccessor"
   member    = google_service_account.admin_runtime.member
 }
+
+# ---------------------------------------------------------------------------
+# The key app.hector.golf presents to the hooks service.
+#
+# Its own secret rather than one of the four in `local.function_secrets`,
+# because nothing in `backend/` reads it: this one is checked by the admin image
+# running as the hooks service. Keeping it out of that map is also what keeps
+# `hector-functions` from being granted read on it by the blanket for_each up
+# there.
+#
+# NOT `hector-app-api-key`. That is app.hector.golf's key, for us to call them;
+# this is ours, for them to call us. One value doing both would mean either
+# side's leak opening both doors, and neither side able to rotate alone.
+#
+# Terraform creates the container and never the value, as everywhere else here.
+# Unlike `leaderboard-trigger-key`, an empty container does not block a deploy:
+# `admin/src/lib/secrets.ts` reads it per request, so the service starts, answers
+# 503 with the setup step named, and begins working the moment a version exists
+# — no redeploy, and no bootstrap ordering to get wrong. That choice is a direct
+# consequence of the knot described in cloud_run.tf.
+# ---------------------------------------------------------------------------
+
+resource "google_secret_manager_secret" "hooks_api_key" {
+  project   = var.project_id
+  secret_id = "hooks-api-key"
+
+  replication {
+    user_managed {
+      replicas {
+        location = var.region
+      }
+    }
+  }
+
+  labels = {
+    component = "hooks"
+  }
+
+  depends_on = [
+    google_project_service.enabled["secretmanager.googleapis.com"],
+    google_project_iam_member.terraform_ci,
+  ]
+}
+
+# The three secrets the hooks service reads, and no others. `hector-admin` holds
+# read on six; the gap is the whole reason this identity exists.
+resource "google_secret_manager_secret_iam_member" "hooks_runtime_reads_its_key" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.hooks_api_key.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = google_service_account.hooks_runtime.member
+}
+
+# The leaderboards job commits what it publishes, which is this service's token.
+resource "google_secret_manager_secret_iam_member" "hooks_runtime_reads_github_token" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.github_dispatch_token.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = google_service_account.hooks_runtime.member
+}
+
+# And it reads the standings from app.hector.golf to have something to publish.
+resource "google_secret_manager_secret_iam_member" "hooks_runtime_reads_hector_app_key" {
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.functions["hector-app-api-key"].secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = google_service_account.hooks_runtime.member
+}

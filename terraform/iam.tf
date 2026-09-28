@@ -20,6 +20,41 @@ resource "google_project_iam_member" "admin_runtime_firestore" {
 }
 
 # ---------------------------------------------------------------------------
+# Runtime identity: the hooks service.
+#
+# The same image as the admin, a different service, and deliberately a different
+# identity. `hooks.hector.golf` has no IAP in front of it — that is the whole
+# point of it, and why it serves exactly one route — so what it can reach if it
+# is ever wrong should be the least this job needs rather than everything the
+# admin happens to hold.
+#
+# What the round hook does is run the `leaderboards` job, which reads
+# app.hector.golf, reads and commits through GitHub, and takes a Firestore lease
+# while writing the run log. So: datastore.user here, and read on three secrets
+# in secrets.tf.
+#
+# What it deliberately does NOT get, although the admin's identity has all of
+# them: the assets bucket (uploads are an admin-UI act), the WiseGolf login (the
+# handicaps job is not reachable here), and astrosite-api-key (neither is the
+# biographies job). Those three are the difference between this account and
+# `hector-admin`, and the difference is the point.
+# ---------------------------------------------------------------------------
+
+resource "google_service_account" "hooks_runtime" {
+  project      = var.project_id
+  account_id   = "hector-hooks"
+  display_name = "hector.golf hooks service (runtime)"
+  description  = "Identity the public hooks service runs as. Firestore and the leaderboard job's secrets; no bucket, no WiseGolf."
+  depends_on   = [google_project_service.enabled["iam.googleapis.com"]]
+}
+
+resource "google_project_iam_member" "hooks_runtime_firestore" {
+  project = var.project_id
+  role    = "roles/datastore.user"
+  member  = google_service_account.hooks_runtime.member
+}
+
+# ---------------------------------------------------------------------------
 # Terraform's own identity in CI.
 #
 # The role list is explicit rather than roles/editor so that the blast radius of
@@ -154,6 +189,19 @@ resource "google_project_iam_member" "admin_deployer_firestore" {
 
 resource "google_service_account_iam_member" "admin_deployer_act_as" {
   service_account_id = google_service_account.admin_runtime.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = google_service_account.admin_deployer.member
+}
+
+# The same, for the hooks service's identity: one workflow deploys both services
+# from one image, so it has to be able to act as both runtime accounts.
+#
+# A second binding rather than a `for_each` over the two, for the reason the
+# functions deployer has two: "the deployer may act as the runtime accounts" is
+# a rule that quietly covers the next account somebody adds, and the next one
+# might be the one that should have been considered.
+resource "google_service_account_iam_member" "admin_deployer_act_as_hooks" {
+  service_account_id = google_service_account.hooks_runtime.name
   role               = "roles/iam.serviceAccountUser"
   member             = google_service_account.admin_deployer.member
 }
