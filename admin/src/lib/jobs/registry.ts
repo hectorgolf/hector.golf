@@ -67,6 +67,17 @@ export type Job = {
      * publish and should not be spending a deploy on it.
      */
     publishes: boolean
+    /**
+     * Where the result of a run is read, when the run log is not the whole story.
+     *
+     * Only the biographies job has one: it produces drafts on a page rather than
+     * a commit, and a run that says "drafted 3 for review" with nothing to click
+     * is how somebody presses the button and then cannot find what it made. It
+     * is here rather than in the Operations page's markup because that page
+     * renders these cards from this list — a `job.slug === 'biographies'` in the
+     * template would be a second place that knows, and the one that gets missed.
+     */
+    link?: { href: string; label: string }
     run(dryRun: boolean): Promise<JobOutcome>
 }
 
@@ -309,6 +320,58 @@ export async function replace(path: string, text: string, message: string): Prom
     return commitWith(path, message, wholesale(text))
 }
 
+/**
+ * The biographies job, named rather than inline because there are two ways to
+ * run it.
+ *
+ * `biographiesForPlayer` builds a variant that drafts for one player, and it has
+ * to be the *same* job in every respect but what it runs: the same slug, so the
+ * two contend for one lease and cannot interleave; the same run log, so a
+ * drafting run and a sweep appear in one history; and the same `publishes`, so
+ * neither asks for a deploy over something nothing has approved yet. Spreading
+ * this is how those stay true without being restated.
+ */
+const BIOGRAPHIES: Job = {
+    slug: 'biographies',
+    label: "Players' biographies",
+    blurb:
+        'Drafts new biographies for the unlocked players of the upcoming Hector, for review on ' +
+        'the Biography drafts page. Nothing is published until a draft is approved there.',
+    // Out of shadow as of 2026-09-20, which is not the same as writing:
+    // generation is held by `PLAYERS_ARE_OWNED`, the same single gate the
+    // club job uses, for the same reason. Two gates on one question means
+    // the flip is two edits in two files and one of them gets forgotten.
+    //
+    // What that buys today is that a run costs nothing rather than forty-five
+    // model calls: it works out who would be rewritten, says why it stopped,
+    // and makes no request to the function at all.
+    dryRun: false,
+    // Off the tick. It answers a question that changes when somebody sets a
+    // lock or a Hector approaches, neither of which is hourly, and a live
+    // run is forty-five model calls.
+    scheduled: false,
+    // Drafts only; a biography reaches a player when it is approved, and
+    // the site through the export after that.
+    publishes: false,
+    link: { href: '/players/biographies', label: 'Review drafts' },
+    run: async (dryRun) => biographies.run(await biographies.live(readFile), dryRun),
+}
+
+/**
+ * The same job, drafting for one player.
+ *
+ * The forty-five-call sweep is the wrong tool for "this one paragraph is wrong",
+ * and it was the only tool. `POST /api/players/[id]/biography` calls this, and
+ * `execute` gives it the lease, the run log entry and the failure handling the
+ * button on Operations already had.
+ */
+export function biographiesForPlayer(playerId: string): Job {
+    return {
+        ...BIOGRAPHIES,
+        run: async (dryRun) => biographies.runForPlayer(await biographies.live(readFile), playerId, dryRun),
+    }
+}
+
 export const JOBS: readonly Job[] = [
     {
         slug: 'handicaps',
@@ -428,30 +491,7 @@ export const JOBS: readonly Job[] = [
         publishes: true,
         run: (dryRun) => clubs.run({ ...clubs.LIVE }, dryRun),
     },
-    {
-        slug: 'biographies',
-        label: "Players' biographies",
-        blurb:
-            'Drafts new biographies for the unlocked players of the upcoming Hector, for review on ' +
-            'the Biography drafts page. Nothing is published until a draft is approved there.',
-        // Out of shadow as of 2026-09-20, which is not the same as writing:
-        // generation is held by `PLAYERS_ARE_OWNED`, the same single gate the
-        // club job uses, for the same reason. Two gates on one question means
-        // the flip is two edits in two files and one of them gets forgotten.
-        //
-        // What that buys today is that a run costs nothing rather than forty-five
-        // model calls: it works out who would be rewritten, says why it stopped,
-        // and makes no request to the function at all.
-        dryRun: false,
-        // Off the tick. It answers a question that changes when somebody sets a
-        // lock or a Hector approaches, neither of which is hourly, and a live
-        // run is forty-five model calls.
-        scheduled: false,
-        // Drafts only; a biography reaches a player when it is approved, and
-        // the site through the export after that.
-        publishes: false,
-        run: async (dryRun) => biographies.run(await biographies.live(readFile), dryRun),
-    },
+    BIOGRAPHIES,
     {
         slug: 'clubs',
         label: 'Golf club list',

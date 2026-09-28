@@ -424,6 +424,19 @@ const biographyKey = await backendFunctionsKeyAvailability();
 
 							<p class="blurb">{job.blurb}</p>
 
+							{/*
+							  * Where to read what a run produced, for the one job whose
+							  * output is not a commit. Its run detail names the page in
+							  * prose — "drafted 3 for review at /players/biographies" — and
+							  * prose in a run log is not clickable, so pressing the button
+							  * used to leave somebody hunting for what it made.
+							  */}
+							{job.link && (
+								<p class="blurb">
+									<a href={job.link.href}>{job.link.label}</a>
+								</p>
+							)}
+
 							{latest ? (
 								<p class="last-run">
 									Last run <time datetime={latest.startedAt}>{ageInWords(latest.startedAt, now)}</time>{" "}
