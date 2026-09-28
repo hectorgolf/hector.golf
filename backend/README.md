@@ -347,6 +347,8 @@ Neither can go first, so it goes twice:
 Both CI workflows fire on the same merge and neither waits for the other, so on the merge
 that introduces this function you get a failed apply *and* a failed deploy. That is one
 problem, not two, and re-running them in the order above is the whole of the fix.
+`.github/workflows/deploy-functions.yml` says the same thing at the point the red build
+appears.
 
 Then give the key to app.hector.golf out of band, the way they gave us theirs. Rotating it
 later is step 2's command on its own: the function references `:latest`, so a new instance

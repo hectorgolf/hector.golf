@@ -62,6 +62,21 @@
 # The allUsers binding lives in terraform/cloud_run.tf now. Giving this identity
 # the permission instead would have meant roles/run.admin, which also reaches
 # hector-admin.
+#
+# ## If a brand new function's first deploy goes red here
+#
+# It is probably the bootstrap ordering rather than anything about this workflow,
+# and the two places that explain it are the ORDERING comment in
+# terraform/cloud_run.tf and "The first deploy is a three-step dance" in
+# backend/README.md. The short version: a new function's allUsers binding cannot
+# be applied before the service exists, and RequestLeaderboardUpdate additionally
+# runs as a service account Terraform creates, so its deploy cannot go before the
+# apply either. Apply, add the secret's first version and deploy, apply again.
+#
+# The tell is the error text — "Service account ... was not found", or a failed
+# apply saying a SERVICE does not exist. Both workflows fire on the same merge and
+# neither waits for the other, so the two failures arrive together and read as two
+# problems.
 
 name: Deploy Cloud Functions
 
