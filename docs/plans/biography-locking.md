@@ -1,10 +1,15 @@
 # Keeping a hand-edited biography
 
-*Steps 1 and 2 shipped on 2026-09-19: `player.biographyLocked` exists, and
-`update-player-biographies.ts` skips a locked player and logs who it left alone. This is what is
-left. The reasoning behind the built part — why a flag rather than "fill only when empty", why a new
-field rather than reinterpreting `biography` — is in this file's git history; what the code does is
-described in [`current/data-ownership.md`](../current/data-ownership.md).*
+*Done. Steps 1 and 2 shipped on 2026-09-19: `player.biographyLocked` exists, and the generator skips
+a locked player and logs who it left alone. The last step — regeneration for a single player —
+shipped on 2026-09-28 as **Draft a biography** on the player's page, and arrived in a shape this
+plan did not anticipate: it writes a draft for review rather than rewriting the biography, so the
+lock it was meant to make safe to set is no longer the only thing standing between a model call and
+a published paragraph. The reasoning behind the built parts is in this file's git history; what the
+code does is described in [`current/data-ownership.md`](../current/data-ownership.md).*
+
+*Kept rather than deleted because the "Why" below is the argument for the affordance, and it is the
+argument somebody will want when they wonder why unlocking and regenerating are two buttons.*
 
 ## What to do
 

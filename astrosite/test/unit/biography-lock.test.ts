@@ -137,6 +137,124 @@ describe('the phrasing a run is told to avoid', () => {
 })
 
 /**
+ * Whether a biography still describes the world it was written in.
+ *
+ * A biography is written partly out of the next Hector — "is set to make his
+ * tenth appearance" — so the morning after that Hector is played, every one of
+ * them is wrong in the same way. The job used to stop dead out of season, on
+ * the reasoning that there was no upcoming event to write for, which left those
+ * sentences on the site for the eleven months in which they were the first thing
+ * a visitor read.
+ *
+ * `currentIfWrittenAfter` is what a run out of season is given: the day the last
+ * Hector finished. It has to be a date rather than "has this been done since the
+ * last run", because the thing that makes a biography stale is an event, not a
+ * schedule.
+ */
+describe('biographies that predate the Hector just played', () => {
+    const ENDED = '2026-09-27'
+
+    it('regenerates one written before the event ended', () => {
+        const { regenerate, upToDate } = biographiesToRegenerate(
+            [player({ biographyGeneratedAt: '2026-09-20T09:00:00.000Z' })],
+            ENDED
+        )
+
+        expect(regenerate).toHaveLength(1)
+        expect(upToDate).toEqual([])
+    })
+
+    it('leaves one written after it alone', () => {
+        const { regenerate, upToDate } = biographiesToRegenerate(
+            [player({ biographyGeneratedAt: '2026-09-28T09:00:00.000Z' })],
+            ENDED
+        )
+
+        expect(regenerate).toEqual([])
+        expect(upToDate).toHaveLength(1)
+    })
+
+    /**
+     * The last day of a Hector is a day it is still being played, so a biography
+     * written then cannot describe its outcome. `>` rather than `>=` is the
+     * whole of that, and it is the boundary worth pinning.
+     */
+    it('regenerates one written on the closing day, which the event outlived', () => {
+        const { regenerate } = biographiesToRegenerate(
+            [player({ biographyGeneratedAt: `${ENDED}T18:00:00.000Z` })],
+            ENDED
+        )
+
+        expect(regenerate).toHaveLength(1)
+    })
+
+    /**
+     * The state every player was in when the field was added, and the reason
+     * "unknown" cannot read as "current": the roster had 45 biographies and no
+     * dates, all of them written while the last Hector was still ahead.
+     * Treating that as up to date would make the first run after this change a
+     * no-op and leave the whole site describing a finished event as coming.
+     */
+    it('regenerates one with no date at all', () => {
+        const { regenerate, upToDate } = biographiesToRegenerate([player()], ENDED)
+
+        expect(regenerate).toHaveLength(1)
+        expect(upToDate).toEqual([])
+    })
+
+    it('still leaves a locked player alone, however stale their text is', () => {
+        const { regenerate, locked } = biographiesToRegenerate(
+            [player({ biographyLocked: true, biographyGeneratedAt: '2020-01-01T00:00:00.000Z' })],
+            ENDED
+        )
+
+        expect(regenerate).toEqual([])
+        expect(locked).toHaveLength(1)
+    })
+
+    /**
+     * An up-to-date biography is on the page beside everything the run writes,
+     * exactly as a locked one is, so it belongs in the do-not-echo context for
+     * exactly the same reason. Leaving it out would let a run reuse a sentence
+     * that is already published under somebody else's name — the failure the
+     * locked half of this file exists about.
+     */
+    it('adds the up-to-date players to the phrasing a run is told to avoid', () => {
+        const { alreadyPublished } = biographiesToRegenerate(
+            [
+                player({ id: 'stale', biography: ['Being rewritten.'] }),
+                player({
+                    id: 'current',
+                    biography: ['Written since the Hector.'],
+                    biographyGeneratedAt: '2026-09-28T09:00:00.000Z',
+                }),
+                player({ id: 'held', biographyLocked: true, biography: ['Claimed by hand.'] }),
+            ],
+            ENDED
+        )
+
+        expect(alreadyPublished).toEqual(['Claimed by hand.', 'Written since the Hector.'])
+    })
+
+    /**
+     * No cutoff is what a run before an upcoming Hector passes, and it has to go
+     * on meaning "everybody unlocked": the field changes as people enter, so a
+     * biography written yesterday is no evidence that it names the right event.
+     */
+    it('ignores the dates entirely when no cutoff is given', () => {
+        const players = [
+            player({ id: 'a', biographyGeneratedAt: '2026-09-28T09:00:00.000Z' }),
+            player({ id: 'b' }),
+        ]
+
+        const { regenerate, upToDate } = biographiesToRegenerate(players)
+
+        expect(regenerate).toHaveLength(2)
+        expect(upToDate).toEqual([])
+    })
+})
+
+/**
  * Against the real roster, because the interesting property of a lock nobody has
  * set is that it changes nothing at all.
  */

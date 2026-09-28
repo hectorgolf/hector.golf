@@ -46,7 +46,7 @@ if (Astro.request.method === 'POST') {
                 error = `Player ${playerId} is not in the store, so the draft cannot be approved.`
             } else {
                 const reviewed = String(form.get('biography') ?? '')
-                const parsed = playerSchema.safeParse(playerWithApprovedDraft(player, draft.biography, reviewed))
+                const parsed = playerSchema.safeParse(playerWithApprovedDraft(player, draft, reviewed))
                 if (!parsed.success) {
                     error = parsed.error.issues
                         .map((issue) => `${issue.path.join('.') || 'form'}: ${issue.message}`)
@@ -110,8 +110,8 @@ const generatedOn = (iso: string) => (iso ? iso.slice(0, 10) : 'an unknown date'
     {
         !error && drafts.length === 0 && (
             <p class="notice">
-                No drafts waiting. Run the biography job on <a href="/operations">Operations</a> to draft for the
-                whole field of the upcoming Hector, or press "Draft a biography" on{' '}
+                No drafts waiting. Run the biography job on <a href="/operations">Operations</a> to draft for
+                everybody who needs one, or press "Draft a biography" on{' '}
                 <a href="/players">one player's page</a> for just them.
             </p>
         )
@@ -128,16 +128,17 @@ const generatedOn = (iso: string) => (iso ? iso.slice(0, 10) : 'an unknown date'
                     </h2>
                     <p class="hint">
                         {/*
-                          * No event is a state rather than a gap since drafting
-                          * for one player arrived: the sweep stops when no Hector
-                          * is upcoming, a single draft does not, and the prompt
-                          * simply leaves out its "next event" lines. Saying
-                          * "an unknown event" about that would report a fact
-                          * nobody lost.
+                          * No event is a state rather than a gap, and says
+                          * nothing further about why: a draft records the Hector
+                          * it was written around — the one coming, or the one
+                          * just played — and has none only when the store holds
+                          * no Hector anybody played. This said "with no Hector
+                          * upcoming", which stopped being the reason the day a
+                          * finished Hector became something to write about.
                           */}
                         {draft.eventId
                             ? `Drafted for ${draft.eventId} on ${generatedOn(draft.generatedAt)}.`
-                            : `Drafted on ${generatedOn(draft.generatedAt)}, with no Hector upcoming.`}
+                            : `Drafted on ${generatedOn(draft.generatedAt)}.`}
                         {player?.biographyLocked &&
                             ' This biography has been locked since, so approving replaces text somebody edited.'}
                     </p>

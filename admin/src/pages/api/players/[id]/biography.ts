@@ -9,8 +9,8 @@ import { getPlayer } from '../../../../lib/repository/events.ts'
  * Draft a biography for one player, now.
  *
  * The narrow door beside `../../jobs/[slug]/run.ts`'s wide one. That endpoint
- * runs the sweep — every unlocked player of the upcoming Hector, forty-five
- * model calls — which is the only thing there was, and the wrong thing to reach
+ * runs the sweep — every unlocked player who needs it, up to forty-five model
+ * calls — which is the only thing there was, and the wrong thing to reach
  * for when one paragraph reads badly. This runs the same job for one named
  * player, through the same `execute`, so it takes the same lease and lands in
  * the same run log; a draft made here and a sweep cannot interleave over the

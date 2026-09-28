@@ -124,10 +124,35 @@ export function biographyWasEdited(stored: Player, saved: PlayerDetails): boolea
  * Approving the generator's text as it stands leaves the biography generated, so
  * a later run may improve it. Changing it before approving is an edit, and locks
  * it the way saving an edit on the player's page does.
+ *
+ * ## `biographyGeneratedAt` is the draft's date, not today's
+ *
+ * It says when the *model* wrote the text, which is what decides whether the
+ * text can know about an event — and approving is a separate act that can happen
+ * days later. A draft generated while a Hector was still being played and
+ * approved the following week describes it as upcoming, so it has to read as
+ * written before that Hector ended and be regenerated; stamping it with the
+ * approval date would declare it current and leave the wrong sentence on the
+ * site until somebody noticed by eye. See `biographiesToRegenerate`.
+ *
+ * The draft is taken whole rather than as its paragraphs, because both halves
+ * are now wanted and a second positional `string` beside `reviewed` is a pair
+ * somebody eventually passes in the wrong order.
  */
-export function playerWithApprovedDraft(player: Player, draft: string[], reviewed: string): Player {
+export function playerWithApprovedDraft(
+    player: Player,
+    draft: { biography: string[]; generatedAt: string },
+    reviewed: string
+): Player {
     const paragraphs = paragraphsFrom(reviewed)
     const biography = paragraphs.length > 0 ? paragraphs : undefined
-    const edited = biographyWasEdited({ ...player, biography: draft }, { biography })
-    return { ...player, biography, biographyLocked: player.biographyLocked || edited || undefined }
+    const edited = biographyWasEdited({ ...player, biography: draft.biography }, { biography })
+    return {
+        ...player,
+        biography,
+        biographyLocked: player.biographyLocked || edited || undefined,
+        // Emptying the box removes the biography, and a date on a biography that
+        // is not there would say a run had produced what it had just deleted.
+        biographyGeneratedAt: biography ? draft.generatedAt : undefined,
+    }
 }

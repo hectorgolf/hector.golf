@@ -120,12 +120,13 @@ describe('reading the four fields off the form', () => {
 })
 
 describe('approving a biography draft', () => {
-    const draft = ['Drafted one.', 'Drafted two.']
+    const WRITTEN = '2026-09-28T09:00:00.000Z'
+    const draft = { biography: ['Drafted one.', 'Drafted two.'], generatedAt: WRITTEN }
 
     it('saves the draft as it stands without locking it', () => {
         const approved = playerWithApprovedDraft(player({ biography: ['Old.'] }), draft, 'Drafted one.\n\nDrafted two.')
 
-        expect(approved.biography).toEqual(draft)
+        expect(approved.biography).toEqual(draft.biography)
         expect(approved.biographyLocked).toBeUndefined()
     })
 
@@ -140,6 +141,33 @@ describe('approving a biography draft', () => {
         const approved = playerWithApprovedDraft(player({ biographyLocked: true }), draft, 'Drafted one.\n\nDrafted two.')
 
         expect(approved.biographyLocked).toBe(true)
+    })
+
+    /**
+     * The date the model wrote it, not the date somebody got round to reading
+     * it. `biographiesToRegenerate` reads this to decide whether the text can
+     * know about an event that has since been played, and only the generation
+     * date answers that — a draft written mid-tournament and approved the
+     * following week still describes it as upcoming.
+     */
+    it('records when the model wrote it, not when it was approved', () => {
+        const approved = playerWithApprovedDraft(player(), draft, 'Drafted one.\n\nDrafted two.')
+
+        expect(approved.biographyGeneratedAt).toBe(WRITTEN)
+    })
+
+    it('records it for an edited draft too, since the text is still the model\'s work', () => {
+        const approved = playerWithApprovedDraft(player(), draft, 'Drafted one.\n\nFixed two.')
+
+        expect(approved.biographyGeneratedAt).toBe(WRITTEN)
+    })
+
+    /** A date on a biography that is not there would claim a run produced it. */
+    it('leaves no date when the reviewer empties the box', () => {
+        const approved = playerWithApprovedDraft(player({ biography: ['Old.'] }), draft, '   ')
+
+        expect(approved.biography).toBeUndefined()
+        expect(approved.biographyGeneratedAt).toBeUndefined()
     })
 })
 
