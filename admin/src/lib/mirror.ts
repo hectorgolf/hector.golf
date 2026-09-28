@@ -48,9 +48,24 @@ export type Mirror = {
  * already, and what is left for the flip is turning a git writer into a
  * Firestore one rather than moving a job.
  */
+/*
+ * Half of this event's one remaining scheduled writer has moved here too, and
+ * the half that is left is the one named below.
+ *
+ * `results.teams` is back-filled from a live leaderboard, and since 2026-09-24
+ * that is two writers rather than one: the admin's `leaderboards` job for the
+ * events published on app.hector.golf, and `update-leaderboards.yml` for the
+ * sheet-sourced ones. Only the second is still outside this service, so only the
+ * second is a price of the flip.
+ *
+ * Listed anyway rather than rounded down to nothing, because the flip's rule is
+ * about writers and not about how many events each one reaches. A sheet-sourced
+ * Hector is one event file away, and the day somebody adds one is the day a
+ * quietly emptied list would be wrong.
+ */
 const HECTOR: Mirror = {
     authoredAt: 'astrosite/src/data/events/hector/',
-    scheduledWriters: ['update-leaderboards (results.teams)'],
+    scheduledWriters: ['update-leaderboards (results.teams, sheet-sourced events)'],
 }
 
 /**

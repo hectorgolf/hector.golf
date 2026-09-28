@@ -82,10 +82,18 @@ export type DispatchableWorkflow = {
 
 export const DISPATCHABLE_WORKFLOWS: readonly DispatchableWorkflow[] = [
     {
+        // The same slug as the job in `jobs/registry.ts`, which is the case the
+        // two lists were kept separate for: one dataset, mid-move, written by a
+        // workflow and by this service at once. They do not overlap — the job
+        // takes the app.hector.golf events and this takes the sheet-sourced ones
+        // — and `ranJob` versus `ran` on the Operations page is what tells a
+        // press of one from a press of the other.
         slug: 'leaderboards',
         file: 'update-leaderboards.yml',
-        label: 'Tournament leaderboards',
-        blurb: 'Refreshes the leaderboards of events that have started, from Google Sheets or app.hector.golf.',
+        label: 'Tournament leaderboards (Google Sheets)',
+        blurb:
+            'Refreshes the leaderboards of sheet-managed events that have started. ' +
+            'The app.hector.golf ones are the job of the same name.',
         cadence: { every: '60s' }, // every 60 seconds, at most
     },
     {

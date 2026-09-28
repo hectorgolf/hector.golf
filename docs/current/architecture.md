@@ -422,7 +422,7 @@ All content lives as JSON committed under [`astrosite/src/data/`](../../astrosit
 | `events/matchplay/*.json` | 3 | Human | `HECTORMATCHPLAY2024`–`2026` |
 | `events/finnkampen/*.json` | 2 | Human | `FINNKAMPEN2021`–`2022` |
 | `courses/*.json` | 17 | Human | Tees, ratings, slope, scorecard, per-hole descriptions |
-| `leaderboards/*.json` | 6 | CI only | Per-event Hector and Victor standings |
+| `leaderboards/*.json` | 6 | CI, and the admin service | Per-event Hector and Victor standings. The admin's `leaderboards` job writes the app-sourced events, `update-leaderboards.yml` the sheet-sourced ones — one writer each, split by the `leaderboardSheet` URL |
 | `handicaps.json` | ~1,400 entries | nothing, since 2026-09-20 | Frozen. `update-handicaps.yml` was its last writer and was deleted once the admin's job had replaced all four of its outputs. It stays committed, and the job still reads it once per run, so that rows written before the move cannot be lost; deleting it is a separate change from deleting its writer |
 | `data/handicaps/observations.ndjson` | ~1,400 lines | the admin service | Append-only `{player, date, handicap, observed?}` log, one JSON object per line, outside `astrosite/` on purpose. A *backup* of Firestore's `handicap-observations`, which is the source since 2026-09-18; the build reads `/api/handicaps/history` and falls back to this file without credentials. A day can hold more than one entry — when the Golf Union re-runs a failed batch, and now also because both pipelines stamp their own reading during the transition; `latestPerDay()` is the daily view every reader goes through — see [handicap-updates.md](./handicap-updates.md) |
 | `clubs.json` | 140 clubs | CI only | Finnish golf clubs `{name, abbreviation, sources[]}` |
@@ -556,7 +556,10 @@ files:
   scoring direction (`hector: ascending` because it counts strokes; `victor: descending` because it
   counts Stableford points). It lives in `leaderboards/presentation.ts` alongside the score, diff and
   `through` formatters, so the statically rendered board and the live one cannot drift apart — that
-  module is free of `fs` and Zod precisely so the browser can import it.
+  module is free of `fs` and Zod precisely so the browser can import it. The pieces the admin needs
+  too — the board types, the payload extractors, the source predicates and `splitCompetitorNames` —
+  live in `@hector/schemas/src/leaderboards/` rather than here, because the admin cannot import
+  `astrosite/`.
 - **Chronological grouping** — `getAllEventsGroupedByChronology()`, with the special rule that a
   matchplay event holding a recorded winner counts as past regardless of its dates.
 - **Date formatting** — events store ISO dates, so the derivation now runs the other way:
@@ -584,8 +587,9 @@ files:
 | WiseGolf | `code/handicaps/wisegolf-api.ts` | Username/password → bearer token | Official WHS handicaps, club directory, club membership |
 | Ringside Golf | same module | Same token | Second player-lookup endpoint |
 | Google Sheets v4 | `code/leaderboards/google-sheets.ts` | `leaderboard-reader` by Workload Identity Federation, via ADC | Live leaderboards for sheet-managed events |
-| app.hector.golf | `code/leaderboards/app.ts` | `x-api-key` | Live leaderboards for app-managed events |
-| app.hector.golf (browser) | `code/leaderboards/app-payload.ts` | None — via the `TournamentLeaderboard` proxy (§10) | The same standings, polled from the visitor's browser |
+| app.hector.golf | `admin/src/lib/leaderboards/app.ts` | `x-api-key`, from Secret Manager | Live leaderboards for app-managed events, published by the admin's `leaderboards` job |
+| app.hector.golf | `code/leaderboards/app.ts` | `x-api-key`, from the environment | The same read, kept as the CI contract check on the upstream payload — nothing on the site publishes from it since 2026-09-24 |
+| app.hector.golf (browser) | `@hector/schemas/src/leaderboards/app-payload.ts` | None — via the `TournamentLeaderboard` proxy (§10) | The same standings, polled from the visitor's browser |
 | GitHub Contents API | `code/leaderboards/github.ts` | `GITHUB_ACCESS_TOKEN` (Octokit) | Commits leaderboard JSON directly |
 | Google Gemini | via `GeneratePlayerBiography` (§10) | Bearer (`ASTROSITE_API_KEY`) | Player biography prose. Two further Gemini functions exist and are dormant — `docs/experiments/` |
 
@@ -856,17 +860,22 @@ the history.
 
 | Script | Schedule (UTC) | Reads | Writes |
 | --- | --- | --- | --- |
-| `update-leaderboards.ts` | Every two hours 03:00–07:00, and 12:00, by Cloud Scheduler. No cron | Sheets / app.hector.golf | `leaderboards/*.json` (via API), event `results.teams` |
+| `update-leaderboards.ts` | Every two hours 03:00–07:00, and 12:00, by Cloud Scheduler. No cron | Google Sheets | `leaderboards/*.json` (via API), event `results.teams` |
 
 **Three scrapes have left this list.** `update-handicaps.ts` and its workflow went on 2026-09-20;
 `update-player-biographies.ts` and `update-player-club-memberships.ts` went on 2026-09-21, when the
 admin took the player collection over. All three run in the admin service as jobs, and what they do
 is described under §8's admin half below. One script is left.
 
-**`update-leaderboards.ts`** — selects Hector events that hold a `leaderboardSheet` URL and have
-already started (`updateFutureEvents = false`), then dispatches on the URL shape: `app.hector.golf/*`
-against the app API, `docs.google.com/spreadsheets/*` against Sheets. It also back-fills
+**`update-leaderboards.ts`** — selects Hector events that hold a `docs.google.com/spreadsheets/*`
+`leaderboardSheet` URL and have already started (`updateFutureEvents = false`). It also back-fills
 `results.teams` into the event JSON from leaderboard pairings when the event has none recorded yet.
+
+**It no longer touches the app.hector.golf events.** Those moved to the admin service on 2026-09-24
+— see *The leaderboard refresh* below — and this script drops them explicitly rather than by
+omission, so that a run's log says where that board is published now. Two writers for one
+leaderboard file would race for it and commit over each other, which is why the split is enforced on
+both sides rather than by scheduling them apart.
 
 **The one remaining script is safe to import, and so were the three that left.** Its entry point
 sits behind an `argv[1]` guard, and everything that touches the filesystem or the network happens
@@ -923,6 +932,41 @@ indistinguishable from a check nobody ran. It really reads the secret, rather th
 binding, because a check that can pass where the job's own call fails is worse than none. It is not
 red while `PLAYERS_ARE_OWNED` is false — nothing is broken yet — by the rule the run-log pills
 follow.
+
+### The leaderboard refresh, which is a job because a push cannot wait for a runner
+
+`admin/src/lib/jobs/leaderboards.ts` republishes the standings of a Hector that is being played, from
+app.hector.golf, and writes the pairings into the event JSON the first time the board shows them.
+It took the app-sourced half of `update-leaderboards.yml` on 2026-09-24.
+
+**Why it moved is latency rather than lateness.** The other jobs moved because GitHub delivers
+`schedule` events hours late; this one had already been put on the Cloud Scheduler tick and so was
+starting on time. What it could not do is start *between* ticks. A leaderboard changes every time
+somebody holes a putt, and the gap between a score being entered on app.hector.golf and the board on
+hector.golf showing it was a dispatch, a queue, a runner and an `npm ci` — minutes at best, and only
+at the four moments a day the tick fires.
+
+So app.hector.golf calls `POST /api/jobs/leaderboards/run` when a score changes, and the work happens
+in that request. The tick still runs the job, which is what covers a round nobody's phone had signal
+for, and the fifty weeks a year when it finds no tournament and says so.
+
+**One writer per event, split by source.** The job takes the events whose `leaderboardSheet` is an
+`app.hector.golf/*` URL; the workflow takes the `docs.google.com/spreadsheets/*` ones and skips the
+others explicitly. The split is by source rather than by schedule because both write the same file,
+and two writers racing for it is a pair of commits undoing each other. The sheet path stayed on the
+runner because moving it would cost a second credential — `googleapis`, and a service account each
+spreadsheet is shared with — for no live event: the last two sheet-managed Hectors finished in 2024
+and 2025.
+
+**An unchanged board is not a commit.** The boards are compared against what is committed; only
+`updatedAt` and the rows that moved are written. That is what makes a push per birdie affordable —
+otherwise every call would be a commit and a site rebuild — and it also makes `updatedAt` mean "when
+the standings last changed" rather than "when this job last ran".
+
+**A source that cannot be read fails the run and writes nothing.** An event that has not started
+legitimately has empty boards, so "could not read app.hector.golf" must never reach the file as
+"nobody is playing" — the failure that would blank a live leaderboard. The caller gets a 502 and the
+committed board stays as it was.
 
 ### The handicap sweep, which is a job rather than a workflow
 

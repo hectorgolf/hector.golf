@@ -2,9 +2,15 @@
  * Where an event's live standings come from, read off its `leaderboardSheet` URL.
  *
  * The two patterns were previously inlined in the update workflow. They are here
- * because the site now needs the same question answered at build time: only an
- * app.hector.golf event can be polled from the browser, because only that source
- * has an endpoint behind the leaderboard proxy.
+ * because three readers now need the same question answered, and each of them
+ * would otherwise carry a regular expression matching a hostname: the site, at
+ * build time, because only an app.hector.golf event can be polled from the
+ * browser — only that source has an endpoint behind the leaderboard proxy; the
+ * workflow, which updates the sheet-sourced events; and the admin's leaderboards
+ * job, which updates the app-sourced ones.
+ *
+ * A hostname test that disagrees with itself between two of those is how an event
+ * gets updated twice or not at all, so there is one.
  */
 
 const APP_HECTOR_GOLF = /^https:\/\/app\.hector\.golf\//;

@@ -105,13 +105,14 @@ const cacheKey = liveCacheKey(eventId)
 }
 
 <script>
-	import { readAppLeaderboardPayload, type AppLeaderboardSnapshot } from '../../code/leaderboards/app-payload'
+	import { readAppLeaderboardPayload, type AppLeaderboardSnapshot } from '@hector/schemas/src/leaderboards/app-payload.ts'
 	import {
 		browserStorage,
 		clearCachedSnapshot,
 		readCachedSnapshot,
 		writeCachedSnapshot,
 	} from '../../code/leaderboards/live-cache'
+	import { splitCompetitorNames } from '@hector/schemas/src/leaderboards/names.ts'
 	import {
 		agoLabel,
 		clockLabel,
@@ -119,7 +120,6 @@ const cacheKey = liveCacheKey(eventId)
 		leaderboardPosition,
 		normalizeDiff,
 		pointsLabel,
-		splitCompetitorNames,
 		throughLabel,
 	} from '../../code/leaderboards/presentation'
 

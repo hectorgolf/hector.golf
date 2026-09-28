@@ -5,7 +5,7 @@ import {
     googleSheetIdFromLeaderboardUrl,
     isAppHectorGolfLeaderboard,
     isGoogleSheetsLeaderboard,
-} from "../../../src/code/leaderboards/sources.ts";
+} from "../../src/leaderboards/sources.ts";
 
 const APP_URL = "https://app.hector.golf/api/tournament?event=HECTOR2026";
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/1QBmokR7_ir0l36B1hLZCYIPTeUbLG2V4RiLSL2QVOts/edit";
