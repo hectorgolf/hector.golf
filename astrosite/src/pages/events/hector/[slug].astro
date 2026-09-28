@@ -10,7 +10,7 @@ import { type HectorEvent } from '@hector/schemas/src/events.ts'
 import { imageUrl, type Course } from '@hector/schemas/src/courses.ts'
 import { type Player } from '@hector/schemas/src/players.ts'
 import { getAllEventIds, getCoursesOfEvent, getEventById, eventHasStarted, eventHasEnded } from '../../../code/events'
-import { getPlayerName, getPlayerById, getPlayerHandicapById } from '../../../code/players'
+import { getPlayerName, getPlayerById } from '../../../code/players'
 import { getLeaderboardsByEventId } from '../../../code/leaderboards/leaderboards'
 import { isAppHectorGolfLeaderboard } from '../../../code/leaderboards/sources'
 import { formatEventDates } from '@hector/schemas/src/dates.ts'
@@ -42,7 +42,8 @@ const victorWinners: Array<Player> = (event.results?.winners?.victor || [])
 const untrimBucket = (trimmed: Array<{ id: string, handicap?: number }>): Array<Player> => {
     return trimmed.map(p => {
         const player = getPlayerById(p.id)
-        return { ...player, handicap: p.handicap || player?.handicap }
+        // The handicap the buckets were split on; the current one only for a bucket that has none stored.
+        return { ...player, handicap: p.handicap ?? player?.handicap }
     }).filter(p => !!p) as Array<Player>
 }
 
@@ -224,7 +225,7 @@ const fieldAndBucketsTitle = bucketsAreSettled ? 'Field and buckets' : 'Field an
                                                 <a href={`/players/${player.id}`}>{getPlayerName(player)}</a>
                                             </td>
                                             <td class="numeric handicap">
-                                                {Number(getPlayerHandicapById(player.id)).toFixed(1)}
+                                                {player.handicap !== undefined ? player.handicap.toFixed(1) : ''}
                                             </td>
                                         </tr>
                                     ))}
