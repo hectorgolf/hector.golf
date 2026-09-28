@@ -1,5 +1,6 @@
 import { HttpFunction, Request, Response } from "@google-cloud/functions-framework";
 import { generatePlayerBiography, type PlayerBiographyInput } from "../../lib/prompts/biography/genai";
+import { isTransient, statusOf } from "../../lib/retry";
 
 function extractAuthToken(request: Request): string | undefined {
     const authorizationHeader = request.header("authorization");
@@ -77,9 +78,27 @@ export const GeneratePlayerBiography: HttpFunction = async (request: Request, re
         response.status(200).send(biography);
     } catch (error) {
         console.error("Error generating player biography:", error);
-        response.status(500).send(
+
+        /*
+         * A model that is busy is not this function being broken, and saying so
+         * is worth the branch. `withRetry` has already tried and given up by the
+         * time we are here, so the honest answer is 503: come back later.
+         *
+         * The caller is what makes this matter. The admin's sweep quotes the
+         * status it got — "the biography function answered 500 Internal Server
+         * Error" — straight into the run log, and on 2026-09-28 that sentence
+         * sent somebody to Cloud Logging to find a `[503] This model is
+         * currently experiencing high demand` underneath it. The status and the
+         * upstream number now travel with the answer, so the run log says which
+         * of the two kinds of failure it was without anybody opening a console.
+         */
+        const upstream = statusOf(error);
+        const busy = isTransient(error);
+
+        response.status(busy ? 503 : 500).send(
             JSON.stringify({
-                error: "Internal server error",
+                error: busy ? "The model is unavailable" : "Internal server error",
+                upstreamStatus: upstream,
                 message: error instanceof Error ? error.message : "Unknown error occurred",
             }),
         );

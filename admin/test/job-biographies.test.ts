@@ -5,7 +5,12 @@ import { EventFormat, type Event, type HectorEvent } from '@hector/schemas/src/e
 import type { Player } from '@hector/schemas/src/players.ts'
 import type { GolfClub } from '@hector/wisegolf/src/handicap-source-api.ts'
 
-import { run, runForPlayer, type BiographyDependencies } from '../src/lib/jobs/biographies.ts'
+import {
+    CONSECUTIVE_FAILURES_BEFORE_GIVING_UP,
+    run,
+    runForPlayer,
+    type BiographyDependencies,
+} from '../src/lib/jobs/biographies.ts'
 
 /**
  * Regenerating biographies in this service: who, and then whether at all.
@@ -403,12 +408,15 @@ describe('a live run that generates', () => {
     })
 
     /**
-     * A generation failure is almost always the key, the quota or the function
-     * being down, and the next player will not do better against any of them.
-     * What was written stays written — the workflow behaves the same — and the
-     * detail has to say how far it got, or a partial rewrite looks like none.
+     * One failure is a bad draw, not a verdict on the run.
+     *
+     * This test used to assert the opposite — the run stopped at the first
+     * failure — and on 2026-09-28 that cost 41 players, because the failure was
+     * `[503] This model is currently experiencing high demand`. The function
+     * retries that itself now; this is the second line, for a spike that outlasts
+     * the retries.
      */
-    it('stops at the first failure and reports how many were written', async () => {
+    it('carries on past a single failure and drafts the rest', async () => {
         const saved: Saved[] = []
         const result = await run(
             deps(
@@ -416,7 +424,7 @@ describe('a live run that generates', () => {
                 [hector('HECTOR2026', '2026-09-24')],
                 {
                     generate: async (input: PlayerBiographyInput) => {
-                        if (input.name === 'lasse-k') throw new Error('429 Too Many Requests')
+                        if (input.name === 'lasse-k') throw new Error('503 Service Unavailable')
                         return ['Generated.']
                     },
                     ...recording(saved),
@@ -425,10 +433,111 @@ describe('a live run that generates', () => {
             false
         )
 
+        expect(result.outcome).toBe('ok')
+        expect(saved.map((s) => s.id)).toEqual(['eero-s', 'anders-f'])
+        expect(result.detail).toContain('drafted 2 for review')
+        expect(result.detail).toContain('1 could not be drafted (lasse-k Player)')
+        // No `Change` for the one that failed: a change claims an after, and a
+        // failure has none.
+        expect(result.changes.map((c) => c.subject)).toEqual(['eero-s', 'anders-f'])
+    })
+
+    /**
+     * The half the old behaviour was right about. A dead key or an exhausted
+     * quota fails every time, and the run should find that out in three calls
+     * rather than forty-five.
+     */
+    it('gives up once enough have failed in a row', async () => {
+        const saved: Saved[] = []
+        const roster = ['a', 'b', 'c', 'd', 'e', 'f'].map((id) => player(id))
+        const result = await run(
+            deps(roster, [hector('HECTOR2026', '2026-09-24')], {
+                generate: async () => {
+                    throw new Error('401 Unauthorized')
+                },
+                ...recording(saved),
+            }),
+            false
+        )
+
         expect(result.outcome).toBe('failed')
-        expect(result.detail).toContain('Drafted 1 before lasse-k Player failed: 429 Too Many Requests')
-        expect(saved.map((s) => s.id)).toEqual(['eero-s'])
+        expect(result.detail).toContain(`gave up after ${CONSECUTIVE_FAILURES_BEFORE_GIVING_UP} failures in a row`)
+        expect(result.detail).toContain('401 Unauthorized')
+        expect(saved).toEqual([])
+    })
+
+    /**
+     * Consecutive rather than total, which is what lets one number serve both
+     * cases: a run that is mostly working finishes, however many bad draws it
+     * accumulates along the way.
+     */
+    it('lets a success reset the count, so an intermittent spike does not end the run', async () => {
+        const saved: Saved[] = []
+        const roster = ['a', 'b', 'c', 'd', 'e', 'f'].map((id) => player(id))
+        // Fails two in a row, succeeds, fails two more, succeeds — five of six
+        // attempts go wrong and none of them is the third in a row.
+        const failing = new Set(['a', 'b', 'd', 'e'])
+        const result = await run(
+            deps(roster, [hector('HECTOR2026', '2026-09-24')], {
+                generate: async (input: PlayerBiographyInput) => {
+                    if (failing.has(input.name)) throw new Error('503 Service Unavailable')
+                    return ['Generated.']
+                },
+                ...recording(saved),
+            }),
+            false
+        )
+
+        expect(result.outcome).toBe('ok')
+        expect(saved.map((s) => s.id)).toEqual(['c', 'f'])
+        expect(result.detail).toContain('4 could not be drafted')
+    })
+
+    it('keeps what it drafted before giving up', async () => {
+        const saved: Saved[] = []
+        const roster = ['a', 'b', 'c', 'd', 'e'].map((id) => player(id))
+        const result = await run(
+            deps(roster, [hector('HECTOR2026', '2026-09-24')], {
+                generate: async (input: PlayerBiographyInput) => {
+                    if (input.name === 'a') return ['Generated.']
+                    throw new Error('503 Service Unavailable')
+                },
+                ...recording(saved),
+            }),
+            false
+        )
+
+        expect(result.outcome).toBe('failed')
+        expect(saved.map((s) => s.id)).toEqual(['a'])
+        expect(result.detail).toContain('Drafted 1')
         expect(result.changes).toHaveLength(1)
+    })
+
+    /**
+     * A player who failed was not rewritten, so what they say now stays on the
+     * page beside everything the rest of the run writes — which is exactly the
+     * condition the do-not-echo context exists for. The successes contribute
+     * their new text; this is the same rule for the ones who did not.
+     */
+    it('shows the model the existing text of a player it could not draft', async () => {
+        const seen: string[][] = []
+
+        await run(
+            deps(
+                [player('eero-s', { biography: ['Eero keeps this paragraph.'] }), player('lasse-k')],
+                [hector('HECTOR2026', '2026-09-24')],
+                {
+                    generate: async (input: PlayerBiographyInput) => {
+                        seen.push([...input.otherGeneratedBiographies])
+                        if (input.name === 'eero-s') throw new Error('503 Service Unavailable')
+                        return ['Generated.']
+                    },
+                }
+            ),
+            false
+        )
+
+        expect(seen).toEqual([[], ['Eero keeps this paragraph.']])
     })
 })
 

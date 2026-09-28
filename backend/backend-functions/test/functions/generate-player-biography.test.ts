@@ -85,4 +85,41 @@ describe("GeneratePlayerBiography", () => {
         expect(response.status).toBe(500);
         expect(await response.json()).toMatchObject({ message: "Gemini is having a day" });
     });
+
+    /**
+     * A busy model is not this function being broken, and the difference is
+     * what the caller needs.
+     *
+     * `withRetry` has already tried and given up by the time the handler sees
+     * this, so the honest answer is "come back later". It matters because the
+     * admin's sweep quotes the status straight into its run log: on 2026-09-28
+     * that read "the biography function answered 500 Internal Server Error" and
+     * sent somebody to Cloud Logging to find the `[503] high demand` underneath.
+     */
+    it("reports a model that is busy as a 503, with the upstream status", async () => {
+        generatePlayerBiography.mockRejectedValue(
+            Object.assign(new Error("[503 Service Unavailable] This model is currently experiencing high demand"), {
+                status: 503,
+            }),
+        );
+
+        const response = await biography.postJson("/", player, { headers: authorized });
+
+        expect(response.status).toBe(503);
+        expect(await response.json()).toMatchObject({
+            error: "The model is unavailable",
+            upstreamStatus: 503,
+        });
+    });
+
+    it("keeps reporting a failure of our own making as a 500", async () => {
+        generatePlayerBiography.mockRejectedValue(
+            Object.assign(new Error("[400 Bad Request] the prompt is malformed"), { status: 400 }),
+        );
+
+        const response = await biography.postJson("/", player, { headers: authorized });
+
+        expect(response.status).toBe(500);
+        expect(await response.json()).toMatchObject({ error: "Internal server error", upstreamStatus: 400 });
+    });
 });

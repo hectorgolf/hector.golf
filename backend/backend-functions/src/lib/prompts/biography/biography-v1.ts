@@ -1,6 +1,7 @@
 import "dotenv/config"; // apply the ".env" file to process.env
 
 import { GenerativeModel } from "@google/generative-ai";
+import { withRetry } from "../../retry";
 import { PlayerBiographyInput, describeEvent, nth } from "./common";
 
 function buildPrimaryPrompt(input: PlayerBiographyInput): string {
@@ -90,7 +91,14 @@ export const GeneratePlayerBiographyPromptV1 = async (
 
     const fullPrompt = [primaryPrompt, posteriorQualityControlPrompt].flat().join("\n\n");
 
-    const result = await model.generateContent([primaryPrompt, posteriorQualityControlPrompt]);
+    /*
+     * The one call that leaves this process, and the one that a demand spike on
+     * the model shows up in: see `withRetry` for which failures come back here
+     * and why the waits are as short as they are. A biography is generated one
+     * player at a time by a sweep of 45, so a 503 that is not retried costs the
+     * whole run rather than one paragraph.
+     */
+    const result = await withRetry(() => model.generateContent([primaryPrompt, posteriorQualityControlPrompt]));
     try {
         const data = JSON.parse(result.response.text());
         console.log(JSON.stringify(data, null, 2));

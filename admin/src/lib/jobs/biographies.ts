@@ -150,6 +150,34 @@ const nameOf = (player: Player): string => `${player.name.first} ${player.name.l
 const paragraphs = (count: number): string => `${count} ${count === 1 ? 'paragraph' : 'paragraphs'}`
 
 /**
+ * How many players in a row may fail before the run gives up on the rest.
+ *
+ * This used to be one, implicitly: the first failure ended the run. The
+ * reasoning was sound and is still written below — a failure is almost always
+ * the key, the quota or the function being down, and none of those improves for
+ * the next player, so carrying on spends forty-four more calls to collect
+ * forty-four more copies of one error.
+ *
+ * What it missed is the failure that is *not* any of those. On 2026-09-28 a
+ * sweep stopped at its fourth player because Gemini answered
+ * `[503] This model is currently experiencing high demand ... Please try again
+ * later`, and abandoned the 41 behind it. The function retries a 503 itself now,
+ * but a spike can outlast four attempts, and when it does the next player is a
+ * fresh draw rather than a repeat of the same verdict.
+ *
+ * **Consecutive**, not total, which is the distinction that makes one number
+ * serve both cases. A dead key fails every time, so three in a row arrives
+ * immediately and the run still stops after three wasted calls rather than
+ * forty-five. A demand spike fails intermittently, and any success resets the
+ * count — so a run that is mostly working is allowed to finish.
+ *
+ * Three, because each of those failures is already four attempts inside the
+ * function: a dozen refusals in a row without a single success between them is
+ * an outage rather than a bad afternoon.
+ */
+export const CONSECUTIVE_FAILURES_BEFORE_GIVING_UP = 3
+
+/**
  * What the generator is told about one player, with this job's two local rules
  * applied: the club name comes from `clubs.json`, and a player with no club on
  * record is "unknown" rather than an empty string.
@@ -273,6 +301,8 @@ export async function run(
      */
     const published = [...alreadyPublished]
     const changes: Change[] = []
+    const failed: Player[] = []
+    let consecutiveFailures = 0
 
     for (const player of regenerate) {
         const input = inputFor(player, hectors, today, clubNames, published)
@@ -280,21 +310,49 @@ export async function run(
         let biography: string[]
         try {
             biography = await dependencies.generate(input)
+            // Any success means whatever was wrong is not wrong now. See
+            // `CONSECUTIVE_FAILURES_BEFORE_GIVING_UP` for why that resets rather
+            // than counts down.
+            consecutiveFailures = 0
         } catch (error) {
-            /*
-             * Stop rather than carry on. A generation failure is almost always
-             * the key, the quota or the function being down — none of which the
-             * next player will do better against — so continuing would spend
-             * forty-four more calls to collect forty-four more copies of the
-             * same error. What was written before it stays written, the same as
-             * the workflow, and the detail says how far it got.
-             */
             const reason = error instanceof Error ? error.message : String(error)
-            return {
-                outcome: 'failed',
-                detail: `${looked}. Drafted ${changes.length} before ${nameOf(player)} failed: ${reason}`,
-                changes,
+            failed.push(player)
+            consecutiveFailures += 1
+
+            /*
+             * Their existing biography joins the do-not-echo context, for the
+             * reason the locked ones do: this player was *not* rewritten, so
+             * what they say now stays on the page beside everything the rest of
+             * this run writes. The players who succeed contribute their new text
+             * a few lines below; this is the same rule for the ones who did not.
+             */
+            published.push(...(player.biography ?? []))
+
+            if (consecutiveFailures >= CONSECUTIVE_FAILURES_BEFORE_GIVING_UP) {
+                /*
+                 * Nothing is getting through, so stop rather than spend the rest
+                 * of the roster proving it. What was drafted before this stays
+                 * drafted and is waiting on the review page.
+                 */
+                return {
+                    outcome: 'failed',
+                    detail:
+                        `${looked}. Drafted ${changes.length}, then gave up after ${consecutiveFailures} ` +
+                        `failures in a row; the last was ${nameOf(player)}: ${reason}`,
+                    changes,
+                }
             }
+
+            /*
+             * One failure among many is a bad draw rather than a verdict on the
+             * run. Carry on: the 41 players behind this one are the reason this
+             * loop exists, and nothing about this player is lost — their
+             * `biographyGeneratedAt` is untouched, so they stay stale and a
+             * later run drafts them without anybody having to remember who they
+             * were.
+             */
+            console.warn('Could not draft a biography; carrying on', { player: player.id, reason })
+            continue
         }
 
         await dependencies.save(player, biography, event)
@@ -306,9 +364,31 @@ export async function run(
         published.push(...biography)
     }
 
+    /*
+     * `ok` rather than `failed` when the run got to the end with a few casualties,
+     * and this is a judgement rather than an obvious reading.
+     *
+     * What argues for it: the drafts that succeeded are real work waiting on the
+     * review page, and the ones that failed are not lost — a draft does not set
+     * `biographyGeneratedAt`, only approving one does, so nobody has to write
+     * down which players to come back for. Approve what is waiting and run again
+     * and the stragglers are precisely what is left stale. Run again *without*
+     * approving and everyone still holding an unapproved draft is redrafted,
+     * which costs model calls rather than correctness.
+     *
+     * What argues against it is that a partial run should be visible, and a
+     * green pill is not very. The compromise is that the detail names the
+     * players rather than counting them: a red pill on a run that drafted
+     * forty-four of forty-five would teach people that red on this job means
+     * nothing, which costs more than it buys on the day something is wrong.
+     */
+    const missed =
+        failed.length === 0 ? '' : `; ${failed.length} could not be drafted (${failed.map(nameOf).join(', ')})`
+    const again = failed.length === 0 ? '' : ' Approve what is waiting and run again to catch them.'
+
     return {
         outcome: 'ok',
-        detail: `${looked}; drafted ${changes.length} for review at /players/biographies.`,
+        detail: `${looked}; drafted ${changes.length} for review at /players/biographies${missed}.${again}`,
         changes,
     }
 }
