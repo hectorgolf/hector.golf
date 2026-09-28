@@ -192,7 +192,7 @@ resource "google_cloud_run_v2_service" "admin" {
 }
 
 # ---------------------------------------------------------------------------
-# Public access to the four functions.
+# Public access to the five functions.
 #
 # A gen2 Cloud Function is a Cloud Run service, and `--allow-unauthenticated` is
 # not a deploy setting: it is an allUsers -> roles/run.invoker binding on that
@@ -214,10 +214,38 @@ resource "google_cloud_run_v2_service" "admin" {
 # endpoint is exactly the kind of grant that should be reviewed in a diff rather
 # than implied by a flag in an npm script.
 #
-# ORDERING. These four services are created by `gcloud functions deploy`, not by
+# ORDERING. These services are created by `gcloud functions deploy`, not by
 # this configuration, so Terraform can only bind IAM on them once they exist. On
 # a fresh project the sequence is: deploy the functions, then apply. Until the
 # apply they answer 403 to anonymous callers. See docs/playbooks/gcp-bootstrapping.md.
+#
+# ADDING ONE IS THE SAME PROBLEM ON A PROJECT THAT IS NOT FRESH, and it is worth
+# saying out loud because the paragraph above reads as being about bootstrapping
+# and is not. A new entry in this set names a service that does not exist yet, so
+# the apply that introduces it fails on that one resource — `Error 404: Resource
+# '<name>' of kind 'SERVICE' ... does not exist` — having created everything else
+# it was asked for. Nothing is wrong; the binding simply cannot exist before the
+# thing it binds.
+#
+# `requestleaderboardupdate` made that worse by pointing the dependency both ways
+# at once, on 2026-09-28: it runs as a service account *this* configuration
+# creates, so its first deploy 404s on the account while this 404s on the
+# service. Neither can go first, and the way through is to go twice:
+#
+#   1. apply — creates the account, the secret container and the grants. The
+#      binding below fails, and that failure is expected.
+#   2. add a version to the secret (`gcloud secrets versions add`; Terraform
+#      makes containers and never values), then deploy the function.
+#   3. apply again — the service exists now, so the binding lands.
+#
+# A `depends_on` cannot express this, because the dependency is on an artefact
+# `gcloud` produces from another repository directory and another workflow. What
+# stops it being rediscovered from a red build is this comment and the matching
+# one in `backend/README.md`.
+#
+# Both CI workflows fire on the same merge and neither waits for the other, so
+# step 1's failure and the function deploy's failure arrive together and look
+# like two problems. They are one.
 # ---------------------------------------------------------------------------
 
 resource "google_cloud_run_v2_service_iam_member" "functions_public" {

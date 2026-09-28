@@ -313,15 +313,44 @@ configuration rather than secrets — a hostname, and an OAuth client id that ap
 IAP's own sign-in URL — so unlike every other value here they are passed as
 `--set-env-vars`. The key itself comes from Secret Manager, as the others do.
 
-Creating that key is a one-off. Terraform makes the container and deliberately never the
-value:
+### The first deploy is a three-step dance
 
-```bash
-openssl rand -base64 32 | tr -d '\n' | gcloud secrets versions add leaderboard-trigger-key \
-  --project=hector-golf --data-file=-
-```
+Only the first, and only on a project that has never had this function. It is written down
+because it cost a red build on 2026-09-28 and the failure does not look like an ordering
+problem — it looks like two unrelated breakages arriving at once.
 
-Then give the value to app.hector.golf out of band, the way they gave us theirs.
+This function is the only one whose deploy depends on Terraform, and Terraform's last
+resource for it depends on the deploy:
+
+- `--service-account=hector-leaderboard-trigger@…` is an account `terraform/iam.tf`
+  creates. Deploying before the apply fails with `Service account … was not found`.
+- The `allUsers` invoker binding in `terraform/cloud_run.tf` names the Cloud Run service
+  the deploy creates. Applying before the deploy fails with
+  `Error 404: Resource 'requestleaderboardupdate' of kind 'SERVICE' … does not exist`.
+
+Neither can go first, so it goes twice:
+
+1. **Apply.** Creates the service account, the secret container and the grants. The
+   invoker binding fails; that failure is expected and nothing else is wrong.
+2. **Create the key, then deploy.** Terraform makes containers and deliberately never
+   values, so the secret exists with no version — and `--set-secrets=…:latest` against a
+   versionless secret fails the deploy. The key comes first:
+
+   ```bash
+   openssl rand -base64 32 | tr -d '\n' | gcloud secrets versions add leaderboard-trigger-key \
+     --project=hector-golf --data-file=-
+   ```
+
+3. **Apply again.** The service exists now, so the binding lands. Until it does, the
+   function is deployed and answers 403 to everyone, app.hector.golf included.
+
+Both CI workflows fire on the same merge and neither waits for the other, so on the merge
+that introduces this function you get a failed apply *and* a failed deploy. That is one
+problem, not two, and re-running them in the order above is the whole of the fix.
+
+Then give the key to app.hector.golf out of band, the way they gave us theirs. Rotating it
+later is step 2's command on its own: the function references `:latest`, so a new instance
+picks it up with no redeploy.
 
 ## Running the relay locally
 
