@@ -287,7 +287,78 @@
     ]
   ],
   "results": {
-    "teams": [],
+    "teams": [
+      {
+        "name": "Toni M + Simo L",
+        "players": [
+          "toni-m",
+          "simo-l"
+        ]
+      },
+      {
+        "name": "Jarkko K + Olli V",
+        "players": [
+          "jarkko-k",
+          "olli-v"
+        ]
+      },
+      {
+        "name": "Harri V + Marcus M",
+        "players": [
+          "harri-v",
+          "marcus-m"
+        ]
+      },
+      {
+        "name": "Kristian H + Toni K",
+        "players": [
+          "kristian-h",
+          "toni-k"
+        ]
+      },
+      {
+        "name": "Lauri P + Sami H",
+        "players": [
+          "lauri-p",
+          "sami-h"
+        ]
+      },
+      {
+        "name": "Lasse K + Jari K",
+        "players": [
+          "lasse-k",
+          "jari-k"
+        ]
+      },
+      {
+        "name": "Lassi K + Jussi A",
+        "players": [
+          "lassi-k",
+          "jussi-a"
+        ]
+      },
+      {
+        "name": "Martin S + Juuso P",
+        "players": [
+          "martin-s",
+          "juuso-p"
+        ]
+      },
+      {
+        "name": "Olli A + Ossi L",
+        "players": [
+          "olli-a",
+          "ossi-l"
+        ]
+      },
+      {
+        "name": "Ofri P + Timo L",
+        "players": [
+          "ofri-p",
+          "timo-l"
+        ]
+      }
+    ],
     "winners": {
       "hector": [
         "toni-m",
