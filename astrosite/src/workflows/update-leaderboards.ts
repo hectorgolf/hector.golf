@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import { type HectorEvent } from "@hector/schemas/src/events.ts";
 import { addDays, isoDateToday } from "@hector/schemas/src/dates.ts";
 import { playersData, eventsData, pathToEventJson, isHectorEvent } from "../code/data.ts";
+import { getPlayerByName as getPlayerByDisplayName } from "../code/players.ts";
 import { redact } from "../code/strings.ts";
 import { fetchHectorLeaderboardData, fetchVictorLeaderboardData } from "../code/leaderboards/google-sheets.ts";
 import { updateHectorEventLeaderboard } from "../code/leaderboards/github.ts";
@@ -30,7 +31,7 @@ type HectorTeam = {
 };
 
 function getPlayerByName(name: string): string | undefined {
-    return playersData.find((player: any) => {
+    const byFullName = playersData.find((player: any) => {
         const aliases = [player.name, ...(player.aliases || [])].map((name: any) => {
             if (name.first && name.last) {
                 return `${name.first} ${name.last}`;
@@ -39,6 +40,8 @@ function getPlayerByName(name: string): string | undefined {
         });
         return aliases.map((n) => n.toLowerCase()).includes(name.toLowerCase());
     })?.id;
+    // app.hector.golf sends the names the site prints, e.g. "Toni M" for a shortened surname.
+    return byFullName ?? getPlayerByDisplayName(name)?.id;
 }
 
 function getOngoingHectorEvents(): Array<HectorEvent> {
@@ -105,6 +108,12 @@ async function updateLeaderboardsWithData(
                     console.log(`Updated team pairings in ${filePath}`);
                     return true;
                 }
+                const unresolved = hectorLeaderboard
+                    .flatMap((team) => splitCompetitorNames(team.team))
+                    .filter((name) => !getPlayerByName(name));
+                console.warn(
+                    `Not writing teams for ${event.name}: no player matches ${JSON.stringify(unresolved)}`,
+                );
             }
         } else {
             console.log(
