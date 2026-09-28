@@ -21,8 +21,10 @@ export const schema = z.object({
     misc: z.array(z.string()).optional(),
     biography: z.array(z.string()).optional(),
     biographyLocked: z.boolean().optional(),
-    /** When the model wrote the current biography. Absent means unknown, which counts as stale. */
+    /** When the model wrote the current biography. Informational; staleness is the hash below. */
     biographyGeneratedAt: z.string().optional(),
+    /** Fingerprint of the facts the biography was written from. Absent counts as stale. */
+    biographyPromptHash: z.string().optional(),
 })
 
 export type Player = z.infer<typeof schema>;

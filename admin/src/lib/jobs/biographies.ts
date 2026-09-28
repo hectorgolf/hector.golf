@@ -11,6 +11,7 @@ import type { Player } from '@hector/schemas/src/players.ts'
 import type { GolfClub } from '@hector/wisegolf/src/handicap-source-api.ts'
 
 import { PLAYERS_ARE_OWNED } from '../ownership.ts'
+import { promptFingerprint } from './biography-fingerprint.ts'
 import { backendFunctionsKey } from '../secrets.ts'
 import { saveBiographyDraft } from '../repository/biography-drafts.ts'
 import { listEvents, listPlayers } from '../repository/events.ts'
@@ -131,10 +132,17 @@ export type BiographyDependencies = {
     /**
      * Stores a generated biography as a draft for review; nothing publishes it.
      *
-     * The event is optional because `runForPlayer` has no upcoming Hector to
-     * insist on — see `BiographyDraft.eventId`.
+     * An object rather than a list of positionals: the event is optional because
+     * a run out of season has none to insist on, the fingerprint is what decides
+     * whether the next run leaves this player alone, and three of those in a row
+     * is a call somebody eventually gets in the wrong order.
      */
-    save: (player: Player, biography: string[], event: HectorEvent | undefined) => Promise<void>
+    save: (draft: {
+        player: Player
+        biography: string[]
+        event: HectorEvent | undefined
+        promptHash: string
+    }) => Promise<void>
 }
 
 export type BiographyJobResult = {
@@ -238,17 +246,33 @@ export async function run(
     const { event, finished } = reference
 
     /*
-     * Before an upcoming Hector, everybody unlocked; after a finished one, only
-     * the biographies written before it ended. The second argument is the whole
-     * of that distinction — see `currentIfWrittenAfter`.
+     * The club list is read before the decision rather than after it, because
+     * `homeClub` is one of the facts a biography is written from and therefore
+     * one of the facts that can go stale. It costs a run that decides nothing one
+     * GitHub read, which is the price of the decision being right.
      */
-    const { regenerate, locked, upToDate, alreadyPublished } = biographiesToRegenerate(
-        await dependencies.players(),
-        finished ? event.timing.end : undefined
-    )
+    const today = isoDate(now)
+    const clubNames = await clubNamesFrom(dependencies)
+    const players = await dependencies.players()
 
-    const held = locked.length === 0 ? '' : `; ${locked.length} left alone (${locked.map(nameOf).join(', ')})`
-    const current = upToDate.length === 0 ? '' : `; ${upToDate.length} already reflect it`
+    /*
+     * What the generator would be told about each player today, fingerprinted.
+     *
+     * The echo context is deliberately `[]` here — it is excluded from the
+     * fingerprint, and passing an empty one is what makes that structural rather
+     * than a rule in a comment. See `biography-fingerprint.ts`.
+     */
+    const fingerprints = new Map(
+        players.map((player) => [player.id, promptFingerprint(inputFor(player, hectors, today, clubNames, []))])
+    )
+    const isUpToDate = (player: Player): boolean =>
+        player.biographyPromptHash !== undefined && player.biographyPromptHash === fingerprints.get(player.id)
+
+    const { regenerate, claimed, upToDate, alreadyPublished } = biographiesToRegenerate(players, isUpToDate)
+
+    const held =
+        claimed.length === 0 ? '' : `; ${claimed.length} of them hand-edited (${claimed.map(nameOf).join(', ')})`
+    const current = upToDate.length === 0 ? '' : `; ${upToDate.length} already current`
     const occasion = finished ? `${event.id} ended ${event.timing.end}` : `${event.id} is upcoming`
     const looked = `${occasion}; ${regenerate.length} ${regenerate.length === 1 ? 'biography' : 'biographies'} to regenerate${current}${held}`
 
@@ -290,13 +314,10 @@ export async function run(
         }
     }
 
-    const clubNames = await clubNamesFrom(dependencies)
-    const today = isoDate(now)
-
     /*
-     * Seeded with what the locked players already say, which is load-bearing
-     * rather than tidy: a locked biography is still on the page beside
-     * everything this run writes, so leaving it out lets the model echo a
+     * Seeded with what the up-to-date players already say, which is load-bearing
+     * rather than tidy: a biography this run is not replacing is still on the
+     * page beside everything it writes, so leaving it out lets the model echo a
      * published sentence under somebody else's name.
      */
     const published = [...alreadyPublished]
@@ -355,7 +376,15 @@ export async function run(
             continue
         }
 
-        await dependencies.save(player, biography, event)
+        await dependencies.save({
+            player,
+            biography,
+            event,
+            // The facts this text was written from, so the next run can tell
+            // whether they have moved. `fingerprints` is keyed by id and every
+            // player in `regenerate` came out of the same list.
+            promptHash: fingerprints.get(player.id) as string,
+        })
         changes.push({
             subject: player.id,
             from: paragraphs(player.biography?.length ?? 0),
@@ -506,7 +535,8 @@ export async function runForPlayer(
         .flatMap((candidate) => candidate.biography ?? [])
 
     const clubNames = await clubNamesFrom(dependencies)
-    const input = inputFor(player, hectors, isoDate(now), clubNames, published)
+    const today = isoDate(now)
+    const input = inputFor(player, hectors, today, clubNames, published)
 
     let biography: string[]
     try {
@@ -516,7 +546,18 @@ export async function runForPlayer(
         return { outcome: 'failed', detail: `${looked}. Generating it failed: ${reason}`, changes: [] }
     }
 
-    await dependencies.save(player, biography, event)
+    await dependencies.save({
+        player,
+        biography,
+        event,
+        /*
+         * Fingerprinted without the echo context, the same as the sweep does —
+         * `input` above carries `published` and would hash differently for the
+         * same facts, which is exactly the mistake `biography-fingerprint.ts`
+         * exists to head off.
+         */
+        promptHash: promptFingerprint(inputFor(player, hectors, today, clubNames, [])),
+    })
 
     return {
         outcome: 'ok',
@@ -599,12 +640,13 @@ export async function live(
         playersAreOwned: () => PLAYERS_ARE_OWNED,
         clubs: () => committedClubs(readFile),
         generate: key ? (input) => callGenerator(input, key) : undefined,
-        save: (player, biography, event) =>
+        save: ({ player, biography, event, promptHash }) =>
             saveBiographyDraft({
                 playerId: player.id,
                 biography,
                 eventId: event?.id,
                 generatedAt: new Date().toISOString(),
+                promptHash,
             }),
     }
 }

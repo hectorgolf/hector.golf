@@ -141,7 +141,7 @@ export function biographyWasEdited(stored: Player, saved: PlayerDetails): boolea
  */
 export function playerWithApprovedDraft(
     player: Player,
-    draft: { biography: string[]; generatedAt: string },
+    draft: { biography: string[]; generatedAt: string; promptHash?: string },
     reviewed: string
 ): Player {
     const paragraphs = paragraphsFrom(reviewed)
@@ -154,5 +154,16 @@ export function playerWithApprovedDraft(
         // Emptying the box removes the biography, and a date on a biography that
         // is not there would say a run had produced what it had just deleted.
         biographyGeneratedAt: biography ? draft.generatedAt : undefined,
+        /*
+         * The draft's fingerprint, and the reviewer's edit does not change it.
+         *
+         * It records which facts the text was written *from*, not how faithful
+         * the text is to them. Somebody rewording a paragraph has not made it
+         * describe a different tournament, so it stays current until the facts
+         * themselves move — at which point they, like everybody else, get a
+         * fresh draft to look at. Clearing it on an edit would ask for one on
+         * every run instead.
+         */
+        biographyPromptHash: biography ? draft.promptHash : undefined,
     }
 }

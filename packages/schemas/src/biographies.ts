@@ -3,66 +3,84 @@ import { type EventTiming, type HectorEvent } from './events.ts';
 import { type Player } from './players.ts';
 
 /**
- * The players a run may rewrite, and the ones it is leaving alone.
+ * The players a run should draft for, and the ones it is leaving alone.
  *
- * Four lists rather than one, so a caller can say who it skipped and why — a
- * lock is somebody claiming a paragraph, being up to date is nothing needing
- * doing, and the two want different sentences in the run log.
+ * ## What decides it, and what stopped deciding it
  *
- * `alreadyPublished` is the phrasing the generator is told not to reuse, and it
- * is drawn from *both* skipped lists. See `biography-lock.test.ts` for why
- * dropping the locked ones would let a run echo a published sentence under
- * somebody else's name; an up-to-date biography is on that same page and needs
- * the same treatment.
+ * Staleness is now a question about the *facts*: a biography is current when the
+ * things the generator would be told about that player are the things it was
+ * told when the text was written. The caller answers that — see
+ * `promptFingerprint` in the admin — and this only sorts the roster by the
+ * answer.
+ *
+ * It used to be a date, compared against the day the last Hector finished, and
+ * that was a proxy for this question rather than the question. It said nothing
+ * about a player who joined the field, won something, changed clubs or had a
+ * prompt hint added, and it said "stale" to all forty-five whenever the
+ * comparison moved even if nothing about any of them had changed.
+ *
+ * ## The lock no longer holds a player back, and that is a real change
+ *
+ * `biographyLocked` used to exclude a player outright, because a run *published*
+ * what it generated and a lock was the only thing standing between a scheduled
+ * job and somebody's hand-written paragraph. `biography-lock.test.ts` exists
+ * about exactly that failure.
+ *
+ * A run drafts now. Nothing it produces reaches a player record without somebody
+ * pressing a button next to the current text, so the protection the lock was
+ * providing is provided by the review page instead — and being locked is a poor
+ * reason to leave a biography factually wrong. A hand-written paragraph that
+ * calls a finished Hector "upcoming" is as wrong as a generated one, and its
+ * author is the person best placed to decide what to do about it.
+ *
+ * So the lock is reported rather than obeyed: the run log names who it is about
+ * to offer a draft to, and the review page warns before anything replaces their
+ * words. What it still does is set the tone of that warning, which is the part
+ * that was ever about consent.
  */
 export const biographiesToRegenerate = (
     players: Array<Player>,
     /**
-     * The date a biography must have been written *after* to count as current.
+     * Whether this player's biography already reflects the current facts.
      *
-     * Absent regenerates every unlocked player, which is what a run before an
-     * upcoming Hector wants: the field changes as people enter, so the text is
-     * worth rewriting however recently it was written.
+     * A predicate rather than a value because the comparison needs the whole
+     * generator input — the events, the club names, the day — which this module
+     * has no business assembling. `admin/src/lib/jobs/biography-fingerprint.ts`
+     * is where the question is actually answered.
      *
-     * Given, it is the day the most recent Hector finished. A biography written
-     * before then describes that event as something still to come — "is set to
-     * make his tenth appearance" — and is wrong the morning after, which is the
-     * whole reason a run out of season has anything to do.
+     * Absent means "nothing is current", which is what a caller with no way to
+     * tell should get: it drafts for everybody rather than silently skipping a
+     * roster it cannot vouch for.
      */
-    currentIfWrittenAfter?: IsoDate,
+    isUpToDate: (player: Player) => boolean = () => false,
 ): {
+    /** Everyone whose biography no longer matches the facts, locked or not. */
     regenerate: Array<Player>;
-    locked: Array<Player>;
+    /** The subset of `regenerate` whose text somebody claimed by editing it. */
+    claimed: Array<Player>;
+    /** Everyone whose biography still matches. */
     upToDate: Array<Player>;
+    /** What the generator is told not to echo; see below. */
     alreadyPublished: Array<string>;
 } => {
-    const isCurrent = (player: Player): boolean => {
-        if (!currentIfWrittenAfter) return false;
-        const written = player.biographyGeneratedAt;
-        /*
-         * Unknown counts as stale, which is the load-bearing half of this.
-         * `biographyGeneratedAt` was added after 45 biographies had already been
-         * written, so every one of them is missing it — and every one of them
-         * was in fact written before the last Hector, because the field did not
-         * exist while that Hector was still ahead. Reading absence as "current"
-         * would leave the whole roster describing a finished event as upcoming,
-         * permanently, with the job reporting nothing to do.
-         */
-        if (!written) return false;
-        // The date out of an ISO instant, which is already UTC. Parsing it to a
-        // `Date` first would re-read it in the local zone and move the day.
-        return written.slice(0, 10) > currentIfWrittenAfter;
-    };
-
-    const locked = players.filter((p) => p.biographyLocked === true);
-    const unlocked = players.filter((p) => !p.biographyLocked);
-    const upToDate = unlocked.filter(isCurrent);
+    const upToDate = players.filter(isUpToDate);
+    const regenerate = players.filter((player) => !isUpToDate(player));
 
     return {
-        regenerate: unlocked.filter((player) => !isCurrent(player)),
-        locked,
+        regenerate,
+        claimed: regenerate.filter((player) => player.biographyLocked === true),
         upToDate,
-        alreadyPublished: [...locked, ...upToDate].flatMap((player) => player.biography ?? []),
+        /*
+         * The phrasing a run is told not to reuse, and it is drawn from the
+         * players this run is *not* rewriting.
+         *
+         * Every one of those biographies is on the public page beside whatever
+         * the run writes, so leaving them out lets the model echo a published
+         * sentence under somebody else's name — the failure
+         * `biography-lock.test.ts` exists about. The players being drafted for
+         * contribute their new text instead, as the run produces it.
+         */
+        alreadyPublished: upToDate.flatMap((player) => player.biography ?? []),
     };
 };
 

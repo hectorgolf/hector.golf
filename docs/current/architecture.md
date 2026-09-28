@@ -903,20 +903,37 @@ wrote nothing and said so — and that was wrong for the eleven months of the ye
 biography is written partly out of the event ahead, so the morning after a Hector every one of them
 describes a finished tournament as still to come, and that is precisely when the job used to decline.
 
-The two halves regenerate different people, which is the point of telling them apart:
+Who a run drafts for is a question about the *facts*, not about a date: a biography is current when
+the things the generator would be told about that player are the things it was told when the text was
+written. `admin/src/lib/jobs/biography-fingerprint.ts` hashes that input, the hash is stored on the
+player as `biographyPromptHash` when a draft is approved, and the next run compares. Forty-five
+hashes against forty-five model calls.
 
-- **A Hector upcoming.** Everybody unlocked, every run. The field changes as people enter, so how
-  recently the text was written is no evidence that it names the right event.
-- **A Hector just played.** Only the players whose biography predates it, by
-  `player.biographyGeneratedAt` against the event's end date. Without that filter a press of the
-  button out of season would rewrite all 45 at a model call each, producing a
-  different-but-equivalent paragraph for everyone.
+It captures everything a date could not: a player joining a field, winning a trophy, changing clubs,
+having a prompt hint added, or the Hector they were "set to appear at" being played. It also captures
+nothing when nothing has happened, so a run out of season on a settled roster is a no-op that says so
+rather than forty-five different-but-equivalent paragraphs.
 
-An absent `biographyGeneratedAt` counts as stale, which is what made the first run after the change
-do anything: the field arrived after 45 biographies had been written, and every one of them was in
-fact written while the last Hector was still ahead. A green run still does not mean a biography was
-regenerated — it now means either there was nothing to do or the drafts are waiting on the review
-page, and the run detail says which.
+Two things are deliberately outside the hash:
+
+- **`otherGeneratedBiographies`**, the do-not-echo context. It is the other players' text, so it moves
+  whenever anybody's does; including it would find all 45 stale on every run, forever. It is also not
+  a fact about the player — the same biography is equally correct whoever else was on the page.
+- **The prompt template**, which lives in `backend/backend-functions` and is not reachable from this
+  workspace. `PROMPT_VERSION` stands in for it: bumping that constant is a deliberate "redraft
+  everybody", which is the right shape for a decision that costs 45 model calls.
+
+An absent `biographyPromptHash` counts as stale, so the first run after this change drafts for the
+whole roster. A green run does not mean a biography was regenerated — it means either there was
+nothing to do or the drafts are waiting on the review page, and the run detail says which.
+
+`player.biographyLocked` no longer holds anybody back, and that is a real change to a safeguard.
+It excluded a player outright while a run *published* what it generated, which is what
+`astrosite/test/unit/biography-lock.test.ts` was built about. A run drafts now: nothing reaches a
+player record without somebody pressing a button beside the current text, so the protection the lock
+provided is provided by the review page, and being locked is a poor reason to leave a biography
+calling a finished Hector upcoming. The lock is reported instead — the run log names those players,
+and the review page warns before an approval replaces their words.
 
 ### The player jobs, which are waiting on a flag rather than on work
 
