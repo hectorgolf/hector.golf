@@ -1,5 +1,6 @@
 import { HttpFunction, Request, Response } from "@google-cloud/functions-framework";
 import { generatePlayerAvatar } from "../../lib/prompts/avatar/genai";
+import { isTransient, statusOf } from "../../lib/retry";
 
 type AvatarImagePayloadObject = {
     data?: string;
@@ -119,9 +120,20 @@ export const GeneratePlayerAvatar: HttpFunction = async (request: Request, respo
         response.status(200).send(avatar);
     } catch (error) {
         console.error("Error generating player avatar:", error);
-        response.status(500).send(
+
+        /*
+         * A busy model is not this function being broken, and the caller wants
+         * to know which it was — the same distinction `generate-player-biography`
+         * draws, and worth drawing identically so that a caller of both does not
+         * have to learn two conventions. `withRetry` has already tried and given
+         * up by the time we are here, so 503 is the honest answer: come back.
+         */
+        const busy = isTransient(error);
+
+        response.status(busy ? 503 : 500).send(
             JSON.stringify({
-                error: "Internal server error",
+                error: busy ? "The model is unavailable" : "Internal server error",
+                upstreamStatus: statusOf(error),
                 message: error instanceof Error ? error.message : "Unknown error occurred",
             }),
         );

@@ -150,5 +150,37 @@ describe("GeneratePlayerAvatar", () => {
                 message: "Gemini response did not include a generated image.",
             });
         });
+
+        /**
+         * A busy model is not this function being broken, and the caller is told
+         * which. The same distinction `GeneratePlayerBiography` draws, worded
+         * identically so that a caller of both does not learn two conventions.
+         */
+        it("reports a model that is busy as a 503, with the upstream status", async () => {
+            generatePlayerAvatar.mockRejectedValue(
+                Object.assign(new Error("[503 Service Unavailable] This model is currently experiencing high demand"), {
+                    status: 503,
+                }),
+            );
+
+            const response = await avatar.postJson("/", validBody, { headers: authorized });
+
+            expect(response.status).toBe(503);
+            expect(await response.json()).toMatchObject({
+                error: "The model is unavailable",
+                upstreamStatus: 503,
+            });
+        });
+
+        it("keeps reporting a failure of our own making as a 500", async () => {
+            generatePlayerAvatar.mockRejectedValue(
+                Object.assign(new Error("[400 Bad Request] the request is malformed"), { status: 400 }),
+            );
+
+            const response = await avatar.postJson("/", validBody, { headers: authorized });
+
+            expect(response.status).toBe(500);
+            expect(await response.json()).toMatchObject({ error: "Internal server error", upstreamStatus: 400 });
+        });
     });
 });
