@@ -1,5 +1,7 @@
 import { GoogleGenerativeAI, GenerativeModel, InlineDataPart, Part } from "@google/generative-ai";
 
+import { withRetry } from "../../retry";
+
 type AvatarImageInput =
     | string
     | {
@@ -168,7 +170,21 @@ export async function generatePlayerAvatar(
         "Gray (#cccccc) background. Portrait headshot, 9:16 aspect ratio.",
     ].join("\n");
 
-    const result = await model.generateContent([{ text: prompt } as Part, photoPart as Part, samplePart as Part]);
+    /*
+     * Retried on a busy model, the same as the biography call — see `withRetry`.
+     * An image model is the likelier of the two to answer 503 under load, and
+     * this one is deployed with `--timeout=540s`, so the few seconds a retry
+     * costs sit well inside the budget.
+     *
+     * Only the call is wrapped. `extractGeneratedImage` below throws when the
+     * response carries no image, and that failure carries no status, so it is
+     * not retried — which is the right reading twice over: a response we cannot
+     * read is not the API refusing to answer, and a model that returned prose
+     * instead of a picture is a prompt question rather than a load question.
+     */
+    const result = await withRetry(() =>
+        model.generateContent([{ text: prompt } as Part, photoPart as Part, samplePart as Part]),
+    );
 
     const image = extractGeneratedImage(result);
     return JSON.stringify(image);
