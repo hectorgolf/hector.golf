@@ -1,0 +1,187 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro'
+import PageHeader from '@hector/ui/components/PageHeader.astro'
+import Breadcrumb from '@hector/ui/components/Breadcrumb.astro'
+
+import { schema as playerSchema, type Player } from '@hector/schemas/src/players.ts'
+
+import { viewerFromHeaders } from '../../lib/identity.ts'
+import { getPlayer, listPlayers, savePlayer } from '../../lib/repository/events.ts'
+import {
+    deleteBiographyDraft,
+    getBiographyDraft,
+    listBiographyDrafts,
+    type BiographyDraft,
+} from '../../lib/repository/biography-drafts.ts'
+import { fullName } from '../../lib/players.ts'
+import { playerWithApprovedDraft } from '../../lib/players/details.ts'
+
+/*
+ * Reviewing what the biography job drafted, one player at a time.
+ *
+ * Approving saves the (possibly edited) text on the player and removes the draft;
+ * discarding only removes the draft. Either way the public site is unchanged until
+ * the next "Publish admin edits" and deploy, which is the existing path for every
+ * player edit.
+ */
+
+let error: string | undefined
+
+if (Astro.request.method === 'POST') {
+    const form = await Astro.request.formData()
+    const playerId = String(form.get('playerId') ?? '')
+    const action = String(form.get('action') ?? '')
+    const viewer = viewerFromHeaders(Astro.request.headers)
+
+    try {
+        const draft = await getBiographyDraft(playerId)
+        if (!draft) {
+            error = `There is no draft for ${playerId}; it may already have been reviewed.`
+        } else if (action === 'discard') {
+            await deleteBiographyDraft(playerId)
+            return Astro.redirect(`/players/biographies?discarded=${encodeURIComponent(playerId)}`)
+        } else if (action === 'approve') {
+            const player = await getPlayer(playerId)
+            if (!player) {
+                error = `Player ${playerId} is not in the store, so the draft cannot be approved.`
+            } else {
+                const reviewed = String(form.get('biography') ?? '')
+                const parsed = playerSchema.safeParse(playerWithApprovedDraft(player, draft.biography, reviewed))
+                if (!parsed.success) {
+                    error = parsed.error.issues
+                        .map((issue) => `${issue.path.join('.') || 'form'}: ${issue.message}`)
+                        .join('; ')
+                } else {
+                    await savePlayer(parsed.data, viewer.email ?? 'unknown')
+                    await deleteBiographyDraft(playerId)
+                    return Astro.redirect(`/players/biographies?approved=${encodeURIComponent(playerId)}`)
+                }
+            }
+        } else {
+            error = `Unknown action '${action}'.`
+        }
+    } catch (failure) {
+        error = failure instanceof Error ? failure.message : String(failure)
+    }
+}
+
+let drafts: BiographyDraft[] = []
+const playersById = new Map<string, Player>()
+try {
+    const [stored, players] = await Promise.all([listBiographyDrafts(), listPlayers()])
+    drafts = stored
+    for (const player of players) playersById.set(player.id, player)
+} catch {
+    error ??= 'Could not read the biography drafts. Check the service logs.'
+}
+
+const approved = Astro.url.searchParams.get('approved')
+const discarded = Astro.url.searchParams.get('discarded')
+const nameOf = (id: string | null) => {
+    const player = id ? playersById.get(id) : undefined
+    return player ? fullName(player) : (id ?? '')
+}
+const generatedOn = (iso: string) => (iso ? iso.slice(0, 10) : 'an unknown date')
+---
+
+<AdminLayout title="Biography drafts">
+    <Breadcrumb title="Players" href="/players" />
+
+    <PageHeader
+        title="Biography drafts"
+        eyebrow="Players"
+        lede="What the biography job wrote, waiting to be read. Approve a draft as it is, edit it first, or discard it. Editing before approving locks the biography, the same as editing it on the player's page."
+    />
+
+    {error && <p class="notice bad">{error}</p>}
+    {
+        approved && (
+            <p class="notice good">
+                Approved the biography of {nameOf(approved)}. It reaches the public site with the next{' '}
+                <a href="/operations">Publish admin edits</a> and deploy.
+            </p>
+        )
+    }
+    {discarded && <p class="notice">Discarded the draft for {nameOf(discarded)}. Their biography is unchanged.</p>}
+
+    {!error && drafts.length === 0 && <p class="notice">No drafts waiting. Run the biography job on <a href="/operations">Operations</a> to write some.</p>}
+
+    {
+        drafts.map((draft) => {
+            const player = playersById.get(draft.playerId)
+            const current = player?.biography ?? []
+            return (
+                <section class="draft stack">
+                    <h2>
+                        {player ? <a href={`/players/${player.id}`}>{fullName(player)}</a> : draft.playerId}
+                    </h2>
+                    <p class="hint">
+                        Drafted for {draft.eventId || 'an unknown event'} on {generatedOn(draft.generatedAt)}.
+                        {player?.biographyLocked &&
+                            ' This biography has been locked since, so approving replaces text somebody edited.'}
+                    </p>
+                    <div class="compare">
+                        <div class="current">
+                            <h3>Now</h3>
+                            {current.length > 0 ? current.map((paragraph) => <p>{paragraph}</p>) : <p class="hint">No biography.</p>}
+                        </div>
+                        <form method="POST" class="stack">
+                            <input type="hidden" name="playerId" value={draft.playerId} />
+                            <label for={`biography-${draft.playerId}`}><h3>Draft</h3></label>
+                            <textarea id={`biography-${draft.playerId}`} name="biography" rows="14"
+                                >{draft.biography.join('\n\n')}</textarea
+                            >
+                            <span class="hint">Blank line between paragraphs.</span>
+                            <div class="actions">
+                                <button type="submit" name="action" value="approve">Approve</button>
+                                <button type="submit" name="action" value="discard" class="secondary">Discard</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            )
+        })
+    }
+</AdminLayout>
+
+<style>
+    .draft {
+        margin-top: 2rem;
+        border-top: 1px solid var(--line);
+        padding-top: 1.5rem;
+    }
+
+    h2 {
+        margin: 0;
+        font-family: var(--font-serif);
+        font-size: 1.2rem;
+    }
+
+    h3 {
+        margin: 0 0 0.5rem;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    .compare {
+        display: grid;
+        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    }
+
+    .current p {
+        margin: 0 0 0.75rem;
+        line-height: 1.5;
+    }
+
+    .hint {
+        font-size: 0.8rem;
+        color: var(--text-dim);
+    }
+
+    textarea {
+        font: inherit;
+        line-height: 1.5;
+        resize: vertical;
+    }
+</style>

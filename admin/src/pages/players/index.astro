@@ -4,6 +4,7 @@ import PageHeader from '@hector/ui/components/PageHeader.astro'
 
 import type { Player } from '@hector/schemas/src/players.ts'
 import { listPlayers } from '../../lib/repository/events.ts'
+import { listBiographyDrafts } from '../../lib/repository/biography-drafts.ts'
 import { read as readHandicapSnapshot } from '../../lib/handicaps/snapshot.ts'
 import { formatHandicap, fullName, resolveHandicap } from '../../lib/players.ts'
 
@@ -21,6 +22,7 @@ import { formatHandicap, fullName, resolveHandicap } from '../../lib/players.ts'
  */
 let players: Player[] = []
 let observed: Awaited<ReturnType<typeof readHandicapSnapshot>>
+let drafts = 0
 let error: string | undefined
 
 try {
@@ -28,6 +30,12 @@ try {
 } catch {
 	// The reason goes to Cloud Logging; the page says only that it failed.
 	error = 'Could not read the players. Check the service logs.'
+}
+
+try {
+	drafts = (await listBiographyDrafts()).length
+} catch {
+	// Costs the reminder below and nothing else.
 }
 
 const rows = players.map((player) => ({
@@ -51,6 +59,12 @@ const stopgaps = rows.filter((row) => row.handicap?.source === 'stopgap').length
 	<PageHeader title="Players" lede="Everybody who has played a Hector event." />
 
 	{error && <p class="notice bad">{error}</p>}
+
+	{drafts > 0 && (
+		<p class="notice">
+			<a href="/players/biographies">{drafts} {drafts === 1 ? 'biography draft is' : 'biography drafts are'} waiting for review.</a>
+		</p>
+	)}
 
 	{!error && players.length === 0 && (
 		<p class="notice">

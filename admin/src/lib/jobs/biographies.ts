@@ -12,7 +12,8 @@ import type { GolfClub } from '@hector/wisegolf/src/handicap-source-api.ts'
 
 import { PLAYERS_ARE_OWNED } from '../ownership.ts'
 import { backendFunctionsKey } from '../secrets.ts'
-import { listEvents, listPlayers, savePlayer } from '../repository/events.ts'
+import { saveBiographyDraft } from '../repository/biography-drafts.ts'
+import { listEvents, listPlayers } from '../repository/events.ts'
 import { CLUBS_PATH } from './clubs.ts'
 import type { Change } from './log.ts'
 
@@ -80,7 +81,8 @@ export type BiographyDependencies = {
     clubs: () => Promise<GolfClub[]>
     /** One player's biography from the Cloud Function. Absent means no key. */
     generate?: (input: PlayerBiographyInput) => Promise<string[]>
-    save: (player: Player, biography: string[]) => Promise<void>
+    /** Stores a generated biography as a draft for review; nothing publishes it. */
+    save: (player: Player, biography: string[], event: HectorEvent) => Promise<void>
 }
 
 export type BiographyJobResult = {
@@ -198,12 +200,12 @@ export async function run(
             const reason = error instanceof Error ? error.message : String(error)
             return {
                 outcome: 'failed',
-                detail: `${looked}. Wrote ${changes.length} before ${nameOf(player)} failed: ${reason}`,
+                detail: `${looked}. Drafted ${changes.length} before ${nameOf(player)} failed: ${reason}`,
                 changes,
             }
         }
 
-        await dependencies.save(player, biography)
+        await dependencies.save(player, biography, event)
         changes.push({
             subject: player.id,
             from: paragraphs(player.biography?.length ?? 0),
@@ -212,14 +214,15 @@ export async function run(
         published.push(...biography)
     }
 
-    return { outcome: 'ok', detail: `${looked}; rewrote ${changes.length}.`, changes }
+    return {
+        outcome: 'ok',
+        detail: `${looked}; drafted ${changes.length} for review at /players/biographies.`,
+        changes,
+    }
 }
 
 /** Where `GeneratePlayerBiography` answers. Public to call, bearer-checked inside. */
 export const BIOGRAPHY_FUNCTION = 'https://europe-north1-hector-golf.cloudfunctions.net/GeneratePlayerBiography'
-
-/** How this job signs its writes, in `updatedBy`. See the club job for why it matters. */
-export const WRITTEN_BY = 'job:biographies'
 
 /**
  * One biography from the Cloud Function.
@@ -286,6 +289,12 @@ export async function live(
         playersAreOwned: () => PLAYERS_ARE_OWNED,
         clubs: () => committedClubs(readFile),
         generate: key ? (input) => callGenerator(input, key) : undefined,
-        save: (player, biography) => savePlayer({ ...player, biography }, WRITTEN_BY),
+        save: (player, biography, event) =>
+            saveBiographyDraft({
+                playerId: player.id,
+                biography,
+                eventId: event.id,
+                generatedAt: new Date().toISOString(),
+            }),
     }
 }

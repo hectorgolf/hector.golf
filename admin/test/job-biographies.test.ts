@@ -209,7 +209,7 @@ describe('a live run that generates', () => {
         expect(result.outcome).toBe('ok')
         expect(saved).toEqual([{ id: 'eero-s', biography: ['One.', 'Two.', 'Three.'] }])
         expect(result.changes).toEqual([{ subject: 'eero-s', from: '1 paragraph', to: '3 paragraphs' }])
-        expect(result.detail).toContain('rewrote 1')
+        expect(result.detail).toContain('drafted 1 for review')
     })
 
     it('resolves the home club through the committed list, and says so when it cannot', async () => {
@@ -288,7 +288,7 @@ describe('a live run that generates', () => {
         )
 
         expect(result.outcome).toBe('failed')
-        expect(result.detail).toContain('Wrote 1 before lasse-k Player failed: 429 Too Many Requests')
+        expect(result.detail).toContain('Drafted 1 before lasse-k Player failed: 429 Too Many Requests')
         expect(saved.map((s) => s.id)).toEqual(['eero-s'])
         expect(result.changes).toHaveLength(1)
     })

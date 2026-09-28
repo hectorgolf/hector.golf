@@ -117,3 +117,17 @@ export function biographyWasEdited(stored: Player, saved: PlayerDetails): boolea
     const after = saved.biography ?? []
     return before.length !== after.length || before.some((paragraph, i) => paragraph !== after[i])
 }
+
+/**
+ * The player an approved biography draft produces.
+ *
+ * Approving the generator's text as it stands leaves the biography generated, so
+ * a later run may improve it. Changing it before approving is an edit, and locks
+ * it the way saving an edit on the player's page does.
+ */
+export function playerWithApprovedDraft(player: Player, draft: string[], reviewed: string): Player {
+    const paragraphs = paragraphsFrom(reviewed)
+    const biography = paragraphs.length > 0 ? paragraphs : undefined
+    const edited = biographyWasEdited({ ...player, biography: draft }, { biography })
+    return { ...player, biography, biographyLocked: player.biographyLocked || edited || undefined }
+}

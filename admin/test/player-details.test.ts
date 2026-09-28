@@ -8,6 +8,7 @@ import {
     formOf,
     hintsFrom,
     paragraphsFrom,
+    playerWithApprovedDraft,
 } from '../src/lib/players/details.ts'
 
 /**
@@ -115,6 +116,30 @@ describe('reading the four fields off the form', () => {
 
     it('reads a handicap that is a number', () => {
         expect(detailsFromForm({ club: '', handicap: '12.4', misc: '', biography: '' }).handicap).toBe(12.4)
+    })
+})
+
+describe('approving a biography draft', () => {
+    const draft = ['Drafted one.', 'Drafted two.']
+
+    it('saves the draft as it stands without locking it', () => {
+        const approved = playerWithApprovedDraft(player({ biography: ['Old.'] }), draft, 'Drafted one.\n\nDrafted two.')
+
+        expect(approved.biography).toEqual(draft)
+        expect(approved.biographyLocked).toBeUndefined()
+    })
+
+    it('locks a draft the reviewer changed', () => {
+        const approved = playerWithApprovedDraft(player({ biography: ['Old.'] }), draft, 'Drafted one.\n\nFixed two.')
+
+        expect(approved.biography).toEqual(['Drafted one.', 'Fixed two.'])
+        expect(approved.biographyLocked).toBe(true)
+    })
+
+    it('keeps a lock somebody set after the draft was written', () => {
+        const approved = playerWithApprovedDraft(player({ biographyLocked: true }), draft, 'Drafted one.\n\nDrafted two.')
+
+        expect(approved.biographyLocked).toBe(true)
     })
 })
 

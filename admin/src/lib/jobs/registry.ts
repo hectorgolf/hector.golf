@@ -386,8 +386,8 @@ export const JOBS: readonly Job[] = [
         slug: 'biographies',
         label: "Players' biographies",
         blurb:
-            'Regenerates unlocked biographies for the upcoming Hector, and reports whose a lock ' +
-            'is holding. An edit saved in the admin sets that lock and survives this.',
+            'Drafts new biographies for the unlocked players of the upcoming Hector, for review on ' +
+            'the Biography drafts page. Nothing is published until a draft is approved there.',
         // Out of shadow as of 2026-09-20, which is not the same as writing:
         // generation is held by `PLAYERS_ARE_OWNED`, the same single gate the
         // club job uses, for the same reason. Two gates on one question means
@@ -401,10 +401,9 @@ export const JOBS: readonly Job[] = [
         // lock or a Hector approaches, neither of which is hourly, and a live
         // run is forty-five model calls.
         scheduled: false,
-        // A biography is the better part of a player's public page, and this
-        // writes Firestore as of 2026-09-21 — which reaches the site only
-        // through an export and a commit.
-        publishes: true,
+        // Drafts only; a biography reaches a player when it is approved, and
+        // the site through the export after that.
+        publishes: false,
         run: async (dryRun) => biographies.run(await biographies.live(readFile), dryRun),
     },
     {
