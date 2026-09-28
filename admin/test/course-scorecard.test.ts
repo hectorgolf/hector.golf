@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest'
 import { schema as courseSchema, withTeeIds, type Course } from '@hector/schemas/src/courses.ts'
 
 import { courseFromForm, formOf } from '../src/lib/courses/details.ts'
-import { holeRows, scorecardFrom } from '../src/lib/courses/scorecard.ts'
+import { holeRows } from '../src/lib/courses/scorecard.ts'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const real = (id: string): Course =>
