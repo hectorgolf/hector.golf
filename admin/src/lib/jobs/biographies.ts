@@ -81,8 +81,13 @@ export type BiographyDependencies = {
     clubs: () => Promise<GolfClub[]>
     /** One player's biography from the Cloud Function. Absent means no key. */
     generate?: (input: PlayerBiographyInput) => Promise<string[]>
-    /** Stores a generated biography as a draft for review; nothing publishes it. */
-    save: (player: Player, biography: string[], event: HectorEvent) => Promise<void>
+    /**
+     * Stores a generated biography as a draft for review; nothing publishes it.
+     *
+     * The event is optional because `runForPlayer` has no upcoming Hector to
+     * insist on — see `BiographyDraft.eventId`.
+     */
+    save: (player: Player, biography: string[], event: HectorEvent | undefined) => Promise<void>
 }
 
 export type BiographyJobResult = {
@@ -97,6 +102,44 @@ const nameOf = (player: Player): string => `${player.name.first} ${player.name.l
 /** The run log is read by people; "1 paragraphs" is how it stops being. */
 const paragraphs = (count: number): string => `${count} ${count === 1 ? 'paragraph' : 'paragraphs'}`
 
+/**
+ * What the generator is told about one player, with this job's two local rules
+ * applied: the club name comes from `clubs.json`, and a player with no club on
+ * record is "unknown" rather than an empty string.
+ *
+ * Shared by the sweep and by `runForPlayer` so the two cannot describe the same
+ * player differently. What they legitimately differ on is
+ * `otherGeneratedBiographies`, which is the argument.
+ */
+function inputFor(
+    player: Player,
+    hectors: readonly HectorEvent[],
+    today: ReturnType<typeof isoDate>,
+    clubNames: Map<string, string>,
+    otherGeneratedBiographies: string[]
+): PlayerBiographyInput {
+    return playerBiographyInput(player, {
+        hectorEvents: [...hectors],
+        today,
+        // "unknown" rather than an empty string, which is what the workflow
+        // hands the prompt for a player with no club on record.
+        homeClub: (player.club && clubNames.get(player.club)) || 'unknown',
+        otherGeneratedBiographies,
+    })
+}
+
+/** The club abbreviation-to-name map the prompt wants, from the committed file. */
+async function clubNamesFrom(dependencies: BiographyDependencies): Promise<Map<string, string>> {
+    return new Map((await dependencies.clubs()).map((club) => [club.abbreviation, club.name]))
+}
+
+/** Every Hector in the store, which is what the prompt counts appearances against. */
+async function hectorsFrom(dependencies: BiographyDependencies): Promise<HectorEvent[]> {
+    return (await dependencies.events()).filter(
+        (candidate): candidate is HectorEvent => candidate.format === EventFormat.Hector
+    )
+}
+
 export async function run(
     dependencies: BiographyDependencies,
     dryRun: boolean
@@ -108,9 +151,7 @@ export async function run(
      * successful no-op rather than a failure.
      */
     const now = dependencies.now()
-    const hectors = (await dependencies.events()).filter(
-        (candidate): candidate is HectorEvent => candidate.format === EventFormat.Hector
-    )
+    const hectors = await hectorsFrom(dependencies)
     const event = upcomingHector(hectors, now)
     if (!event) {
         return {
@@ -163,7 +204,7 @@ export async function run(
         }
     }
 
-    const clubNames = new Map((await dependencies.clubs()).map((club) => [club.abbreviation, club.name]))
+    const clubNames = await clubNamesFrom(dependencies)
     const today = isoDate(now)
 
     /*
@@ -176,14 +217,7 @@ export async function run(
     const changes: Change[] = []
 
     for (const player of regenerate) {
-        const input = playerBiographyInput(player, {
-            hectorEvents: hectors,
-            today,
-            // "unknown" rather than an empty string, which is what the workflow
-            // hands the prompt for a player with no club on record.
-            homeClub: (player.club && clubNames.get(player.club)) || 'unknown',
-            otherGeneratedBiographies: published,
-        })
+        const input = inputFor(player, hectors, today, clubNames, published)
 
         let biography: string[]
         try {
@@ -218,6 +252,130 @@ export async function run(
         outcome: 'ok',
         detail: `${looked}; drafted ${changes.length} for review at /players/biographies.`,
         changes,
+    }
+}
+
+/**
+ * One player's biography, drafted because somebody asked for that player.
+ *
+ * ## Why this is not the sweep with a filter
+ *
+ * It answers a different question, and the difference shows up in all three of
+ * the sweep's own rules.
+ *
+ * **The upcoming Hector is a fact here, not a gate.** The sweep stops when there
+ * is none, because "regenerate the field" has no meaning without a field. A
+ * request naming a player means that player, and the prompt drops its "next
+ * event" lines when it has none — so this writes out of season and records that
+ * the draft has no event, rather than refusing for eleven months of the year.
+ *
+ * **The lock does not hold it back.** `biographiesToRegenerate` exists to stop a
+ * *scheduled* rewrite taking back text somebody claimed; the lock is what makes
+ * an edit survive the fortnight. A person pressing a button beside a locked
+ * biography is not the thing it protects against — they are asking, now, and a
+ * draft is not a publication. The drafts page already warns that approving one
+ * replaces text somebody edited, and that warning is the right place for the
+ * decision, because it is the point at which something is actually overwritten.
+ *
+ * **The do-not-echo context is wider.** See below.
+ *
+ * ## It costs one model call
+ *
+ * Which is the point. The sweep is forty-five, which is why it is off the tick
+ * and why fixing one bad paragraph used to mean regenerating the other
+ * forty-four along with it.
+ */
+export async function runForPlayer(
+    dependencies: BiographyDependencies,
+    playerId: string,
+    dryRun: boolean
+): Promise<BiographyJobResult> {
+    const players = await dependencies.players()
+    const player = players.find((candidate) => candidate.id === playerId)
+    if (!player) {
+        /*
+         * A failure rather than a no-op, unlike every other "nothing to do" in
+         * this module. The others are answers to a question about the data; this
+         * one means the caller asked about somebody who is not there, and the
+         * endpoint checks first precisely so that this stays unreachable.
+         */
+        return { outcome: 'failed', detail: `There is no player with id ${playerId}.`, changes: [] }
+    }
+
+    const now = dependencies.now()
+    const hectors = await hectorsFrom(dependencies)
+    const event = upcomingHector(hectors, now)
+
+    const who = nameOf(player)
+    const forEvent = event ? `for ${event.id}` : 'with no Hector upcoming'
+    const held = player.biographyLocked ? ', over a locked biography' : ''
+    const looked = `${who}${held}, ${forEvent}`
+
+    if (dryRun) {
+        // No `Change`, for the reason the sweep gives: a change claims an after,
+        // and a dry run has none to name.
+        return { outcome: 'ok', detail: `${looked}. Nothing was generated: this run decides only.`, changes: [] }
+    }
+
+    if (!dependencies.playersAreOwned()) {
+        return {
+            outcome: 'skipped',
+            detail:
+                `${looked}, but players are still mirrored. A biography written now would be ` +
+                `reverted by the next seed, so nothing was generated; see PLAYERS_ARE_OWNED.`,
+            changes: [],
+        }
+    }
+
+    if (!dependencies.generate) {
+        return {
+            outcome: 'skipped',
+            detail: `${looked}, but there is no key for the biography function; nothing was generated.`,
+            changes: [],
+        }
+    }
+
+    /*
+     * Every other player's biography, not only the locked ones.
+     *
+     * The sweep seeds this with the locked text alone, and it is right to: the
+     * unlocked biographies it would otherwise include are the ones it is about
+     * to replace in the same run, so quoting them would be telling the model not
+     * to echo sentences that are on their way out. Nothing else is being
+     * replaced here. All forty-four will still be on the page beside this one,
+     * which is the condition the context exists for — see `biography-lock.test.ts`.
+     *
+     * The player's own current text is left out, matching the sweep. Feeding it
+     * back would be asking for a paragraph that differs from the one being
+     * replaced, which is a different instruction from the one this gives.
+     */
+    const published = players
+        .filter((candidate) => candidate.id !== player.id)
+        .flatMap((candidate) => candidate.biography ?? [])
+
+    const clubNames = await clubNamesFrom(dependencies)
+    const input = inputFor(player, hectors, isoDate(now), clubNames, published)
+
+    let biography: string[]
+    try {
+        biography = await dependencies.generate(input)
+    } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error)
+        return { outcome: 'failed', detail: `${looked}. Generating it failed: ${reason}`, changes: [] }
+    }
+
+    await dependencies.save(player, biography, event)
+
+    return {
+        outcome: 'ok',
+        detail: `${looked}; drafted for review at /players/biographies.`,
+        changes: [
+            {
+                subject: player.id,
+                from: paragraphs(player.biography?.length ?? 0),
+                to: paragraphs(biography.length),
+            },
+        ],
     }
 }
 
@@ -293,7 +451,7 @@ export async function live(
             saveBiographyDraft({
                 playerId: player.id,
                 biography,
-                eventId: event.id,
+                eventId: event?.id,
                 generatedAt: new Date().toISOString(),
             }),
     }

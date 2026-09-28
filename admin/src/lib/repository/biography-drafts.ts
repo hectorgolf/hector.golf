@@ -10,8 +10,17 @@ import { firestore } from '../firestore.ts'
 export type BiographyDraft = {
     playerId: string
     biography: string[]
-    /** The Hector it was written for. */
-    eventId: string
+    /**
+     * The Hector it was written for, when one was upcoming.
+     *
+     * Absent rather than empty for a draft written out of season, which the
+     * sweep never produces and a single-player draft can: the sweep exists to
+     * refresh the field of the next Hector and stops when there is not one, but
+     * somebody asking for one player is asking about that player rather than
+     * about an event. The prompt leaves out the "next event" lines when it has
+     * none, so the text is honest either way — this is what says which.
+     */
+    eventId?: string
     generatedAt: string
 }
 
@@ -27,7 +36,7 @@ function parse(raw: unknown, id: string): BiographyDraft | undefined {
     return {
         playerId: id,
         biography,
-        eventId: String(draft?.eventId ?? ''),
+        eventId: draft?.eventId ? String(draft.eventId) : undefined,
         generatedAt: String(draft?.generatedAt ?? ''),
     }
 }
@@ -47,8 +56,18 @@ export async function getBiographyDraft(playerId: string): Promise<BiographyDraf
 
 /** One draft per player: a later run replaces a draft nobody has reviewed yet. */
 export async function saveBiographyDraft(draft: BiographyDraft): Promise<void> {
-    const { playerId, ...fields } = draft
-    await firestore().collection(DRAFTS).doc(playerId).set(fields)
+    const { playerId, biography, generatedAt, eventId } = draft
+    await firestore()
+        .collection(DRAFTS)
+        .doc(playerId)
+        .set({
+            biography,
+            generatedAt,
+            // Firestore rejects `undefined` outright rather than skipping the
+            // field, so an absent event has to be an absent key. `jobs/log.ts`
+            // strips them the same way and for the same reason.
+            ...(eventId ? { eventId } : {}),
+        })
 }
 
 export async function deleteBiographyDraft(playerId: string): Promise<void> {

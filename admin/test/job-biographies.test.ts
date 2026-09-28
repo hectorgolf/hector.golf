@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
 import type { PlayerBiographyInput } from '@hector/schemas/src/biographies.ts'
-import { EventFormat, type Event } from '@hector/schemas/src/events.ts'
+import { EventFormat, type Event, type HectorEvent } from '@hector/schemas/src/events.ts'
 import type { Player } from '@hector/schemas/src/players.ts'
 import type { GolfClub } from '@hector/wisegolf/src/handicap-source-api.ts'
 
-import { run, type BiographyDependencies } from '../src/lib/jobs/biographies.ts'
+import { run, runForPlayer, type BiographyDependencies } from '../src/lib/jobs/biographies.ts'
 
 /**
  * Regenerating biographies in this service: who, and then whether at all.
@@ -45,7 +45,7 @@ const hector = (id: string, start: string, participants: string[] = ['eero-s']):
         maxStrokesOverPar: 4,
     }) as Event
 
-type Saved = { id: string; biography: string[] }
+type Saved = { id: string; biography: string[]; eventId: string | undefined }
 
 /**
  * Owned and generating, which is the interesting configuration.
@@ -70,8 +70,8 @@ const deps = (
 })
 
 const recording = (saved: Saved[]) => ({
-    save: async (player: Player, biography: string[]) => {
-        saved.push({ id: player.id, biography })
+    save: async (player: Player, biography: string[], event: HectorEvent | undefined) => {
+        saved.push({ id: player.id, biography, eventId: event?.id })
     },
 })
 
@@ -207,7 +207,7 @@ describe('a live run that generates', () => {
         )
 
         expect(result.outcome).toBe('ok')
-        expect(saved).toEqual([{ id: 'eero-s', biography: ['One.', 'Two.', 'Three.'] }])
+        expect(saved).toEqual([{ id: 'eero-s', biography: ['One.', 'Two.', 'Three.'], eventId: 'HECTOR2026' }])
         expect(result.changes).toEqual([{ subject: 'eero-s', from: '1 paragraph', to: '3 paragraphs' }])
         expect(result.detail).toContain('drafted 1 for review')
     })
@@ -291,5 +291,194 @@ describe('a live run that generates', () => {
         expect(result.detail).toContain('Drafted 1 before lasse-k Player failed: 429 Too Many Requests')
         expect(saved.map((s) => s.id)).toEqual(['eero-s'])
         expect(result.changes).toHaveLength(1)
+    })
+})
+
+/**
+ * Drafting for one named player, which is a different question from the sweep's.
+ *
+ * The sweep asks "who should be rewritten before the next Hector"; this asks
+ * "write one for this person, now". Everything below is somewhere the second
+ * answer differs from the first, and each of them is a place where reusing the
+ * sweep's rule would have been the obvious thing and the wrong one.
+ */
+describe('drafting for one player', () => {
+    it('drafts out of season, when the sweep would have nothing to write for', async () => {
+        const saved: Saved[] = []
+        const result = await runForPlayer(
+            deps([player('eero-s')], [hector('HECTOR2025', '2025-09-25')], recording(saved)),
+            'eero-s',
+            false
+        )
+
+        expect(result.outcome).toBe('ok')
+        expect(saved.map((s) => s.id)).toEqual(['eero-s'])
+        // Recorded as having no event rather than as belonging to a past one:
+        // `BiographyDraft.eventId` is what the drafts page reads to say so.
+        expect(saved[0]?.eventId).toBeUndefined()
+        expect(result.detail).toContain('no Hector upcoming')
+    })
+
+    it('names the upcoming Hector on the draft when there is one', async () => {
+        const saved: Saved[] = []
+        const result = await runForPlayer(
+            deps([player('eero-s')], [hector('HECTOR2026', '2026-09-24')], recording(saved)),
+            'eero-s',
+            false
+        )
+
+        expect(saved[0]?.eventId).toBe('HECTOR2026')
+        expect(result.detail).toContain('HECTOR2026')
+    })
+
+    /**
+     * The lock stops the *scheduled* rewrite; it is what makes an edit survive
+     * the fortnight. Somebody pressing a button beside a locked biography is not
+     * what it protects against — and nothing is published either way, since the
+     * draft still has to be approved. The warning belongs on the approve button,
+     * which is where something is actually overwritten.
+     */
+    it('drafts for a locked player, which the sweep refuses to do', async () => {
+        const saved: Saved[] = []
+        const result = await runForPlayer(
+            deps([player('eero-s', { biographyLocked: true })], [hector('HECTOR2026', '2026-09-24')], recording(saved)),
+            'eero-s',
+            false
+        )
+
+        expect(result.outcome).toBe('ok')
+        expect(saved.map((s) => s.id)).toEqual(['eero-s'])
+        expect(result.detail).toContain('locked')
+    })
+
+    it('generates for that player and nobody else', async () => {
+        const asked: string[] = []
+        const saved: Saved[] = []
+        await runForPlayer(
+            deps([player('eero-s'), player('lasse-k'), player('anders-f')], [hector('HECTOR2026', '2026-09-24')], {
+                generate: async (input: PlayerBiographyInput) => {
+                    asked.push(input.name)
+                    return ['Generated.']
+                },
+                ...recording(saved),
+            }),
+            'lasse-k',
+            false
+        )
+
+        expect(asked).toEqual(['lasse-k'])
+        expect(saved.map((s) => s.id)).toEqual(['lasse-k'])
+    })
+
+    /**
+     * Wider than the sweep's seed, and deliberately. The sweep seeds only the
+     * locked biographies because the unlocked ones are about to be replaced in
+     * the same run — quoting them would be forbidding sentences on their way
+     * out. Nothing else is being replaced here, so every other player's text
+     * will still be on the page beside this one, which is the condition the
+     * do-not-echo context exists for.
+     */
+    it('shows the model every other biography, locked or not', async () => {
+        const seen: string[][] = []
+
+        await runForPlayer(
+            deps(
+                [
+                    player('eero-s', { biography: ['Eero is being rewritten.'] }),
+                    player('lasse-k', { biographyLocked: true, biography: ['Lasse wrote this.'] }),
+                    player('anders-f', { biography: ['Anders was generated.'] }),
+                ],
+                [hector('HECTOR2026', '2026-09-24')],
+                {
+                    generate: async (input: PlayerBiographyInput) => {
+                        seen.push([...input.otherGeneratedBiographies])
+                        return ['Generated.']
+                    },
+                }
+            ),
+            'eero-s',
+            false
+        )
+
+        // Both of the others, and not the player's own text: feeding that back
+        // would be asking for a paragraph unlike the one being replaced, which
+        // is a different instruction from the one this gives.
+        expect(seen).toEqual([['Lasse wrote this.', 'Anders was generated.']])
+    })
+
+    it('reports the paragraph counts as a change, the same as the sweep', async () => {
+        const result = await runForPlayer(
+            deps([player('eero-s')], [hector('HECTOR2026', '2026-09-24')], {
+                generate: async () => ['One.', 'Two.'],
+            }),
+            'eero-s',
+            false
+        )
+
+        expect(result.changes).toEqual([{ subject: 'eero-s', from: '1 paragraph', to: '2 paragraphs' }])
+    })
+
+    it('keeps both gates: mirrored players, and no key', async () => {
+        const mirrored = await runForPlayer(
+            deps([player('eero-s')], [hector('HECTOR2026', '2026-09-24')], { playersAreOwned: () => false }),
+            'eero-s',
+            false
+        )
+        expect(mirrored.outcome).toBe('skipped')
+        expect(mirrored.detail).toContain('PLAYERS_ARE_OWNED')
+
+        const keyless = await runForPlayer(
+            deps([player('eero-s')], [hector('HECTOR2026', '2026-09-24')], { generate: undefined }),
+            'eero-s',
+            false
+        )
+        expect(keyless.outcome).toBe('skipped')
+        expect(keyless.detail).toContain('no key')
+    })
+
+    it('writes nothing on a dry run', async () => {
+        const saved: Saved[] = []
+        const result = await runForPlayer(
+            deps([player('eero-s')], [hector('HECTOR2026', '2026-09-24')], recording(saved)),
+            'eero-s',
+            true
+        )
+
+        expect(result.outcome).toBe('ok')
+        expect(result.changes).toEqual([])
+        expect(saved).toEqual([])
+    })
+
+    it('reports a generation failure without a partial count to explain', async () => {
+        const result = await runForPlayer(
+            deps([player('eero-s')], [hector('HECTOR2026', '2026-09-24')], {
+                generate: async () => {
+                    throw new Error('429 Too Many Requests')
+                },
+            }),
+            'eero-s',
+            false
+        )
+
+        expect(result.outcome).toBe('failed')
+        expect(result.detail).toContain('429 Too Many Requests')
+    })
+
+    /**
+     * Unreachable through the endpoint, which looks the player up first and
+     * answers 404 — precisely so that a bad URL does not leave a red entry in
+     * the run log. Pinned because that endpoint is the only thing keeping it so.
+     */
+    it('fails, rather than quietly doing nothing, for a player who is not there', async () => {
+        const saved: Saved[] = []
+        const result = await runForPlayer(
+            deps([player('eero-s')], [hector('HECTOR2026', '2026-09-24')], recording(saved)),
+            'nobody',
+            false
+        )
+
+        expect(result.outcome).toBe('failed')
+        expect(result.detail).toContain('nobody')
+        expect(saved).toEqual([])
     })
 })

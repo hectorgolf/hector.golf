@@ -77,6 +77,8 @@ try {
 
 const approved = Astro.url.searchParams.get('approved')
 const discarded = Astro.url.searchParams.get('discarded')
+// Where `POST /api/players/[id]/biography` sends a browser that got a draft.
+const drafted = Astro.url.searchParams.get('drafted')
 const nameOf = (id: string | null) => {
     const player = id ? playersById.get(id) : undefined
     return player ? fullName(player) : (id ?? '')
@@ -90,7 +92,7 @@ const generatedOn = (iso: string) => (iso ? iso.slice(0, 10) : 'an unknown date'
     <PageHeader
         title="Biography drafts"
         eyebrow="Players"
-        lede="What the biography job wrote, waiting to be read. Approve a draft as it is, edit it first, or discard it. Editing before approving locks the biography, the same as editing it on the player's page."
+        lede="What the biography job wrote, waiting to be read — a whole sweep of it from Operations, or one player from their own page. Approve a draft as it is, edit it first, or discard it. Editing before approving locks the biography, the same as editing it on the player's page."
     />
 
     {error && <p class="notice bad">{error}</p>}
@@ -103,8 +105,17 @@ const generatedOn = (iso: string) => (iso ? iso.slice(0, 10) : 'an unknown date'
         )
     }
     {discarded && <p class="notice">Discarded the draft for {nameOf(discarded)}. Their biography is unchanged.</p>}
+    {drafted && <p class="notice good">Drafted a new biography for {nameOf(drafted)}. Nothing is published until it is approved below.</p>}
 
-    {!error && drafts.length === 0 && <p class="notice">No drafts waiting. Run the biography job on <a href="/operations">Operations</a> to write some.</p>}
+    {
+        !error && drafts.length === 0 && (
+            <p class="notice">
+                No drafts waiting. Run the biography job on <a href="/operations">Operations</a> to draft for the
+                whole field of the upcoming Hector, or press "Draft a biography" on{' '}
+                <a href="/players">one player's page</a> for just them.
+            </p>
+        )
+    }
 
     {
         drafts.map((draft) => {
@@ -116,7 +127,17 @@ const generatedOn = (iso: string) => (iso ? iso.slice(0, 10) : 'an unknown date'
                         {player ? <a href={`/players/${player.id}`}>{fullName(player)}</a> : draft.playerId}
                     </h2>
                     <p class="hint">
-                        Drafted for {draft.eventId || 'an unknown event'} on {generatedOn(draft.generatedAt)}.
+                        {/*
+                          * No event is a state rather than a gap since drafting
+                          * for one player arrived: the sweep stops when no Hector
+                          * is upcoming, a single draft does not, and the prompt
+                          * simply leaves out its "next event" lines. Saying
+                          * "an unknown event" about that would report a fact
+                          * nobody lost.
+                          */}
+                        {draft.eventId
+                            ? `Drafted for ${draft.eventId} on ${generatedOn(draft.generatedAt)}.`
+                            : `Drafted on ${generatedOn(draft.generatedAt)}, with no Hector upcoming.`}
                         {player?.biographyLocked &&
                             ' This biography has been locked since, so approving replaces text somebody edited.'}
                     </p>

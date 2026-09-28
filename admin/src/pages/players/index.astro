@@ -56,7 +56,21 @@ const stopgaps = rows.filter((row) => row.handicap?.source === 'stopgap').length
 ---
 
 <AdminLayout title="Players">
-	<PageHeader title="Players" lede="Everybody who has played a Hector event." />
+	<div class="row-between">
+		<PageHeader title="Players" lede="Everybody who has played a Hector event." />
+		{/*
+		  * Always here, not only when something is waiting.
+		  *
+		  * The count below it was the only way in, which meant the drafts page was
+		  * reachable exactly when it had something on it and unreachable the rest of
+		  * the time — so somebody who had just pressed Draft a biography, or who
+		  * wanted to see whether anything was pending, had nowhere to click and no
+		  * reason to believe the page existed.
+		  */}
+		<div class="row-actions">
+			<a href="/players/biographies"><button type="button">Biography drafts</button></a>
+		</div>
+	</div>
 
 	{error && <p class="notice bad">{error}</p>}
 
@@ -130,6 +144,12 @@ const stopgaps = rows.filter((row) => row.handicap?.source === 'stopgap').length
 </AdminLayout>
 
 <style>
+	.row-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
 	.counts {
 		margin: 0;
 		font-family: var(--font-num);

@@ -8,6 +8,7 @@ import { formatEventDates } from '@hector/schemas/src/dates.ts'
 
 import { adminPathForEvent } from '../../lib/sections.ts'
 import { PLAYERS_ARE_OWNED } from '../../lib/ownership.ts'
+import { getBiographyDraft } from '../../lib/repository/biography-drafts.ts'
 import { getPlayer, listEvents } from '../../lib/repository/events.ts'
 import { read as readHandicapSnapshot } from '../../lib/handicaps/snapshot.ts'
 import { formatHandicap, fullName, resolveHandicap } from '../../lib/players.ts'
@@ -30,6 +31,20 @@ if (!player) return new Response('Player not found', { status: 404 })
  * page that would have to say so.
  */
 const [events, observed] = await Promise.all([listEvents(), readHandicapSnapshot()])
+
+/*
+ * One document, for the one sentence below the Biography heading that says a
+ * draft is waiting. Read on its own rather than folded into the pair above
+ * because it must not take the page down with it: a drafts collection that
+ * cannot be reached is a missing notice, not a player who cannot be looked at.
+ */
+let draftWaiting = false
+try {
+    draftWaiting = (await getBiographyDraft(id)) !== undefined
+} catch {
+    // Costs the notice and nothing else; the reason is in Cloud Logging.
+}
+
 /*
  * Linked only where this admin has a page for the format. `listEvents()` returns
  * every event in the store, which since 2026-09-20 is more formats than the
@@ -52,6 +67,23 @@ const flash =
         : saved === 'released'
           ? 'Biography unlocked. The generator rewrites it on its next run.'
           : undefined
+
+/*
+ * Why drafting a biography did not produce one.
+ *
+ * A code rather than the sentence itself, because the sentence is in the run log
+ * and `/operations` renders it in full — see the endpoint that redirects here.
+ * What is worth saying on this page is which of the four it was and where to
+ * look; a request that succeeded lands on the drafts page instead and never
+ * reaches this.
+ */
+const draftProblem = {
+    busy: 'A biography run is already going. This one was dropped rather than queued — try again once it has finished.',
+    'not-configured': 'This service has no GitHub token configured, so the run could not start. See Operations.',
+    declined:
+        'Nothing was generated. The run log on Operations says why; the usual reason is no key for the biography function.',
+    failed: 'Generating it failed. The run log on Operations has the reason.',
+}[Astro.url.searchParams.get('draft') ?? '']
 ---
 
 <AdminLayout title={fullName(player)}>
@@ -118,17 +150,44 @@ const flash =
 	<section class="stack">
 		<div class="row-between">
 			<h2>Biography</h2>
-			<span class="meta">
-				{biography.length} {biography.length === 1 ? 'paragraph' : 'paragraphs'}
-				{player.biographyLocked && <span class="pill pill-violet">locked</span>}
-			</span>
+			<div class="row-actions">
+				<span class="meta">
+					{biography.length} {biography.length === 1 ? 'paragraph' : 'paragraphs'}
+					{player.biographyLocked && <span class="pill pill-violet">locked</span>}
+				</span>
+				{/*
+				 * One player, one model call — as against the forty-five the sweep on
+				 * /operations makes, which was the only way to ask for this and is a
+				 * poor way to fix one bad paragraph.
+				 *
+				 * A form rather than a link, because it writes; and it draws no
+				 * distinction for a locked biography, because a draft is not a
+				 * publication. The lock is honoured where it means something, which is
+				 * the sweep, and warned about where something is actually overwritten,
+				 * which is the approve button on the drafts page.
+				 */}
+				<form method="POST" action={`/api/players/${player.id}/biography`}>
+					<button type="submit" data-drafting="Drafting…">Draft a biography</button>
+				</form>
+			</div>
 		</div>
+
+		{draftProblem && <p class="notice bad">{draftProblem}</p>}
+
+		{
+			draftWaiting && (
+				<p class="notice">
+					A drafted biography is waiting for this player.{' '}
+					<a href="/players/biographies">Read it</a> before it is replaced by the next draft.
+				</p>
+			)
+		}
 
 		<p class="hint">
 			{
 				player.biographyLocked
-					? 'Locked, so update-player-biographies leaves it alone. It still shows the model this text, so a regenerated biography elsewhere does not echo a sentence published here.'
-					: 'Not locked, so update-player-biographies rewrites it on its next run — twice a month. An edit made today has a fortnight to live.'
+					? 'Locked, so the biographies job leaves it alone. It still shows the model this text, so a regenerated biography elsewhere does not echo a sentence published here.'
+					: 'Not locked, so the biographies job rewrites it whenever somebody runs the sweep for an upcoming Hector. Editing the text here, or editing a draft before approving it, claims it and stops that.'
 			}
 		</p>
 
@@ -219,6 +278,31 @@ const flash =
 		}
 	</section>
 </AdminLayout>
+
+<script>
+	/*
+	 * Say that the press registered, for the length of one model call.
+	 *
+	 * The same problem `lib/run-now.ts` was written for and a much smaller dose of
+	 * it: that button holds the request open for a forty-five-player sweep, this
+	 * one for a single generation — seconds rather than minutes, but still long
+	 * enough that an unchanged button gets pressed twice, and a second press is a
+	 * second model call.
+	 *
+	 * It stays inline rather than joining `run-now.ts` because it shares nothing
+	 * with it: no fetch, no swapped `<main>`, no notices. The form submits and the
+	 * browser navigates, exactly as it does without this file; all this adds is the
+	 * label and the disable.
+	 */
+	for (const button of document.querySelectorAll<HTMLButtonElement>('button[data-drafting]')) {
+		button.form?.addEventListener('submit', () => {
+			button.textContent = button.dataset.drafting ?? 'Working…'
+			button.setAttribute('aria-busy', 'true')
+			// After the event, or the browser drops a disabled button's form submission.
+			setTimeout(() => (button.disabled = true))
+		})
+	}
+</script>
 
 <style>
 	h2 {
