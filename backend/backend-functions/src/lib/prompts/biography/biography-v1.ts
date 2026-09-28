@@ -18,7 +18,7 @@ function buildPrimaryPrompt(input: PlayerBiographyInput): string {
     );
 
     // TOURNAMENT HISTORY
-    prompt.push(`<TOURNAMENT HISTORY>`);
+    prompt.push(`# TOURNAMENT HISTORY`);
     prompt.push(
         [
             `The tournament has been organized ${input.allPastEvents.length} times:`,
@@ -32,7 +32,7 @@ function buildPrimaryPrompt(input: PlayerBiographyInput): string {
     }
 
     // PLAYER'S DATA
-    prompt.push(`<PLAYER>`);
+    prompt.push(`# PLAYER`);
     prompt.push(
         [
             `- Name: ${input.name}.`,
@@ -41,7 +41,7 @@ function buildPrimaryPrompt(input: PlayerBiographyInput): string {
             `- Past appearances: ${input.previousAppearances.length}.`,
             `- Past wins (Hector Trophée): ${input.hectorWins.length}.`,
             `- Past individual titles (Victor trophy): ${input.victorWins.length}.`,
-            `- ${input.retired ? 'Considered as retired from Hector events' : 'Still active in Hector events'}`,
+            `- ${input.retired ? 'Considered as retired from Hector events' : 'Still active in the Hector community'}`,
         ].join("\n")
     );
 
@@ -74,7 +74,6 @@ function buildPrimaryPrompt(input: PlayerBiographyInput): string {
             ].join("\n")
         );
     }
-    prompt.push(`</PLAYER>`);
 
     return prompt.join("\n\n");
 }
