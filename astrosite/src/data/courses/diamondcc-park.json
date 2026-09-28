@@ -30,7 +30,7 @@
     "tees": [
       {
         "name": "Yellow",
-        "color": "#ffff00",
+        "color": "#fffb00",
         "length": 4444,
         "par": 34,
         "rating": {
@@ -44,9 +44,10 @@
       },
       {
         "name": "Blue",
-        "color": "#0000ff",
+        "color": "#0433ff",
         "length": 3996,
         "par": 34,
+        "par_ladies": 34,
         "rating": {
           "men": 62.4,
           "ladies": 65.7
@@ -58,9 +59,10 @@
       },
       {
         "name": "Red",
-        "color": "#ff0000",
+        "color": "#ff2600",
         "length": 3772,
         "par": 34,
+        "par_ladies": 34,
         "rating": {
           "men": 61.6,
           "ladies": 64.2
