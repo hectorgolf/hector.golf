@@ -897,11 +897,26 @@ phrasing to avoid, because they remain on the page beside whatever the run write
 from the run entirely would let a regenerated biography echo a sentence already published under
 somebody else's name.
 
-It writes nothing at all unless a Hector is upcoming, and `isUpcomingEvent` compares start dates, so
-it stops writing the day after an event begins and does not write again until the next event file is
-committed. The run itself still fires and still goes green — the four between 2026-01-25 and
-2026-03-10 all did, and all committed nothing, the next rewrite being on 2026-03-21, the day
-`HECTOR2026.json` was added. A green run therefore does not mean a biography was regenerated.
+Which Hector a run is about is `referenceHector`: the next one if there is one, and otherwise the
+one most recently played. Until 2026-09-28 there was no second half — a run with no upcoming Hector
+wrote nothing and said so — and that was wrong for the eleven months of the year it covered. A
+biography is written partly out of the event ahead, so the morning after a Hector every one of them
+describes a finished tournament as still to come, and that is precisely when the job used to decline.
+
+The two halves regenerate different people, which is the point of telling them apart:
+
+- **A Hector upcoming.** Everybody unlocked, every run. The field changes as people enter, so how
+  recently the text was written is no evidence that it names the right event.
+- **A Hector just played.** Only the players whose biography predates it, by
+  `player.biographyGeneratedAt` against the event's end date. Without that filter a press of the
+  button out of season would rewrite all 45 at a model call each, producing a
+  different-but-equivalent paragraph for everyone.
+
+An absent `biographyGeneratedAt` counts as stale, which is what made the first run after the change
+do anything: the field arrived after 45 biographies had been written, and every one of them was in
+fact written while the last Hector was still ahead. A green run still does not mean a biography was
+regenerated — it now means either there was nothing to do or the drafts are waiting on the review
+page, and the run detail says which.
 
 ### The player jobs, which are waiting on a flag rather than on work
 

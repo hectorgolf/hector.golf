@@ -75,23 +75,58 @@ const recording = (saved: Saved[]) => ({
     },
 })
 
-describe('the upcoming-Hector gate', () => {
+describe('which Hector a run is about', () => {
     /**
-     * Out of season there is no event to write for, and the workflow applies the
-     * same gate. A successful no-op rather than a failure, because this is the
-     * normal state of this job for most of the year.
+     * Out of season the run is about the Hector just played, not nothing.
+     *
+     * This test used to assert the opposite — "No upcoming Hector, so there is
+     * nothing to regenerate for" — and that sentence was the bug: every
+     * biography written before that Hector describes it as still to come, so the
+     * eleven months in which there is no upcoming event are exactly the months
+     * in which the site is wrong and the job declines to say so.
      */
-    it('does nothing, successfully, when no Hector is upcoming', async () => {
+    it('falls back to the Hector just played when none is upcoming', async () => {
         const result = await run(deps([player('eero-s')], [hector('HECTOR2025', '2025-09-25')]), true)
 
         expect(result.outcome).toBe('ok')
-        expect(result.detail).toContain('No upcoming Hector')
+        expect(result.detail).toContain('HECTOR2025 ended')
+        expect(result.detail).toContain('1 biography to regenerate')
     })
 
-    it('does nothing when the upcoming Hector has no field yet', async () => {
+    it('prefers an upcoming Hector to a finished one', async () => {
+        const result = await run(
+            deps([player('eero-s')], [hector('HECTOR2025', '2025-09-25'), hector('HECTOR2026', '2026-09-24')]),
+            true
+        )
+
+        expect(result.detail).toContain('HECTOR2026 is upcoming')
+    })
+
+    /**
+     * An event nobody played is a Hector that was scheduled and did not happen,
+     * so it is no yardstick for whether a biography is out of date — the same
+     * `hasParticipants` the upcoming side has always applied.
+     */
+    it('ignores a finished Hector with no field', async () => {
+        const result = await run(
+            deps([player('eero-s')], [hector('HECTOR2024', '2024-09-25'), hector('HECTOR2025', '2025-09-25', [])]),
+            true
+        )
+
+        expect(result.detail).toContain('HECTOR2024 ended')
+    })
+
+    it('does nothing, successfully, when no Hector has a field at all', async () => {
         const result = await run(deps([player('eero-s')], [hector('HECTOR2027', '2027-09-24', [])]), true)
 
-        expect(result.detail).toContain('No upcoming Hector')
+        expect(result.outcome).toBe('ok')
+        expect(result.detail).toContain('No Hector with a field')
+    })
+
+    it('does nothing when the upcoming Hector has no field yet and none has been played', async () => {
+        const result = await run(deps([player('eero-s')], [hector('HECTOR2027', '2027-09-24', [])]), true)
+
+        expect(result.detail).toContain('No Hector with a field')
     })
 
     it('takes the nearest upcoming Hector when there are two', async () => {
@@ -148,6 +183,109 @@ describe('who a run would rewrite', () => {
 
         expect(result.outcome).toBe('ok')
         expect(result.detail).toContain('0 biographies to regenerate')
+    })
+})
+
+/**
+ * After a Hector, only the biographies that predate it.
+ *
+ * The rule itself is `biographiesToRegenerate`, tested in
+ * `astrosite/test/unit/biography-lock.test.ts`. What is pinned here is that the
+ * job passes the cutoff at all, and passes it only in the case it belongs to —
+ * getting either half wrong is silent. Without the cutoff, every press of the
+ * button out of season rewrites all forty-five at a model call each; with it
+ * applied before an upcoming Hector, a field that has since changed stops being
+ * picked up.
+ */
+describe('regenerating after a Hector has been played', () => {
+    const written = (id: string, at: string | undefined) =>
+        player(id, { biographyGeneratedAt: at })
+
+    it('takes the players whose biography predates the event, and says who it left', async () => {
+        const saved: Saved[] = []
+        const result = await run(
+            deps(
+                [written('eero-s', '2025-09-20T09:00:00.000Z'), written('lasse-k', '2025-09-30T09:00:00.000Z')],
+                [hector('HECTOR2025', '2025-09-25')],
+                recording(saved)
+            ),
+            false
+        )
+
+        expect(saved.map((s) => s.id)).toEqual(['eero-s'])
+        expect(result.detail).toContain('1 already reflect it')
+    })
+
+    it('takes a player who has no date, which is every player before this existed', async () => {
+        const saved: Saved[] = []
+        await run(
+            deps([written('eero-s', undefined)], [hector('HECTOR2025', '2025-09-25')], recording(saved)),
+            false
+        )
+
+        expect(saved.map((s) => s.id)).toEqual(['eero-s'])
+    })
+
+    it('reports a successful no-op once everybody has been rewritten since', async () => {
+        const saved: Saved[] = []
+        const result = await run(
+            deps([written('eero-s', '2025-09-30T09:00:00.000Z')], [hector('HECTOR2025', '2025-09-25')], recording(saved)),
+            false
+        )
+
+        expect(result.outcome).toBe('ok')
+        expect(result.detail).toContain('0 biographies to regenerate')
+        expect(saved).toEqual([])
+    })
+
+    /**
+     * The cutoff is for a finished event only. Before one, the field is still
+     * changing, so a biography written yesterday is no evidence that it names
+     * the right event or the right number of appearances.
+     */
+    it('ignores the dates while a Hector is upcoming', async () => {
+        const saved: Saved[] = []
+        await run(
+            deps(
+                [written('eero-s', '2026-09-19T09:00:00.000Z'), written('lasse-k', '2026-09-20T09:00:00.000Z')],
+                [hector('HECTOR2026', '2026-09-24')],
+                recording(saved)
+            ),
+            false
+        )
+
+        expect(saved.map((s) => s.id)).toEqual(['eero-s', 'lasse-k'])
+    })
+
+    /**
+     * The up-to-date players' text is on the page beside what this run writes,
+     * so it belongs in the do-not-echo context for the reason the locked
+     * players' text does.
+     */
+    it('shows the model what the players it skipped already say', async () => {
+        const seen: string[][] = []
+
+        await run(
+            deps(
+                [
+                    player('eero-s', { biography: ['Being rewritten.'] }),
+                    player('lasse-k', {
+                        biography: ['Written since the Hector.'],
+                        biographyGeneratedAt: '2025-09-30T09:00:00.000Z',
+                    }),
+                ],
+                [hector('HECTOR2025', '2025-09-25')],
+                {
+                    generate: async (input: PlayerBiographyInput) => {
+                        seen.push([...input.otherGeneratedBiographies])
+                        return ['Generated.']
+                    },
+                }
+            ),
+            false
+        )
+
+        expect(seen).toEqual([['Written since the Hector.']])
     })
 })
 
@@ -303,7 +441,7 @@ describe('a live run that generates', () => {
  * sweep's rule would have been the obvious thing and the wrong one.
  */
 describe('drafting for one player', () => {
-    it('drafts out of season, when the sweep would have nothing to write for', async () => {
+    it('drafts out of season, against the Hector just played', async () => {
         const saved: Saved[] = []
         const result = await runForPlayer(
             deps([player('eero-s')], [hector('HECTOR2025', '2025-09-25')], recording(saved)),
@@ -313,10 +451,49 @@ describe('drafting for one player', () => {
 
         expect(result.outcome).toBe('ok')
         expect(saved.map((s) => s.id)).toEqual(['eero-s'])
-        // Recorded as having no event rather than as belonging to a past one:
-        // `BiographyDraft.eventId` is what the drafts page reads to say so.
+        /*
+         * The same `referenceHector` the sweep takes, which is the point: this
+         * recorded no event at all until the sweep learned to run after a
+         * Hector, and two drafts made the same afternoon then disagreed about
+         * which Hector they were about — one saying HECTOR2025, the other
+         * nothing.
+         */
+        expect(saved[0]?.eventId).toBe('HECTOR2025')
+        expect(result.detail).toContain('HECTOR2025')
+    })
+
+    it('records no event when the store holds no Hector anybody played', async () => {
+        const saved: Saved[] = []
+        const result = await runForPlayer(
+            deps([player('eero-s')], [hector('HECTOR2027', '2027-09-24', [])], recording(saved)),
+            'eero-s',
+            false
+        )
+
+        expect(result.outcome).toBe('ok')
         expect(saved[0]?.eventId).toBeUndefined()
-        expect(result.detail).toContain('no Hector upcoming')
+        expect(result.detail).toContain('no Hector on record')
+    })
+
+    /**
+     * The sweep would skip this player; the button must not. Naming somebody is
+     * the answer to "who needs one", so a request for a biography written after
+     * the last Hector still produces a draft.
+     */
+    it('drafts for a player the sweep would call up to date', async () => {
+        const saved: Saved[] = []
+        const result = await runForPlayer(
+            deps(
+                [player('eero-s', { biographyGeneratedAt: '2025-09-30T09:00:00.000Z' })],
+                [hector('HECTOR2025', '2025-09-25')],
+                recording(saved)
+            ),
+            'eero-s',
+            false
+        )
+
+        expect(result.outcome).toBe('ok')
+        expect(saved.map((s) => s.id)).toEqual(['eero-s'])
     })
 
     it('names the upcoming Hector on the draft when there is one', async () => {

@@ -3,21 +3,66 @@ import { type EventTiming, type HectorEvent } from './events.ts';
 import { type Player } from './players.ts';
 
 /**
- * The players a run may rewrite, and the ones a lock is holding.
+ * The players a run may rewrite, and the ones it is leaving alone.
  *
- * Three lists rather than one, so a caller can say who it left alone and why.
- * `alreadyPublished` is the phrasing a locked biography still contributes to the
- * generator's "do not reuse this" context; see `biography-lock.test.ts` for why
- * dropping it would let a run echo a published sentence.
+ * Four lists rather than one, so a caller can say who it skipped and why — a
+ * lock is somebody claiming a paragraph, being up to date is nothing needing
+ * doing, and the two want different sentences in the run log.
+ *
+ * `alreadyPublished` is the phrasing the generator is told not to reuse, and it
+ * is drawn from *both* skipped lists. See `biography-lock.test.ts` for why
+ * dropping the locked ones would let a run echo a published sentence under
+ * somebody else's name; an up-to-date biography is on that same page and needs
+ * the same treatment.
  */
 export const biographiesToRegenerate = (
     players: Array<Player>,
-): { regenerate: Array<Player>; locked: Array<Player>; alreadyPublished: Array<string> } => {
+    /**
+     * The date a biography must have been written *after* to count as current.
+     *
+     * Absent regenerates every unlocked player, which is what a run before an
+     * upcoming Hector wants: the field changes as people enter, so the text is
+     * worth rewriting however recently it was written.
+     *
+     * Given, it is the day the most recent Hector finished. A biography written
+     * before then describes that event as something still to come — "is set to
+     * make his tenth appearance" — and is wrong the morning after, which is the
+     * whole reason a run out of season has anything to do.
+     */
+    currentIfWrittenAfter?: IsoDate,
+): {
+    regenerate: Array<Player>;
+    locked: Array<Player>;
+    upToDate: Array<Player>;
+    alreadyPublished: Array<string>;
+} => {
+    const isCurrent = (player: Player): boolean => {
+        if (!currentIfWrittenAfter) return false;
+        const written = player.biographyGeneratedAt;
+        /*
+         * Unknown counts as stale, which is the load-bearing half of this.
+         * `biographyGeneratedAt` was added after 45 biographies had already been
+         * written, so every one of them is missing it — and every one of them
+         * was in fact written before the last Hector, because the field did not
+         * exist while that Hector was still ahead. Reading absence as "current"
+         * would leave the whole roster describing a finished event as upcoming,
+         * permanently, with the job reporting nothing to do.
+         */
+        if (!written) return false;
+        // The date out of an ISO instant, which is already UTC. Parsing it to a
+        // `Date` first would re-read it in the local zone and move the day.
+        return written.slice(0, 10) > currentIfWrittenAfter;
+    };
+
     const locked = players.filter((p) => p.biographyLocked === true);
+    const unlocked = players.filter((p) => !p.biographyLocked);
+    const upToDate = unlocked.filter(isCurrent);
+
     return {
-        regenerate: players.filter((p) => !p.biographyLocked),
+        regenerate: unlocked.filter((player) => !isCurrent(player)),
         locked,
-        alreadyPublished: locked.flatMap((player) => player.biography ?? []),
+        upToDate,
+        alreadyPublished: [...locked, ...upToDate].flatMap((player) => player.biography ?? []),
     };
 };
 

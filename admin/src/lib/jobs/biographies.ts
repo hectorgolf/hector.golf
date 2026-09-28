@@ -71,6 +71,53 @@ function upcomingHector(events: readonly HectorEvent[], now: Date): HectorEvent 
         .sort((a, b) => a.timing.start.localeCompare(b.timing.start))[0]
 }
 
+/** The most recently finished Hector that somebody played. */
+function lastFinishedHector(events: readonly HectorEvent[], now: Date): HectorEvent | undefined {
+    const today = isoDate(now)
+    return events
+        .filter((event) => event.timing.end < today)
+        .filter(hasParticipants)
+        .sort((a, b) => b.timing.end.localeCompare(a.timing.end))[0]
+}
+
+/**
+ * The Hector a run is about, and which of the two kinds it is.
+ *
+ * ## Why there are two, and why "none" stopped meaning "nothing to do"
+ *
+ * This used to be `upcomingHector` alone: no upcoming Hector, no run. That is
+ * right about the *reason* to rewrite before an event — the field changes as
+ * people enter — and wrong about what happens the morning after one. Every
+ * biography then on the site describes the event as still to come, because that
+ * is what it was when the text was written, and the job would answer "No
+ * upcoming Hector with a field, so there is nothing to regenerate for" for the
+ * eleven months in which those sentences were the first thing a visitor read.
+ *
+ * So a finished Hector is also something to write about, and the two are not the
+ * same job:
+ *
+ *   - **Upcoming.** Everybody unlocked, every run. The answer changes as the
+ *     field fills, so recency is no evidence the text is current.
+ *   - **Finished.** Only the players whose biography predates it — see
+ *     `currentIfWrittenAfter` in `biographiesToRegenerate`. Without that a run
+ *     out of season would rewrite all forty-five every time anybody pressed the
+ *     button, at a model call each, producing a different-but-equivalent
+ *     paragraph for everyone.
+ *
+ * `hasParticipants` on both, so that an event nobody played is not a yardstick.
+ * An empty field is a Hector that was scheduled and did not happen, and dating a
+ * biography against it would claim the text is stale for an event that told the
+ * model nothing.
+ */
+type ReferenceHector = { event: HectorEvent; finished: boolean }
+
+function referenceHector(events: readonly HectorEvent[], now: Date): ReferenceHector | undefined {
+    const upcoming = upcomingHector(events, now)
+    if (upcoming) return { event: upcoming, finished: false }
+    const finished = lastFinishedHector(events, now)
+    return finished ? { event: finished, finished: true } : undefined
+}
+
 export type BiographyDependencies = {
     players: () => Promise<Player[]>
     events: () => Promise<Event[]>
@@ -145,26 +192,37 @@ export async function run(
     dryRun: boolean
 ): Promise<BiographyJobResult> {
     /*
-     * The gate the workflow applies too, and it is the reason this job will do
-     * nothing for most of the year: biographies are regenerated for an upcoming
-     * Hector, so out of season there is no event to write for and the run is a
-     * successful no-op rather than a failure.
+     * Which Hector this run is about — the one coming, or failing that the one
+     * just played. `referenceHector` is where the difference between the two is
+     * written down, and why a finished one is no longer the end of the run.
      */
     const now = dependencies.now()
     const hectors = await hectorsFrom(dependencies)
-    const event = upcomingHector(hectors, now)
-    if (!event) {
+    const reference = referenceHector(hectors, now)
+    if (!reference) {
         return {
             outcome: 'ok',
-            detail: 'No upcoming Hector with a field, so there is nothing to regenerate for.',
+            detail: 'No Hector with a field, upcoming or played, so there is nothing to write about.',
             changes: [],
         }
     }
 
-    const { regenerate, locked, alreadyPublished } = biographiesToRegenerate(await dependencies.players())
+    const { event, finished } = reference
+
+    /*
+     * Before an upcoming Hector, everybody unlocked; after a finished one, only
+     * the biographies written before it ended. The second argument is the whole
+     * of that distinction — see `currentIfWrittenAfter`.
+     */
+    const { regenerate, locked, upToDate, alreadyPublished } = biographiesToRegenerate(
+        await dependencies.players(),
+        finished ? event.timing.end : undefined
+    )
 
     const held = locked.length === 0 ? '' : `; ${locked.length} left alone (${locked.map(nameOf).join(', ')})`
-    const looked = `${event.id} is upcoming; ${regenerate.length} ${regenerate.length === 1 ? 'biography' : 'biographies'} to regenerate${held}`
+    const current = upToDate.length === 0 ? '' : `; ${upToDate.length} already reflect it`
+    const occasion = finished ? `${event.id} ended ${event.timing.end}` : `${event.id} is upcoming`
+    const looked = `${occasion}; ${regenerate.length} ${regenerate.length === 1 ? 'biography' : 'biographies'} to regenerate${current}${held}`
 
     if (regenerate.length === 0) {
         return { outcome: 'ok', detail: `${looked}.`, changes: [] }
@@ -260,14 +318,15 @@ export async function run(
  *
  * ## Why this is not the sweep with a filter
  *
- * It answers a different question, and the difference shows up in all three of
- * the sweep's own rules.
+ * It answers a different question, and the difference shows up in each of the
+ * sweep's own rules.
  *
- * **The upcoming Hector is a fact here, not a gate.** The sweep stops when there
- * is none, because "regenerate the field" has no meaning without a field. A
- * request naming a player means that player, and the prompt drops its "next
- * event" lines when it has none — so this writes out of season and records that
- * the draft has no event, rather than refusing for eleven months of the year.
+ * **Staleness is not consulted.** The sweep asks who *needs* rewriting — before
+ * an upcoming Hector that is everybody unlocked, after a finished one only those
+ * whose text predates it. Somebody pressing the button beside one player has
+ * already answered that question by naming them, so telling them the biography
+ * is up to date would be refusing the only thing they asked for. Both take the
+ * same `referenceHector`, so the two agree about which Hector a draft is about.
  *
  * **The lock does not hold it back.** `biographiesToRegenerate` exists to stop a
  * *scheduled* rewrite taking back text somebody claimed; the lock is what makes
@@ -304,10 +363,23 @@ export async function runForPlayer(
 
     const now = dependencies.now()
     const hectors = await hectorsFrom(dependencies)
-    const event = upcomingHector(hectors, now)
+    /*
+     * The same reference the sweep takes, so that two drafts made minutes apart
+     * do not disagree about which Hector they are about. It was `upcomingHector`
+     * alone, which meant a draft made the day after one finished recorded no
+     * event at all while a sweep on the same afternoon recorded that Hector.
+     *
+     * What it does *not* borrow is the staleness rule. Somebody who pressed the
+     * button beside one player has said which player; answering "that one is
+     * already up to date" would be refusing the only thing they asked for.
+     */
+    const reference = referenceHector(hectors, now)
+    const event = reference?.event
 
     const who = nameOf(player)
-    const forEvent = event ? `for ${event.id}` : 'with no Hector upcoming'
+    const forEvent = event
+        ? `for ${event.id}`
+        : 'with no Hector on record to write around'
     const held = player.biographyLocked ? ', over a locked biography' : ''
     const looked = `${who}${held}, ${forEvent}`
 

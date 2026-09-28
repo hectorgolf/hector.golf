@@ -335,8 +335,9 @@ const BIOGRAPHIES: Job = {
     slug: 'biographies',
     label: "Players' biographies",
     blurb:
-        'Drafts new biographies for the unlocked players of the upcoming Hector, for review on ' +
-        'the Biography drafts page. Nothing is published until a draft is approved there.',
+        'Drafts new biographies for the unlocked players, for review on the Biography drafts ' +
+        'page: everybody before an upcoming Hector, and after one has been played whoever still ' +
+        'describes it as coming. Nothing is published until a draft is approved there.',
     // Out of shadow as of 2026-09-20, which is not the same as writing:
     // generation is held by `PLAYERS_ARE_OWNED`, the same single gate the
     // club job uses, for the same reason. Two gates on one question means
