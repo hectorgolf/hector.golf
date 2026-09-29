@@ -21,6 +21,6 @@
         "rotate-hooks-api-key": "npm run --silent rotate-hooks-api-key --workspace=hector-admin --"
     },
     "devDependencies": {
-        "markdownlint-cli2": "^0.23.2"
+        "markdownlint-cli2": "^0.23.3"
     }
 }
