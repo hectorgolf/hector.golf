@@ -129,10 +129,37 @@ jobs:
       # share a run log and a Firestore lease, so a half-rolled pair is a state
       # that exists either way; what sequencing buys is that a failure of the
       # second leaves a log group naming which one it was.
+      # A service that is not there yet is skipped, not created.
+      #
+      # `gcloud run deploy` creates a service that does not exist, and a create
+      # with no --service-account takes the project's default compute account —
+      # which this identity cannot act as, so it fails. That is the *good*
+      # outcome of the two: the bad one is a service created with no IAP
+      # decision, no environment and the wrong identity, which for hector-hooks
+      # would mean the admin image running with ADMIN_SURFACE unset and
+      # nothing to say so.
+      #
+      # It bit on the merge of #287 at 05:37 on 2026-09-29: hector-hooks did not
+      # exist yet because the apply that creates it was still waiting for
+      # approval, so this step tried to create it and was denied. Terraform made
+      # it properly a few minutes later.
+      #
+      # So the existence check is the contract being stated rather than a
+      # workaround: Terraform owns every service, this workflow owns the image
+      # in them. A missing service is somebody else's step that has not run yet,
+      # and a warning is the honest report of it — the admin deploy above
+      # succeeded and failing the job would say otherwise.
       - name: Deploy to Cloud Run
         if: steps.guard.outputs.deployable == 'true'
         run: |
           for service in hector-admin hector-hooks; do
+            if ! gcloud run services describe "$service" \
+                --project="${{ vars.GCP_PROJECT_ID }}" \
+                --region="${{ vars.GCP_REGION }}" \
+                --format="value(name)" >/dev/null 2>&1; then
+              echo "::warning::No Cloud Run service $service, so it was not deployed. Terraform creates it; apply terraform/ and re-run this."
+              continue
+            fi
             echo "::group::$service"
             gcloud run deploy "$service" \
               --project="${{ vars.GCP_PROJECT_ID }}" \
