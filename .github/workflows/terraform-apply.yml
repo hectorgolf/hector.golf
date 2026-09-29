@@ -105,6 +105,11 @@ jobs:
           # A repository variable rather than a secret: a hostname is not one,
           # and it is easier to see that CI and a laptop agree when it is visible.
           TF_VAR_admin_domain: ${{ vars.TF_ADMIN_DOMAIN }}
+          # The same, for the hooks service. Separate rather than derived from
+          # the one above, because the two services are mapped independently:
+          # leaving this unset is a supported state in which the hook answers on
+          # its run.app URL and nothing else changes.
+          TF_VAR_hooks_domain: ${{ vars.TF_HOOKS_DOMAIN }}
           # A JSON array again, and likewise out of the tree because it is email
           # addresses. The `|| '[]'` is load-bearing: an unset variable arrives
           # as the empty string, and Terraform cannot parse "" as a list — it
