@@ -22,7 +22,7 @@ const eventById = (id: string): HectorEvent => {
     return event
 }
 
-/** Konopiště, 24-27 September 2026: the next Hector, with a split still open. */
+/** Konopiště, 24-27 September 2026: the most recent Hector, and the newest committed split. */
 const hector2026 = () => eventById('HECTOR2026')
 
 /** 2014, long finished and predating both buckets and the handicap log. */
@@ -30,6 +30,17 @@ const hector2014 = () => eventById('HECTOR2014')
 
 /** Before the first tee of 2026, and long before its bucket freeze. */
 const wellBefore = new Date('2026-09-14T06:28:50Z')
+
+/**
+ * The third morning of the 2026 Hector: after the split froze, before the event ended.
+ *
+ * Anything asserting live-event behaviour has to name an instant like this one,
+ * because the alternative stops being true. A test that leaves `now` to the
+ * clock describes a live event only until the event ends — after which
+ * `fieldHandicaps` switches to the played-off handicap, correctly, and the test
+ * fails for a reason that has nothing to do with the change that ran it.
+ */
+const duringTheEvent = new Date('2026-09-26T10:00:00Z')
 
 describe('fieldHandicaps()', () => {
     it('names the event it is about', () => {
@@ -190,7 +201,7 @@ describe('fieldHandicaps()', () => {
 
         it('stops moving on the first morning, while the playing handicap does not', () => {
             const event = hector2026()
-            const mid = fieldHandicaps(event, new Date('2026-09-26T10:00:00Z'))
+            const mid = fieldHandicaps(event, duringTheEvent)
             const before = fieldHandicaps(event, wellBefore)
             // Read as of the 24th on both counts, so mid-event and a week out agree.
             expect(mid.handicaps.map((p) => p.bucketing.hcp)).toEqual(before.handicaps.map((p) => p.bucketing.hcp))
@@ -207,8 +218,22 @@ describe('fieldHandicaps()', () => {
 
     describe('the playing handicap', () => {
         it('is what the rest of the site reports while the event is live', () => {
-            for (const player of fieldHandicaps(hector2026()).handicaps) {
-                expect(player.playing.hcp).toBe(getPlayerById(player.id)?.handicap ?? null)
+            /*
+             * The instant is the whole of what changed here, and it is not
+             * decoration. `entryFor` defers to `getPlayerById` only while the
+             * event is live and reads the log once it is over, so this asserted
+             * the live branch for exactly as long as HECTOR2026 was being
+             * played. The clock left the event on 2026-09-28, the assertion
+             * started meeting the played-off handicap instead, and the suite
+             * went red on the Monday for something that had happened on the
+             * Sunday.
+             *
+             * Both sides still read the same committed field, so the next sweep
+             * cannot pull them apart — which is why the comparison itself is
+             * unchanged. Only the branch it lands on needed nailing down.
+             */
+            for (const player of fieldHandicaps(hector2026(), duringTheEvent).handicaps) {
+                expect(player.playing.hcp, player.id).toBe(getPlayerById(player.id)?.handicap ?? null)
             }
         })
 
