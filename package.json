@@ -17,7 +17,8 @@
         "test": "npm run test --workspace=@hector/schemas && npm run test --workspace=@hector/ui && npm run test --workspace=astroversion && npm run test --workspace=hector-admin && npm run test --prefix backend/backend-functions",
         "icons": "node scripts/render-icons.ts",
         "lint:md": "markdownlint-cli2",
-        "lint:md:fix": "markdownlint-cli2 --fix"
+        "lint:md:fix": "markdownlint-cli2 --fix",
+        "rotate-hooks-api-key": "npm run --silent rotate-hooks-api-key --workspace=hector-admin --"
     },
     "devDependencies": {
         "markdownlint-cli2": "^0.23.2"

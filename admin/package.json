@@ -12,7 +12,8 @@
     "start": "node ./dist/server/entry.mjs",
     "test": "vitest run",
     "seed": "tsx scripts/seed.ts",
-    "export": "tsx scripts/export.ts"
+    "export": "tsx scripts/export.ts",
+    "rotate-hooks-api-key": "tsx scripts/rotate-hooks-key.ts"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",

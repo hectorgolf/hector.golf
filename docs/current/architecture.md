@@ -1059,6 +1059,12 @@ deploy follows only when the board changed — the job's commit lands under `ast
 undifferentiated poke, cannot grow: the day `event-ended` should also freeze something, the caller is
 already saying which moment it is.
 
+**The key is rotated with a script**, `npm run rotate-hooks-api-key`, which mints a version, prints
+the value once for the handover, and says the thing that is easy to forget: the old key stopped
+working the moment the new version existed, because the service resolves `versions/latest` on every
+request. It deliberately does not disable the previous version — that version *is* the rollback, and
+disabling the new one puts the old key straight back.
+
 **What the admin cannot work out for itself** is exactly why this exists. A Hector's rounds carry a
 `day` and a `round` number and no times at all — see `hectorRoundSchema` — so the sharpest thing the
 admin can do alone is a date boundary: `eventDatesPassedSince` deploys at an event's start, at each
