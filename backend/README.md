@@ -365,6 +365,104 @@ It will not get far on a laptop: minting the ID token needs the GCP metadata ser
 which is not there. What a local run does answer is everything above that point — the
 method check, the key check, and what an unconfigured deployment says.
 
+# Round hook API
+
+Not a Cloud Function — it lives on the **hooks service**, which is the admin's own image
+running with no IAP in front of it and serving this one route. It is documented here because
+this is where app.hector.golf's other endpoint is, and whoever is wiring one up wants both.
+
+`POST /api/hooks/round` is where app.hector.golf reports that a round has started or ended,
+or that the event is over. Each one republishes the standings immediately instead of waiting
+for the next scheduled tick.
+
+## The two endpoints, side by side
+
+They are separate signals with separate keys, and both are wanted:
+
+| | URL | Key | Send it when |
+| --- | --- | --- | --- |
+| Score changed | `https://europe-north1-hector-golf.cloudfunctions.net/RequestLeaderboardUpdate` | `leaderboard-trigger-key` | A score was entered or corrected |
+| Round boundary | `https://hector-hooks-6uxopx7tjq-lz.a.run.app/api/hooks/round` | `hooks-api-key` | A round opened or closed, or the event ended |
+
+## Sending a signal
+
+A round has just finished:
+
+```bash
+curl -X POST "https://hector-hooks-6uxopx7tjq-lz.a.run.app/api/hooks/round" \
+  -H "x-api-key: $HOOKS_API_KEY" \
+  -H "Content-Type: application/json" \
+  --data '{"phase": "round-ended", "event": "HECTOR2026", "round": 3}'
+```
+
+A round is starting:
+
+```bash
+curl -X POST "https://hector-hooks-6uxopx7tjq-lz.a.run.app/api/hooks/round" \
+  -H "x-api-key: $HOOKS_API_KEY" \
+  -H "Content-Type: application/json" \
+  --data '{"phase": "round-started", "event": "HECTOR2026", "round": 4}'
+```
+
+The whole event is over:
+
+```bash
+curl -X POST "https://hector-hooks-6uxopx7tjq-lz.a.run.app/api/hooks/round" \
+  -H "x-api-key: $HOOKS_API_KEY" \
+  -H "Content-Type: application/json" \
+  --data '{"phase": "event-ended", "event": "HECTOR2026"}'
+```
+
+`phase` is required and must be one of `round-started`, `round-ended`, `event-ended`.
+`event` and `round` are **optional**: they are recorded in our run log so that a published
+change can be explained later, and they do not steer anything. What gets refreshed is decided
+our end, from the tournament data — so a wrong or missing `event` cannot cause the wrong board
+to be published, and cannot stop the right one being.
+
+`Content-Type: application/json` is required. A POST that arrives without one is rejected by
+the framework before our code sees it.
+
+## What comes back
+
+```json
+{"ran":"leaderboards","phase":"round-ended","outcome":"ok",
+ "detail":"the standings for HECTOR2026 are unchanged","changes":0}
+```
+
+| Status | What it means                                                                      | Retry?               |
+| ------ | ---------------------------------------------------------------------------------- | -------------------- |
+| `200`  | The job ran. `detail` says what it did, including finding nothing to change        | No                   |
+| `400`  | `phase` missing or unrecognised, or `event`/`round` malformed. `detail` says which | No — fix the request |
+| `401`  | No `x-api-key`, or the wrong one. Same answer for both                             | No                   |
+| `405`  | Anything other than `POST`. `Allow: POST`                                          | No                   |
+| `409`  | A run was already going. It publishes the same board                               | **No**               |
+| `500`  | A fault our end                                                                    | Yes, with backoff    |
+| `502`  | The job failed, e.g. app.hector.golf could not be read. The board is unchanged     | Yes, with backoff    |
+| `503`  | The admin has no app.hector.golf key configured. A setup step our end              | Yes, slowly          |
+
+**A `409` is a normal answer, not a failure.** Two signals seconds apart — a round ending as
+another starts — produce one run and one refusal, because a lease means only one refresh
+happens at a time. The run already going reads the same upstream and publishes the same board,
+so the right thing to do with a `409` is drop it.
+
+**`"no tournament on app.hector.golf is being played today"` with a `200` is also success.**
+Outside an event there is nothing to refresh, so that is what a test call will say. A `200`
+means the hook worked, whatever the `detail` says.
+
+## Checking it without sending a real signal
+
+No key needed, and it starts nothing:
+
+```bash
+curl -i "https://hector-hooks-6uxopx7tjq-lz.a.run.app/api/hooks/round"
+```
+
+`405 {"error":"method_not_allowed"}` with `Allow: POST` means the endpoint is reachable and
+healthy. With a key, the cheapest real call is any valid phase: outside an event it publishes
+nothing.
+
+A wrong key is `401 {"error":"unauthorized"}` — the same answer as no key at all, deliberately.
+
 # Local CLI For GeneratePlayerAvatar
 
 From [backend/backend-functions](backend-functions), run:

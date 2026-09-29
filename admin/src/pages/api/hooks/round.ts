@@ -62,11 +62,32 @@ import { hooksApiKey } from '../../../lib/secrets.ts'
  * `api/jobs/[slug]/run.ts`.
  */
 
-const json = (body: unknown, status: number) =>
+const json = (body: unknown, status: number, headers: Record<string, string> = {}) =>
     new Response(JSON.stringify(body), {
         status,
-        headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
+        headers: { 'content-type': 'application/json', 'cache-control': 'no-store', ...headers },
     })
+
+/**
+ * Anything that is not a POST.
+ *
+ * Astro answers a method an endpoint does not export with its own 404 page,
+ * which is HTML — so a `GET` here used to return four kilobytes of styled
+ * "404: Not Found" to a caller that had asked for JSON. Nothing leaks by it;
+ * it is the stock page and carries none of the admin's structure. What it does
+ * is mislead, and the person it misleads is whoever is wiring up
+ * app.hector.golf and has just tried the URL in a browser: a 404 says the
+ * endpoint is not there, and it is.
+ *
+ * `ALL` is Astro's fallback for methods with no exported handler, so `POST`
+ * above still takes precedence. The same answer the two public functions in
+ * `backend/` give, down to the body, because a caller meeting both should not
+ * have to learn two vocabularies.
+ *
+ * `Allow` because RFC 9110 requires it on a 405, and because it is the one
+ * header that turns this reply into an instruction rather than a refusal.
+ */
+export const ALL: APIRoute = () => json({ error: 'method_not_allowed' }, 405, { allow: 'POST' })
 
 export const POST: APIRoute = async ({ request }) => {
     /*
