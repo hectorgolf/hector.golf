@@ -127,7 +127,15 @@ output "hooks_api_key_secret" {
   description = <<-EOT
     The Secret Manager secret the hooks service checks app.hector.golf's
     x-api-key against. Terraform creates the container and never a version, so
-    the service deploys before the key exists and answers 503 until it does —
+    the service deploys before the key exists and answers 503 until it does.
+
+    Both making the first key and rotating it are the same npm script, from the
+    repository root:
+
+      npm run rotate-hooks-api-key
+
+    It mints a version, prints the value once for the handover, and says what
+    has just stopped working and how to undo it. The equivalent by hand is
 
       openssl rand -base64 32 | tr -d '\n' | gcloud secrets versions add "$(terraform output -raw hooks_api_key_secret)" --data-file=-
 
