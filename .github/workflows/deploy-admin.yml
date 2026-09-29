@@ -112,14 +112,35 @@ jobs:
           docker push "$LATEST"
           echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
 
+      # Two services, one image.
+      #
+      # `hector-hooks` is the same container with no IAP in front of it, serving
+      # the one route app.hector.golf posts to — see admin/src/lib/surface.ts for
+      # what keeps the admin UI off it, and terraform/cloud_run.tf for why it is
+      # a second service rather than a path.
+      #
+      # Everything about each service except the image is Terraform's: this
+      # passes `--image` and nothing else, so a deploy cannot quietly change an
+      # environment variable. That matters more here than it did with one
+      # service, because the variable that decides which surface a container
+      # serves is one of them.
+      #
+      # Deployed in sequence rather than in parallel, and the admin first. They
+      # share a run log and a Firestore lease, so a half-rolled pair is a state
+      # that exists either way; what sequencing buys is that a failure of the
+      # second leaves a log group naming which one it was.
       - name: Deploy to Cloud Run
         if: steps.guard.outputs.deployable == 'true'
         run: |
-          gcloud run deploy hector-admin \
-            --project="${{ vars.GCP_PROJECT_ID }}" \
-            --region="${{ vars.GCP_REGION }}" \
-            --image="${{ steps.image.outputs.image }}" \
-            --quiet
+          for service in hector-admin hector-hooks; do
+            echo "::group::$service"
+            gcloud run deploy "$service" \
+              --project="${{ vars.GCP_PROJECT_ID }}" \
+              --region="${{ vars.GCP_REGION }}" \
+              --image="${{ steps.image.outputs.image }}" \
+              --quiet
+            echo "::endgroup::"
+          done
 
       - name: Summarise
         if: steps.guard.outputs.deployable == 'true'
@@ -128,5 +149,5 @@ jobs:
             echo "### Deployed"
             echo
             echo "- Image: \`${{ steps.image.outputs.image }}\`"
-            echo "- Service: hector-admin in ${{ vars.GCP_REGION }}"
+            echo "- Services: hector-admin, hector-hooks in ${{ vars.GCP_REGION }}"
           } >> "$GITHUB_STEP_SUMMARY"

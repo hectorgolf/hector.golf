@@ -1000,6 +1000,71 @@ legitimately has empty boards, so "could not read app.hector.golf" must never re
 "nobody is playing" — the failure that would blank a live leaderboard. The caller gets a 502 and the
 committed board stays as it was.
 
+### Three doors into that job, and why there are three
+
+The same `leaderboards` job is started four ways, and each exists because the one before it could
+not cover a case:
+
+| Door | Who knocks | When |
+| --- | --- | --- |
+| The Cloud Scheduler tick | `api/workflows/dispatch` | Four times a day, and the backstop for everything below |
+| The Operations page | A person pressing Run now | When somebody wants it now |
+| `RequestLeaderboardUpdate` (Cloud Function) | app.hector.golf | A score changed |
+| `POST /api/hooks/round` (hooks service) | app.hector.golf | A round started or ended, or the event ended |
+
+They all go through `jobs/execute.ts`, which means one Firestore lease, one run log and one set of
+rules about what gets committed. That is the property to preserve if a fifth ever appears: a signal
+arriving by a new door must produce the same commit the tick would, or the two disagree and only one
+of them is tested.
+
+The run log is what tells them apart afterwards — `by` reads `the schedule`, an admin's email,
+`hector-leaderboard-trigger@…`, or `app.hector.golf (round-ended: HECTOR2026 round 3)`. A log where
+those were indistinguishable could not answer why a board moved at 14:32.
+
+### The hooks service, which is the admin's image without IAP in front of it
+
+`POST /api/hooks/round` is where app.hector.golf reports a round starting or ending, and it answers
+on `hooks.hector.golf` rather than on `admin.hector.golf`. That is not a preference:
+
+**IAP on Cloud Run is a property of the service.** It admits or refuses on every path and every
+hostname the service answers to, and there is no per-path exemption — so an endpoint authenticated
+by an API key cannot live on `admin.hector.golf` at all, because IAP turns app.hector.golf away
+before any header of ours is read. A path-based split needs an external load balancer, which is the
+roughly $18/month direct IAP was chosen to avoid (§ `terraform/cloud_run.tf`).
+
+**The same image, because the work is the admin's work** — the same job, lease, run log and
+committer. A separate program would either duplicate all of that or call back into the admin through
+IAP, which is what `RequestLeaderboardUpdate` does and the hop this service removes.
+
+**What keeps the admin UI off it is [`admin/src/lib/surface.ts`](../../admin/src/lib/surface.ts),
+and nothing else.** The pages do not defend themselves: `identity.ts` says in its first paragraph
+that authentication is IAP's job rather than this application's, which is true of the service it was
+written for and false here. Three properties carry that weight, all tested:
+
+- **Deny by default** — an exact allowlist of two paths (`/livez`, `/api/hooks/round`), 404 for
+  everything else. Not a list of dangerous paths, which is a list somebody gets wrong.
+- **Restricted is the default** — the full surface is opt-in, declared by the admin service as
+  `ADMIN_SURFACE=full`. A deployment that loses its configuration is the safe one.
+- **Whole paths, not prefixes** — a prefix rule on `/api/hooks` would serve whatever lands beside
+  the hook later, and would lean on somebody else's URL normalisation.
+
+[`admin/test/surface.test.ts`](../../admin/test/surface.test.ts) walks `src/pages/` on disk and
+asserts that every route it finds is refused unless it is on the list, so a page added next month is
+covered by a test written today.
+
+**Why the phases all do the same thing.** `round-started`, `round-ended` and `event-ended` each run
+the job and nothing else. Refreshing the published board is the right answer to all three, and a
+deploy follows only when the board changed — the job's commit lands under `astrosite/`, which
+`deploy-site.yml` watches. The phase is in the contract anyway because the alternative, one
+undifferentiated poke, cannot grow: the day `event-ended` should also freeze something, the caller is
+already saying which moment it is.
+
+**What the admin cannot work out for itself** is exactly why this exists. A Hector's rounds carry a
+`day` and a `round` number and no times at all — see `hectorRoundSchema` — so the sharpest thing the
+admin can do alone is a date boundary: `eventDatesPassedSince` deploys at an event's start, at each
+midnight during it, and at its end. That is a good backstop and a poor substitute. The last putt of
+round three drops at 16:40 and the board should say so at 16:41.
+
 ### The handicap sweep, which is a job rather than a workflow
 
 `admin/src/lib/jobs/handicaps.ts` reads every player's handicap from WiseGolf on every tick, writes

@@ -64,6 +64,19 @@ resource "google_cloud_run_v2_service" "admin" {
         value = google_firestore_database.hector.name
       }
 
+      # This service serves the whole admin; the hooks service below serves one
+      # route. One image, two services — admin/src/lib/surface.ts is the whole
+      # of why, and worth reading before touching either.
+      #
+      # Opt-in, and that direction is deliberate: a deployment that loses this
+      # variable serves nothing but the hook and the liveness probe, which is
+      # visible and harmless. The other direction would make a lost variable
+      # publish the admin UI.
+      env {
+        name  = "ADMIN_SURFACE"
+        value = "full"
+      }
+
       # Which repository the "Run now" buttons and the Cloud Scheduler jobs act
       # on. The same variable that decides which repository may mint tokens
       # through Workload Identity Federation, so this deployment cannot be
@@ -189,6 +202,166 @@ resource "google_cloud_run_v2_service" "admin" {
     google_project_service.enabled["run.googleapis.com"],
     google_project_service.enabled["iap.googleapis.com"],
   ]
+}
+
+# ---------------------------------------------------------------------------
+# The hooks service: the same image, no IAP, one route.
+#
+# ## Why a second service rather than a path on the admin
+#
+# IAP on Cloud Run is a property of the *service*. It admits or refuses on every
+# path and every hostname the service answers to, and there is no per-path
+# exemption — so an endpoint authenticated by an API key cannot live on
+# admin.hector.golf at all: IAP turns app.hector.golf away before any header of
+# ours is read. A path-based split needs an external load balancer, which is the
+# roughly $18/month this project chose direct IAP to avoid (see the note on
+# iap_enabled above, and domain_mapping.tf).
+#
+# ## Why the same image
+#
+# Because the work the hook triggers is the admin's work — the same job, the
+# same Firestore lease, the same run log, the same committer. A separate program
+# would either duplicate that or call back into the admin through IAP, which is
+# the `RequestLeaderboardUpdate` relay that already exists and the hop this
+# service is for removing.
+#
+# ## What keeps the admin UI off it
+#
+# `admin/src/lib/surface.ts`, and nothing else — the pages do not defend
+# themselves, because on the admin service IAP does it for them. That module
+# serves an exact allowlist and 404s everything else, the restricted surface is
+# what you get by default, and `admin/test/surface.test.ts` walks src/pages on
+# disk so a route added later is refused without anybody remembering. Read those
+# two files before changing this resource.
+#
+# The identity is narrower than the admin's for the same reason: no bucket, no
+# WiseGolf, no biography key. See iam.tf.
+# ---------------------------------------------------------------------------
+
+resource "google_cloud_run_v2_service" "hooks" {
+  project  = var.project_id
+  name     = "hector-hooks"
+  location = var.region
+
+  deletion_protection = false
+
+  ingress = "INGRESS_TRAFFIC_ALL"
+
+  # The one service here that is deliberately open. `allUsers` invoker is bound
+  # below, and what stands in for authentication is the x-api-key the route
+  # checks before it does anything at all.
+  iap_enabled = false
+
+  template {
+    service_account = google_service_account.hooks_runtime.email
+
+    # The request runs the job, as on the admin service and for the same reason:
+    # cpu_idle throttles the CPU once a response is sent, so there is no
+    # answering early and finishing afterwards. A leaderboard refresh is one
+    # upstream read and a GitHub round trip, so this is generous rather than
+    # tight — and deliberately shorter than the admin's 600s, because nothing
+    # reachable here is a 45-player sweep.
+    timeout = "120s"
+
+    scaling {
+      min_instance_count = 0
+      # Bounded because this is a public endpoint: a flood of requests carrying
+      # a valid key should cost a queue rather than a bill, and the Firestore
+      # lease already means a second concurrent run is refused rather than run.
+      max_instance_count = 2
+    }
+
+    containers {
+      image = coalesce(var.admin_image, "${local.admin_image_repo}:latest")
+
+      env {
+        name  = "FIRESTORE_DATABASE_ID"
+        value = google_firestore_database.hector.name
+      }
+
+      env {
+        name  = "GITHUB_REPOSITORY"
+        value = var.github_repository
+      }
+
+      env {
+        name  = "GITHUB_DISPATCH_TOKEN_SECRET"
+        value = "${google_secret_manager_secret.github_dispatch_token.name}/versions/latest"
+      }
+
+      env {
+        name  = "HECTOR_APP_API_KEY_SECRET"
+        value = "${google_secret_manager_secret.functions["hector-app-api-key"].name}/versions/latest"
+      }
+
+      env {
+        name  = "HOOKS_API_KEY_SECRET"
+        value = "${google_secret_manager_secret.hooks_api_key.name}/versions/latest"
+      }
+
+      # No ADMIN_SURFACE, and that absence is the security property rather than
+      # an omission. See surface.ts: restricted is the default, so this service
+      # serves /livez and /api/hooks/round and answers 404 to the rest.
+      #
+      # No ASSET_BUCKET either: nothing reachable here uploads anything, and the
+      # identity could not write to the bucket if it tried.
+
+      resources {
+        limits = {
+          cpu    = "1"
+          memory = "512Mi"
+        }
+        cpu_idle = true
+      }
+
+      startup_probe {
+        period_seconds    = 3
+        timeout_seconds   = 2
+        failure_threshold = 10
+
+        http_get {
+          path = "/livez"
+        }
+      }
+
+      liveness_probe {
+        period_seconds    = 30
+        timeout_seconds   = 3
+        failure_threshold = 3
+
+        http_get {
+          # /livez rather than /readyz, as on the admin service — and here it is
+          # also the only health path surface.ts serves, deliberately: whether
+          # this project's Firestore is answering is not a thing to tell the
+          # internet.
+          path = "/livez"
+        }
+      }
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      template[0].containers[0].image,
+      client,
+      client_version,
+    ]
+  }
+
+  depends_on = [
+    google_project_service.enabled["run.googleapis.com"],
+  ]
+}
+
+# What makes it reachable by app.hector.golf, which holds no Google credential.
+# The key check in the route is what stands in front of it; see the ordering
+# note in the handler, which checks the key before it reads the body.
+resource "google_cloud_run_v2_service_iam_member" "hooks_public" {
+  project  = var.project_id
+  location = google_cloud_run_v2_service.hooks.location
+  name     = google_cloud_run_v2_service.hooks.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
 }
 
 # ---------------------------------------------------------------------------

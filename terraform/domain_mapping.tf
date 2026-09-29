@@ -21,6 +21,7 @@ locals {
   # a null check would read "not configured" as "configured with nothing" and try
   # to map the empty domain. Exactly the trap the OAuth credentials hit.
   admin_domain = var.admin_domain == null ? "" : trimspace(var.admin_domain)
+  hooks_domain = var.hooks_domain == null ? "" : trimspace(var.hooks_domain)
 }
 
 resource "google_cloud_run_domain_mapping" "admin" {
@@ -38,6 +39,37 @@ resource "google_cloud_run_domain_mapping" "admin" {
     route_name = google_cloud_run_v2_service.admin.name
     # AUTOMATIC is a Google-managed certificate, provisioned once the DNS record
     # below resolves. Expect 15 minutes, and up to 24 hours.
+    certificate_mode = "AUTOMATIC"
+  }
+}
+
+# hooks.hector.golf in front of the hooks service.
+#
+# The same mechanism, the same prerequisites and the same Preview caveat as the
+# mapping above. Two differences worth knowing:
+#
+# IAP is *not* in front of this one — that is the entire reason the service
+# exists — so unlike admin.hector.golf, this hostname is open to the internet
+# and what protects it is the x-api-key the route checks. See
+# admin/src/lib/surface.ts.
+#
+# And it is optional in a way the admin's mapping is not: app.hector.golf is
+# configured with a URL, and the run.app URL works perfectly well. A custom
+# hostname here buys a name somebody can read in a config file rather than any
+# capability, so leaving hooks_domain unset is a real choice rather than an
+# unfinished setup.
+resource "google_cloud_run_domain_mapping" "hooks" {
+  count = local.hooks_domain == "" ? 0 : 1
+
+  location = var.region
+  name     = local.hooks_domain
+
+  metadata {
+    namespace = var.project_id
+  }
+
+  spec {
+    route_name       = google_cloud_run_v2_service.hooks.name
     certificate_mode = "AUTOMATIC"
   }
 }

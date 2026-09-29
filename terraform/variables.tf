@@ -193,6 +193,28 @@ variable "admin_domain" {
   default     = null
 }
 
+variable "hooks_domain" {
+  description = <<-EOT
+    Custom domain for the hooks service, e.g. "hooks.hector.golf".
+
+    The same prerequisites as admin_domain — the base domain has to be verified
+    for this project and for the terraform-ci account — and unset means the
+    service answers only on its run.app URL, which works.
+
+    A second hostname rather than a path under admin.hector.golf, because IAP on
+    Cloud Run is a property of the service and admits or refuses every path on
+    it. A path-based split needs a load balancer, which is roughly $18/month
+    against a project whose whole budget is a fraction of that. See
+    admin/src/lib/surface.ts for what the two services are and how one image
+    serves both.
+
+    Once applied, `terraform output hooks_dns_records` prints the records to add
+    at the registrar.
+  EOT
+  type        = string
+  default     = null
+}
+
 variable "artifact_keep_count" {
   description = <<-EOT
     How many recent image versions Artifact Registry keeps. This is effectively

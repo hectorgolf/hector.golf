@@ -97,6 +97,24 @@ export const backendFunctionsKeySecret = process.env.ASTROSITE_API_KEY_SECRET
  */
 export const hectorAppKeySecret = process.env.HECTOR_APP_API_KEY_SECRET
 
+/**
+ * Where the key app.hector.golf presents to the round hook lives.
+ *
+ * A key of our own this time, rather than a shared one: the two directions are
+ * different doors. `hector-app-api-key` above is *their* key, for us to call
+ * them, and a single value doing both would mean either side's leak opening
+ * both — and neither side able to rotate without the other.
+ *
+ * Read at call time like every other secret here, and that is load-bearing
+ * rather than conventional. Mounting it with `--set-secrets` would make the
+ * hooks service undeployable until somebody had put a version in, which is
+ * exactly the bootstrap knot `RequestLeaderboardUpdate` tied on 2026-09-28 —
+ * see the ordering note in `terraform/cloud_run.tf`. This way the service
+ * deploys, answers 503 with the setup step named, and starts working the moment
+ * a version exists, with no redeploy.
+ */
+export const hooksApiKeySecret = process.env.HOOKS_API_KEY_SECRET
+
 export type SecretLocation = { project: string; secretId: string }
 
 /**
@@ -203,6 +221,16 @@ export async function backendFunctionsKey(): Promise<string | undefined> {
  */
 export async function hectorAppKey(): Promise<string | undefined> {
     return readSecret(hectorAppKeySecret, process.env.HECTOR_APP_API_KEY, 'the app.hector.golf API key')
+}
+
+/**
+ * The key the round hook checks, or `undefined` when there is none.
+ *
+ * `HOOKS_API_KEY` is the environment fallback, for a laptop running the hooks
+ * surface locally against a key it made up.
+ */
+export async function hooksApiKey(): Promise<string | undefined> {
+    return readSecret(hooksApiKeySecret, process.env.HOOKS_API_KEY, 'the round hook key')
 }
 
 /**
