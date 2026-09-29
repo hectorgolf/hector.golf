@@ -359,6 +359,7 @@ thing rather than breaking the project, which is exactly why a bootstrap misses 
 | `GH_LEADERBOARD_SA` | `terraform output -raw leaderboard_service_account` | the Google Sheets scrape cannot authenticate |
 | `PUBLIC_LEADERBOARD_PROXY_URL` | `https://europe-north1-hector-golf.cloudfunctions.net/TournamentLeaderboard` | live leaderboards are absent from the build entirely |
 | `TF_ADMIN_DOMAIN` | `admin.hector.golf` | no custom domain mapping — see the optional step near the end |
+| `TF_HOOKS_DOMAIN` | `hooks.hector.golf` | no custom domain mapping for the hooks service; it answers on its `run.app` URL |
 | `TF_LEADERBOARD_IMPERSONATORS` | `["user:you@example.com"]` — a JSON array | nobody can run the scrape locally as the CI identity |
 
 Under **Secrets**, add four:
@@ -728,6 +729,32 @@ cross-origin POST that arrives with **no** `Content-Type` at all, not only one c
 content type. A non-browser caller — `curl` without a body sends no content type — therefore has to
 send `Content-Type: application/json`, which is why `terraform/scheduler.tf` and
 `.github/actions/request-deploy` both post an empty JSON body.
+
+### The same, for hooks.hector.golf
+
+The hooks service is mapped the same way and by the same four steps, with `hooks_domain` and
+`TF_HOOKS_DOMAIN` in place of the admin's pair:
+
+```bash
+gh variable set TF_HOOKS_DOMAIN --body "hooks.hector.golf"
+gh workflow run "Terraform apply"
+terraform output hooks_dns_records   # a single CNAME, Host `hooks`
+```
+
+Steps 1 and 2 — verifying `hector.golf` and adding terraform-ci as an owner — are per *domain*
+rather than per subdomain, so if `admin.hector.golf` is already mapped they are done.
+
+Two differences from the admin's mapping, both worth knowing before pointing app.hector.golf at
+this name:
+
+**IAP is not in front of it**, which is the entire reason the service exists. The custom hostname
+is open to the internet exactly as the `run.app` one is, and what protects it is the `x-api-key`
+the route checks. See `admin/src/lib/surface.ts`.
+
+**It is genuinely optional.** app.hector.golf is configured with a URL and the `run.app` one works
+perfectly well, so this buys a name somebody can read in a config file rather than any capability.
+Worth deciding *before* the handover, though: changing the URL afterwards is a second round trip
+with whoever maintains that side.
 
 ## Adopting something that already exists
 

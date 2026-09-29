@@ -1183,6 +1183,7 @@ their absence degrades; this is what reads them.
 | `GH_FUNCTIONS_BUILDER_SA` | Variable | `deploy-functions` — what it passes to `--build-service-account` |
 | `GH_IMAGE_REPO` | Variable | `deploy-admin` — the Artifact Registry repository the image is tagged into |
 | `TF_ADMIN_DOMAIN` | Variable | both Terraform workflows; also the four update workflows, which pass it to `request-deploy` |
+| `TF_HOOKS_DOMAIN` | Variable | both Terraform workflows. Unset means the hooks service answers only on its `run.app` URL |
 | `TF_LEADERBOARD_IMPERSONATORS` | Variable (a JSON array) | `terraform-plan`, `terraform-apply` |
 | `TF_ADMIN_PRINCIPALS` | Secret (a JSON array) | `terraform-plan`, `terraform-apply` — a secret only because the repository is public and these are real addresses |
 | `TF_IAP_OAUTH_CLIENT_ID` | Secret | both Terraform workflows; also the four update workflows, which pass it to `request-deploy` |
