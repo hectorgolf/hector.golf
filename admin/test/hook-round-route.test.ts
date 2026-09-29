@@ -26,7 +26,7 @@ vi.mock('../src/lib/jobs/execute.ts', async (importOriginal) => {
     return { ...actual, execute: (...args: unknown[]) => execute(...args) }
 })
 
-const { POST } = await import('../src/pages/api/hooks/round.ts')
+const { POST, ALL } = await import('../src/pages/api/hooks/round.ts')
 
 const KEY = 'the-configured-key'
 
@@ -155,6 +155,53 @@ describe('POST /api/hooks/round', () => {
 
             const [, by] = execute.mock.calls[0] as [unknown, string]
             expect(by).toBe('app.hector.golf (event-ended)')
+        })
+    })
+
+    describe('a method it does not serve', () => {
+        const other = (method: string) =>
+            ALL({
+                request: new Request('https://hooks.hector.golf/api/hooks/round', { method }),
+            } as Parameters<typeof ALL>[0]) as Promise<Response> | Response
+
+        /*
+         * GET, HEAD and OPTIONS, because those are the ones that reach this
+         * handler over HTTP. A PUT, DELETE or PATCH is answered earlier, by
+         * Astro's origin check — `403 Cross-site PUT form submissions are
+         * forbidden`, in text/plain — and never gets here.
+         *
+         * Listing them anyway, as this first did, is a test that passes while
+         * describing something no client sees. Measured against the built
+         * server rather than reasoned about: the three below return 405 and the
+         * other three return 403.
+         */
+        it.each(['GET', 'HEAD', 'OPTIONS'])('answers 405 to %s, in JSON', async (method) => {
+            // Astro's own answer for an unexported method is its HTML 404 page,
+            // which tells whoever is wiring up app.hector.golf that the
+            // endpoint is not there. It is.
+            const response = await other(method)
+
+            expect(response.status).toBe(405)
+            expect(await response.json()).toEqual({ error: 'method_not_allowed' })
+        })
+
+        it('says which method it does serve', async () => {
+            expect((await other('GET')).headers.get('allow')).toBe('POST')
+        })
+
+        it('answers without asking for the key, because the method is wrong either way', async () => {
+            // Cheap, and it keeps an unauthenticated probe from costing a
+            // Secret Manager call on a public endpoint.
+            hooksApiKey.mockReset()
+
+            expect((await other('GET')).status).toBe(405)
+            expect(hooksApiKey).not.toHaveBeenCalled()
+        })
+
+        it('is still POST that handles a POST', async () => {
+            // `ALL` is a fallback; an exported method wins. If that ever stops
+            // being true this endpoint answers 405 to the only caller it has.
+            expect((await call({ phase: 'round-ended' })).status).toBe(200)
         })
     })
 
