@@ -236,6 +236,16 @@ resource "google_cloud_run_v2_service" "admin" {
 #
 # The identity is narrower than the admin's for the same reason: no bucket, no
 # WiseGolf, no biography key. See iam.tf.
+#
+# ORDERING, on the merge that first creates this. `deploy-admin.yml` and the
+# apply fire on the same merge and neither waits for the other, so the deploy
+# reaches a service this configuration has not made yet. It skips it with a
+# warning rather than creating it — a `gcloud run deploy` create would take the
+# default compute service account and none of the environment below, which for
+# this service means the admin image running with ADMIN_SURFACE unset. The apply
+# then creates it properly, pointing at `:latest`, and the next deploy pins it to
+# a SHA. Nothing to do by hand; it was worth writing down because the first
+# attempt failed loudly and looked like a permissions problem.
 # ---------------------------------------------------------------------------
 
 resource "google_cloud_run_v2_service" "hooks" {
