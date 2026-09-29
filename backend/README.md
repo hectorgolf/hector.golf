@@ -382,14 +382,18 @@ They are separate signals with separate keys, and both are wanted:
 | | URL | Key | Send it when |
 | --- | --- | --- | --- |
 | Score changed | `https://europe-north1-hector-golf.cloudfunctions.net/RequestLeaderboardUpdate` | `leaderboard-trigger-key` | A score was entered or corrected |
-| Round boundary | `https://hector-hooks-6uxopx7tjq-lz.a.run.app/api/hooks/round` | `hooks-api-key` | A round opened or closed, or the event ended |
+| Round boundary | `https://hooks.hector.golf/api/hooks/round` | `hooks-api-key` | A round opened or closed, or the event ended |
+
+Both hostnames also answer on their Cloud Run `run.app` URLs, which is what they were
+reachable at before the custom names were mapped. Prefer the names above: the `run.app`
+one carries a Google-generated suffix that changes if a service is ever recreated.
 
 ## Sending a signal
 
 A round has just finished:
 
 ```bash
-curl -X POST "https://hector-hooks-6uxopx7tjq-lz.a.run.app/api/hooks/round" \
+curl -X POST "https://hooks.hector.golf/api/hooks/round" \
   -H "x-api-key: $HOOKS_API_KEY" \
   -H "Content-Type: application/json" \
   --data '{"phase": "round-ended", "event": "HECTOR2026", "round": 3}'
@@ -398,7 +402,7 @@ curl -X POST "https://hector-hooks-6uxopx7tjq-lz.a.run.app/api/hooks/round" \
 A round is starting:
 
 ```bash
-curl -X POST "https://hector-hooks-6uxopx7tjq-lz.a.run.app/api/hooks/round" \
+curl -X POST "https://hooks.hector.golf/api/hooks/round" \
   -H "x-api-key: $HOOKS_API_KEY" \
   -H "Content-Type: application/json" \
   --data '{"phase": "round-started", "event": "HECTOR2026", "round": 4}'
@@ -407,7 +411,7 @@ curl -X POST "https://hector-hooks-6uxopx7tjq-lz.a.run.app/api/hooks/round" \
 The whole event is over:
 
 ```bash
-curl -X POST "https://hector-hooks-6uxopx7tjq-lz.a.run.app/api/hooks/round" \
+curl -X POST "https://hooks.hector.golf/api/hooks/round" \
   -H "x-api-key: $HOOKS_API_KEY" \
   -H "Content-Type: application/json" \
   --data '{"phase": "event-ended", "event": "HECTOR2026"}'
@@ -454,7 +458,7 @@ means the hook worked, whatever the `detail` says.
 No key needed, and it starts nothing:
 
 ```bash
-curl -i "https://hector-hooks-6uxopx7tjq-lz.a.run.app/api/hooks/round"
+curl -i "https://hooks.hector.golf/api/hooks/round"
 ```
 
 `405 {"error":"method_not_allowed"}` with `Allow: POST` means the endpoint is reachable and
