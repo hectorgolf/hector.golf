@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-09-21T03:01:02.571Z",
+  "fetchedAt": "2026-10-21T05:00:31.236Z",
   "clubs": [
     {
       "name": "Aavasaksa Golf",
@@ -228,16 +228,6 @@
         {
           "name": "WiseGolf",
           "id": "14"
-        }
-      ]
-    },
-    {
-      "name": "Holiday Club Golf ry",
-      "abbreviation": "HCGolf",
-      "sources": [
-        {
-          "name": "WiseGolf",
-          "id": "132"
         }
       ]
     },
@@ -1098,6 +1088,16 @@
         {
           "name": "WiseGolf",
           "id": "69"
+        }
+      ]
+    },
+    {
+      "name": "Saimaan Golfseura ry",
+      "abbreviation": "SaiGo",
+      "sources": [
+        {
+          "name": "WiseGolf",
+          "id": "132"
         }
       ]
     },
